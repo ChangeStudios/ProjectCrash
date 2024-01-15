@@ -2,11 +2,14 @@
 
 #pragma once
 
+#include "AbilitySystemInterface.h"
 #include "InputActionValue.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
+
+class UChallengerData;
 
 class UCrashInputActionMapping;
 class UCrashInputComponent;
@@ -15,8 +18,14 @@ class UInputMappingContext;
 class UCameraComponent;
 class USkeletalMeshComponent;
 
-UCLASS()
-class PROJECTCRASH_API AChallengerBase : public ACharacter
+/**
+ * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
+ * such as a first-person camera, input, and an interface with the ability system.
+ *
+ * This class should be derived from for each playable character and never used directly.
+ */
+UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
+class PROJECTCRASH_API AChallengerBase : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -26,6 +35,17 @@ public:
 
 	/** Default constructor. */
 	AChallengerBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+
+
+	// Data.
+
+public:
+
+	/** A collection of data used to define the default properties of this challenger, such as its default abilities
+	 * and input mappings. This groups together and isolates challenger-specific class data in a safe manner. */
+	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data", meta = (DisplayPriority = 0))
+	TObjectPtr<const UChallengerData> ChallengerData;
 
 
 
@@ -63,6 +83,16 @@ protected:
 
 
 
+	// Ability system.
+
+// Utils.
+public:
+
+	/** Gets this player's ASC using the ability system interface. */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+
+
 	// Input.
 
 // Components.
@@ -71,20 +101,6 @@ protected:
 	// This character's input component cast to CrashInputComponent.
 	UPROPERTY()
 	TObjectPtr<UCrashInputComponent> CrashInputComponent;
-
-// Action mappings.
-protected:
-
-	/** The action mapping that will be bound by default. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UCrashInputActionMapping> DefaultActionMapping;
-
-// Context mappings.
-protected:
-
-	/** The context mapping that will be bound by default. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
-	TArray<TObjectPtr<UInputMappingContext>> DefaultInputMappings;
 
 // Initialization.
 public:

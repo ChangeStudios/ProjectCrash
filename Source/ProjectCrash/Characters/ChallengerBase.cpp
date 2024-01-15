@@ -2,16 +2,14 @@
 
 #include "ChallengerBase.h"
 
-#include "Components/CapsuleComponent.h"
-
-#include "Camera/CameraComponent.h"
-
-#include "Components/SkeletalMeshComponent.h"
-
-#include "Input/CrashInputComponent.h"
-#include "Input/CrashInputActionMapping.h"
-#include "InputMappingContext.h"
+#include "ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Input/CrashInputActionMapping.h"
+#include "Input/CrashInputComponent.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
@@ -58,6 +56,11 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	OverrideInputComponentClass = UCrashInputComponent::StaticClass(); // Use the custom input component.
 }
 
+UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
+{
+	return nullptr;
+}
+
 void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	const APlayerController* PlayerController = GetController<APlayerController>();
@@ -69,19 +72,24 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	check(Subsystem);
 
+	if (!ChallengerData)
+	{
+		UE_LOG(LogInput, Fatal, TEXT("Fatal error: ChallengerData is not defined for Challenger class \"%s.\""), *StaticClass()->GetName());
+	}
+
 	// Cache a reference to this character's input component as a CrashInputComponent.
 	CrashInputComponent = Cast<UCrashInputComponent>(PlayerInputComponent);
 
-	// Add each mapping context to the local player, prioritizing contexts listed first.
-	for (int Priority = DefaultInputMappings.Num() - 1; Priority >= 0; Priority--)
+	// Add each mapping context to the local player with its specified priority.
+	for (const FPrioritizedInputMappingContext& PrioritizedContext : ChallengerData->DefaultInputMappings)
 	{
-		Subsystem->AddMappingContext(DefaultInputMappings[Priority], DefaultInputMappings.Num() - Priority);
+		Subsystem->AddMappingContext(PrioritizedContext.MappingContext.Get(), PrioritizedContext.Priority);
 	}
-	
+
 	/* Bind the native input actions from each default action mapping to handler functions. */
-	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
-	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
-	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 }
 
 void AChallengerBase::Input_Look_Mouse(const FInputActionValue& InputActionValue)
