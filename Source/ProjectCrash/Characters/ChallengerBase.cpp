@@ -2,25 +2,86 @@
 
 #include "ChallengerBase.h"
 
+#include "Components/CapsuleComponent.h"
+
+#include "Camera/CameraComponent.h"
+
+#include "Components/SkeletalMeshComponent.h"
+
 #include "Input/CrashInputComponent.h"
 #include "Input/CrashInputActionMapping.h"
+#include "InputMappingContext.h"
+#include "EnhancedInputSubsystems.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer
+		// Do not create the default mesh component. It needs to be nested to the player camera.
+		.DoNotCreateDefaultSubobject(MeshComponentName))
 {
-	// Use the custom input component.
-	OverrideInputComponentClass = UCrashInputComponent::StaticClass();
+	// Networking.
+	bReplicates = true;
+	AActor::SetReplicateMovement(true);
+
+
+	// Collision component.
+	GetCapsuleComponent()->InitCapsuleSize(35.0f, 87.5f);
+
+
+	// Camera.
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, 60.f)); // Default position.
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+	FirstPersonCameraComponent->SetFieldOfView(90.0f);
+	FirstPersonCameraComponent->bConstrainAspectRatio = true;
+
+
+	// First-person mesh.
+	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+	FirstPersonMesh->SetOnlyOwnerSee(true);
+	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
+	FirstPersonMesh->bCastDynamicShadow = false;
+	FirstPersonMesh->CastShadow = false;
+	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -165.0f)); // Default position.
+	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
+
+
+	// Third-person mesh.
+	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonMesh"));
+	ThirdPersonMesh->SetOwnerNoSee(true);
+	ThirdPersonMesh->SetupAttachment(FirstPersonCameraComponent);
+	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -150.0f)); // Default position.
+	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
+
+
+	// Input.
+	OverrideInputComponentClass = UCrashInputComponent::StaticClass(); // Use the custom input component.
 }
 
 void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	const APlayerController* PlayerController = GetController<APlayerController>();
+	check(PlayerController);
+
+	const ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
+	check(LocalPlayer);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
 	// Cache a reference to this character's input component as a CrashInputComponent.
 	CrashInputComponent = Cast<UCrashInputComponent>(PlayerInputComponent);
+
+	// Add each mapping context to the local player, prioritizing contexts listed first.
+	for (int Priority = DefaultInputMappings.Num() - 1; Priority >= 0; Priority--)
+	{
+		Subsystem->AddMappingContext(DefaultInputMappings[Priority], DefaultInputMappings.Num() - Priority);
+	}
 	
-	/* Bind the native input actions from each default action mapping to handler functions. We can't guarantee which
-	 * action mapping each action will be in, so we have to check each one. */
-	CrashInputComponent->BindInputAction(DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
-	CrashInputComponent->BindInputAction(DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
-	CrashInputComponent->BindInputAction(DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	/* Bind the native input actions from each default action mapping to handler functions. */
+	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
+	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
+	CrashInputComponent->BindNativeInputAction(DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 }
 
 void AChallengerBase::Input_Look_Mouse(const FInputActionValue& InputActionValue)
@@ -64,22 +125,24 @@ void AChallengerBase::Input_Look_Stick(const FInputActionValue& InputActionValue
 
 void AChallengerBase::Input_Move(const FInputActionValue& InputActionValue)
 {
-	if (const AController* Controller = GetController())
+	if (!IsValid(Controller))
 	{
-		const FVector2D Value = InputActionValue.Get<FVector2D>();
-		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+		return;
+	}
+	
+	const FVector2D Value = InputActionValue.Get<FVector2D>();
+	const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
-		if (Value.X != 0.0f)
-		{
-			// Get the movement direction relative to the world.
-			const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
-			AddMovementInput(MovementDirection, Value.X);
-		}
+	if (Value.X != 0.0f)
+	{
+		// Get the movement direction relative to the world.
+		const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+		AddMovementInput(MovementDirection, Value.X);
+	}
 
-		if (Value.Y != 0.0f)
-		{
-			const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
-			AddMovementInput(MovementDirection, Value.Y);
-		}
+	if (Value.Y != 0.0f)
+	{
+		const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+		AddMovementInput(MovementDirection, Value.Y);
 	}
 }

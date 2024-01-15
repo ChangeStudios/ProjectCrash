@@ -2,13 +2,18 @@
 
 #pragma once
 
+#include "InputActionValue.h"
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
 class UCrashInputActionMapping;
 class UCrashInputComponent;
-class UEnhancedInputUserSettings;
+class UInputMappingContext;
+
+class UCameraComponent;
+class USkeletalMeshComponent;
 
 UCLASS()
 class PROJECTCRASH_API AChallengerBase : public ACharacter
@@ -21,6 +26,40 @@ public:
 
 	/** Default constructor. */
 	AChallengerBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+
+
+	// Character components.
+
+// Public accessors.
+public:
+
+	/** Accessor for this character's first-person camera component. */
+	UFUNCTION(Category = "Characters|Challenger|Components")
+	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	/** Accessor for this character's first-person mesh component. */
+	UFUNCTION(Category = "Characters|Challenger|Components")
+	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
+	
+	/** Accessor for this character's third-person mesh component. */
+	UFUNCTION(Category = "Characters|Challenger|Components")
+	USkeletalMeshComponent* GetThirdPersonMesh() const { return ThirdPersonMesh; }
+
+// Character component sub-objects.
+protected:
+
+	/** The mesh only visible in first-person. This is only seen by the local player and spectators. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
+
+	/** The mesh only visible in third-person. This mesh is seen by all other players, and also the local player when in a third-person perspective. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
+
+	/** First-person camera. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCameraComponent> FirstPersonCameraComponent;
 
 
 
@@ -40,12 +79,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UCrashInputActionMapping> DefaultActionMapping;
 
-// User settings.
+// Context mappings.
 protected:
 
-	/** Default user settings. */
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	TArray<TObjectPtr<UEnhancedInputUserSettings>> DefaultUserSettings;
+	/** The context mapping that will be bound by default. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
+	TArray<TObjectPtr<UInputMappingContext>> DefaultInputMappings;
 
 // Initialization.
 public:
