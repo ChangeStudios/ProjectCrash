@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "NativeGameplayTags.h"
-#include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "GA_Jump.generated.h"
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_Ability_Identifier_Generic_Jump);
@@ -15,7 +15,7 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_Ability_Identifier_Generic_Jump);
  * double-jump.
  */
 UCLASS()
-class PROJECTCRASH_API UGA_Jump : public UGameplayAbility
+class PROJECTCRASH_API UGA_Jump : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
@@ -23,6 +23,9 @@ public:
 
 	/** Default constructor. */
 	UGA_Jump(const FObjectInitializer& ObjectInitializer);
+
+	/** Ends this ability when its input is released. */
+	virtual void OnInputReleased() override;
 
 protected:
 
