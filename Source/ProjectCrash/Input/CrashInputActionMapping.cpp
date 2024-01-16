@@ -1,5 +1,6 @@
 // Copyright Samuel Reitich 2024.
 
+
 #include "CrashInputActionMapping.h"
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Look_Mouse, "InputTag.Look.Mouse", "Input tag to activate the look action with a mouse.");

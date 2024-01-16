@@ -2,20 +2,19 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "InputActionValue.h"
-
-#include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
+class UAbilitySystemExtensionComponent;
+class UCameraComponent;
 class UChallengerData;
-
+class UCrashAbilitySystemComponent;
 class UCrashInputActionMapping;
 class UCrashInputComponent;
 class UInputMappingContext;
-
-class UCameraComponent;
 class USkeletalMeshComponent;
 
 /**
@@ -38,13 +37,25 @@ public:
 
 
 
+	// Initialization.
+
+protected:
+
+	/** Performs server-side initialization for the owning player's ASC. */
+	virtual void PossessedBy(AController* NewController) override;
+
+	/** Performs client-side initialization for the owning player's ASC. */
+	virtual void OnRep_PlayerState() override;
+
+
+
 	// Data.
 
 public:
 
 	/** A collection of data used to define the default properties of this challenger, such as its default abilities
-	 * and input mappings. This groups together and isolates challenger-specific class data in a safe manner. */
-	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data", meta = (DisplayPriority = 0))
+	 * and input mappings. */
+	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data")
 	TObjectPtr<const UChallengerData> ChallengerData;
 
 
@@ -88,8 +99,27 @@ protected:
 // Utils.
 public:
 
-	/** Gets this player's ASC using the ability system interface. */
+	/** Interfaced accessor retrieves this character's bound ASC. */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	/** Retrieves this character's bound ASC. */
+	UFUNCTION(BlueprintPure, Category = "Ability System")
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
+
+// Initialization.
+protected:
+
+	/** Callback after this pawn becomes the avatar of an ASC that sets up . */
+	virtual void OnAbilitySystemInitialized();
+
+	/** Callback bound to when this character is uninitialized as the avatar of an ASC. */
+	virtual void OnAbilitySystemUninitialized();
+
+// Components.
+protected:
+	
+	/** Handles initialization and uninitialization of the ability system with this pawn. */
+	TObjectPtr<UAbilitySystemExtensionComponent> ASCExtensionComponent;
 
 
 

@@ -10,7 +10,6 @@ class AChallengerBase;
 class UCrashInputActionMapping;
 class UInputMappingContext;
 
-
 /**
  * Defines an input mapping context with the priority with which it should be bound.
  */
@@ -20,11 +19,11 @@ struct FPrioritizedInputMappingContext
 	GENERATED_BODY()
 
 	/** The mapping context referenced by this data structure. */
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AssetBundles = "Client, Server"))
-	TSoftObjectPtr<UInputMappingContext> MappingContext;
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	TObjectPtr<UInputMappingContext> MappingContext = nullptr;
 
 	/** The priority of this mapping context. */
-	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "InputTag"))
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 	int32 Priority = 0;
 };
 

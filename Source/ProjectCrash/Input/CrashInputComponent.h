@@ -48,7 +48,7 @@ public:
 
 	/** Returns the given actor's CrashInputComponent if it has one. Returns a nullptr otherwise. */
 	UFUNCTION(BlueprintPure, Category = "Input")
-	static FORCEINLINE UCrashInputComponent* FindCrashInputComponent(const AActor* Actor)
+	static UCrashInputComponent* FindCrashInputComponent(const AActor* Actor)
 	{
 		return (Actor ? Actor->FindComponentByClass<UCrashInputComponent>() : nullptr);
 	}

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright Samuel Reitich 2024.
 
 
 #include "CrashInputComponent.h"

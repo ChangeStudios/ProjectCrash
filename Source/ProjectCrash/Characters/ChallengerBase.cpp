@@ -1,15 +1,19 @@
 // Copyright Samuel Reitich 2024.
 
+
 #include "ChallengerBase.h"
 
 #include "ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
+#include "Player/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
@@ -52,13 +56,86 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
 
 
+	// Ability system.
+	ASCExtensionComponent = CreateDefaultSubobject<UAbilitySystemExtensionComponent>(TEXT("AbilitySystemExtensionComponent"));
+	ASCExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	ASCExtensionComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+
+
 	// Input.
 	OverrideInputComponentClass = UCrashInputComponent::StaticClass(); // Use the custom input component.
 }
 
+void AChallengerBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Initialize the ASC on the server.
+	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+
+	if (!ensure(CrashPS))
+	{
+		return;
+	}
+
+	UCrashAbilitySystemComponent* CrashASC = CrashPS->GetCrashAbilitySystemComponent();
+
+	// Initialize the possessing player's ASC with this pawn as the new avatar.
+	if (ASCExtensionComponent)
+	{
+		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
+	}
+
+	// Update the ASC's actor information.
+	ASCExtensionComponent->HandleControllerChanged();
+}
+
+void AChallengerBase::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// Initialize the ASC on the client.
+	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+
+	if (!ensure(CrashPS))
+	{
+		return;
+	}
+
+	UCrashAbilitySystemComponent* CrashASC = CrashPS->GetCrashAbilitySystemComponent();
+
+	// Initialize the possessing player's ASC with this pawn as the new avatar.
+	if (ASCExtensionComponent)
+	{
+		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
+	}
+}
+
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
 {
-	return nullptr;
+	// The interfaced accessor will always return the typed ASC.
+	return GetCrashAbilitySystemComponent();
+}
+
+UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() const
+{
+	if (ASCExtensionComponent == nullptr)
+	{
+		return nullptr;
+	}
+
+	return ASCExtensionComponent->GetCrashAbilitySystemComponent();
+}
+
+void AChallengerBase::OnAbilitySystemInitialized()
+{
+	// TODO: Grant default abilities; initialize attribute sets.
+	UE_LOG(LogTemp, Warning, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
+}
+
+void AChallengerBase::OnAbilitySystemUninitialized()
+{
+	// TODO: Remove default abilities; uninitialize attribute sets.
 }
 
 void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -83,7 +160,7 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	// Add each mapping context to the local player with its specified priority.
 	for (const FPrioritizedInputMappingContext& PrioritizedContext : ChallengerData->DefaultInputMappings)
 	{
-		Subsystem->AddMappingContext(PrioritizedContext.MappingContext.Get(), PrioritizedContext.Priority);
+		Subsystem->AddMappingContext(PrioritizedContext.MappingContext, PrioritizedContext.Priority);
 	}
 
 	/* Bind the native input actions from each default action mapping to handler functions. */
