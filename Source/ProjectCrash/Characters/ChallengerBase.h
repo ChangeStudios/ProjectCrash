@@ -20,8 +20,6 @@ class USkeletalMeshComponent;
 /**
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
  * such as a first-person camera, input, and an interface with the ability system.
- *
- * This class should be derived from for each playable character and never used directly.
  */
 UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
 class PROJECTCRASH_API AChallengerBase : public ACharacter, public IAbilitySystemInterface

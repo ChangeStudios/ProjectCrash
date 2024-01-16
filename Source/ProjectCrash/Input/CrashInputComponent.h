@@ -40,6 +40,19 @@ public:
 	template<class UserClass, typename FuncType>
 	void BindNativeInputAction(const UCrashInputActionMapping* ActionMapping, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType HandlerFunc, bool bLogIfFailed = true);
 
+	/** Binds all ability actions in the given mapping to activate any abilities with matching input tags. Binds the
+	 * actions to handler functions that attempt to activate the corresponding ability by tag. */
+	void BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping);
+
+private:
+
+	/** Handler function called when an ability input action is pressed. Activates abilities with the matching input
+	 * tag depending on their activation style. */
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+
+	/** Handler function called when an ability input action is released. */
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+
 
 
 	// Utilities.

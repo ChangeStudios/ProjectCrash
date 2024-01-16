@@ -3,6 +3,7 @@
 
 #include "ChallengerBase.h"
 
+#include "AbilitySystemLog.h"
 #include "ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -60,6 +61,10 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	ASCExtensionComponent = CreateDefaultSubobject<UAbilitySystemExtensionComponent>(TEXT("AbilitySystemExtensionComponent"));
 	ASCExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
 	ASCExtensionComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+
+
+	// Movement.
+	JumpMaxCount = 2; // Implement double-jump by default.
 
 
 	// Input.
@@ -130,7 +135,7 @@ UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() 
 void AChallengerBase::OnAbilitySystemInitialized()
 {
 	// TODO: Grant default abilities; initialize attribute sets.
-	UE_LOG(LogTemp, Warning, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
+	ABILITY_LOG(Verbose, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
 }
 
 void AChallengerBase::OnAbilitySystemUninitialized()
