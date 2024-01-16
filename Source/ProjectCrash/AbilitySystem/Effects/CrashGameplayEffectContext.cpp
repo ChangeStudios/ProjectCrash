@@ -10,7 +10,7 @@ FCrashGameplayEffectContext* FCrashGameplayEffectContext::GetCrashContextFromHan
 	// If the effect context is valid and is a CrashGameplayEffectContext, cast it to that type and return it.
 	if (EffectContext != nullptr && EffectContext->GetScriptStruct()->IsChildOf(FCrashGameplayEffectContext::StaticStruct()))
 	{
-		return Cast<FCrashGameplayEffectContext>(EffectContext);
+		return static_cast<FCrashGameplayEffectContext*>(EffectContext);
 	}
 
 	// Return nullptr if the effect context does not exist or is of the wrong type.
