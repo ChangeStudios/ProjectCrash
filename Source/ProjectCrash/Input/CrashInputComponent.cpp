@@ -66,6 +66,14 @@ void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 				{
 					if (Ability->InputTags.HasTagExact(InputTag))
 					{
+						// Broadcast that the input for this ability was released.
+						ASC->AbilitySpecInputReleased(const_cast<FGameplayAbilitySpec&>(AbilitySpec));
+
+						// Cancel this ability if it should be cancelled when its input is released.
+						if (Ability->GetActivationStyle() == ECrashAbilityActivationStyle::ActivateWhileInputHeld)
+						{
+							ASC->CancelAbility(Ability);
+						}
 					}
 				}
 			}

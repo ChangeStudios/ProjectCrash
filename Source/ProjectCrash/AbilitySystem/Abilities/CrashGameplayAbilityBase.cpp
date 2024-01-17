@@ -42,11 +42,6 @@ void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	// Bind a delegate to when the input for this ability is released.
-	WaitInputReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this, true);
-	WaitInputReleaseTask->OnRelease.AddDynamic(this, &UCrashGameplayAbilityBase::OnInputReleased);
-	WaitInputReleaseTask->ReadyForActivation();
-
 	// Apply this ability's applied gameplay effects to its ASC.
 	if (UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get())
 	{
@@ -145,12 +140,4 @@ FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const 
 	check(CrashEffectContext);
 
 	return OutEffectContextHandle;
-}
-
-void UCrashGameplayAbilityBase::OnInputReleased(float TimeHeld)
-{
-	if (WaitInputReleaseTask->OnRelease.IsBound())
-	{
-		WaitInputReleaseTask->OnRelease.RemoveAll(this);
-	}
 }

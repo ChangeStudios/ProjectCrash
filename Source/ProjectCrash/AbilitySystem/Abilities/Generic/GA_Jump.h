@@ -25,8 +25,7 @@ public:
 	/** Default constructor. */
 	UGA_Jump(const FObjectInitializer& ObjectInitializer);
 
-	/** Ends this ability when its input is released. */
-	virtual void OnInputReleased(float TimeHeld) override;
+	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 protected:
 

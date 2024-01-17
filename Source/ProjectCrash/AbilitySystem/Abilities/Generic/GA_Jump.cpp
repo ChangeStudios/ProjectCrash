@@ -17,13 +17,11 @@ UGA_Jump::UGA_Jump(const FObjectInitializer& ObjectInitializer)
 	ActivationStyle = ECrashAbilityActivationStyle::ActivateOnInputTriggered;
 }
 
-void UGA_Jump::OnInputReleased(float TimeHeld)
+void UGA_Jump::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	Super::OnInputReleased(TimeHeld);
+	EndAbility(Handle, ActorInfo, ActivationInfo, false, false);
 
-	/* End this ability when input is released. Abilities have to be ended at some point, and for the "jump" ability,
-	 * it doesn't really matter when, so we just do it as soon as the input is released. */
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
 
 bool UGA_Jump::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const

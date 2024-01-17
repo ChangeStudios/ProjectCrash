@@ -87,19 +87,6 @@ public:
 
 	// Optional callback functions.
 
-public:
-
-	/** Callback activated when the input that activated this ability is released. GAS has a built-in InputReleased
-	 * function, but it can only be used for instantiated abilities. This callback can be used for all abilities. */
-	UFUNCTION()
-	virtual void OnInputReleased(float TimeHeld);
-
-protected:
-
-	/** Task responsible for tracking and broadcasting when this ability's input is released. */
-	UPROPERTY()
-	UAbilityTask_WaitInputRelease* WaitInputReleaseTask;
-
 protected:
 
 	/** Blueprint-implementable event called when this ability is given to an ASC. Called BEFORE C++ OnGiveAbility
