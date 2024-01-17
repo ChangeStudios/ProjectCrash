@@ -134,8 +134,12 @@ UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() 
 
 void AChallengerBase::OnAbilitySystemInitialized()
 {
-	// Grant this character's default ability set.
-	ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(GetCrashAbilitySystemComponent(), &GrantedDefaultAbilitySetHandle.AddDefaulted_GetRef(), this);
+	if (GetAbilitySystemComponent()->IsOwnerActorAuthoritative())
+	{
+		// Grant this character's default ability set on the server.
+		ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(GetCrashAbilitySystemComponent(), &GrantedDefaultAbilitySetHandle.AddDefaulted_GetRef(), this);
+		ABILITY_LOG(Verbose, TEXT("Granted [%s]'s default ability set to [%s] on the server."), *GetName(), *GetNameSafe(GetAbilitySystemComponent()->GetOwnerActor()));
+	}
 
 	// TODO: Initialize attribute sets.
 	

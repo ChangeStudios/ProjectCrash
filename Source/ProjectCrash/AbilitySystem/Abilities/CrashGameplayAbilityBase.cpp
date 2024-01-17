@@ -1,10 +1,12 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
+#include "CrashGameplayAbilityBase.h"
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
+#include "Abilities/Tasks/AbilityTask.h"
+#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
 
@@ -23,7 +25,7 @@ AChallengerBase* UCrashGameplayAbilityBase::GetChallengerFromActorInfo() const
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	// Optional blueprint implementation of this callback.
-	BP_OnGiveAbility();
+	K2_OnGiveAbility();
 
 	Super::OnGiveAbility(ActorInfo, Spec);
 }
@@ -31,7 +33,7 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	// Optional blueprint implementation of this callback.
-	BP_OnRemoveAbility();
+	K2_OnRemoveAbility();
 
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }
@@ -39,6 +41,11 @@ void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo*
 void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	// Bind a delegate to when the input for this ability is released.
+	WaitInputReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this, true);
+	WaitInputReleaseTask->OnRelease.AddDynamic(this, &UCrashGameplayAbilityBase::OnInputReleased);
+	WaitInputReleaseTask->ReadyForActivation();
 
 	// Apply this ability's applied gameplay effects to its ASC.
 	if (UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get())
@@ -107,7 +114,6 @@ void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle
 				}
 			}
 		}
-
 	}
 }
 
@@ -139,4 +145,12 @@ FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const 
 	check(CrashEffectContext);
 
 	return OutEffectContextHandle;
+}
+
+void UCrashGameplayAbilityBase::OnInputReleased(float TimeHeld)
+{
+	if (WaitInputReleaseTask->OnRelease.IsBound())
+	{
+		WaitInputReleaseTask->OnRelease.RemoveAll(this);
+	}
 }

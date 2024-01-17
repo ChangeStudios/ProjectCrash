@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
+class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
@@ -88,20 +89,28 @@ public:
 
 public:
 
-	/** Called when this ability's input action is released. */
-	virtual void OnInputReleased() {};
+	/** Callback activated when the input that activated this ability is released. GAS has a built-in InputReleased
+	 * function, but it can only be used for instantiated abilities. This callback can be used for all abilities. */
+	UFUNCTION()
+	virtual void OnInputReleased(float TimeHeld);
+
+protected:
+
+	/** Task responsible for tracking and broadcasting when this ability's input is released. */
+	UPROPERTY()
+	UAbilityTask_WaitInputRelease* WaitInputReleaseTask;
 
 protected:
 
 	/** Blueprint-implementable event called when this ability is given to an ASC. Called BEFORE C++ OnGiveAbility
 	 * super call. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="OnGiveAbility")
-	void BP_OnGiveAbility();
+	void K2_OnGiveAbility();
 
 	/** Blueprint-implementable event called when this ability is removed from an ASC. Called BEFORE C++ OnRemoveAbility
 	 * super call. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="OnRemoveAbility")
-	void BP_OnRemoveAbility();
+	void K2_OnRemoveAbility();
 
 
 

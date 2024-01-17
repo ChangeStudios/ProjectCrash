@@ -26,7 +26,7 @@ public:
 	UGA_Jump(const FObjectInitializer& ObjectInitializer);
 
 	/** Ends this ability when its input is released. */
-	virtual void OnInputReleased() override;
+	virtual void OnInputReleased(float TimeHeld) override;
 
 protected:
 

@@ -74,8 +74,6 @@ void UAbilitySystemExtensionComponent::InitializeAbilitySystem(UCrashAbilitySyst
 	AbilitySystemComponent = InASC;
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Pawn);
 
-	// TODO: Grant default ability sets on the server.
-
 	OnAbilitySystemInitialized.Broadcast();
 }
 

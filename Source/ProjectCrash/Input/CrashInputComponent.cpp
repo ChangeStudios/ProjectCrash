@@ -52,7 +52,23 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	ABILITY_LOG(Verbose, TEXT("Ability with tag [%s] released."), *InputTag.ToString());
+	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	{
+		// Cache the array in case it changes during iteration.
+		const TArray<FGameplayAbilitySpec> ActivatableAbilities = ASC->GetActivatableAbilities();
 
-	// TODO: Cancel activation method depending on activation style.
+		// Search the ASC's list of activatable abilities for one with a matching input tag.
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
+		{
+			if (AbilitySpec.Ability)
+			{
+				if (UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+				{
+					if (Ability->InputTags.HasTagExact(InputTag))
+					{
+					}
+				}
+			}
+		}
+	}
 }
