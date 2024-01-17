@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Engine/DataAsset.h"
 #include "ChallengerData.generated.h"
 
@@ -53,7 +54,9 @@ public:
 
 public:
 
-	// TODO: Add default ability sets.
+	/** The default ability set granted to this character when it's created. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UCrashAbilitySet> DefaultAbilitySet;
 
 
 

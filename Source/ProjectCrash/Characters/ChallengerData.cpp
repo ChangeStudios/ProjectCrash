@@ -5,5 +5,6 @@
 
 UChallengerData::UChallengerData(const FObjectInitializer& ObjectInitializer)
 {
+	DefaultAbilitySet = nullptr;
 	DefaultActionMapping = nullptr;
 }

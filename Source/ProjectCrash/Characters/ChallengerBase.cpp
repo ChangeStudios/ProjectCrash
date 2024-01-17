@@ -134,7 +134,11 @@ UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() 
 
 void AChallengerBase::OnAbilitySystemInitialized()
 {
-	// TODO: Grant default abilities; initialize attribute sets.
+	// Grant this character's default ability set.
+	ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(GetCrashAbilitySystemComponent(), &GrantedDefaultAbilitySetHandle.AddDefaulted_GetRef(), this);
+
+	// TODO: Initialize attribute sets.
+	
 	ABILITY_LOG(Verbose, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
 }
 
@@ -168,10 +172,13 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		Subsystem->AddMappingContext(PrioritizedContext.MappingContext, PrioritizedContext.Priority);
 	}
 
-	/* Bind the native input actions from each default action mapping to handler functions. */
+	/* Bind the native input actions from each default native action mapping to handler functions. */
 	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
 	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
 	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+
+	/* Bind the ability input actions from each default ability action mapping to the ability handler functions. */
+	CrashInputComponent->BindAbilityInputActions(ChallengerData->DefaultActionMapping);
 }
 
 void AChallengerBase::Input_Look_Mouse(const FInputActionValue& InputActionValue)

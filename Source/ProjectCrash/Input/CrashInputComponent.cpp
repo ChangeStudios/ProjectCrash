@@ -7,6 +7,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "GameplayAbilitySpec.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 
 void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping)
 {
@@ -30,12 +31,20 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 		// Search the ASC's list of activatable abilities for one with a matching input tag.
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 		{
-			// Activate any activatable ability with a matching input tag.
-			if (AbilitySpec.Ability && AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+			if (AbilitySpec.Ability)
 			{
-				ASC->TryActivateAbility(AbilitySpec.Handle);
+				if (UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+				{
+					// Activate any ability with the matching input tag.
+					if (Ability->InputTags.HasTagExact(InputTag))
+					{
+						// Maybe change this to TryActivateAbilitiesByTag
+						ASC->TryActivateAbility(AbilitySpec.Handle);
 
-				// TODO: Change activation method depending on activation style.
+						// TODO: Change activation method depending on activation style.
+						
+					}
+				}
 			}
 		}
 	}

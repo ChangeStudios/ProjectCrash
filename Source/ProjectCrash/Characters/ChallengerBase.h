@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "InputActionValue.h"
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
@@ -103,6 +104,12 @@ public:
 	/** Retrieves this character's bound ASC. */
 	UFUNCTION(BlueprintPure, Category = "Ability System")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
+
+protected:
+
+	/** The handles for the default ability set currently granted by this character. Used to remove the ability set
+	 * from the ASC when this character is destroyed or unpossessed. */
+	TArray<FCrashAbilitySet_GrantedHandles> GrantedDefaultAbilitySetHandle;
 
 // Initialization.
 protected:

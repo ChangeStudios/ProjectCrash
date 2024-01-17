@@ -8,6 +8,7 @@
 #include "GA_Jump.generated.h"
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_Ability_Identifier_Generic_Jump);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Tag_InputTag_Jump);
 
 /**
  * The default character jump ability. This uses the built-in character jump method, meaning its properties (e.g.

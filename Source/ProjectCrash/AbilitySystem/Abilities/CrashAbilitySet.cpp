@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 
+#include "AbilitySystemLog.h"
+#include "CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
 void FCrashAbilitySet_GrantedHandles::AddGameplayAbilitySpecHandle(const FGameplayAbilitySpecHandle& HandleToAdd)
@@ -75,7 +77,38 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	GrantedAttributeSets.Reset();
 }
 
-void UCrashAbilitySet::GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo,
-                                           FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
+void UCrashAbilitySet::GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
 {
+	check(AbilitySystemToGiveTo);
+
+	// Authority is needed to give or remove ability sets.
+	if (!AbilitySystemToGiveTo->IsOwnerActorAuthoritative())
+	{
+		return;
+	}
+
+	// Give each ability in this ability set to the given ASC.
+	for (const FCrashAbilitySet_GameplayAbility& AbilityToGive : GrantedGameplayAbilities)
+	{
+		if (!IsValid(AbilityToGive.GameplayAbility))
+		{
+			ABILITY_LOG(Warning, TEXT("Ability set [%s] failed to grant an ability because it is not invalid."), *GetName());
+			
+			continue;
+		}
+
+		// Create a spec with which to give the ability.
+		UCrashGameplayAbilityBase* AbilityCDO = AbilityToGive.GameplayAbility->GetDefaultObject<UCrashGameplayAbilityBase>();
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityCDO);
+		AbilitySpec.SourceObject = SourceObject;
+
+		// Grant the ability to the given ASC.
+		const FGameplayAbilitySpecHandle AbilitySpecHandle = AbilitySystemToGiveTo->GiveAbility(AbilitySpec);
+
+		// Cache a handle to the given ability with which to reference it later.
+		if (OutGrantedHandles)
+		{
+			OutGrantedHandles->AddGameplayAbilitySpecHandle(AbilitySpecHandle);
+		}
+	}
 }

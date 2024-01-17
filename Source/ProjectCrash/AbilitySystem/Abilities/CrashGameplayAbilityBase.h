@@ -73,6 +73,17 @@ protected:
 
 
 
+	// Tags.
+
+public:
+
+	/** These tags will be bound to corresponding input actions to trigger this ability. These are bound by the owning
+	 * ability set when it's granted. */
+	UPROPERTY(EditDefaultsOnly, Category = Tags, meta=(Categories="AbilityTagCategory"))
+	FGameplayTagContainer InputTags;
+
+
+
 	// Optional callback functions.
 
 public:
