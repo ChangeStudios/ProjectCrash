@@ -11,22 +11,38 @@ class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
 /**
- * Defines how an ability is meant to be activated. This is what determines how an ability is bound.
+ * Defines how an ability is meant to be activated. Abilities must be instanced-per-actor for these to function
+ * properly.
  */
 UENUM(BlueprintType)
 enum class ECrashAbilityActivationStyle : uint8
 {
-	// Try to activate the ability immediately when its input is triggered. E.g. activating a jump when a button is pressed.
+	/** Try to activate the ability immediately when its input is triggered and do not activate it again until the input
+	 * is released. Abilities of this type are automatically ended when the "InputReleased" event is received.
+	 * 
+	 * Example: Activating a jump when a button is pressed. */
 	ActivateOnInputTriggered,
-	// Try to activate the ability once when its input is triggered and cancel it when its input is triggered again. E.g. toggle-based crouching.
+
+	/** Try to activate the ability once when its input is triggered and cancel it when its input is triggered again,
+	 * after the first trigger is released.
+	 * TODO: Implement logic that prevents the ability from being activated again before the first input is released.
+	 * 
+	 * Example: Toggle-based crouching. */
 	ToggleOnInputTriggered,
-	// Try to activate the ability once when its input is triggered and cancel it when its input is completed. E.g. hold-based aiming down sights.
+
+	/** Try to activate the ability once when its input is triggered and cancel it when its input is released.
+	 *
+	 * Example: Hold-based aiming down sights. */
 	ActivateWhileInputHeld,
-	// Continually try to activate the ability while the input is active. E.g. firing a fully-automatic gun.
-	ActivateWhileInputActive,
-	// Try to activate the ability when an avatar is assigned to its ASC. E.g. temporary spawn protection.
+
+	/** Try to activate the ability when an avatar is assigned to its ASC.
+	 *
+	 * Example: Temporary spawn protection. */
 	ActivateOnSpawn,
-	// Try to activate the ability when it's granted to an ASC that already has an avatar. E.g. a passive speed buff.
+
+	/** Try to activate the ability when it's granted to an ASC that already has an avatar.
+	 *
+	 * Example: A passive speed buff. */
 	ActivatedOnGranted
 };
 

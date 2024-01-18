@@ -13,6 +13,11 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 {
 	// I can't imagine a situation where the instancing policy *wouldn't* be "instanced per actor."
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	if (InstancingPolicy != EGameplayAbilityInstancingPolicy::InstancedPerActor)
+	{
+		ABILITY_LOG(Warning, TEXT("Ability [%s] is not instanced-per-actor. Certain activation style features may not work properly."), *GetName());
+	}
 }
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
@@ -31,6 +36,12 @@ void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle H
 {
 	// Optional blueprint implementation of this callback.
 	K2_InputReleased();
+
+	// One-off abilities are automatically ended when their input is released.
+	if (ActivationStyle == ECrashAbilityActivationStyle::ActivateOnInputTriggered)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	}
 
 	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
