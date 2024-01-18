@@ -42,7 +42,6 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 						ASC->TryActivateAbility(AbilitySpec.Handle);
 
 						// TODO: Change activation method depending on activation style.
-						
 					}
 				}
 			}

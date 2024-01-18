@@ -39,6 +39,15 @@ class PROJECTCRASH_API UCrashGameplayAbilityBase : public UGameplayAbility
 {
 	GENERATED_BODY()
 
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer);
+
+
+
 	// Utilities.
 
 public:
@@ -59,6 +68,8 @@ public:
 
 protected:
 
+	/** Calls optional blueprint implementation of InputReleased. */
+	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	/** Calls optional blueprint implementation of OnGiveAbility. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	/** Calls optional blueprint implementation of OnRemoveAbility. */
@@ -89,14 +100,18 @@ public:
 
 protected:
 
+	/** Blueprint-implementable event called when this ability's input is completed. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="Input Released")
+	void K2_InputReleased();
+
 	/** Blueprint-implementable event called when this ability is given to an ASC. Called BEFORE C++ OnGiveAbility
 	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="OnGiveAbility")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="On Give Ability")
 	void K2_OnGiveAbility();
 
 	/** Blueprint-implementable event called when this ability is removed from an ASC. Called BEFORE C++ OnRemoveAbility
 	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="OnRemoveAbility")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="On Remove Ability")
 	void K2_OnRemoveAbility();
 
 

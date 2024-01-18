@@ -6,9 +6,14 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
+
+UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
+{
+	// I can't imagine a situation where the instancing policy *wouldn't* be "instanced per actor."
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
 {
@@ -20,6 +25,14 @@ AChallengerBase* UCrashGameplayAbilityBase::GetChallengerFromActorInfo() const
 {
 	// Retrieve the avatar from the current actor info and cast it to AChallengerBase.
 	return CurrentActorInfo && GetAvatarActorFromActorInfo() ? Cast<AChallengerBase>(GetAvatarActorFromActorInfo()) : nullptr;
+}
+
+void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	// Optional blueprint implementation of this callback.
+	K2_InputReleased();
+
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
