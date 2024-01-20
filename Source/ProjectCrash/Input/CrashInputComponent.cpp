@@ -38,44 +38,7 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 					// Activate any ability with the matching input tag.
 					if (Ability->InputTags.HasTagExact(InputTag))
 					{
-						switch (Ability->GetActivationStyle())
-						{
-
-						// One-off activate-on-input abilities. These are most common.
-						case ECrashAbilityActivationStyle::ActivateOnInputTriggered:
-							{
-								ASC->TryActivateAbility(AbilitySpec.Handle);
-								break;
-							}
-
-						// If the ability is being toggled, activate or cancel it depending on its current state.
-						case ECrashAbilityActivationStyle::ToggleOnInputTriggered:
-							{
-								if (AbilitySpec.IsActive())
-								{
-									ASC->CancelAbility(Ability);
-								}
-								else
-								{
-									ASC->TryActivateAbility(AbilitySpec.Handle);
-								}
-								break;
-							}
-
-						// Activate abilities that are only activated while their input is held. They will be cancelled when the input is released.
-						case ECrashAbilityActivationStyle::ActivateWhileInputHeld:
-						{
-							ASC->TryActivateAbility(AbilitySpec.Handle);
-							break;
-						}
-
-						// No other activation styles use input to activate their abilities.
-						default:
-							{
-								ABILITY_LOG(Warning, TEXT("Tried to activate ability %s with input, but its activation style does not use input."), *Ability->GetName());
-								break;
-							}
-						}
+						ASC->TryActivateAbility(AbilitySpec.Handle);
 					}
 				}
 			}
@@ -99,14 +62,9 @@ void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 				{
 					if (Ability->InputTags.HasTagExact(InputTag))
 					{
-						// Broadcast that the input for this ability was released.
+						/* Broadcast that the input for this ability was released. This is commonly used to end
+						 * abilities when their input is released, such as an automatic shooting ability. */
 						ASC->AbilitySpecInputReleased(const_cast<FGameplayAbilitySpec&>(AbilitySpec));
-
-						// Cancel abilities that are only active while their input is being held.
-						if (Ability->GetActivationStyle() == ECrashAbilityActivationStyle::ActivateWhileInputHeld)
-						{
-							ASC->CancelAbility(Ability);
-						}
 					}
 				}
 			}

@@ -141,14 +141,14 @@ public:
 public:
 
 	/** The gameplay abilities to grant when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=GameplayAbilities))
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities")
 	TArray<FCrashAbilitySet_GameplayAbility> GrantedGameplayAbilities;
 
 	/** The gameplay effects to apply when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", meta=(TitleProperty=GameplayEffects))
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects")
 	TArray<FCrashAbilitySet_GameplayEffect> GrantedGameplayEffects;
 
 	/** The attribute sets to add when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets", meta=(TitleProperty=AttributeSets))
+	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets")
 	TArray<FCrashAbilitySet_AttributeSet> GrantedAttributeSets;
 };

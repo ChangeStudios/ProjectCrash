@@ -11,42 +11,6 @@ class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
 /**
- * Defines how an ability is meant to be activated. Abilities must be instanced-per-actor for these to function
- * properly.
- */
-UENUM(BlueprintType)
-enum class ECrashAbilityActivationStyle : uint8
-{
-	/** Try to activate the ability immediately when its input is triggered and do not activate it again until the input
-	 * is released. Abilities of this type are automatically ended when the "InputReleased" event is received.
-	 * 
-	 * Example: Activating a jump when a button is pressed. */
-	ActivateOnInputTriggered,
-
-	/** Try to activate the ability once when its input is triggered and cancel it when its input is triggered again,
-	 * after the first trigger is released.
-	 * TODO: Implement logic that prevents the ability from being activated again before the first input is released.
-	 * 
-	 * Example: Toggle-based crouching. */
-	ToggleOnInputTriggered,
-
-	/** Try to activate the ability once when its input is triggered and cancel it when its input is released.
-	 *
-	 * Example: Hold-based aiming down sights. */
-	ActivateWhileInputHeld,
-
-	/** Try to activate the ability when an avatar is assigned to its ASC.
-	 *
-	 * Example: Temporary spawn protection. */
-	ActivateOnSpawn,
-
-	/** Try to activate the ability when it's granted to an ASC that already has an avatar.
-	 *
-	 * Example: A passive speed buff. */
-	ActivatedOnGranted
-};
-
-/**
  * The base class for gameplay abilities in this project. Extends the base gameplay ability class with additional
  * functionality and various helper functions.
  */
@@ -129,22 +93,6 @@ protected:
 	 * super call. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="On Remove Ability")
 	void K2_OnRemoveAbility();
-
-
-
-	// Ability activation.
-
-public:
-
-	/** Getter for this ability's activation style. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Ability Activation")
-	ECrashAbilityActivationStyle GetActivationStyle() const { return ActivationStyle; }
-
-protected:
-
-	/** Defines how this ability is meant to be activated. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Activation")
-	ECrashAbilityActivationStyle ActivationStyle;
 
 
 

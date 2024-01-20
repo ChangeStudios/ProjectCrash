@@ -37,12 +37,6 @@ void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle H
 	// Optional blueprint implementation of this callback.
 	K2_InputReleased();
 
-	// One-off abilities are automatically ended when their input is released.
-	if (ActivationStyle == ECrashAbilityActivationStyle::ActivateOnInputTriggered)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-	}
-
 	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
 }
 
