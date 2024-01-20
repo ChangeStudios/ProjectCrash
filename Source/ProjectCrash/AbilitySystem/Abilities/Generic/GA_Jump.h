@@ -25,8 +25,6 @@ public:
 	/** Default constructor. */
 	UGA_Jump(const FObjectInitializer& ObjectInitializer);
 
-	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
 protected:
 
 	/** Ensures character can jump. Checks conditions like available space, if the character is airborne, if the
