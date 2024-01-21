@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
+class UHealthComponent;
 class UAbilitySystemExtensionComponent;
 class UCameraComponent;
 class UChallengerData;
@@ -21,6 +22,12 @@ class USkeletalMeshComponent;
 /**
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
  * such as a first-person camera, input, and an interface with the ability system.
+ *
+ * This class uses the AbilitySystemExtensionComponent and AbilitySystemInterface to enable its ability system
+ * functionality. The AbilitySystemInterface defines where this actor's ASC comes from (i.e. for players, it is stored
+ * in their player state); when this character is possessed, the AbilitySystemExtensionComponent initializes it with
+ * an ASC it finds with the AbilitySystemInterface. Once the system is initialized, callbacks enable this class to
+ * perform other initialization processes, such as initializing attribute sets.
  */
 UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
 class PROJECTCRASH_API AChallengerBase : public ACharacter, public IAbilitySystemInterface
@@ -38,12 +45,14 @@ public:
 
 	// Initialization.
 
+/* Uses the AbilitySystemExtensionComponent to initialize this character as the avatar of the owning player's ASC when
+ * possessed. */
 protected:
 
-	/** Performs server-side initialization for the owning player's ASC. */
+	/** Performs server-side initialization of this character with the owning player's ASC. */
 	virtual void PossessedBy(AController* NewController) override;
 
-	/** Performs client-side initialization for the owning player's ASC. */
+	/** Performs client-side initialization of this character with the owning player's ASC. */
 	virtual void OnRep_PlayerState() override;
 
 
@@ -111,22 +120,38 @@ protected:
 
 	/** The handles for the default ability set currently granted by this character. Used to remove the ability set
 	 * from the ASC when this character is destroyed or unpossessed. */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedDefaultAbilitySetHandle;
+	FCrashAbilitySet_GrantedHandles GrantedDefaultAbilitySetHandle;
 
 // Initialization.
 protected:
 
-	/** Callback after this pawn becomes the avatar of an ASC that sets up . */
+	/** Callback after this pawn becomes the avatar of an ASC that grants its default ability set and initializes its
+	 * attribute sets. */
 	virtual void OnAbilitySystemInitialized();
 
-	/** Callback bound to when this character is uninitialized as the avatar of an ASC. */
+	/** Callback bound to when this character is uninitialized as the avatar of an ASC that removes its default ability
+	 * set and initializes its attribute sets. */
 	virtual void OnAbilitySystemUninitialized();
 
 // Components.
 protected:
 	
-	/** Handles initialization and uninitialization of the ability system with this pawn. */
+	/** Handles initialization and uninitialization of an ability system component with this pawn when it is possessed
+	 * and unpossessed/destroyed. */
 	TObjectPtr<UAbilitySystemExtensionComponent> ASCExtensionComponent;
+
+
+
+	// Attributes.
+
+// Components.
+protected:
+
+	/** This character's health component. Acts as an interface to this character's ASC's health attribute set, which
+	 * is stored in the owning player's player state. Gets initialized with an ASC after one is initialized with this
+	 * character. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System|Attributes", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UHealthComponent> HealthComponent;
 
 
 
@@ -135,7 +160,7 @@ protected:
 // Components.
 protected:
 
-	// This character's input component cast to CrashInputComponent.
+	// This character's input component cached as a CrashInputComponent.
 	UPROPERTY()
 	TObjectPtr<UCrashInputComponent> CrashInputComponent;
 

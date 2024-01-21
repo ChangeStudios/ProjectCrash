@@ -3,6 +3,7 @@
 
 #include "Player/CrashPlayerState.h"
 
+#include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -13,6 +14,9 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	NetUpdateFrequency = 100.0f; // The ASC Needs to be updated at a high frequency.
+
+	// Create this player's attribute sets. These must be created in the same class as their ASC.
+	HealthSet = CreateDefaultSubobject<UHealthAttributeSet>(TEXT("HealthSet"));
 }
 
 void ACrashPlayerState::PostInitializeComponents()

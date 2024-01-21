@@ -117,11 +117,9 @@ private:
 public:
 
 	/** Delegate broadcast when Health attribute changes. */
-	UPROPERTY(BlueprintAssignable)
 	mutable FAttributeChangedSignature HealthChangedDelegate;
 
 	/** Delegate broadcast when MaxHealth attribute changes. */
-	UPROPERTY(BlueprintAssignable)
 	mutable FAttributeChangedSignature MaxHealthChangedDelegate;
 
 	/** Delegate broadcast when health reaches 0. */

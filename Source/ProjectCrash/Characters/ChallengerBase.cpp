@@ -9,6 +9,7 @@
 #include "InputMappingContext.h"
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "AbilitySystem/Components/HealthComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -63,6 +64,10 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	ASCExtensionComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
 
 
+	// Attributes.
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+
 	// Movement.
 	JumpMaxCount = 2; // Implement double-jump by default.
 
@@ -80,6 +85,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 
 	if (!ensure(CrashPS))
 	{
+		UE_LOG(LogAbilitySystem, Error, TEXT("Actor [%s] tried to initialize its ability system component, but it does not have a player state. This actor needs a player state, or must use a different actor as its ASC's owner."), *GetName());
 		return;
 	}
 
@@ -89,10 +95,10 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	if (ASCExtensionComponent)
 	{
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
-	}
 
-	// Update the ASC's actor information.
-	ASCExtensionComponent->HandleControllerChanged();
+		// Update the ASC's actor information.
+		ASCExtensionComponent->HandleControllerChanged();
+	}
 }
 
 void AChallengerBase::OnRep_PlayerState()
@@ -104,6 +110,7 @@ void AChallengerBase::OnRep_PlayerState()
 
 	if (!ensure(CrashPS))
 	{
+		UE_LOG(LogAbilitySystem, Error, TEXT("Actor [%s] tried to uninitialize its ability system component, but it does not have a player state. This actor needs a player state, or must use a different actor as its ASC's owner."), *GetName());
 		return;
 	}
 
@@ -119,8 +126,7 @@ void AChallengerBase::OnRep_PlayerState()
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
 {
 	/* The interfaced ASC is where we define where the ASC for this class is. For the base challenger, we can access it
-	 * through the ability system extension component. On an AI character, we could define it as being stored in this
-	 * class instead. */
+	 * through the ability system extension component. */
 	if (ASCExtensionComponent == nullptr)
 	{
 		return nullptr;
@@ -137,21 +143,35 @@ UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() 
 
 void AChallengerBase::OnAbilitySystemInitialized()
 {
-	if (GetAbilitySystemComponent()->IsOwnerActorAuthoritative())
+	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
+	check(CrashASC);
+	
+	// Grant this character's default ability set on the server.
+	if (CrashASC->IsOwnerActorAuthoritative())
 	{
-		// Grant this character's default ability set on the server.
-		ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(GetCrashAbilitySystemComponent(), &GrantedDefaultAbilitySetHandle.AddDefaulted_GetRef(), this);
-		ABILITY_LOG(Verbose, TEXT("Granted [%s]'s default ability set to [%s] on the server."), *GetName(), *GetNameSafe(GetAbilitySystemComponent()->GetOwnerActor()));
+		ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(CrashASC, &GrantedDefaultAbilitySetHandle, this);
+		ABILITY_LOG(Verbose, TEXT("Granted [%s]'s default ability set to [%s] on the server."), *GetName(), *GetNameSafe(CrashASC->GetOwnerActor()));
 	}
 
-	// TODO: Initialize attribute sets.
-	
+	// Initialize this character's attribute sets.
+	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
+
 	ABILITY_LOG(Verbose, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
 }
 
 void AChallengerBase::OnAbilitySystemUninitialized()
 {
-	// TODO: Remove default abilities; uninitialize attribute sets.
+	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
+	check(CrashASC);
+
+	// Remove the ability set granted by this character.
+	if (CrashASC->IsOwnerActorAuthoritative())
+	{
+		GrantedDefaultAbilitySetHandle.RemoveFromAbilitySystem(CrashASC);
+	}
+
+	// Uninitialize this character's attribute sets.
+	HealthComponent->UninitializeFromAbilitySystem();
 }
 
 void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

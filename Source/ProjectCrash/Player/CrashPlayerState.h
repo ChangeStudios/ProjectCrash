@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerState.h"
 #include "CrashPlayerState.generated.h"
 
+class UHealthAttributeSet;
 class UCrashAbilitySystemComponent;
 
 /**
@@ -27,6 +28,7 @@ public:
 
 	/** Default constructor. */
 	ACrashPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
 
 
 	// Initialization.
@@ -53,6 +55,13 @@ public:
 protected:
 
 	/** This player's ability system component. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, Category = "Ability System")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+// Attribute sets. These have to be created in the same class as their ASC.
+protected:
+
+	/** This player's health attribute set. */
+	UPROPERTY()
+	TObjectPtr<UHealthAttributeSet> HealthSet;
 };
