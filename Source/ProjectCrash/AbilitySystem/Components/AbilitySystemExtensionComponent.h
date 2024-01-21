@@ -12,7 +12,8 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Behavior_PersistsThroughAvatarDestruc
 class UCrashAbilitySystemComponent;
 
 /**
- * Component used by pawns to manage initialization and uninitialization of its ability system component.
+ * Component used by pawns to manage initialization and uninitialization of its ability system component. This component
+ * is controller-agnostic, allowing it to be used for both player characters and AI pawns.
  */
 UCLASS()
 class PROJECTCRASH_API UAbilitySystemExtensionComponent : public UActorComponent
@@ -76,7 +77,7 @@ public:
 
 public:
 
-	/** Called by this component's owning pawn when its controller changes. */
+	/** Called by this component's owning pawn when its controller changes. Refreshes the ASC's actor info. */
 	void HandleControllerChanged();
 
 

@@ -19,10 +19,19 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChanged, UHealthC
  * into a unique component, while also providing an interface to actors that need to be aware of health events, but may
  * not have the health attribute set itself; e.g. the avatar of an ASC that's held a the player state.
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(meta=(BlueprintSpawnableComponent))
 class PROJECTCRASH_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UHealthComponent(const FObjectInitializer& ObjectInitializer);
+
+
 
 	// Initialization.
 
@@ -35,6 +44,11 @@ public:
 	// Uninitialize the component, clearing any references to the ability system.
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
 	void UninitializeFromAbilitySystem();
+
+protected:
+
+	/** Called when this component is unregistered. Wraps UninitializeFromAbilitySystem. */
+	virtual void OnUnregister() override;
 
 
 
@@ -62,12 +76,15 @@ public:
 protected:
 
 	/** Called when the Health attribute's value changes. Broadcasts HealthChangedDelegate. */
+	UFUNCTION()
 	void OnHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Called when the MaxHealth attribute's value changes. Broadcasts MaxHealthChangedDelegate. */
+	UFUNCTION()
 	void OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Called when Health reaches 0. Broadcasts OutOfHealthDelegate. */
+	UFUNCTION()
 	void OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
 
 /* Delegates broadcast when an attribute is changed. These wrap the health set's delegates, provide a reference to the

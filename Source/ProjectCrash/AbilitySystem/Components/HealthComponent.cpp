@@ -8,6 +8,18 @@
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 
+UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.bCanEverTick = false;
+
+	SetIsReplicatedByDefault(true);
+
+	AbilitySystemComponent = nullptr;
+	HealthSet = nullptr;
+}
+
 void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC, UHealthAttributeBaseValues* InAttributeBaseValues)
 {
 	AActor* Owner = GetOwner();
@@ -17,6 +29,10 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	{
 		ABILITY_LOG(Error, TEXT("Health component for owner [%s] has already been initialized with an ability system."), *GetNameSafe(Owner));
 		return;
+	}
+	else
+	{
+		ABILITY_LOG(Error, TEXT("initializing health component for owner [%s]."), *GetNameSafe(Owner));
 	}
 
 	AbilitySystemComponent = InASC;
@@ -33,13 +49,18 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 		return;
 	}
 
+	// Bind delegates to the health attribute set's attribute changes and events.
+	HealthSet->HealthChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
+	HealthSet->MaxHealthChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
+	HealthSet->OutOfHealthDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
+
 	// Initialize the attribute set's base values.
 	if (IsValid(InAttributeBaseValues))
 	{
 		AttributeBaseValues = InAttributeBaseValues;
-		
-		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), AttributeBaseValues->BaseHealth);
+
 		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), AttributeBaseValues->BaseMaxHealth);
+		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), AttributeBaseValues->BaseHealth);
 		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), AttributeBaseValues->BaseDamage);
 		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), AttributeBaseValues->BaseHealing);
 	}
@@ -47,11 +68,6 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	{
 		ABILITY_LOG(Warning, TEXT("Health component owned by [%s] was not given a valid HealthAttributeBaseValues data asset to initialize its attributes."), *GetNameSafe(Owner));
 	}
-
-	// Register to listen for attribute changes.
-	HealthSet->HealthChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
-	HealthSet->MaxHealthChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
-	HealthSet->OutOfHealthDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
 
 	// Broadcast the initial changes to the attributes.
 	HealthChangedDelegate.Broadcast(this, HealthSet->GetHealth(), HealthSet->GetHealth(), nullptr);
@@ -69,6 +85,13 @@ void UHealthComponent::UninitializeFromAbilitySystem()
 
 	HealthSet = nullptr;
 	AbilitySystemComponent = nullptr;
+}
+
+void UHealthComponent::OnUnregister()
+{
+	UninitializeFromAbilitySystem();
+
+	Super::OnUnregister();
 }
 
 float UHealthComponent::GetHealth() const

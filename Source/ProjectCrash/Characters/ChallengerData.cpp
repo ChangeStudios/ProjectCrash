@@ -6,5 +6,6 @@
 UChallengerData::UChallengerData(const FObjectInitializer& ObjectInitializer)
 {
 	DefaultAbilitySet = nullptr;
+	HealthAttributeBaseValues = nullptr;
 	DefaultActionMapping = nullptr;
 }

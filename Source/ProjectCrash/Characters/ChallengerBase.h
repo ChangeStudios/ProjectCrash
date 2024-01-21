@@ -22,12 +22,6 @@ class USkeletalMeshComponent;
 /**
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
  * such as a first-person camera, input, and an interface with the ability system.
- *
- * This class uses the AbilitySystemExtensionComponent and AbilitySystemInterface to enable its ability system
- * functionality. The AbilitySystemInterface defines where this actor's ASC comes from (i.e. for players, it is stored
- * in their player state); when this character is possessed, the AbilitySystemExtensionComponent initializes it with
- * an ASC it finds with the AbilitySystemInterface. Once the system is initialized, callbacks enable this class to
- * perform other initialization processes, such as initializing attribute sets.
  */
 UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
 class PROJECTCRASH_API AChallengerBase : public ACharacter, public IAbilitySystemInterface
@@ -111,8 +105,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/** Retrieves this character's ASC cast to the UCrashAbilitySystemComponent class. Returns nullptr if the ASC does
-	 * not exist or if the ASC is not of the correct class. Uses the ability system interface to find the ASC, so this
-	 * can be called on any character, regardless of where the ASC is stored. */
+	 * not exist or if the ASC is not of the correct class. Uses the ability system interface to find the ASC. */
 	UFUNCTION(BlueprintPure, Category = "Ability System") 
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
 
@@ -125,7 +118,7 @@ protected:
 // Initialization.
 protected:
 
-	/** Callback after this pawn becomes the avatar of an ASC that grants its default ability set and initializes its
+	/** Callback after this character becomes the avatar of an ASC that grants its default ability set and initializes its
 	 * attribute sets. */
 	virtual void OnAbilitySystemInitialized();
 
@@ -136,7 +129,7 @@ protected:
 // Components.
 protected:
 	
-	/** Handles initialization and uninitialization of an ability system component with this pawn when it is possessed
+	/** Handles initialization and uninitialization of an ability system component with this character when it is possessed
 	 * and unpossessed/destroyed. */
 	TObjectPtr<UAbilitySystemExtensionComponent> ASCExtensionComponent;
 
