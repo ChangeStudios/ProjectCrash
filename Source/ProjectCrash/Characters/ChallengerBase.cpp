@@ -118,18 +118,21 @@ void AChallengerBase::OnRep_PlayerState()
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
 {
-	// The interfaced accessor will always return the typed ASC.
-	return GetCrashAbilitySystemComponent();
-}
-
-UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() const
-{
+	/* The interfaced ASC is where we define where the ASC for this class is. For the base challenger, we can access it
+	 * through the ability system extension component. On an AI character, we could define it as being stored in this
+	 * class instead. */
 	if (ASCExtensionComponent == nullptr)
 	{
 		return nullptr;
 	}
 
 	return ASCExtensionComponent->GetCrashAbilitySystemComponent();
+}
+
+UCrashAbilitySystemComponent* AChallengerBase::GetCrashAbilitySystemComponent() const
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	return ASC ? Cast<UCrashAbilitySystemComponent>(ASC) : nullptr;
 }
 
 void AChallengerBase::OnAbilitySystemInitialized()

@@ -98,11 +98,13 @@ protected:
 // Utils.
 public:
 
-	/** Interfaced accessor retrieves this character's bound ASC. */
+	/** Interfaced accessor that retrieves this character's bound ASC via its ability system extension component. */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	/** Retrieves this character's bound ASC. */
-	UFUNCTION(BlueprintPure, Category = "Ability System")
+	/** Retrieves this character's ASC cast to the UCrashAbilitySystemComponent class. Returns nullptr if the ASC does
+	 * not exist or if the ASC is not of the correct class. Uses the ability system interface to find the ASC, so this
+	 * can be called on any character, regardless of where the ASC is stored. */
+	UFUNCTION(BlueprintPure, Category = "Ability System") 
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
 
 protected:
