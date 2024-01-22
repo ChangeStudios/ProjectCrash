@@ -28,7 +28,8 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 
 
 	// Collision component.
-	GetCapsuleComponent()->InitCapsuleSize(35.0f, 87.5f);
+	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
+
 
 
 	// Camera.
