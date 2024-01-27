@@ -33,4 +33,5 @@ namespace CrashGameplayTags
 
 	// States
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_State_ImmuneToDamage);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_State_TemporarilyUnequipped);
 };

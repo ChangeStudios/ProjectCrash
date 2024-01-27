@@ -3,11 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayAbilitySet.h"
+#include "Engine/DataAsset.h"
+#include "GameplayAbilitySpecHandle.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "CrashAbilitySet.generated.h"
 
+class UAttributeSet;
 class UCrashAbilitySystemComponent;
+class UCrashAttributeSet;
 class UCrashGameplayAbilityBase;
+class UGameplayEffect;
 
 /**
  * Data used to grant a gameplay ability via an ability set.
@@ -57,7 +62,7 @@ public:
 
 	/** The attribute set to grant. */
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCrashGameplayAbilityBase> AttributeSet = nullptr;
+	TSubclassOf<UCrashAttributeSet> AttributeSet = nullptr;
 };
 
 
@@ -115,7 +120,7 @@ protected:
  * difficult to track. E.g. abilities can't be granted via hard-coding, making them impossible to find when debugging.
  */
 UCLASS(BlueprintType, Const)
-class PROJECTCRASH_API UCrashAbilitySet : public UGameplayAbilitySet
+class PROJECTCRASH_API UCrashAbilitySet : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 

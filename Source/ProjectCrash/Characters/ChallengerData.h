@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "ChallengerData.generated.h"
 
+class UEquipmentSet;
 class UHealthAttributeBaseValues;
 class AChallengerBase;
 class UCrashInputActionMapping;
@@ -68,6 +69,16 @@ public:
 	/** The default values to which health attributes are initialized. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	TObjectPtr<UHealthAttributeBaseValues> HealthAttributeBaseValues;
+
+
+
+	// Equipment.
+
+public:
+
+	/** The default equipment set granted to this character when it's created. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UEquipmentSet> DefaultEquipmentSet;
 
 
 
