@@ -3,10 +3,6 @@
 
 #include "CrashInputActionMapping.h"
 
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Look_Mouse, "InputTag.Look.Mouse", "Input tag to activate the look action with a mouse.");
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Look_Stick, "InputTag.Look.Stick", "Input tag to activate the look action with a gamepad.");
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Move, "InputTag.Move", "Input tag to activate the move action.");
-
 const UInputAction* UCrashInputActionMapping::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
 {
 	/* Iterate through every native input action in the native action mapping to find one mapped with the specified

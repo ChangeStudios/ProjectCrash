@@ -6,9 +6,6 @@
 #include "AbilitySystemLog.h"
 #include "GameFramework/Character.h"
 
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(Tag_Ability_Identifier_Generic_Jump, "Ability.Identifier.Generic.Jump", "Identifier for the generic character jump ability. Includes abilities like double-jump.");
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(Tag_InputTag_Jump, "InputTag.Jump", "Input tag to activate the jump ability.");
-
 UGA_Jump::UGA_Jump(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {

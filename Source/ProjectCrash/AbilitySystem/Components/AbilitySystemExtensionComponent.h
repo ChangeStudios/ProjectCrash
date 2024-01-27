@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NativeGameplayTags.h"
 #include "Components/ActorComponent.h"
 #include "AbilitySystemExtensionComponent.generated.h"
-
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
 
 class UCrashAbilitySystemComponent;
 

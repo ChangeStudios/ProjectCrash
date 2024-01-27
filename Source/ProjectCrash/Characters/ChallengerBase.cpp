@@ -7,6 +7,7 @@
 #include "ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "AbilitySystem/CrashNativeGameplayTags.h"
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
@@ -207,9 +208,10 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	}
 
 	/* Bind the native input actions from each default native action mapping to handler functions. */
-	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
-	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
-	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	const FCrashNativeGameplayTags& GameplayTags = FCrashNativeGameplayTags::Get();
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, GameplayTags.TAG_InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Mouse);
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, GameplayTags.TAG_InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_Look_Stick);
+	CrashInputComponent->BindNativeInputAction(ChallengerData->DefaultActionMapping, GameplayTags.TAG_InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 
 	/* Bind the ability input actions from each default ability action mapping to the ability handler functions. */
 	CrashInputComponent->BindAbilityInputActions(ChallengerData->DefaultActionMapping);

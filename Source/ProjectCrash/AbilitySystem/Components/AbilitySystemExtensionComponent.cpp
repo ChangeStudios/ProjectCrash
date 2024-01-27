@@ -4,8 +4,7 @@
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 
 #include "CrashAbilitySystemComponent.h"
-
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_PersistsThroughAvatarDestruction, "Ability.Behavior.PersistsThroughAvatarDestruction", "Indicates that an ability is not canceled when its ASC’s avatar dies or is unpossessed.");
+#include "AbilitySystem/CrashNativeGameplayTags.h"
 
 UAbilitySystemExtensionComponent::UAbilitySystemExtensionComponent(const FObjectInitializer& ObjectInitializer)
 {
@@ -90,7 +89,7 @@ void UAbilitySystemExtensionComponent::UninitializeAbilitySystem()
 	{
 		// Remove all ongoing abilities that aren't marked to persist past avatar destruction.
 		FGameplayTagContainer AbilityTypesToIgnore;
-		AbilityTypesToIgnore.AddTag(TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
+		AbilityTypesToIgnore.AddTag(FCrashNativeGameplayTags::Get().TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
 		AbilitySystemComponent->CancelAbilities(nullptr, &AbilityTypesToIgnore);
 
 		// Remove all ongoing gameplay cues.

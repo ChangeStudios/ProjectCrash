@@ -3,16 +3,10 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "NativeGameplayTags.h"
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "CrashInputActionMapping.generated.h"
-
-/** Native gameplay tags relevant to this class. */
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Look_Mouse);
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Look_Stick);
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Move);
 
 class UInputAction;
 

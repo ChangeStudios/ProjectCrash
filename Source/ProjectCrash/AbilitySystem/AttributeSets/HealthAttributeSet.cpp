@@ -5,13 +5,10 @@
 
 #include "AbilitySystemLog.h"
 #include "GameplayEffectExtension.h"
+#include "AbilitySystem/CrashNativeGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HealthAttributeSet)
-
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The target is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides any damage invulnerabilities.");
-UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Death, "Event.Death", "Event triggered when this ASC’s avatar \"dies.\"");
 
 UHealthAttributeSet::UHealthAttributeSet()
 	: Health(100.0f)
@@ -37,8 +34,9 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute() && Data.EvaluatedData.Magnitude > 0.0f)
 	{
 		// The self-destruction state overrides any damage invulnerabilities.
-		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(TAG_Effects_Damage_SelfDestruct);
-		if (Data.Target.HasMatchingGameplayTag(TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
+		const FCrashNativeGameplayTags& GameplayTags = FCrashNativeGameplayTags::Get();
+		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(GameplayTags.TAG_Effects_Damage_SelfDestruct);
+		if (Data.Target.HasMatchingGameplayTag(GameplayTags.TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
 		{
 			// Throw out any damage executions on targets that are immune to damage.
 			Data.EvaluatedData.Magnitude = 0.0f;
@@ -65,7 +63,7 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	AActor* Causer = EffectContext.GetEffectCauser();
 
 	// Map Damage to -Health and clamp. Reset the meta Damage attribute after it has been applied.
-	if (Data.EvaluatedData.Attribute == GetHealingAttribute())
+	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
 		SetDamage(0.0f);

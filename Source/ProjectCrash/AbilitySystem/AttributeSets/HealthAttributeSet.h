@@ -3,18 +3,12 @@
 #pragma once
 
 #include "AbilitySystemComponent.h"
-#include "NativeGameplayTags.h"
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/AttributeSets/CrashAttributeSet.h"
 #include "HealthAttributeSet.generated.h"
 
 class UObject;
-
-/** Native gameplay tags relevant to this class. */
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_State_ImmuneToDamage);
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_SelfDestruct);
-UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Death);
 
 /**
  * Attribute set for health. Enables an ASC to receive health-related events, such as damage.
