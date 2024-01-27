@@ -4,7 +4,7 @@
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 
 #include "CrashAbilitySystemComponent.h"
-#include "AbilitySystem/CrashNativeGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 
 UAbilitySystemExtensionComponent::UAbilitySystemExtensionComponent(const FObjectInitializer& ObjectInitializer)
 {
@@ -89,7 +89,7 @@ void UAbilitySystemExtensionComponent::UninitializeAbilitySystem()
 	{
 		// Remove all ongoing abilities that aren't marked to persist past avatar destruction.
 		FGameplayTagContainer AbilityTypesToIgnore;
-		AbilityTypesToIgnore.AddTag(FCrashNativeGameplayTags::Get().TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
+		AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
 		AbilitySystemComponent->CancelAbilities(nullptr, &AbilityTypesToIgnore);
 
 		// Remove all ongoing gameplay cues.

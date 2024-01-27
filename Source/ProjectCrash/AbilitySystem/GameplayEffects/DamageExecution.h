@@ -13,7 +13,7 @@
  * This execution automatically accounts for team damage, self-damage, and can be extended to account for any future
  * mechanics that alter damage, such as damage drop-off or damage boosts.
  */
-UCLASS(Blueprintable, Const)
+UCLASS()
 class PROJECTCRASH_API UDamageExecution : public UGameplayEffectExecutionCalculation
 {
 	GENERATED_BODY()
@@ -31,8 +31,8 @@ public:
 
 protected:
 
-	/** Performs the execution logic. Any calculations required before applying damage are done, and then damage is
-	 * applied to the target attributes. */
+	/** Performs the execution logic. Performs calculations required before applying damage, and then applies damage
+	 * to the target's Health attributes. */
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
 

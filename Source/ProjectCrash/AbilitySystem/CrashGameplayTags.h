@@ -1,0 +1,36 @@
+#pragma once
+
+#include "NativeGameplayTags.h"
+
+/**
+ * Defines the native gameplay tags that need to be exposed to C++. All tags that are exposed to C++ should be defined
+ * here.
+ */
+namespace CrashGameplayTags
+{
+	// Abilities
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
+
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Identifier_Generic_Jump);
+
+
+	// Effects
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_SelfDestruct);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_CanDamageSelf);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_CanDamageTeam);
+
+
+	// Events
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Death);
+
+	
+	// Input
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Jump);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Look_Mouse);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Look_Stick);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InputTag_Move);
+
+
+	// States
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_State_ImmuneToDamage);
+};

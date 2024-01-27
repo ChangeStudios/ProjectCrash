@@ -5,7 +5,7 @@
 
 #include "AbilitySystemLog.h"
 #include "GameplayEffectExtension.h"
-#include "AbilitySystem/CrashNativeGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HealthAttributeSet)
@@ -34,9 +34,8 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute() && Data.EvaluatedData.Magnitude > 0.0f)
 	{
 		// The self-destruction state overrides any damage invulnerabilities.
-		const FCrashNativeGameplayTags& GameplayTags = FCrashNativeGameplayTags::Get();
-		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(GameplayTags.TAG_Effects_Damage_SelfDestruct);
-		if (Data.Target.HasMatchingGameplayTag(GameplayTags.TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
+		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(CrashGameplayTags::TAG_Effects_Damage_SelfDestruct);
+		if (Data.Target.HasMatchingGameplayTag(CrashGameplayTags::TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
 		{
 			// Throw out any damage executions on targets that are immune to damage.
 			Data.EvaluatedData.Magnitude = 0.0f;

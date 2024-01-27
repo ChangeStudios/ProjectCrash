@@ -5,7 +5,7 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
-#include "AbilitySystem/CrashNativeGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 
@@ -132,7 +132,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 		/* Send the "Event.Death" gameplay event through the owner's ability system. This can be used to trigger a
 		 * death gameplay ability. */
 		FGameplayEventData Payload;
-		Payload.EventTag = FCrashNativeGameplayTags::Get().TAG_Event_Death;
+		Payload.EventTag = CrashGameplayTags::TAG_Event_Death;
 		Payload.Instigator = DamageInstigator;
 		Payload.Target = AbilitySystemComponent->GetAvatarActor();
 		Payload.OptionalObject = DamageEffectSpec.Def;

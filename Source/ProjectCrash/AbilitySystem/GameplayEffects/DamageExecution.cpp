@@ -4,11 +4,10 @@
 #include "AbilitySystem/GameplayEffects/DamageExecution.h"
 
 #include "AbilitySystemLog.h"
-#include "AbilitySystem/CrashNativeGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
-
 
 UDamageExecution::UDamageExecution()
 {
@@ -47,7 +46,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.TargetTags = TargetTags;
 
 
-	// Retrieve the instigator, effect causer, and effect target information.
+	// Retrieve information about the source and target.
 	const AActor* OriginalInstigator = CrashContext->GetOriginalInstigator();
 	const AActor* EffectCauser = CrashContext->GetEffectCauser();
 	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
@@ -75,8 +74,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 		if (const UGameplayEffectComponent* AssetTagComp = OwningGameplayEffect->FindComponent(UAssetTagsGameplayEffectComponent::StaticClass()))
 		{
 			// If this effect doesn't have the "CanDamageSelf" tag but is targeting its source, throw out this execution.
-			const FCrashNativeGameplayTags& GameplayTags = FCrashNativeGameplayTags::Get();
-			if (!Cast<UAssetTagsGameplayEffectComponent>(AssetTagComp)->GetConfiguredAssetTagChanges().CombinedTags.HasTagExact(GameplayTags.TAG_Effects_Damage_CanDamageSelf))
+			if (!Cast<UAssetTagsGameplayEffectComponent>(AssetTagComp)->GetConfiguredAssetTagChanges().CombinedTags.HasTagExact(CrashGameplayTags::TAG_Effects_Damage_CanDamageSelf))
 			{
 				return;
 			}
