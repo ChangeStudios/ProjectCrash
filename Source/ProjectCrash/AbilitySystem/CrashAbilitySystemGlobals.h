@@ -16,8 +16,12 @@ class PROJECTCRASH_API UCrashAbilitySystemGlobals : public UAbilitySystemGlobals
 {
 	GENERATED_BODY()
 
+private:
+
 	/** Tells the system to create effect contexts of our custom type (FCrashGameplayEffectContext). */
 	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
+
+public:
 
 	/**
 	 * Searches the given actor for a Crash ASC using the IAbilitySystemInterface. Will revert to a standard

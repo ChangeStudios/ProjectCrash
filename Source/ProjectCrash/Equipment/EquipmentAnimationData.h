@@ -12,6 +12,8 @@ class UAnimMontage;
 
 /**
  * Data that defines the animation of an equipment set while equipped.
+ *
+ * TODO: Change this to a bunch of animation sequences and use it to drive a universal animation instance.
  */
 UCLASS()
 class PROJECTCRASH_API UEquipmentAnimationData : public UDataAsset
@@ -22,10 +24,10 @@ public:
 
 	/** Animation instance used by the character while this equipment set is equipped. */
 	UPROPERTY(EditDefaultsOnly, DisplayName="Animation Instance")
-	TObjectPtr<UAnimInstance> EquipmentAnimInstance;
+	TSubclassOf<UAnimInstance> EquipmentAnimInstance;
 
 	/** Animation played when equipping this equipment set. */
-	UPROPERTY(EditDefaultsOnly, DisplayName="Animation Instance")
+	UPROPERTY(EditDefaultsOnly, DisplayName="Equip Animation")
 	FAnimPerspectivePair EquipAnimation;
 	
 };

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "CrashAnimTypes.generated.h"
 
-class UAnimSequenceBase;
+class UAnimMontage;
 
 /**
  * Structure containing a pair of animation assets: one for first-person and one for third-person.
@@ -16,8 +16,8 @@ struct FAnimPerspectivePair
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Animation")
-	TObjectPtr<UAnimSequenceBase> Anim_FPP;
+	TObjectPtr<UAnimMontage> Anim_FPP;
 
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Animation")
-	TObjectPtr<UAnimSequenceBase> Anim_TPP;
+	TObjectPtr<UAnimMontage> Anim_TPP;
 };

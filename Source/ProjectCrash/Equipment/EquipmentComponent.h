@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EquipmentSet.h"
 #include "Components/ActorComponent.h"
 #include "GameplayTagContainer.h"
 #include "EquipmentComponent.generated.h"
@@ -84,7 +85,7 @@ private:
 
 	/**
 	 * Callback bound to when the ASC registered with this component gains or loses a TemporarilyUnequipped gameplay
-	 * tag.
+	 * tag. This should be used instead of manual equipment methods because it does not null CurrentEquipmentSet.
 	 * 
 	 * @param Tag			TemporarilyUnequipped tag.
 	 * @param NewCount		Number of TemporarilyUnequipped tags the ASC now has.
@@ -102,6 +103,10 @@ private:
 private:
 
 	/** The equipment set currently equipped by this character. */
+	UPROPERTY()
 	TObjectPtr<UEquipmentSet> CurrentEquipmentSet;
+
+	/** The handle for the equipment set currently equipped by this character. */
+	FEquipmentSetHandle CurrentEquipmentSetHandle;
 
 };

@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
+class UEquipmentComponent;
 class UHealthComponent;
 class UAbilitySystemExtensionComponent;
 class UCameraComponent;
@@ -96,6 +97,19 @@ protected:
 
 
 
+	// Equipment.
+
+// Components.
+protected:
+
+	/** Allows this character to equip various equipment sets. Most challengers only ever need one equipment set, but
+	 * some may need multiple. For example, if an ability grants the challenger a special weapon, they will need an
+	 * additional equipment set for that weapon. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UEquipmentComponent> EquipmentComponent;
+
+
+
 	// Ability system.
 
 // Utils.
@@ -143,7 +157,7 @@ protected:
 	/** This character's health component. Acts as an interface to this character's ASC's health attribute set, which
 	 * is stored in the owning player's player state. Gets initialized with an ASC after one is initialized with this
 	 * character. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System|Attributes", Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System|Attributes", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
 

@@ -14,6 +14,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Equipment/EquipmentComponent.h"
+#include "Equipment/EquipmentSet.h"
 #include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
 #include "Player/CrashPlayerState.h"
@@ -58,6 +60,10 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetupAttachment(FirstPersonCameraComponent);
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -150.0f)); // Default position.
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
+
+
+	// Equipment.
+	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 
 
 	// Ability system.
@@ -159,6 +165,13 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	{
 		ChallengerData->DefaultAbilitySet->GiveToAbilitySystem(CrashASC, &GrantedDefaultAbilitySetHandle, this);
 		ABILITY_LOG(Verbose, TEXT("Granted [%s]'s default ability set to [%s] on the server."), *GetName(), *GetNameSafe(CrashASC->GetOwnerActor()));
+	}
+
+	// Initialize this character's equipment component and grant them their default equipment set.
+	if (EquipmentComponent && ChallengerData->DefaultEquipmentSet)
+	{
+		EquipmentComponent->InitializeComponent();
+		EquipmentComponent->EquipEquipmentSet(ChallengerData->DefaultEquipmentSet);
 	}
 
 	// Initialize this character's attribute sets.
