@@ -7,10 +7,11 @@
 #include "Engine/DataAsset.h"
 #include "ChallengerData.generated.h"
 
+class AChallengerBase;
+class UCharacterAnimData;
+class UCrashInputActionMapping;
 class UEquipmentSet;
 class UHealthAttributeBaseValues;
-class AChallengerBase;
-class UCrashInputActionMapping;
 class UInputMappingContext;
 
 /**
@@ -79,6 +80,18 @@ public:
 	/** The default equipment set granted to this character when it's created. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UEquipmentSet> DefaultEquipmentSet;
+
+
+
+	// Animation.
+
+public:
+
+	/** This character's default animation data. This should never be used; it should immediately be overridden by the
+	 * animation data of this character's default equipment set. This serves as a safety net if the character ends up
+	 * without an equipment set for some reason. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UCharacterAnimData> DefaultAnimData;
 
 
 

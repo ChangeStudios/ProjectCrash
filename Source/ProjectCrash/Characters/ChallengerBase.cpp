@@ -15,6 +15,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
+#include "Equipment/EquipmentLog.h"
 #include "Equipment/EquipmentSet.h"
 #include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
@@ -32,7 +33,6 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 
 	// Collision component.
 	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
-
 
 
 	// Camera.
@@ -172,6 +172,11 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	{
 		EquipmentComponent->InitializeComponent();
 		EquipmentComponent->EquipEquipmentSet(ChallengerData->DefaultEquipmentSet);
+		EQUIPMENT_LOG(Warning, TEXT("Equipping default set for [%s]..."), *GetName());
+	}
+	else
+	{
+		EQUIPMENT_LOG(Verbose, TEXT("Could not equip default set for [%s]."), *GetName());
 	}
 
 	// Initialize this character's attribute sets.

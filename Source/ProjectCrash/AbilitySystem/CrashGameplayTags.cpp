@@ -5,6 +5,7 @@ namespace CrashGameplayTags
 {
 	// Abilities
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_PersistsThroughAvatarDestruction, "Ability.Behavior.PersistsThroughAvatarDestruction", "Indicates that an ability is not canceled when its ASC’s avatar dies or is unpossessed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_InputBlocking, "Ability.Behavior.InputBlocking", "This ability blocks movement and camera input while active.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Identifier_Generic_Jump, "Ability.Identifier.Generic.Jump", "Identifier for the generic character jump ability. Includes abilities like double-jump.");
 

@@ -64,4 +64,19 @@ protected:
 	/** This player's health attribute set. */
 	UPROPERTY()
 	TObjectPtr<UHealthAttributeSet> HealthSet;
+
+// Callbacks.
+private:
+	/**
+	 * Callback bound to when this player's ASC gains or loses an InputBlocking gameplay tag. Disables or enables
+	 * movement and camera input, respectively.
+	 * 
+	 * @param Tag			InputBlocking tag.
+	 * @param NewCount		Number of InputBlocking tags the ASC now has.
+	 */
+	UFUNCTION()
+	void OnInputBlockingChanged(const FGameplayTag Tag, int32 NewCount);
+
+	/** Delegate to bind the OnInputBlockingChanged callback. */
+	FDelegateHandle InputBlockingDelegate;
 };

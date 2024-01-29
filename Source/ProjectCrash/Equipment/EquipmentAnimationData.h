@@ -3,31 +3,39 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Animation/CrashAnimTypes.h"
-#include "Engine/DataAsset.h"
+#include "Animation/AnimData/CharacterAnimData.h"
 #include "EquipmentAnimationData.generated.h"
 
 class UAnimInstance;
 class UAnimMontage;
+class UBlendSpace;
+class UBlendSpace1D;
 
 /**
- * Data that defines the animation of an equipment set while equipped.
- *
- * TODO: Change this to a bunch of animation sequences and use it to drive a universal animation instance.
+ * Data that extends the default character animation data with data utilized for equipment sets.
  */
 UCLASS()
-class PROJECTCRASH_API UEquipmentAnimationData : public UDataAsset
+class PROJECTCRASH_API UEquipmentAnimationData : public UCharacterAnimData
 {
 	GENERATED_BODY()
 
+	// First-person animations.
+
+// Actions.
 public:
 
-	/** Animation instance used by the character while this equipment set is equipped. */
-	UPROPERTY(EditDefaultsOnly, DisplayName="Animation Instance")
-	TSubclassOf<UAnimInstance> EquipmentAnimInstance;
+	/** First-person animation played when equipping this equipment set. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Actions", DisplayName = "Equip")
+	TObjectPtr<UAnimMontage> Equip_FPP;
 
-	/** Animation played when equipping this equipment set. */
-	UPROPERTY(EditDefaultsOnly, DisplayName="Equip Animation")
-	FAnimPerspectivePair EquipAnimation;
-	
+
+
+	// Third-person animations.
+
+// Actions.
+public:
+
+	/** Third-person animation played when equipping this equipment set. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Actions", DisplayName = "Equip")
+	TObjectPtr<UAnimMontage> Equip_TPP;
 };

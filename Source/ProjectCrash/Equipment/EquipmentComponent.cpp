@@ -11,9 +11,11 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Animation/ChallengerAnimInstanceBase.h"
 #include "Characters/ChallengerBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerState.h"
+#include "Characters/ChallengerData.h"
 
 UEquipmentComponent::UEquipmentComponent()
 {
@@ -80,6 +82,13 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to equip equipment set [%s] on actor [%s], but the actor's current equipment set, [%s], must be unequipped first."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()), *CurrentEquipmentSet->GetName());
 		return false;
 	}
+	else
+	{
+		EQUIPMENT_LOG(Verbose, TEXT("Equipped [%s] on [%s]."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()));
+	}
+
+	// Cache the equipment set class being equipped.
+	CurrentEquipmentSetHandle.EquipmentSet = SetToEquip;
 
 	// Define parameters for attaching equipment actors.
 	ACharacter* EquippingChar = Cast<ACharacter>(GetOwner());
@@ -98,14 +107,15 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 		// Only playable characters need to spawn separate actors for first-person.
 		if (IsValid(EquipmentActor.SpawnedActorClasses.ActorToSpawn_FPP) && EquippingChar->IsA(AChallengerBase::StaticClass()))
 		{
-			// TODO: Create a handle for the new equipment set.
-
 			// Spawn the first-person actor.
-			EquipmentActor.SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_FPP, &SpawnTransform, SpawnParams);
+			AActor* SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_FPP, &SpawnTransform, SpawnParams);
 
 			// Attach the first-person actor to the specified socket.
-			EquipmentActor.SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSockets.AttachSocket_FPP);
-			EquipmentActor.SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_FPP);
+			SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSockets.AttachSocket_FPP);
+			SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_FPP);
+
+			// Cache the new actor in the current equipment set handle.
+			CurrentEquipmentSetHandle.SpawnedActors_FPP.Add(SpawnedActor_FPP);
 		}
 	}
 
@@ -115,12 +125,15 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 		if (IsValid(EquipmentActor.SpawnedActorClasses.ActorToSpawn_TPP))
 		{
 			// Spawn the third-person actor.
-			EquipmentActor.SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_TPP, &SpawnTransform, SpawnParams);
+			AActor* SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_TPP, &SpawnTransform, SpawnParams);
 
 			// Attach the third-person actor to the specified socket.
 			USceneComponent* ParentComp = Cast<AChallengerBase>(EquippingChar) ? Cast<AChallengerBase>(EquippingChar)->GetThirdPersonMesh() : EquippingChar->GetMesh();
-			EquipmentActor.SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSockets.AttachSocket_TPP);
-			EquipmentActor.SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_TPP);
+			SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSockets.AttachSocket_TPP);
+			SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_TPP);
+
+			// Cache the new actor in the current equipment set handle.
+			CurrentEquipmentSetHandle.SpawnedActors_TPP.Add(SpawnedActor_TPP);
 		}
 	}
 
@@ -132,7 +145,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 			// Only grant ability sets on the server.
 			if (CrashASC->IsOwnerActorAuthoritative())
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &SetToEquip->GrantedAbilitySetHandles, SetToEquip);
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip);
 			}
 		}
 	}
@@ -140,38 +153,67 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	// Update the animation instance being used by the character meshes.
 	if (const UEquipmentAnimationData* AnimData = SetToEquip->AnimationData)
 	{
-		if (const TSubclassOf<UAnimInstance> EquipmentAnimInstance = AnimData->EquipmentAnimInstance)
+		if (const AChallengerBase* CharAsChallenger = Cast<AChallengerBase>(EquippingChar))
 		{
-			if (const AChallengerBase* CharAsChallenger = Cast<AChallengerBase>(EquippingChar))
+			// Update the mesh's animation instances.
+			USkeletalMeshComponent* FPPMesh = CharAsChallenger->GetFirstPersonMesh();
+			if (UChallengerAnimInstanceBase* FPPAnimInstance = Cast<UChallengerAnimInstanceBase>(FPPMesh->GetAnimInstance()))
 			{
-				// Cache mesh components.
-				USkeletalMeshComponent* FPPMesh = CharAsChallenger->GetFirstPersonMesh();
-				USkeletalMeshComponent* TPPMesh = CharAsChallenger->GetThirdPersonMesh();
-
-				// Update the animation instance.
-				FPPMesh->SetAnimInstanceClass(EquipmentAnimInstance);
-				TPPMesh->SetAnimInstanceClass(EquipmentAnimInstance);
-
-				// Play the first-person "equip" animation.
-				if (UAnimMontage* EquipFPP = AnimData->EquipAnimation.Anim_FPP)
-				{
-					FPPMesh->GetAnimInstance()->Montage_Play(EquipFPP);
-				}
-
-				// Play the third-person "equip" animation.
-				if (UAnimMontage* EquipTPP = AnimData->EquipAnimation.Anim_TPP)
-				{
-					TPPMesh->GetAnimInstance()->Montage_Play(EquipTPP);
-				}
+				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
 			}
-			// Update the TPP animation instance and play the third-person "equip" animation for non-player characters.
-			else
-			{
-				EquippingChar->GetMesh()->SetAnimInstanceClass(EquipmentAnimInstance);
 
-				if (IsValid(AnimData->EquipAnimation.Anim_TPP))
+			USkeletalMeshComponent* TPPMesh = CharAsChallenger->GetThirdPersonMesh();
+			if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(TPPMesh->GetAnimInstance()))
+			{
+				TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
+			}
+
+			// Play the first-person "equip" animation.
+			if (UAnimMontage* EquipFPP = SetToEquip->AnimationData->Equip_FPP)
+			{
+				FPPMesh->GetAnimInstance()->Montage_Play(EquipFPP);
+			}
+
+			// Play the third-person "equip" animation.
+			if (UAnimMontage* EquipTPP = SetToEquip->AnimationData->Equip_TPP)
+			{
+				TPPMesh->GetAnimInstance()->Montage_Play(EquipTPP);
+			}
+		}
+		// Update the TPP animation instance and play the third-person "equip" animation for non-player characters.
+		else
+		{
+			if (UChallengerAnimInstanceBase* CharAnimInstance = Cast<UChallengerAnimInstanceBase>(EquippingChar->GetMesh()->GetAnimInstance()))
+			{
+				CharAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
+			}
+
+			if (IsValid(AnimData->Equip_TPP))
+			{
+				EquippingChar->GetMesh()->GetAnimInstance()->Montage_Play(AnimData->Equip_TPP);
+			}
+		}
+	}
+	/* If we aren't given equipment animation data, fall back to the character's default animation data. This only
+	 * works for Challenger characters. */ 
+	else
+	{
+		EQUIPMENT_LOG(Warning, TEXT("[%s] equipped a new equipment set: [%s], but could not find valid equipment animation data. Falling back to default character data."), *GetNameSafe(GetOwner()), *GetNameSafe(SetToEquip));
+
+		if (const AChallengerBase* CharAsChallenger = Cast<AChallengerBase>(EquippingChar))
+		{
+			if (CharAsChallenger->ChallengerData && CharAsChallenger->ChallengerData->DefaultAnimData)
+			{
+				// Update the first-person mesh's animation data.
+				if (UChallengerAnimInstanceBase* FPPAnimInstance = Cast<UChallengerAnimInstanceBase>(CharAsChallenger->GetFirstPersonMesh()->GetAnimInstance()))
 				{
-					EquippingChar->GetMesh()->GetAnimInstance()->Montage_Play(AnimData->EquipAnimation.Anim_TPP);
+					FPPAnimInstance->UpdateAnimData(CharAsChallenger->ChallengerData->DefaultAnimData);
+				}
+
+				// Update the third-person mesh's animation data.
+				if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(CharAsChallenger->GetThirdPersonMesh()->GetAnimInstance()))
+				{
+					TPPAnimInstance->UpdateAnimData(CharAsChallenger->ChallengerData->DefaultAnimData);
 				}
 			}
 		}
@@ -182,31 +224,33 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 
 bool UEquipmentComponent::UnequipSet_Internal()
 {
-	/* If we don't have an equipment set equipped, we don't need to do anything. */
+	// If we don't have an equipment set equipped, we don't need to do anything.
 	if (!CurrentEquipmentSet)
 	{
 		return false;
 	}
 
 	// Destroy each equipment actor.
-	for (FEquipmentActorData EquipmentActor : CurrentEquipmentSet->EquipmentActors)
+	TArray<AActor*> EquipmentActors = CurrentEquipmentSetHandle.SpawnedActors_FPP;
+	EquipmentActors.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
+	for (AActor* EquipmentActor : EquipmentActors)
 	{
-		if (IsValid(EquipmentActor.SpawnedActor_FPP))
-		{
-			EquipmentActor.SpawnedActor_FPP->Destroy();
-		}
-
-		if (IsValid(EquipmentActor.SpawnedActor_TPP))
-		{
-			EquipmentActor.SpawnedActor_TPP->Destroy();
-		}
+		EquipmentActor->Destroy();
 	}
+
+	// Clear the equipment set handle's spawned actors.
+	CurrentEquipmentSetHandle.SpawnedActors_FPP.Empty();
+	CurrentEquipmentSetHandle.SpawnedActors_TPP.Empty();
 
 	// Remove the ability set that was granted by the equipped equipment set (if there was one).
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 	{
-		CurrentEquipmentSet->GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
+		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
+		CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
 	}
+
+	// Null the current equipment set's class.
+	CurrentEquipmentSetHandle.EquipmentSet = nullptr;
 
 	return true;
 }

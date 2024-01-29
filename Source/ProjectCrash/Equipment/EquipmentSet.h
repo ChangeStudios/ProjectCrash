@@ -93,20 +93,23 @@ struct FEquipmentActorData
 /**
  * Structure used to maintain references to runtime equipment set data.
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FEquipmentSetHandle
 {
 	GENERATED_BODY()
 
 public:
 
+	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
+	TObjectPtr<UEquipmentSet> EquipmentSet;
+
 	/** Reference to the first-person actor spawned after this equipment set is equipped. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
-	TObjectPtr<AActor> SpawnedActor_FPP = nullptr;
+	TArray<TObjectPtr<AActor>> SpawnedActors_FPP;
 
-	/** Reference to the third-person actor spawned after this equipment set is equipped. */
+	/** Reference to the third-person actor spaw+ned after this equipment set is equipped. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
-	TObjectPtr<AActor> SpawnedActor_TPP = nullptr;
+	TArray<TObjectPtr<AActor>> SpawnedActors_TPP;
 
 	/** Runtime reference to the granted ability set, used to remove it when this set is unequipped. */
 	FCrashAbilitySet_GrantedHandles GrantedAbilitySetHandles;
