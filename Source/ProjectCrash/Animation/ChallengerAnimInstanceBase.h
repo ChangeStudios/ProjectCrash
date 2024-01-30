@@ -10,7 +10,8 @@ class UCharacterAnimData;
 class UEquipmentAnimationData;
 
 /**
- * The base animation instance for all challenger characters.
+ * The base animation instance for all challenger character animation instances. Provides utilities that both first-
+ * person and third-person animation instances utilize.
  */
 UCLASS()
 class PROJECTCRASH_API UChallengerAnimInstanceBase : public UAnimInstance
