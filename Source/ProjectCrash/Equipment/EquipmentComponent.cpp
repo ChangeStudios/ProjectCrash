@@ -102,17 +102,18 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	const FAttachmentTransformRules AttachRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
 	
 	// Spawn each first-person equipment actor.
-	for (FEquipmentActorData EquipmentActor : SetToEquip->EquipmentActors)
+	for (FEquipmentActorData EquipmentActor : SetToEquip->FirstPersonEquipmentActors)
 	{
 		// Only playable characters need to spawn separate actors for first-person.
-		if (IsValid(EquipmentActor.SpawnedActorClasses.ActorToSpawn_FPP) && EquippingChar->IsA(AChallengerBase::StaticClass()))
+		if (EquipmentActor.SpawnedActorClass && EquippingChar->IsA(AChallengerBase::StaticClass()))
 		{
 			// Spawn the first-person actor.
-			AActor* SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_FPP, &SpawnTransform, SpawnParams);
+			AActor* SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
+			SpawnedActor_FPP->SetOwner(GetOwner());
 
 			// Attach the first-person actor to the specified socket.
-			SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSockets.AttachSocket_FPP);
-			SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_FPP);
+			SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSocket);
+			SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
 
 			// Cache the new actor in the current equipment set handle.
 			CurrentEquipmentSetHandle.SpawnedActors_FPP.Add(SpawnedActor_FPP);
@@ -120,17 +121,18 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	}
 
 	// Spawn each third-person equipment actor.
-	for (FEquipmentActorData EquipmentActor : SetToEquip->EquipmentActors)
+	for (FEquipmentActorData EquipmentActor : SetToEquip->ThirdPersonEquipmentActors)
 	{
-		if (IsValid(EquipmentActor.SpawnedActorClasses.ActorToSpawn_TPP))
+		if (IsValid(EquipmentActor.SpawnedActorClass))
 		{
 			// Spawn the third-person actor.
-			AActor* SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClasses.ActorToSpawn_TPP, &SpawnTransform, SpawnParams);
+			AActor* SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
+			SpawnedActor_TPP->SetOwner(GetOwner());
 
 			// Attach the third-person actor to the specified socket.
 			USceneComponent* ParentComp = Cast<AChallengerBase>(EquippingChar) ? Cast<AChallengerBase>(EquippingChar)->GetThirdPersonMesh() : EquippingChar->GetMesh();
-			SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSockets.AttachSocket_TPP);
-			SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffsets.AttachOffset_TPP);
+			SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSocket);
+			SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
 
 			// Cache the new actor in the current equipment set handle.
 			CurrentEquipmentSetHandle.SpawnedActors_TPP.Add(SpawnedActor_TPP);

@@ -21,9 +21,9 @@ struct FEquipmentActorData
 
 	/** The actor to spawn when this equipment set is equipped. */
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<AActor> SpawnedActorClasses;
+	TSubclassOf<AActor> SpawnedActorClass;
 
-	/** The names of the bone or socket on the character mesh to attach this actor to. */
+	/** The name of the bone or socket on the character mesh to attach this actor to. */
 	UPROPERTY(EditDefaultsOnly)
 	FName AttachSocket;
 
