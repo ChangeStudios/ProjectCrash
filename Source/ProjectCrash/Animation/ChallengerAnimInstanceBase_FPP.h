@@ -78,8 +78,30 @@ protected:
 // Aim & rotation.
 protected:
 
+	/** Pawn's current world rotation. */
+	FRotator PawnRotation;
+
+	/** Pawn's camera's current world rotation. */
+	FRotator CurrentAimRotation;
+
+	/** Pawn's camera's world rotation at the last update. */
+	FRotator PreviousAimRotation;
+
+	/** Rate at which the pawn's X-rotation (yaw) changed this update, in degrees/second. */
+	float AimRightLeftSpeed;
+
+	/** Rate at which the pawn's Y-rotation (pitch) changed this update, in degrees/second. */
+	float AimUpDownSpeed;
+
+	/** The upper and lower value used to normalize the pawn's current aim speed when it is used to apply additive aim
+	 * sway animations. */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation Parameters")
+	float MaxAimSpeed;
+
 	/** The character's camera aim rotation pitch normalized to -1.0 to 1.0, which represent looking straight down and
 	 * straight up, respectively. */
 	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
 	float NormalizedCameraPitch = 0.0f;
+
+	
 };

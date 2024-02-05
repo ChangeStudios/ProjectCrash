@@ -29,6 +29,12 @@ void UChallengerAnimInstanceBase_FPP::NativeThreadSafeUpdateAnimation(float Delt
 	UpdateAimOffset();
 
 	UpdateMovementVelocity();
+
+	UpdateAimSpeed();
+
+	CalculateMovementSway();
+
+	CalculateAimSway();
 }
 
 void UChallengerAnimInstanceBase_FPP::UpdateAimOffset()
@@ -53,6 +59,24 @@ void UChallengerAnimInstanceBase_FPP::UpdateMovementVelocity()
 
 void UChallengerAnimInstanceBase_FPP::UpdateAimSpeed()
 {
+	if (IsValid(OwningChallenger))
+	{
+		PawnRotation = OwningChallenger->GetActorRotation();
+		PreviousAimRotation = CurrentAimRotation;
+		CurrentAimRotation = OwningChallenger->GetFirstPersonCameraComponent()->GetComponentRotation();
+
+		const FRotator RotationSinceLastUpdate = CurrentAimRotation - PreviousAimRotation;
+
+		const float DeltaSeconds = GetDeltaSeconds();
+		const float TimeSinceLastUpdate = DeltaSeconds > 0.0f ? DeltaSeconds : 1.0f;
+
+		const FRotator RotationSpeed = RotationSinceLastUpdate * (1.0f / TimeSinceLastUpdate);
+
+		/** Clamp the maximum aim rotation speed to the upper and lower values used to normalize the speed when using
+		 * it to apply additive aim sway animations. */
+		AimUpDownSpeed = FMath::Clamp(RotationSpeed.Pitch, -MaxAimSpeed, MaxAimSpeed);
+		AimRightLeftSpeed = FMath::Clamp(RotationSpeed.Yaw, -MaxAimSpeed, MaxAimSpeed);
+	}
 }
 
 void UChallengerAnimInstanceBase_FPP::CalculateMovementSway()
