@@ -12,6 +12,34 @@ class UBlendSpace;
 class UBlendSpace1D;
 
 /**
+ * Defines the behavior of spring models used for additive sway animations.
+ */
+USTRUCT(BlueprintType)
+struct FFloatSpringInterpData
+{
+	GENERATED_BODY()
+
+	/** Scalar used to scale the amplitude of the spring model and control the strength of its effect. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model")
+	float InterpSpeed = 1.0f;
+
+	/** Represents the stiffness of this spring. Higher values reduce oscillation. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model")
+	float Stiffness = 25.0f;
+
+	/** The amount of damping applied to the spring. 0.0 means no damping (full oscillation), 1.0 means full damping
+	 * (no oscillation). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model")
+	float CriticalDampingFactor = 0.5f;
+
+	/** A multiplier that acts like mass on the spring, affecting the amount of force required to change its position. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model")
+	float Mass = 10.0f;
+};
+
+
+
+/**
  * Data that defines character animations. This is extended for more specific animation states (e.g. when an equipment
  * set is equipped).
  */
@@ -37,13 +65,34 @@ public:
 	TObjectPtr<UBlendSpace1D> PitchOffsetBS_FPP = nullptr;
 
 	/** First-person additive poses applied to offset the character's base pose based on their current turn-rate. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses", DisplayName = "Aim Sway Offset Poses")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Aim Sway", DisplayName = "Aim Sway Offset Poses")
 	TObjectPtr<UBlendSpace1D> AimSwayOffsetBS_FPP = nullptr;
+	
+	/** The upper and lower value used to normalize the pawn's current aim speed when it is used to apply additive aim
+	 * sway animations. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Aim Sway", DisplayName = "Maximum Aim Speed")
+	float MaxAimSpeed = 500.0f;
+
+	/** Data used to define the behavior of the spring used to control the up/down additive aim sway. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Aim Sway", DisplayName = "Aim Up/Down Spring Data")
+	FFloatSpringInterpData AimSwayUpDownSpringData;
+
+	/** Data used to define the behavior of the spring used to control the right/left additive aim sway. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Aim Sway", DisplayName = "Aim Right/Left Spring Data")
+	FFloatSpringInterpData AimSwayRightLeftSpringData;
 
 	/** First-person additive poses applied to offset the character's base pose based on their current movement speed and
 	 * direction. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses", DisplayName = "Movement Sway Offset Poses")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Move Sway", DisplayName = "Movement Sway Offset Poses")
 	TObjectPtr<UBlendSpace> MoveSwayOffsetBS_FPP = nullptr;
+
+	/** Data used to define the behavior of the spring used to control the forward/backward additive aim sway. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Move Sway", DisplayName = "Move Forward/Backkward Spring Data")
+	FFloatSpringInterpData MoveSwayForwardBackwardSpringData;
+
+	/** Data used to define the behavior of the spring used to control the right/left additive aim sway. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Additive Poses|Move Sway", DisplayName = "Move Right/Left Spring Data")
+	FFloatSpringInterpData MoveSwayRightLeftSpringData;
 
 // Locomotion.
 public:

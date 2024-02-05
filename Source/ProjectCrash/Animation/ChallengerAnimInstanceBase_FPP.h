@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "ChallengerAnimInstanceBase.h"
+#include "AnimData/CharacterAnimData.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "ChallengerAnimInstanceBase_FPP.generated.h"
 
 class AChallengerBase;
@@ -35,6 +37,19 @@ protected:
 	/** This animation instance's owning pawn, cached for convenience. */
 	UPROPERTY(BlueprintReadOnly, Category = "Heroes|Animation")
 	TObjectPtr<AChallengerBase> OwningChallenger;
+
+	/**
+	 * Performs a float spring interpolation using the given values.
+	 *
+	 * @param SpringCurrent			The current spring interpolation value.
+	 * @param SpringTarget			The target spring interpolation value.
+	 * @param SpringState			Data for the calculating spring model. Create a unique variable for each spring
+	 *								model.
+	 * @param SpringData			Data used for adjusting the spring model. Adjust this data to change the behavior
+	 *								of the spring.
+	 * @return						The resulting spring interpolation value.
+	 */
+	float UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FFloatSpringInterpData& SpringData);
 
 
 
@@ -71,9 +86,18 @@ protected:
 // Movement speed.
 protected:
 
-	/** The signed vector length of the character's current velocity. */
+	/** The signed vector length of the pawn's current velocity. */
 	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
 	float SignedSpeed;
+
+	/** The pawn's signed movement speed relative to their X-axis. */
+	float ForwardBackwardSpeed;
+
+	/** The pawn's signed movement speed relative to their Y-axis. */
+	float RightLeftSpeed;
+
+	/** The pawn's signed movement speed relative to their Z-axis. */
+	float UpDownSpeed;
 
 // Aim & rotation.
 protected:
@@ -93,15 +117,46 @@ protected:
 	/** Rate at which the pawn's Y-rotation (pitch) changed this update, in degrees/second. */
 	float AimUpDownSpeed;
 
-	/** The upper and lower value used to normalize the pawn's current aim speed when it is used to apply additive aim
-	 * sway animations. */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation Parameters")
-	float MaxAimSpeed;
-
 	/** The character's camera aim rotation pitch normalized to -1.0 to 1.0, which represent looking straight down and
 	 * straight up, respectively. */
 	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
 	float NormalizedCameraPitch = 0.0f;
 
-	
+
+
+	// Spring interpolation.
+
+// Movement sway.
+protected:
+
+	/** The current spring value for the forward/backward movement sway spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	float CurrentSpringMoveForwardBackward;
+
+	/** The current spring value for the right/left movement sway spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	float CurrentSpringMoveRightLeft;
+
+	/** Spring state for the forward/backward movement sway's spring interpolation calculation. */
+	FFloatSpringState SpringStateMoveForwardBackward;
+
+	/** Spring state for the right/left movement sway's spring interpolation calculation. */
+	FFloatSpringState SpringStateMoveRightLeft;
+
+// Aim sway.
+protected:
+
+	/** The current spring value for the up/down aim sway spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	float CurrentSpringAimUpDown;
+
+	/** The current spring value for the right/left aim sway spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	float CurrentSpringAimRightLeft;
+
+	/** Spring state for the up/down aim sway's spring interpolation calculation. */
+	FFloatSpringState SpringStateAimUpDown;
+
+	/** The spring state variable used for the right/left aim sway's spring interpolation calculation. */
+	FFloatSpringState SpringStateAimRightLeft;
 };
