@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "CrashCharacterBase.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
-#include "GameFramework/Character.h"
 #include "ChallengerBase.generated.h"
 
 class UEquipmentComponent;
@@ -20,12 +20,14 @@ class UCrashInputComponent;
 class UInputMappingContext;
 class USkeletalMeshComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FASCInitializedSignature, UCrashAbilitySystemComponent*, CrashASC);
+
 /**
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
  * such as a first-person camera, input, and an interface with the ability system.
  */
 UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
-class PROJECTCRASH_API AChallengerBase : public ACharacter, public IAbilitySystemInterface
+class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -139,6 +141,13 @@ protected:
 	/** Callback bound to when this character is uninitialized as the avatar of an ASC that removes its default ability
 	 * set and initializes its attribute sets. */
 	virtual void OnAbilitySystemUninitialized();
+
+public:
+
+	/** Called when this character finishes initializing its ASC. Allows other components and actors to cache this
+	 * character's ASC on startup, even if the ASC isn't ready yet. */
+	UPROPERTY(BlueprintAssignable, Category = "Ability System")
+	FASCInitializedSignature ASCInitializedDelegate;
 
 // Components.
 protected:

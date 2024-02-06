@@ -11,6 +11,7 @@
 #include "AbilitySystem/Components/HealthComponent.h"
 
 ANPCBase::ANPCBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Networking.
 	bReplicates = true;

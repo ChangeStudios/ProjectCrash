@@ -154,6 +154,8 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
 	check(CrashASC);
 
+	// TODO: Refactor most of this to use the ASCInitialized delegate.
+
 	if (!IsValid(ChallengerData))
 	{
 		ABILITY_LOG(Error, TEXT("[%s]'s ASC could not be properly initialized: Missing ChallengerData asset reference."), *GetName());
@@ -181,6 +183,9 @@ void AChallengerBase::OnAbilitySystemInitialized()
 
 	// Initialize this character's attribute sets.
 	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
+
+	// Broadcast that this character's ASC was initialized.
+	ASCInitializedDelegate.Broadcast(CrashASC);
 
 	ABILITY_LOG(Verbose, TEXT("Initialized ASC for [%s] on the [%s]."), *GetName(), *FString(HasAuthority() ? "SERVER" : "CLIENT"));
 }

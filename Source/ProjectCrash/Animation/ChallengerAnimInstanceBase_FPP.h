@@ -8,10 +8,12 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "ChallengerAnimInstanceBase_FPP.generated.h"
 
+class UCrashAbilitySystemComponent;
 class AChallengerBase;
 
 /**
- * Base animation instance for challenger characters' first-person animation blueprints.
+ * Base animation instance for Challenger characters' first-person animation blueprints. Only Challengers (i.e. player
+ * characters) need first-person animation instances.
  */
 UCLASS()
 class PROJECTCRASH_API UChallengerAnimInstanceBase_FPP : public UChallengerAnimInstanceBase
@@ -25,7 +27,7 @@ public:
 	/** Default constructor. */
 	virtual void NativeInitializeAnimation() override;
 
-	/** Default initializer. */
+	/** Default initializer. Caches the animation's owning character. */
 	virtual void NativeBeginPlay() override;
 
 
@@ -35,8 +37,20 @@ public:
 protected:
 
 	/** This animation instance's owning pawn, cached for convenience. */
-	UPROPERTY(BlueprintReadOnly, Category = "Heroes|Animation")
+	UPROPERTY(BlueprintReadOnly, Category = "Crash|Animation")
 	TObjectPtr<AChallengerBase> OwningChallenger;
+
+	/** This animation instance's owning pawn's ASC, cached for convenience. */
+	UPROPERTY(BlueprintReadOnly, Category = "Crash|Animation")
+	TObjectPtr<UCrashAbilitySystemComponent> OwningASC;
+
+	/** Thread-safe function for checking if an ASC has a given tag. */
+	UFUNCTION(BlueprintCallable, Category = "Crash|Animation", meta = (BLueprintThreadSafe))
+	bool ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const;
+
+	/** Caches this animation's owning pawn's ASC after it is initialized. */
+	UFUNCTION()
+	void OnASCInitialized(UCrashAbilitySystemComponent* CrashASC);
 
 	/**
 	 * Performs a float spring interpolation using the given values.

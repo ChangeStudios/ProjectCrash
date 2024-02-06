@@ -3,6 +3,8 @@
 
 #include "Animation/ChallengerAnimInstanceBase_FPP.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -23,11 +25,40 @@ void UChallengerAnimInstanceBase_FPP::NativeBeginPlay()
 	// Cache the owning challenger character.
 	OwningChallenger = TryGetPawnOwner() ? Cast<AChallengerBase>(TryGetPawnOwner()) : nullptr;
 
+	// This animation instance won't work without a valid Challenger.
+	if (!IsValid(OwningChallenger))
+	{
+		ANIMATION_LOG(Fatal, TEXT("OwningChallenger not valid in animation instance [%s] for [%s]. The animation system will not work properly."), *GetName(), *GetNameSafe(TryGetPawnOwner()));
+	}
+
+	// Cache this animation's owning pawn's ASC when it's initialized.
+	OwningChallenger->ASCInitializedDelegate.AddDynamic(this, &UChallengerAnimInstanceBase_FPP::OnASCInitialized);
+
 	// Only update first-person animations on the local client.
 	if (!OwningChallenger || !OwningChallenger->IsLocallyControlled())
 	{
 		bUseMultiThreadedAnimationUpdate = false;
 	}
+}
+
+bool UChallengerAnimInstanceBase_FPP::ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const
+{
+	if (!IsValid(ASC))
+	{
+		return false;
+	}
+
+	return ASC->GetGameplayTagCount(TagToSearch) > 0;
+}
+
+void UChallengerAnimInstanceBase_FPP::OnASCInitialized(UCrashAbilitySystemComponent* CrashASC)
+{
+	if (!CrashASC)
+	{
+		ANIMATION_LOG(Fatal, TEXT("OnASCInitialized broadcast to [%s] without a valid ASC."), *GetName());
+	}
+
+	OwningASC = CrashASC;
 }
 
 float UChallengerAnimInstanceBase_FPP::UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FFloatSpringInterpData& SpringData)

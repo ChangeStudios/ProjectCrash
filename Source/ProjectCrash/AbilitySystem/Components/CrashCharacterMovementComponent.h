@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CrashCharacterMovementComponent.generated.h"
 
+class UCrashAbilitySystemComponent;
+
 /**
  * Default character movement component for this project. Integrates movement properties, such as movement speed,
  * into the gameplay ability system. 
@@ -21,4 +23,37 @@ public:
 
 	/** Default constructor. */
 	UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer);
+
+
+
+	// Initialization.
+
+public:
+
+	/** Binds relevant delegates. */
+	virtual void BeginPlay() override;
+
+
+
+	// Movement modes.
+
+// Jumping.
+protected:
+
+	/** Adds the "Jumping" tag to this character until they land. */
+	UFUNCTION()
+	void OnJumped();
+
+// Falling.
+protected:
+
+	/** Adds the "Falling" gameplay tag when this component's owning character begins falling. */
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
+// Landing.
+protected:
+
+	/** Clears this component's owning character's "Jumping" and "Falling" tags when they land. */
+	UFUNCTION()
+	void OnLanded(const FHitResult& Hit);
 };

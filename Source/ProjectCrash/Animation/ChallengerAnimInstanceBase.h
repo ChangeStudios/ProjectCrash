@@ -6,6 +6,12 @@
 #include "Animation/AnimInstance.h"
 #include "ChallengerAnimInstanceBase.generated.h"
 
+// Animation log channel shorthand.
+#define ANIMATION_LOG(Verbosity, Format, ...) \
+{ \
+	UE_LOG(LogAnimation, Verbosity, Format, ##__VA_ARGS__); \
+}
+
 class UCharacterAnimData;
 class UEquipmentAnimationData;
 

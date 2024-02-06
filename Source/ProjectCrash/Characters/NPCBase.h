@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "GameFramework/Character.h"
+#include "CrashCharacterBase.h"
 #include "NPCBase.generated.h"
 
 class UAbilitySystemExtensionComponent;
@@ -18,7 +18,7 @@ class UNPCData;
  * taking damage, getting gameplay effects, etc.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API ANPCBase : public ACharacter, public IAbilitySystemInterface
+class PROJECTCRASH_API ANPCBase : public ACrashCharacterBase, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
