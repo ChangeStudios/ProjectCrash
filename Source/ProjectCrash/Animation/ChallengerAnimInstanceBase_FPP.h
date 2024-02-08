@@ -111,6 +111,7 @@ protected:
 	float RightLeftSpeed;
 
 	/** The pawn's signed movement speed relative to their Z-axis. */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
 	float UpDownSpeed;
 
 // Aim & rotation.
