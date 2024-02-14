@@ -14,6 +14,16 @@
 
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 {
+	GravityScale = 1.5;
+	MaxAcceleration = 4096.0f;
+
+	GroundFriction = 0.0f;
+	MaxWalkSpeed = 800.0f;
+	MaxWalkSpeedCrouched = 400.0f;
+	BrakingDecelerationWalking = 4096.0f;
+
+	JumpZVelocity = 700.0f;
+	AirControl = 0.5f;
 }
 
 void UCrashCharacterMovementComponent::BeginPlay()
