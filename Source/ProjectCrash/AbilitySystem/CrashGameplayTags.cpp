@@ -17,7 +17,7 @@ namespace CrashGameplayTags
 
 
 	// Events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Death, "Event.Death", "Event triggered when this ASC’s avatar \"dies.\"");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_Generic_Death, "Event.Ability.Generic.Death", "Event triggered when this ASC’s avatar \"dies.\"");
 
 	
 	// Input

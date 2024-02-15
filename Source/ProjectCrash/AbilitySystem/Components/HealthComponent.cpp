@@ -127,12 +127,12 @@ void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, AActor* Effe
 void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
 #if WITH_SERVER_CODE
-	if (AbilitySystemComponent && DamageEffectSpec.GetContext().IsValid())
+	if (AbilitySystemComponent)
 	{
-		/* Send the "Event.Death" gameplay event through the owner's ability system. This can be used to trigger a
-		 * death gameplay ability. */
+		/* Send the "Event.Ability.Generic.Death" gameplay event through the owner's ability system. This is used to
+		 * trigger a death gameplay ability. */
 		FGameplayEventData Payload;
-		Payload.EventTag = CrashGameplayTags::TAG_Event_Death;
+		Payload.EventTag = CrashGameplayTags::TAG_Event_Ability_Generic_Death;
 		Payload.Instigator = DamageInstigator;
 		Payload.Target = AbilitySystemComponent->GetAvatarActor();
 		Payload.OptionalObject = DamageEffectSpec.Def;

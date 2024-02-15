@@ -22,7 +22,7 @@ namespace CrashGameplayTags
 
 
 	// Events
-	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Death);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Event_Ability_Generic_Death);
 
 	
 	// Input

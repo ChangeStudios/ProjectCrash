@@ -161,6 +161,18 @@ void UHealthAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
 void UHealthAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthAttributeSet, Health, OldValue);
+
+	const float CurrentHealth = GetHealth();
+	const float EstimatedMagnitude = CurrentHealth - OldValue.GetCurrentValue();
+
+	// Broadcast that the target is out of health to clients.
+	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
+	{
+		OutOfHealthDelegate.Broadcast(nullptr, nullptr, FGameplayEffectSpec(), EstimatedMagnitude);
+	}
+
+	// This prevents the OutOfHealthDelegate from being broadcast multiple times on each client.
+	bOutOfHealth = (CurrentHealth <= 0.0f);
 }
 
 void UHealthAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
