@@ -87,11 +87,6 @@ void UAbilitySystemExtensionComponent::UninitializeAbilitySystem()
 	 * avatar actor. */
 	if (AbilitySystemComponent->GetAvatarActor() == GetOwner())
 	{
-		// Remove all ongoing abilities that aren't marked to persist past avatar destruction.
-		FGameplayTagContainer AbilityTypesToIgnore;
-		AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
-		AbilitySystemComponent->CancelAbilities(nullptr, &AbilityTypesToIgnore);
-
 		// Remove all ongoing gameplay cues.
 		AbilitySystemComponent->RemoveAllGameplayCues();
 

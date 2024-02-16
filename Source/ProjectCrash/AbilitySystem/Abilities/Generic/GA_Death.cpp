@@ -38,6 +38,15 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	AGameModeBase* GM = UGameplayStatics::GetGameMode(GetWorld());
 	ACrashGameModeBase* CrashGM = Cast<ACrashGameModeBase>(GM);
 
+	// Unpossess the player from the dying character.
+	if (APawn* Pawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
+	{
+		if (Pawn->Controller)
+		{
+			Pawn->Controller->UnPossess();
+		}
+	}
+
 	// Determine the duration of this death.
 	const float DeathDuration = CrashGM ? CrashGM->DeathDuration : DefaultDeathDuration;
 

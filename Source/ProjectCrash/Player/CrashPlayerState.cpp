@@ -5,6 +5,7 @@
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
@@ -28,6 +29,12 @@ void ACrashPlayerState::PostInitializeComponents()
 	// Initialize the ASC's actor info with this player state as its owner.
 	check(AbilitySystemComponent);
 	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
+
+	// Grant the player's default ability set.
+	if (PlayerAbilitySet)
+	{
+		PlayerAbilitySet->GiveToAbilitySystem(AbilitySystemComponent, nullptr, this);
+	}
 
 	/* Bind the OnInputBlockingChanged callback to when this player's ASC gains or loses the InputBlocking tag. */
 	InputBlockingDelegate = AbilitySystemComponent->RegisterGameplayTagEvent(CrashGameplayTags::TAG_Ability_Behavior_InputBlocking, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ACrashPlayerState::OnInputBlockingChanged);

@@ -19,6 +19,7 @@
 #include "Equipment/EquipmentSet.h"
 #include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
+#include "Libraries/CrashMathLibrary.h"
 #include "Player/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -113,12 +114,11 @@ void AChallengerBase::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	// Initialize the ASC on the client.
+	// If this character gets a new player state, initialize its ASC on the client.
 	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
 
-	if (!ensure(CrashPS))
+	if (!CrashPS)
 	{
-		UE_LOG(LogAbilitySystem, Error, TEXT("Actor [%s] tried to uninitialize its ability system component, but it does not have a player state. This actor needs a player state, or must use a different actor as its ASC's owner."), *GetName());
 		return;
 	}
 
@@ -129,6 +129,54 @@ void AChallengerBase::OnRep_PlayerState()
 	{
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
 	}
+}
+
+void AChallengerBase::UnPossessed()
+{
+	// Uninitialize the unpossessing player's ASC from this pawn.
+	if (ASCExtensionComponent)
+	{
+		ASCExtensionComponent->UninitializeAbilitySystem();
+	}
+
+	Super::UnPossessed();
+}
+
+void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount <= 0)
+	{
+		return;
+	}
+
+	// // Detach equipment.
+	// TArray<AActor*> AttachedActors;
+	// GetAttachedActors(AttachedActors, true, true);
+	// for (AActor* AttachedActor : AttachedActors)
+	// {
+	// 	AttachedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	// }
+
+	// Hide the first-person mesh.
+	FirstPersonMesh->SetVisibility(false, true);
+
+	// Reveal third-person mesh to everyone.
+	ThirdPersonMesh->SetOwnerNoSee(false);
+
+	// Ragdoll third-person mesh.
+	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+	ThirdPersonMesh->SetSimulatePhysics(true);
+
+	const FVector DeathLaunchMagnitude = FVector(2000.0f, 2000.0f, 4000.0f);
+	const FVector DeathLaunchDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f, -1.0f, 0.0f), FVector(1.0f));
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * DeathLaunchMagnitude);
+
+	const FVector DeathRotateMagnitude = FVector(100.0f);
+	const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f)); 
+	ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateMagnitude * DeathRotateDirection);
+
+	ThirdPersonMesh->WakeAllRigidBodies();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
@@ -174,7 +222,7 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	{
 		EquipmentComponent->InitializeComponent();
 		EquipmentComponent->EquipEquipmentSet(ChallengerData->DefaultEquipmentSet);
-		EQUIPMENT_LOG(Warning, TEXT("Equipping default set for [%s]..."), *GetName());
+		EQUIPMENT_LOG(Verbose, TEXT("Equipping default set for [%s]..."), *GetName());
 	}
 	else
 	{
@@ -183,6 +231,9 @@ void AChallengerBase::OnAbilitySystemInitialized()
 
 	// Initialize this character's attribute sets.
 	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
+
+	// Bind OnDeath to when this character dies.
+	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_Event_Ability_Generic_Death, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::OnDeath);
 
 	// Broadcast that this character's ASC was initialized.
 	ASCInitializedDelegate.Broadcast(CrashASC);

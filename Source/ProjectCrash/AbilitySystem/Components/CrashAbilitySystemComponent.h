@@ -19,5 +19,13 @@ UCLASS()
 class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
-	
+
+	// Utilities.
+
+public:
+
+	/** Returns the actor currently acting as this ASC's avatar. Blueprint-exposed wrapper for GetAvatarActor(). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", meta = (DisplayName = "Get Avatar Actor"))
+	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
+
 };

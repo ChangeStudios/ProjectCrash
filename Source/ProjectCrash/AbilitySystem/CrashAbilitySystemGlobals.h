@@ -11,7 +11,7 @@ class UCrashAbilitySystemComponent;
 /**
  * Defines global properties of the ability system and provides various utilities.
  */
-UCLASS(Config=Game)
+UCLASS(Config = Game)
 class PROJECTCRASH_API UCrashAbilitySystemGlobals : public UAbilitySystemGlobals
 {
 	GENERATED_BODY()

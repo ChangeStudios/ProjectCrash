@@ -54,6 +54,21 @@ protected:
 
 
 
+	// Uninitialization.
+
+protected:
+
+	/** Uninitializes this character with its owning player's ASC. */
+	virtual void UnPossessed() override;
+
+public:
+
+	/** Called when this character's death starts to handle character-specific death logic, like ragdolling. */
+	UFUNCTION()
+	void OnDeath(const FGameplayTag Tag, int32 NewCount);
+
+
+
 	// Data.
 
 public:

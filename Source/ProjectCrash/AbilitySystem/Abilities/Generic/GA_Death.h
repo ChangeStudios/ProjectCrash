@@ -22,7 +22,7 @@ public:
 	/** Default constructor. */
 	UGA_Death(const FObjectInitializer& ObjectInitializer);
 
-	/** Cancels ongoing abilities, calls "StartDeath" on the gamemode, and sets a timer to end this ability. */
+	/** Cancels ongoing abilities, calls "StartDeath" on the gamemode, and sets a timer to finish  this ability. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	/** Calls "FinishDeath" on the gamemode. */

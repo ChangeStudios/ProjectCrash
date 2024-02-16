@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerState.h"
 #include "CrashPlayerState.generated.h"
 
+class UCrashAbilitySet;
 class UHealthAttributeSet;
 class UCrashAbilitySystemComponent;
 
@@ -55,8 +56,15 @@ public:
 protected:
 
 	/** This player's ability system component. */
-	UPROPERTY(VisibleAnywhere, Category = "Ability System")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+// Ability sets.
+protected:
+
+	/** An ability set granted to this player when their ASC is initialized and never (automatically) removed. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
+	TObjectPtr<UCrashAbilitySet> PlayerAbilitySet;
 
 // Attribute sets. These have to be created in the same class as their ASC.
 protected:
