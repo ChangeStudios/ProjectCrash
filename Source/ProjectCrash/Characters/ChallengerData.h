@@ -106,4 +106,20 @@ public:
 	/** Contexts mappings that will be bound by default with the specified priority. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TArray<FPrioritizedInputMappingContext> DefaultInputMappings;
+
+
+
+	// Death.
+
+public:
+
+	/** The magnitude with which this character is launched when they die. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	FVector DeathLaunchMagnitude;
+
+	/** The rate at which this character is spun when they die, in degrees/seconds. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	FVector DeathRotateMagnitude;
+
+	
 };

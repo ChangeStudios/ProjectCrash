@@ -19,6 +19,7 @@
 #include "Equipment/EquipmentSet.h"
 #include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Libraries/CrashMathLibrary.h"
 #include "Player/CrashPlayerState.h"
 
@@ -149,14 +150,6 @@ void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
 		return;
 	}
 
-	// // Detach equipment.
-	// TArray<AActor*> AttachedActors;
-	// GetAttachedActors(AttachedActors, true, true);
-	// for (AActor* AttachedActor : AttachedActors)
-	// {
-	// 	AttachedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	// }
-
 	// Hide the first-person mesh.
 	FirstPersonMesh->SetVisibility(false, true);
 
@@ -167,13 +160,11 @@ void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
 
-	const FVector DeathLaunchMagnitude = FVector(2000.0f, 2000.0f, 4000.0f);
 	const FVector DeathLaunchDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f, -1.0f, 0.0f), FVector(1.0f));
-	ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * DeathLaunchMagnitude);
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * ChallengerData->DeathLaunchMagnitude);
 
-	const FVector DeathRotateMagnitude = FVector(100.0f);
-	const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f)); 
-	ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateMagnitude * DeathRotateDirection);
+	const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f));
+	ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateDirection * ChallengerData->DeathRotateMagnitude);
 
 	ThirdPersonMesh->WakeAllRigidBodies();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

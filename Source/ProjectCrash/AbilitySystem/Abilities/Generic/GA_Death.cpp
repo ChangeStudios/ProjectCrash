@@ -25,8 +25,6 @@ UGA_Death::UGA_Death(const FObjectInitializer& ObjectInitializer)
 
 void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo_Checked();
 
 	// Cancel ongoing abilities, unless they shouldn't be cancelled by avatar death.
@@ -38,9 +36,12 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	AGameModeBase* GM = UGameplayStatics::GetGameMode(GetWorld());
 	ACrashGameModeBase* CrashGM = Cast<ACrashGameModeBase>(GM);
 
-	// Unpossess the player from the dying character.
+	// Unpossess the player from the dying actor.
 	if (APawn* Pawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
 	{
+		// Cache the dying pawn so we can still reference it.
+		DyingActor = Pawn;
+		
 		if (Pawn->Controller)
 		{
 			Pawn->Controller->UnPossess();
@@ -61,6 +62,9 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	{
 		EndAbility(GetCurrentAbilitySpecHandle(), ActorInfo, ActivationInfo, true, false);
 	}), DeathDuration, false);
+
+	// Make sure we call the K2 implementation after all of this logic is executed (mostly so DyingActor is valid).
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
