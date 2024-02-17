@@ -21,6 +21,7 @@
 #include "Input/CrashInputComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Libraries/CrashMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -160,11 +161,14 @@ void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
 
-	const FVector DeathLaunchDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f, -1.0f, 0.0f), FVector(1.0f));
-	ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * ChallengerData->DeathLaunchMagnitude);
+	if (HasAuthority())
+	{
+		const FVector DeathLaunchDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f, -1.0f, 0.0f), FVector(1.0f));
+		ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * ChallengerData->DeathLaunchMagnitude);
 
-	const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f));
-	ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateDirection * ChallengerData->DeathRotateMagnitude);
+		const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f));
+		ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateDirection * ChallengerData->DeathRotateMagnitude);
+	}
 
 	ThirdPersonMesh->WakeAllRigidBodies();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -224,7 +228,7 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
 
 	// Bind OnDeath to when this character dies.
-	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_Event_Ability_Generic_Death, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::OnDeath);
+	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::OnDeath);
 
 	// Broadcast that this character's ASC was initialized.
 	ASCInitializedDelegate.Broadcast(CrashASC);

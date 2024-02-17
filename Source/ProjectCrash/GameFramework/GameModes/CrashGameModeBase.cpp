@@ -4,8 +4,10 @@
 #include "GameFramework/GameModes/CrashGameModeBase.h"
 
 #include "AbilitySystemLog.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
 void ACrashGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -34,6 +36,14 @@ void ACrashGameModeBase::StartDeath(AActor* DyingActor)
 	APlayerController* PC = Pawn ? Pawn->GetController<APlayerController>() : nullptr;
 	UPlayer* Player = PC ? PC->Player : nullptr;
 	const bool bPlayerDeath = IsValid(Player);
+
+	/* Activate the Death ability on the dying actor, if they have an ASC. Note: Dying actors should always have an ASC,
+	 * since deaths are triggered by the Health attribute set, which requires an ASC. */
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(DyingActor))
+	{
+		const FGameplayAbilitySpec* AbilitySpec = CrashASC->FindAbilitySpecFromClass(DefaultDeathAbility);
+		CrashASC->TryActivateAbility(AbilitySpec->Handle);
+	}
 
 	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
 }

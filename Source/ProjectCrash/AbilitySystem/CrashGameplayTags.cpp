@@ -28,7 +28,8 @@ namespace CrashGameplayTags
 
 
 	// States
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The target is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The actor is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Falling, "State.Movement.Falling", "The actor is currently airborne with the \"Falling\" movement state. Does not indicate whether the actor jumped or fell. Cleared on land.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Jumping, "State.Movement.Jumping", "The actor is currently airborne as a result of jumping. Cleared on land.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_TemporarilyUnequipped, "State.TemporarilyUnequipped", "The actor has a current equipment set but it is temporarily unequipped. Actors with an EquipmentComponent will automatically unequip and re-equip their current equipment set when they gain and lose this tag, respectively.");
