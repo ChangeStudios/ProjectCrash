@@ -20,6 +20,24 @@ class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemCompo
 {
 	GENERATED_BODY()
 
+	// Initialization.
+
+public:
+
+	/** Registers this ASC with the global ability system. */
+	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
+
+
+
+	// Uninitialization.
+
+public:
+
+	/** Unregisters this ASC from the global ability system. */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+
 	// Utilities.
 
 public:

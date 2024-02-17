@@ -51,12 +51,6 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	// Determine the duration of this death.
 	const float DeathDuration = CrashGM ? CrashGM->DeathDuration : DefaultDeathDuration;
 
-	// Start the death on the game mode.
-	if (CrashGM)
-	{
-		CrashGM->StartDeath(GetActorInfo().PlayerController->Player);
-	}
-
 	// Set a timer to end this ability after DeathDuration.
 	GetWorld()->GetTimerManager().SetTimer(DeathTimer, FTimerDelegate::CreateLambda([this, ActorInfo, &ActivationInfo]
 	{
@@ -69,11 +63,5 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 void UGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// Finish the death on the game mode.
-	if (ACrashGameModeBase* CrashGM = Cast<ACrashGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		CrashGM->FinishDeath(GetActorInfo().PlayerController->Player);
-	}
-
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

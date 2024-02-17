@@ -8,6 +8,9 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/GameModes/CrashGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -129,24 +132,35 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 #if WITH_SERVER_CODE
 	if (AbilitySystemComponent)
 	{
-		/* Send the "Event.Ability.Generic.Death" gameplay event through the owner's ability system. This is used to
-		 * trigger a death gameplay ability. */
-		FGameplayEventData Payload;
-		Payload.EventTag = CrashGameplayTags::TAG_Event_Ability_Generic_Death;
-		Payload.Instigator = DamageInstigator;
-		Payload.Target = AbilitySystemComponent->GetAvatarActor();
-		Payload.OptionalObject = DamageEffectSpec.Def;
-		Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
-		Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
-		Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
-		Payload.EventMagnitude = DamageMagnitude;
+		// /* Send the "Event.Ability.Generic.Death" gameplay event through the owner's ability system. This is used to
+		//  * trigger a death gameplay ability. */
+		// FGameplayEventData Payload;
+		// Payload.EventTag = CrashGameplayTags::TAG_Event_Ability_Generic_Death;
+		// Payload.Instigator = DamageInstigator;
+		// Payload.Target = AbilitySystemComponent->GetAvatarActor();
+		// Payload.OptionalObject = DamageEffectSpec.Def;
+		// Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
+		// Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+		// Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+		// Payload.EventMagnitude = DamageMagnitude;
+		//
+		// // Create a new prediction scope for dying.
+		// FScopedPredictionWindow NewScopedWindow(AbilitySystemComponent, true);
+		//
+		// // Send the event to the owner's ASC.
+		// AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
 
-		// Create a new prediction scope for dying.
-		FScopedPredictionWindow NewScopedWindow(AbilitySystemComponent, true);
+		// Notify the gamemode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
+		ACrashGameModeBase* CrashGM = Cast<ACrashGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
-		// Send the event to the owner's ASC.
-		AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
+		if (CrashGM)
+		{
+			CrashGM->StartDeath(AbilitySystemComponent->GetAvatarActor());
+		}
 	}
-
+	else
+	{
+		ABILITY_LOG(Warning, TEXT("UHealthComponent: Actor [%s] ran out of health, but could not die."), *GetNameSafe(GetOwner()));
+	}
 #endif // #if WITH_SERVER_CODE
 }
