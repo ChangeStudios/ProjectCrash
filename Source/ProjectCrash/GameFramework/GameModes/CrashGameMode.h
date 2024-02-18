@@ -5,16 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpec.h"
 #include "GameFramework/GameModeBase.h"
-#include "CrashGameModeBase.generated.h"
+#include "CrashGameMode.generated.h"
 
+class UCrashGameModeData;
 class UCrashAbilitySystemComponent;
 class UGA_Death;
 
 /**
- * The base class for game modes in this project. Handles game setup, player death, and victory conditions.
+ * The game mode used during gameplay (as opposed to menus, lobbies, etc.). Handles game setup, player death, and
+ * victory conditions.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameModeBase : public AGameModeBase
+class PROJECTCRASH_API ACrashGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
@@ -28,7 +30,23 @@ public:
 
 
 
-	// Player death.
+	// Game data.
+
+public:
+
+	/** Getter for GameModeData. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game", meta = (ToolTip = "Data defining various properties of this game mode."))
+	UCrashGameModeData* GetGameModeData() const { return GameModeData; }
+
+protected:
+
+	/** Data defining various properties of this game mode, such as players' default starting lives. */
+	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Data")
+	TObjectPtr<UCrashGameModeData> GameModeData;
+
+
+
+	// Death.
 
 public:
 
@@ -38,15 +56,6 @@ public:
 
 	/** Ends the DeathAbility if one was given. */
 	void FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility = nullptr);
-
-	/** The default death ability to use in this game mode. This will be activated on ASCs when their avatars die via
-	 * running out of health. */
-	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Parameters|Death")
-	TSubclassOf<UGA_Death> DefaultDeathAbility;
-
-	/** The amount of time to wait between StartDeath and FinishDeath. */
-	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Parameters|Death")
-	float DeathDuration;
 
 	/** Timer used to finish an actor death a certain amount of time after it was started. */
 	FTimerHandle DeathTimerHandle;

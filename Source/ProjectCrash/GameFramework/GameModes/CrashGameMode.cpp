@@ -1,25 +1,26 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameModes/CrashGameModeBase.h"
+#include "GameFramework/GameModes/CrashGameMode.h"
 
 #include "AbilitySystemLog.h"
+#include "CrashGameModeData.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/PlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState.h"
 
-void ACrashGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
 	// Add the Death ability to the global ability system, which will grant it to each ASC as they are created.
 	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
 	{
-		if (DefaultDeathAbility)
+		if (GameModeData->DefaultDeathAbility)
 		{
-			GlobalAbilitySystem->GrantGlobalAbility(DefaultDeathAbility);
+			GlobalAbilitySystem->GrantGlobalAbility(GameModeData->DefaultDeathAbility);
 		}
 		else
 		{
@@ -28,7 +29,7 @@ void ACrashGameModeBase::InitGame(const FString& MapName, const FString& Options
 	}
 }
 
-void ACrashGameModeBase::StartDeath(AActor* DyingActor)
+void ACrashGameMode::StartDeath(AActor* DyingActor)
 {
 	check(DyingActor);
 
@@ -44,7 +45,7 @@ void ACrashGameModeBase::StartDeath(AActor* DyingActor)
 	 * since deaths are triggered by the Health attribute set, which requires an ASC. */
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(DyingActor))
 	{
-		const FGameplayAbilitySpec* AbilitySpec = CrashASC->FindAbilitySpecFromClass(DefaultDeathAbility);
+		const FGameplayAbilitySpec* AbilitySpec = CrashASC->FindAbilitySpecFromClass(GameModeData->DefaultDeathAbility);
 		const bool bDeathAbilitySuccess = CrashASC->TryActivateAbility(AbilitySpec->Handle);
 
 		// Start a timer to finish the Death after DeathDuration.
@@ -52,11 +53,21 @@ void ACrashGameModeBase::StartDeath(AActor* DyingActor)
 		{
 			// Only pass in the Death ability's handle if it was successfully activated.
 			FinishDeath(DyingActor, CrashASC, bDeathAbilitySuccess ? AbilitySpec : nullptr);
-		}), DeathDuration, false);
+		}), GameModeData->DeathDuration, false);
+	}
+
+	/* If a player died, decrement their lives. The player state will handle the rest, and notify us if the player is
+	 * now out of lives. */
+	if (bPlayerDeath)
+	{
+		if (ACrashPlayerState* CrashPS = PC->GetPlayerState<ACrashPlayerState>())
+		{
+			CrashPS->DecrementLives();
+		}
 	}
 }
 
-void ACrashGameModeBase::FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility)
+void ACrashGameMode::FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility)
 {
 	// If we activated the Death ability, end it when the death finishes.
     if (DeathAbility != nullptr)

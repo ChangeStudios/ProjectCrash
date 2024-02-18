@@ -7,16 +7,10 @@
 #include "GameFramework/PlayerState.h"
 #include "CrashPlayerState.generated.h"
 
-class UCrashAbilitySet;
 class UHealthAttributeSet;
-class UCrashAbilitySystemComponent;
 
 /**
- * The default player state used for all players. Contains player data that persists past pawn death or destruction,
- * such as match stats or the currently selected challenger.
- *
- * Owns and manages the player's ability system component, allowing persistent ability data, like current ultimate
- * charge, to be safely tracked independently from player's pawn.
+ * The player state used during gameplay (as opposed to menus, lobbies, etc.).
  */
 UCLASS()
 class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilitySystemInterface
@@ -38,6 +32,27 @@ public:
 
 	/** Initializes the ASC with this player state as the owner after all other components have been initialized. */
 	virtual void PostInitializeComponents() override;
+
+
+
+	// Game data.
+
+// Lives.
+public:
+
+	/** Decrements this player's current number of lives. If the player runs out of lives, the game mode is notified. */
+	UFUNCTION(Server, Reliable)
+	void DecrementLives();
+
+protected:
+
+	/** This player's current number of remaining lives. This is initialized and managed by the game mode. */
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, ReplicatedUsing = OnRep_CurrentLives, Category = "Game Data")
+	uint8 CurrentLives;
+
+	/** OnRep for CurrentLives. Updates client-side information (primarily the user interface). */
+	UFUNCTION()
+	void OnRep_CurrentLives(uint8 OldValue);
 
 
 
@@ -66,8 +81,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UHealthAttributeSet> HealthSet;
 
-// Callbacks.
+// Event callbacks.
 private:
+
 	/**
 	 * Callback bound to when this player's ASC gains or loses an InputBlocking gameplay tag. Disables or enables
 	 * movement and camera input, respectively.

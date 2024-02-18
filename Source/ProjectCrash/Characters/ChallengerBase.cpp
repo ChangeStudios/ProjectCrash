@@ -17,7 +17,7 @@
 #include "Equipment/EquipmentComponent.h"
 #include "Equipment/EquipmentLog.h"
 #include "Input/CrashInputComponent.h"
-#include "Player/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer

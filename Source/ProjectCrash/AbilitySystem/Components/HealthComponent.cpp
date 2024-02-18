@@ -5,11 +5,9 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
-#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
-#include "GameFramework/Character.h"
-#include "GameFramework/GameModes/CrashGameModeBase.h"
+#include "GameFramework/GameModes/CrashGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
@@ -151,7 +149,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 		// AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
 
 		// Notify the gamemode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
-		ACrashGameModeBase* CrashGM = Cast<ACrashGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
 		if (CrashGM)
 		{

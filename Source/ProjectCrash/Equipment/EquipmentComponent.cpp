@@ -204,18 +204,18 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 
 		if (const AChallengerBase* CharAsChallenger = Cast<AChallengerBase>(EquippingChar))
 		{
-			if (CharAsChallenger->ChallengerData && CharAsChallenger->ChallengerData->DefaultAnimData)
+			if (CharAsChallenger->GetChallengerData() && CharAsChallenger->GetChallengerData()->DefaultAnimData)
 			{
 				// Update the first-person mesh's animation data.
 				if (UChallengerAnimInstanceBase* FPPAnimInstance = Cast<UChallengerAnimInstanceBase>(CharAsChallenger->GetFirstPersonMesh()->GetAnimInstance()))
 				{
-					FPPAnimInstance->UpdateAnimData(CharAsChallenger->ChallengerData->DefaultAnimData);
+					FPPAnimInstance->UpdateAnimData(CharAsChallenger->GetChallengerData()->DefaultAnimData);
 				}
 
 				// Update the third-person mesh's animation data.
 				if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(CharAsChallenger->GetThirdPersonMesh()->GetAnimInstance()))
 				{
-					TPPAnimInstance->UpdateAnimData(CharAsChallenger->ChallengerData->DefaultAnimData);
+					TPPAnimInstance->UpdateAnimData(CharAsChallenger->GetChallengerData()->DefaultAnimData);
 				}
 			}
 		}

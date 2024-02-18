@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "CrashCharacterBase.h"
+#include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "ChallengerBase.generated.h"
@@ -78,14 +79,20 @@ protected:
 
 
 
-	// Data.
+	// Challenger data.
 
 public:
 
-	/** A collection of data used to define the default properties of this challenger, such as its default abilities
-	 * and input mappings. */
+	/** Getter for ChallengerData. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Challenger|Data", meta = (ToolTip = "Data used to define the default properties of a challenger."))
+	UChallengerData* GetChallengerData() const { return ChallengerData; }
+
+protected:
+
+	/** Data used to define the default properties of this challenger, such as its default abilities and input
+	 * mappings. */
 	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data")
-	TObjectPtr<const UChallengerData> ChallengerData;
+	TObjectPtr<UChallengerData> ChallengerData;
 
 
 

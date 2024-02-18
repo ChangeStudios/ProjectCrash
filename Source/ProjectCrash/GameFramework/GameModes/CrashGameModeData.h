@@ -1,0 +1,49 @@
+// Copyright Samuel Reitich 2024.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/DataAsset.h"
+#include "CrashGameModeData.generated.h"
+
+class UGA_Death;
+
+/**
+ * Data defining the properties of a specific game mode, such as players' default starting lives.
+ */
+UCLASS(BlueprintType, Const, Meta = (DisplayName = "Game Mode Data"))
+class PROJECTCRASH_API UCrashGameModeData : public UDataAsset
+{
+	GENERATED_BODY()
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UCrashGameModeData(const FObjectInitializer& ObjectInitializer);
+
+
+
+	// Lives.
+
+public:
+
+	/** The number of lives with which players start games. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lives", DisplayName = "Starting Player Lives", meta = (UIMin = 1, UIMax = 255))
+	uint8 StartingLives;
+
+
+	// Death.
+
+public:
+
+	/** The default death ability to use in this game mode. This will be activated on ASCs when their avatars die via
+	 * running out of health. */
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	TSubclassOf<UGA_Death> DefaultDeathAbility;
+
+	/** The amount of time to wait between StartDeath and FinishDeath. */
+	UPROPERTY(EditDefaultsOnly, Category = "Death", meta = (Units = "seconds"))
+	float DeathDuration;
+};
