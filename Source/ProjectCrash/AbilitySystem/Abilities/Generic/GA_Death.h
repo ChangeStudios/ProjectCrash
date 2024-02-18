@@ -30,19 +30,7 @@ public:
 
 protected:
 
-	/** The default death duration to use if one cannot be retrieved from the game mode. */
-	UPROPERTY(EditDefaultsOnly, Category = "Ability Data")
-	float DefaultDeathDuration;
-
 	/** A reference to the actor that is dying, since we will not be able to retrieve it after the owner abandons it. */
 	UPROPERTY(BlueprintReadOnly, Category = "Ability Data")
 	AActor* DyingActor;
-
-
-
-	// Timer.
-
-private:
-
-	FTimerHandle DeathTimer;
 };

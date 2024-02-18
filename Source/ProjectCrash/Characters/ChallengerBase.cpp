@@ -16,12 +16,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
 #include "Equipment/EquipmentLog.h"
-#include "Equipment/EquipmentSet.h"
-#include "Input/CrashInputActionMapping.h"
 #include "Input/CrashInputComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Libraries/CrashMathLibrary.h"
-#include "Net/UnrealNetwork.h"
 #include "Player/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -133,24 +128,41 @@ void AChallengerBase::OnRep_PlayerState()
 	}
 }
 
-void AChallengerBase::UnPossessed()
+void AChallengerBase::UninitAndDestroy()
 {
-	// Uninitialize the unpossessing player's ASC from this pawn.
-	if (ASCExtensionComponent)
+	// Set a timer to safely destroy this actor on the server.
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(0.1f);
+	}
+
+	// Uninitialize this character from its ASC if it's still the avatar. Otherwise, the ASC's new avatar already did this.
+	if (GetAbilitySystemComponent() && (GetAbilitySystemComponent()->GetAvatarActor() == this))
 	{
 		ASCExtensionComponent->UninitializeAbilitySystem();
 	}
 
-	Super::UnPossessed();
+	// Hide this actor until it's fully destroyed.
+	SetActorHiddenInGame(true);
 }
 
-void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
+void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewCount)
 {
-	if (NewCount <= 0)
+	// When the dying tag is added, this character's death has started.
+	if (NewCount == 1)
 	{
-		return;
+		OnDeathStarted();
 	}
+	// When the Dying tag is removed, this character's death has finished.
+	else if (NewCount == 0)
+	{
+		OnDeathFinished();
+	}
+}
 
+void AChallengerBase::OnDeathStarted()
+{
 	// Hide the first-person mesh.
 	FirstPersonMesh->SetVisibility(false, true);
 
@@ -160,18 +172,13 @@ void AChallengerBase::OnDeath(const FGameplayTag Tag, int32 NewCount)
 	// Ragdoll third-person mesh.
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
-
-	if (HasAuthority())
-	{
-		const FVector DeathLaunchDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f, -1.0f, 0.0f), FVector(1.0f));
-		ThirdPersonMesh->SetAllPhysicsLinearVelocity(DeathLaunchDirection * ChallengerData->DeathLaunchMagnitude);
-
-		const FVector DeathRotateDirection = UCrashMathLibrary::RandomVectorInRange(FVector(-1.0f), FVector(1.0f));
-		ThirdPersonMesh->SetAllPhysicsAngularVelocityInDegrees(DeathRotateDirection * ChallengerData->DeathRotateMagnitude);
-	}
-
 	ThirdPersonMesh->WakeAllRigidBodies();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AChallengerBase::OnDeathFinished()
+{
+	UninitAndDestroy();
 }
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
@@ -227,8 +234,8 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	// Initialize this character's attribute sets.
 	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
 
-	// Bind OnDeath to when this character dies.
-	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::OnDeath);
+	// Bind Death events.
+	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);
 
 	// Broadcast that this character's ASC was initialized.
 	ASCInitializedDelegate.Broadcast(CrashASC);

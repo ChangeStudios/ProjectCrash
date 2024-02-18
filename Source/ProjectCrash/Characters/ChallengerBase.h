@@ -58,14 +58,23 @@ protected:
 
 protected:
 
-	/** Uninitializes this character with its owning player's ASC. */
-	virtual void UnPossessed() override;
+	/** Uninitializes this character with its owning player's ASC and destroys itself. This is used when this character
+	 * has already been unpossessed but still needs to be cleaned up. */
+	void UninitAndDestroy();
 
-public:
+private:
 
-	/** Called when this character's death starts to handle character-specific death logic, like ragdolling. */
+	/** Called when this character's death starts and finishes to call OnDeathStarted and OnDeathFinished. */
 	UFUNCTION()
-	void OnDeath(const FGameplayTag Tag, int32 NewCount);
+	void HandleDeathStateChanged(const FGameplayTag Tag, int32 NewCount);
+
+protected:
+
+	/** Called when this character's death starts, to handle logic like ragdolling. */
+	void OnDeathStarted();
+
+	/** Called when this character's death finishes, to handle logic like destruction. */
+	void OnDeathFinished();
 
 
 

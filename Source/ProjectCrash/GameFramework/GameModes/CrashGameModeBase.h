@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpec.h"
 #include "GameFramework/GameModeBase.h"
 #include "CrashGameModeBase.generated.h"
 
+class UCrashAbilitySystemComponent;
 class UGA_Death;
 
 /**
@@ -34,8 +36,8 @@ public:
 	 * client-side death logic if the actor is a pawn currently controlled by a player. */
 	void StartDeath(AActor* DyingActor);
 
-	/** */
-	void FinishDeath(AActor* DyingActor);
+	/** Ends the DeathAbility if one was given. */
+	void FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility = nullptr);
 
 	/** The default death ability to use in this game mode. This will be activated on ASCs when their avatars die via
 	 * running out of health. */
@@ -45,4 +47,7 @@ public:
 	/** The amount of time to wait between StartDeath and FinishDeath. */
 	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Parameters|Death")
 	float DeathDuration;
+
+	/** Timer used to finish an actor death a certain amount of time after it was started. */
+	FTimerHandle DeathTimerHandle;
 };

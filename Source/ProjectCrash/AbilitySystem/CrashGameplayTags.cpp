@@ -15,10 +15,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageSelf, "Effects.Damage.CanDamageSelf", "Specifies that damage caused by this gameplay effect can affect the source actor.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageTeam, "Effects.Damage.CanDamageTeam", "Specifies that damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
 
-
-	// Events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_Generic_Death, "Event.Ability.Generic.Death", "Event triggered when this ASC’s avatar \"dies.\"");
-
 	
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Jump, "InputTag.Jump", "Input tag to activate the jump ability.");
