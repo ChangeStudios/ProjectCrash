@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameModes/CrashGameMode.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
 
 #include "AbilitySystemLog.h"
 #include "CrashGameModeData.h"
@@ -27,6 +27,10 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 			ABILITY_LOG(Fatal, TEXT("ACrashGameModeBase: Game Mode [%s] does not have a default Death ability. Death logic will not function properly."), *GetName());
 		}
 	}
+}
+
+void ACrashGameMode::EndGame()
+{
 }
 
 void ACrashGameMode::StartDeath(AActor* DyingActor)
@@ -74,6 +78,8 @@ void ACrashGameMode::FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponen
     {
     	CrashASC->CancelAbilityHandle(DeathAbility->Handle); // EndAbility is protected so we just have to cancel it (which does the same thing).
     }
+
+	// Handle respawn if the game is not over.
 
     UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] successfully died. Finishing death..."), *GetNameSafe(DyingActor));
 }

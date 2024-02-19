@@ -7,7 +7,7 @@
 #include "CrashAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
-#include "GameFramework/GameModes/CrashGameMode.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)

@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameModes/CrashGameModeData.h"
+#include "GameFramework/GameModes/Game/CrashGameModeData.h"
 
 UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializer)
 {

@@ -30,6 +30,18 @@ public:
 
 
 
+	// Game state.
+
+protected:
+
+	/** Checks if this game mode's victory condition has been met. If it has, returns the winning team's ID. */
+	virtual bool CheckVictoryCondition() const { return false; }
+
+	/** Ends the game, declaring the given team as the winner. */
+	virtual void EndGame();
+
+
+
 	// Game data.
 
 public:
@@ -52,10 +64,12 @@ public:
 
 	/** Handles the death (i.e. running out of health) of an actor by activating the Death gameplay ability. Performs
 	 * client-side death logic if the actor is a pawn currently controlled by a player. */
-	void StartDeath(AActor* DyingActor);
+	virtual void StartDeath(AActor* DyingActor);
+
+protected:
 
 	/** Ends the DeathAbility if one was given. */
-	void FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility = nullptr);
+	virtual void FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility = nullptr);
 
 	/** Timer used to finish an actor death a certain amount of time after it was started. */
 	FTimerHandle DeathTimerHandle;

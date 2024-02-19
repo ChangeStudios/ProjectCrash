@@ -6,8 +6,8 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/GameModes/CrashGameMode.h"
-#include "GameFramework/GameModes/CrashGameModeData.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/GameModes/Game/CrashGameModeData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -22,6 +22,9 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 
 	// Create this player's attribute sets. These must be created in the same class as their ASC.
 	HealthSet = CreateDefaultSubobject<UHealthAttributeSet>(TEXT("HealthSet"));
+
+	// Initialize this player's team to No Team.
+	TeamID = FCrashTeamID::NO_TEAM;
 }
 
 void ACrashPlayerState::PostInitializeComponents()
@@ -54,6 +57,23 @@ void ACrashPlayerState::PostInitializeComponents()
 			UE_LOG(LogGameMode, Warning, TEXT("ACrashPlayerState: CrashPlayerState [%s] tried to initialize its current lives, but could not find a game mode with valid GameModeData. ACrashPlayerState must be used with ACrashGameMode, and the game mode must have valid game mode data. Falling back to default starting lives: %i."), *GetName(), StartingLivesFallback);
 		}
 	}
+}
+
+void ACrashPlayerState::SetTeamID(FCrashTeamID InTeamID)
+{
+	// Only the server can change a player's team.
+	if (HasAuthority())
+	{
+		TeamID = InTeamID;
+	}
+	else
+	{
+		UE_LOG(LogPlayerManagement, Warning, TEXT("ACrashPlayerState: An attempt was made by [%s] to change TeamID without authority."), *GetName());
+	}
+}
+
+void ACrashPlayerState::OnRep_TeamID(FCrashTeamID OldTeamID)
+{
 }
 
 void ACrashPlayerState::DecrementLives_Implementation()
@@ -106,5 +126,6 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, TeamID, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, CurrentLives, COND_None, REPNOTIFY_Always);
 }

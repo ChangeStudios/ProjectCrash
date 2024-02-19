@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/Teams/CrashTeams.h"
 #include "CrashPlayerState.generated.h"
 
 class UHealthAttributeSet;
@@ -13,7 +14,7 @@ class UHealthAttributeSet;
  * The player state used during gameplay (as opposed to menus, lobbies, etc.).
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilitySystemInterface
+class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilitySystemInterface, public ICrashTeamMemberInterface
 {
 	GENERATED_BODY()
 
@@ -35,9 +36,37 @@ public:
 
 
 
-	// Game data.
+	// Team.
 
-// Lives.
+// Accessors.
+public:
+
+	/** Server-only setter for this player's Team ID. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Player|Player State|Team")
+	void SetTeamID(FCrashTeamID InTeamID);
+
+	/** Retrieves this player's current team through the CrashTeamMember interface. */
+	virtual FCrashTeamID GetTeamID() const override { return TeamID; }
+
+	/** Blueprint-exposed getter for TeamID. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Team", meta = (ToolTip = "This player's current team ID."))
+	uint8 K2_GetTeamID() const { return TeamID; }
+
+// Internals.
+protected:
+
+	/** This player's current team ID. */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamID)
+	FCrashTeamID TeamID;
+
+	/** OnRep for Team. */
+	UFUNCTION()
+	void OnRep_TeamID(FCrashTeamID OldTeamID);
+
+
+
+	// Lives.
+
 public:
 
 	/** Decrements this player's current number of lives. If the player runs out of lives, the game mode is notified. */
@@ -65,7 +94,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/** Typed getter for this player's ASC. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Ability System")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 protected:
