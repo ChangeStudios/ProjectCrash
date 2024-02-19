@@ -9,6 +9,7 @@
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -27,10 +28,6 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 			ABILITY_LOG(Fatal, TEXT("ACrashGameModeBase: Game Mode [%s] does not have a default Death ability. Death logic will not function properly."), *GetName());
 		}
 	}
-}
-
-void ACrashGameMode::EndGame()
-{
 }
 
 void ACrashGameMode::StartDeath(AActor* DyingActor)

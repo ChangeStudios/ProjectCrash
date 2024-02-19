@@ -15,15 +15,6 @@ class PROJECTCRASH_API ACrashGM_Deathmatch : public ACrashGameMode
 {
 	GENERATED_BODY()
 
-	// Game state.
-
-protected:
-
-	/** */
-	virtual bool CheckVictoryCondition() const override;
-
-
-
 	// Death.
 
 protected:

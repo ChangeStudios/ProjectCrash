@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpec.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "CrashGameMode.generated.h"
 
 class UCrashGameModeData;
@@ -16,7 +16,7 @@ class UGA_Death;
  * victory conditions.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameMode : public AGameModeBase
+class PROJECTCRASH_API ACrashGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
@@ -27,18 +27,6 @@ public:
 	/** Adds the Death gameplay ability to the global ability system, which will grant it to each ASC as they are
 	 * created. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
-
-
-
-	// Game state.
-
-protected:
-
-	/** Checks if this game mode's victory condition has been met. If it has, returns the winning team's ID. */
-	virtual bool CheckVictoryCondition() const { return false; }
-
-	/** Ends the game, declaring the given team as the winner. */
-	virtual void EndGame();
 
 
 

@@ -69,6 +69,10 @@ protected:
 
 public:
 
+	/** Getter for CurrentLives. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Lives", meta = (ToolTip = "This player's current number of remaining lives."))
+	uint8 GetCurrentLives() const { return CurrentLives; }
+
 	/** Decrements this player's current number of lives. If the player runs out of lives, the game mode is notified. */
 	UFUNCTION(Server, Reliable)
 	void DecrementLives();
@@ -76,7 +80,7 @@ public:
 protected:
 
 	/** This player's current number of remaining lives. This is initialized and managed by the game mode. */
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, ReplicatedUsing = OnRep_CurrentLives, Category = "Game Data")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentLives)
 	uint8 CurrentLives;
 
 	/** OnRep for CurrentLives. Updates client-side information (primarily the user interface). */
