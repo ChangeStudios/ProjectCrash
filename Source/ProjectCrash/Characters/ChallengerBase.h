@@ -27,7 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FASCInitializedSignature, UCrashAbil
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
  * such as a first-person camera, input, and an interface with the ability system.
  */
-UCLASS(Abstract, meta = (PrioritizeCategories = "Challenger Data"))
+UCLASS(Abstract, Meta = (PrioritizeCategories = "Challenger Data"))
 class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
@@ -84,7 +84,7 @@ protected:
 public:
 
 	/** Getter for ChallengerData. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Challenger|Data", meta = (ToolTip = "Data used to define the default properties of a challenger."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Challenger|Data", Meta = (ToolTip = "Data used to define the default properties of a challenger."))
 	UChallengerData* GetChallengerData() const { return ChallengerData; }
 
 protected:
@@ -117,15 +117,15 @@ public:
 protected:
 
 	/** The mesh only visible in first-person. This is only seen by the local player and spectators. */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
 
 	/** The mesh only visible in third-person. This mesh is seen by all other players, and also the local player when in a third-person perspective. */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
 
 	/** First-person camera. */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FirstPersonCameraComponent;
 
 
@@ -138,7 +138,7 @@ protected:
 	/** Allows this character to equip various equipment sets. Most challengers only ever need one equipment set, but
 	 * some may need multiple. For example, if an ability grants the challenger a special weapon, they will need an
 	 * additional equipment set for that weapon. */
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Equipment", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UEquipmentComponent> EquipmentComponent;
 
 
@@ -197,7 +197,7 @@ protected:
 	/** This character's health component. Acts as an interface to this character's ASC's health attribute set, which
 	 * is stored in the owning player's player state. Gets initialized with an ASC after one is initialized with this
 	 * character. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System|Attributes", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability System|Attributes", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
 
 

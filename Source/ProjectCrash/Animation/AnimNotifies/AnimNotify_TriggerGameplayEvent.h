@@ -13,7 +13,7 @@
  * The gameplay event is sent to the owner of the mesh on which this notify is triggered. This is most efficiently used
  * in abilities with a PlayMontageAndWait followed by a WaitGameplayEventToActor node.
  */
-UCLASS(Const, HideCategories = Object, CollapseCategories, meta = (DisplayName = "Trigger Gameplay Event"))
+UCLASS(Const, HideCategories = Object, CollapseCategories, Meta = (DisplayName = "Trigger Gameplay Event"))
 class PROJECTCRASH_API UAnimNotify_TriggerGameplayEvent : public UAnimNotify
 {
 	GENERATED_BODY()
@@ -40,6 +40,6 @@ public:
 
 	/** The gameplay tag used to trigger the gameplay event when this notify is triggered. The event is sent to the
 	 * owner of the mesh that triggered this notify. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", meta = (DisplayName = "Gameplay Event Tag"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (DisplayName = "Gameplay Event Tag"))
 	FGameplayTag EventTag;
 };

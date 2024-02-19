@@ -31,42 +31,43 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 	}
 }
 
-void ACrashGameMode::StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec)
+void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 {
 	/* Send a gameplay event to the ASC of the dying actor to trigger the Death gameplay ability, which handles
 	 * client-side death logic. */
-	if (DyingActorASC)
+	if (DeathData.DyingActorASC)
 	{
 		{
 			FGameplayEventData Payload;
 			Payload.EventTag = CrashGameplayTags::TAG_Event_Death;
-			Payload.Instigator = DamageInstigator;
-			Payload.Target = DyingActorASC->GetAvatarActor();
-			Payload.OptionalObject = DamageEffectSpec.Def;
-			Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
-			Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
-			Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+			Payload.Instigator = DeathData.DamageInstigator;
+			Payload.Target = DeathData.DyingActorASC->GetAvatarActor();
+			Payload.OptionalObject = DeathData.DamageEffectSpec.Def;
+			Payload.OptionalObject2 = DeathData.KillingDamageCauser;
+			Payload.ContextHandle = DeathData.DamageEffectSpec.GetEffectContext();
+			Payload.InstigatorTags = *DeathData.DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+			Payload.TargetTags = *DeathData.DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
 
-			FScopedPredictionWindow NewScopedWindow(DyingActorASC, true);
-			DyingActorASC->HandleGameplayEvent(Payload.EventTag, &Payload);
+			FScopedPredictionWindow NewScopedWindow(DeathData.DyingActorASC, true);
+			DeathData.DyingActorASC->HandleGameplayEvent(Payload.EventTag, &Payload);
 		}
 	}
 
 	// Start a timer to finish the Death after DeathDuration.
 	{
-		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateLambda([this, DyingActor, DyingActorASC]
+		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateLambda([this, DeathData]
 		{
-			FinishDeath(DyingActor, DyingActorASC);
+			FinishDeath(DeathData);
 		}), GameModeData->DeathDuration, false);
 	}
 
 	// Cache the player controlling the dying actor, if it's a player-controlled pawn.
-	APawn* Pawn = Cast<APawn>(DyingActor);
+	APawn* Pawn = Cast<APawn>(DeathData.DyingActor);
 	APlayerController* PC = Pawn ? Pawn->GetController<APlayerController>() : nullptr;
 	UPlayer* Player = PC ? PC->Player : nullptr;
 	const bool bPlayerDeath = IsValid(Player);
 
-	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
+	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DeathData.DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
 
 	/* If a player died, decrement their lives. The player state will handle the rest, and notify us if the player is
 	 * now out of lives. */
@@ -79,16 +80,16 @@ void ACrashGameMode::StartDeath(AActor* DyingActor, UAbilitySystemComponent* Dyi
 	}
 }
 
-void ACrashGameMode::FinishDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC)
+void ACrashGameMode::FinishDeath(const FDeathData& DeathData)
 {
 	// End the Death ability when the death finishes.
-	if (DyingActorASC)
+	if (DeathData.DyingActorASC)
 	{
 		const FGameplayTagContainer DeathTags = FGameplayTagContainer(CrashGameplayTags::TAG_Event_Death);
-		DyingActorASC->CancelAbilities(&DeathTags);
+		DeathData.DyingActorASC->CancelAbilities(&DeathTags);
 	}
 
 	// Handle respawn if the game is not over.
 
-    UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] successfully died. Finishing death..."), *GetNameSafe(DyingActor));
+    UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] successfully died. Finishing death..."), *GetNameSafe(DeathData.DyingActor));
 }

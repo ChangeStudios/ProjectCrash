@@ -45,7 +45,7 @@ protected:
 	TObjectPtr<UCrashAbilitySystemComponent> OwningASC;
 
 	/** Thread-safe function for checking if an ASC has a given tag. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|Animation", meta = (BLueprintThreadSafe))
+	UFUNCTION(BlueprintCallable, Category = "Crash|Animation", Meta = (BLueprintThreadSafe))
 	bool ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const;
 
 	/** Caches this animation's owning pawn's ASC after it is initialized. */

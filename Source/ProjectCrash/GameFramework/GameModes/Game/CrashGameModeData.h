@@ -30,7 +30,7 @@ public:
 public:
 
 	/** The number of lives with which players start games. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lives", DisplayName = "Starting Player Lives", meta = (UIMin = 1, UIMax = 255))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lives", DisplayName = "Starting Player Lives", Meta = (UIMin = 1, UIMax = 255))
 	uint8 StartingLives;
 
 
@@ -44,6 +44,6 @@ public:
 	TSubclassOf<UGA_Death> DefaultDeathAbility;
 
 	/** The amount of time to wait between StartDeath and FinishDeath. */
-	UPROPERTY(EditDefaultsOnly, Category = "Death", meta = (Units = "seconds"))
+	UPROPERTY(EditDefaultsOnly, Category = "Death", Meta = (Units = "seconds"))
 	float DeathDuration;
 };

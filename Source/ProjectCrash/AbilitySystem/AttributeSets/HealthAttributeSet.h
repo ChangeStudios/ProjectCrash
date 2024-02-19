@@ -76,7 +76,7 @@ private:
 
 	/** Current health, defaulted to and capped at MaximumHealth (usually 100). Hidden from modifiers as to only be
 	 * modified by executions. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability System|Attributes|Health", meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Health;
 
 		// Tracks when Health reaches 0.
@@ -86,7 +86,7 @@ private:
 		float HealthBeforeAttributeChange;
 
 	/** Maximum value that the Health attribute can have at any time. Usually the same as Health's default value. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability System|Attributes|Health", meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability System|Attributes|Health", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
 		// Caches MaxHealth before it is updated to determine whether attribute-change delegates should be broadcast.

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpec.h"
+#include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "GameFramework/GameMode.h"
 #include "CrashGameMode.generated.h"
 
@@ -35,7 +36,7 @@ public:
 public:
 
 	/** Getter for GameModeData. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game", meta = (ToolTip = "Data defining various properties of this game mode."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game", Meta = (ToolTip = "Data defining various properties of this game mode."))
 	UCrashGameModeData* GetGameModeData() const { return GameModeData; }
 
 protected:
@@ -50,22 +51,14 @@ protected:
 
 public:
 
-	/**
-	 * Handles the death (i.e. running out of health) of an actor depending on the game mode. Activates the Death
-	 * gameplay ability to handle client-side death logic.
-	 *
-	 * @param	DyingActor			Actor that died. This is usually an ASC's avatar.
-	 * @param	DyingActorASC		ASC associated with the dying actor. The dying actor is usually the avatar and/or the owner of the ASC.
-	 * @param	DamageInstigator	Actor responsible for instigating the damage that killed this actor, e.g. an enemy player pawn.
-	 * @param	DamageCauser		Actor that directly caused the damage that killed this actor, e.g. a grenade.
-	 * @param	DamageEffectSpec	Gameplay effect that applied the damage that killed this actor.
-	 */
-	virtual void StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec);
+	/** Handles the death (i.e. running out of health) of an actor depending on the game mode. Activates the Death
+	 * gameplay ability to handle client-side death logic. */
+	virtual void StartDeath(const FDeathData& DeathData);
 
 protected:
 
 	/** Ends the DeathAbility if one was given. */
-	virtual void FinishDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC);
+	virtual void FinishDeath(const FDeathData& DeathData);
 
 	/** Timer used to finish an actor death a certain amount of time after it was started. */
 	FTimerHandle DeathTimerHandle;

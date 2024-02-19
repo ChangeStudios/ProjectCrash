@@ -3,7 +3,7 @@
 
 #include "GameFramework/GameModes/Game/CrashGM_Deathmatch.h"
 
-void ACrashGM_Deathmatch::StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec)
+void ACrashGM_Deathmatch::StartDeath(const FDeathData& DeathData)
 {
-	Super::StartDeath(DyingActor, DyingActorASC, DamageInstigator, DamageCauser, DamageEffectSpec);
+	Super::StartDeath(DeathData);
 }

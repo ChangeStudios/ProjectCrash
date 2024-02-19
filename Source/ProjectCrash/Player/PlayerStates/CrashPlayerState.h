@@ -49,7 +49,7 @@ public:
 	virtual FCrashTeamID GetTeamID() const override { return TeamID; }
 
 	/** Blueprint-exposed getter for TeamID. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Team", meta = (ToolTip = "This player's current team ID."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Team", Meta = (ToolTip = "This player's current team ID."))
 	uint8 K2_GetTeamID() const { return TeamID; }
 
 // Internals.
@@ -70,7 +70,7 @@ protected:
 public:
 
 	/** Getter for CurrentLives. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Lives", meta = (ToolTip = "This player's current number of remaining lives."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Lives", Meta = (ToolTip = "This player's current number of remaining lives."))
 	uint8 GetCurrentLives() const { return CurrentLives; }
 
 	/** Decrements this player's current number of lives. If the player runs out of lives, the game mode is notified. */

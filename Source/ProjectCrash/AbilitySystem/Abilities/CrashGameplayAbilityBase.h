@@ -102,12 +102,12 @@ protected:
 
 	/** Gameplay effects that are applied to the instigating ASC when this ability is activated and persist after the
 	 * ability ends. These effects must be removed manually. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", meta = (ToolTip = "Effects applied when this ability is activated and persist after it ends. Must be removed manually. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and persist after it ends. Must be removed manually. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
 	TArray<TSubclassOf<UGameplayEffect>> OngoingEffectsToApplyOnStart;
 
 	/** Gameplay effects that are applied to the instigating ASC when this ability is activated and automatically
 	* removed when this ability ends. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", meta = (ToolTip = "Effects applied when this ability is activated and automatically removed after it ends. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and automatically removed after it ends. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
 	TArray<TSubclassOf<UGameplayEffect>> OngoingEffectsToApplyOnStartAndRemoveOnEnd;
 
 	/** Handles used to track effects applied by this ability that need to be removed when it ends. */

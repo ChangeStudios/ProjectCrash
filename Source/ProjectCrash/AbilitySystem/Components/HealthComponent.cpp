@@ -129,12 +129,22 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 {
 #if WITH_SERVER_CODE
 
-	// Notify the gamemode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
+	// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
 	if (AbilitySystemComponent)
 	{
 		if (ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
-			CrashGM->StartDeath(AbilitySystemComponent->GetAvatarActor(), AbilitySystemComponent, DamageInstigator, DamageCauser, DamageEffectSpec);
+			const FDeathData DeathData = FDeathData
+			(
+				AbilitySystemComponent->GetAvatarActor(),
+				AbilitySystemComponent,
+				DamageInstigator,
+				DamageCauser,
+				DamageEffectSpec,
+				DamageMagnitude
+			);
+
+			CrashGM->StartDeath(DeathData);
 		}
 	}
 	else

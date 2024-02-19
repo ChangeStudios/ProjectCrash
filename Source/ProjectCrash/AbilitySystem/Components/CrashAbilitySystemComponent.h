@@ -43,7 +43,7 @@ public:
 public:
 
 	/** Returns the actor currently acting as this ASC's avatar. Blueprint-exposed wrapper for GetAvatarActor(). */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", meta = (DisplayName = "Get Avatar Actor"))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", Meta = (DisplayName = "Get Avatar Actor"))
 	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
 
 };

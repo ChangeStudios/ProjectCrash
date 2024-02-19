@@ -12,8 +12,6 @@ UGA_Death::UGA_Death(const FObjectInitializer& ObjectInitializer)
 	ActivationOwnedTags.AddTag(CrashGameplayTags::TAG_State_Dying);
 	bServerRespectsRemoteAbilityCancellation = false;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
-
-	DyingActor = nullptr;
 }
 
 void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -28,9 +26,6 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	// Unpossess the player from the dying actor.
 	if (APawn* Pawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
 	{
-		// Cache the dying pawn so we can still reference it.
-		DyingActor = Pawn;
-		
 		if (Pawn->Controller)
 		{
 			Pawn->Controller->UnPossess();

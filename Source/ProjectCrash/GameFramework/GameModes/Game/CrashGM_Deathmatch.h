@@ -20,5 +20,5 @@ class PROJECTCRASH_API ACrashGM_Deathmatch : public ACrashGameMode
 protected:
 
 	/** Checks the victory condition after each death. */
-	virtual void StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec) override;
+	virtual void StartDeath(const FDeathData& DeathData) override;
 };
