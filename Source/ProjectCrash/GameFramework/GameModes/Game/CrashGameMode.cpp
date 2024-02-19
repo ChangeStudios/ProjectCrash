@@ -6,6 +6,7 @@
 #include "AbilitySystemLog.h"
 #include "CrashGameModeData.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
@@ -30,9 +31,34 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 	}
 }
 
-void ACrashGameMode::StartDeath(AActor* DyingActor)
+void ACrashGameMode::StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec)
 {
-	check(DyingActor);
+	/* Send a gameplay event to the ASC of the dying actor to trigger the Death gameplay ability, which handles
+	 * client-side death logic. */
+	if (DyingActorASC)
+	{
+		{
+			FGameplayEventData Payload;
+			Payload.EventTag = CrashGameplayTags::TAG_Event_Death;
+			Payload.Instigator = DamageInstigator;
+			Payload.Target = DyingActorASC->GetAvatarActor();
+			Payload.OptionalObject = DamageEffectSpec.Def;
+			Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
+			Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+			Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+
+			FScopedPredictionWindow NewScopedWindow(DyingActorASC, true);
+			DyingActorASC->HandleGameplayEvent(Payload.EventTag, &Payload);
+		}
+	}
+
+	// Start a timer to finish the Death after DeathDuration.
+	{
+		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateLambda([this, DyingActor, DyingActorASC]
+		{
+			FinishDeath(DyingActor, DyingActorASC);
+		}), GameModeData->DeathDuration, false);
+	}
 
 	// Cache the player controlling the dying actor, if it's a player-controlled pawn.
 	APawn* Pawn = Cast<APawn>(DyingActor);
@@ -41,21 +67,6 @@ void ACrashGameMode::StartDeath(AActor* DyingActor)
 	const bool bPlayerDeath = IsValid(Player);
 
 	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
-
-	/* Activate the Death ability on the dying actor, if they have an ASC. Note: Dying actors should always have an ASC,
-	 * since deaths are triggered by the Health attribute set, which requires an ASC. */
-	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(DyingActor))
-	{
-		const FGameplayAbilitySpec* AbilitySpec = CrashASC->FindAbilitySpecFromClass(GameModeData->DefaultDeathAbility);
-		const bool bDeathAbilitySuccess = CrashASC->TryActivateAbility(AbilitySpec->Handle);
-
-		// Start a timer to finish the Death after DeathDuration.
-		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateLambda([this, DyingActor, CrashASC, bDeathAbilitySuccess, AbilitySpec]
-		{
-			// Only pass in the Death ability's handle if it was successfully activated.
-			FinishDeath(DyingActor, CrashASC, bDeathAbilitySuccess ? AbilitySpec : nullptr);
-		}), GameModeData->DeathDuration, false);
-	}
 
 	/* If a player died, decrement their lives. The player state will handle the rest, and notify us if the player is
 	 * now out of lives. */
@@ -68,13 +79,14 @@ void ACrashGameMode::StartDeath(AActor* DyingActor)
 	}
 }
 
-void ACrashGameMode::FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility)
+void ACrashGameMode::FinishDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC)
 {
-	// If we activated the Death ability, end it when the death finishes.
-    if (DeathAbility != nullptr)
-    {
-    	CrashASC->CancelAbilityHandle(DeathAbility->Handle); // EndAbility is protected so we just have to cancel it (which does the same thing).
-    }
+	// End the Death ability when the death finishes.
+	if (DyingActorASC)
+	{
+		const FGameplayTagContainer DeathTags = FGameplayTagContainer(CrashGameplayTags::TAG_Event_Death);
+		DyingActorASC->CancelAbilities(&DeathTags);
+	}
 
 	// Handle respawn if the game is not over.
 

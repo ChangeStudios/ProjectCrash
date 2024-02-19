@@ -9,7 +9,11 @@
 UGA_Death::UGA_Death(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
+	ActivationOwnedTags.AddTag(CrashGameplayTags::TAG_State_Dying);
+	bServerRespectsRemoteAbilityCancellation = false;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
+
+	DyingActor = nullptr;
 }
 
 void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

@@ -164,7 +164,8 @@ void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewC
 void AChallengerBase::OnDeathStarted()
 {
 	// Hide the first-person mesh.
-	FirstPersonMesh->SetVisibility(false, true);
+	// FirstPersonMesh->SetVisibility(false, true);
+	FirstPersonMesh->DestroyComponent(false);
 
 	// Reveal third-person mesh to everyone.
 	ThirdPersonMesh->SetOwnerNoSee(false);
@@ -173,7 +174,6 @@ void AChallengerBase::OnDeathStarted()
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
 	ThirdPersonMesh->WakeAllRigidBodies();
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AChallengerBase::OnDeathFinished()

@@ -50,14 +50,22 @@ protected:
 
 public:
 
-	/** Handles the death (i.e. running out of health) of an actor by activating the Death gameplay ability. Performs
-	 * client-side death logic if the actor is a pawn currently controlled by a player. */
-	virtual void StartDeath(AActor* DyingActor);
+	/**
+	 * Handles the death (i.e. running out of health) of an actor depending on the game mode. Activates the Death
+	 * gameplay ability to handle client-side death logic.
+	 *
+	 * @param	DyingActor			Actor that died. This is usually an ASC's avatar.
+	 * @param	DyingActorASC		ASC associated with the dying actor. The dying actor is usually the avatar and/or the owner of the ASC.
+	 * @param	DamageInstigator	Actor responsible for instigating the damage that killed this actor, e.g. an enemy player pawn.
+	 * @param	DamageCauser		Actor that directly caused the damage that killed this actor, e.g. a grenade.
+	 * @param	DamageEffectSpec	Gameplay effect that applied the damage that killed this actor.
+	 */
+	virtual void StartDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC, AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec);
 
 protected:
 
 	/** Ends the DeathAbility if one was given. */
-	virtual void FinishDeath(AActor* DyingActor, UCrashAbilitySystemComponent* CrashASC, const FGameplayAbilitySpec* DeathAbility = nullptr);
+	virtual void FinishDeath(AActor* DyingActor, UAbilitySystemComponent* DyingActorASC);
 
 	/** Timer used to finish an actor death a certain amount of time after it was started. */
 	FTimerHandle DeathTimerHandle;

@@ -128,32 +128,13 @@ void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, AActor* Effe
 void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
 #if WITH_SERVER_CODE
+
+	// Notify the gamemode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
 	if (AbilitySystemComponent)
 	{
-		// /* Send the "Event.Ability.Generic.Death" gameplay event through the owner's ability system. This is used to
-		//  * trigger a death gameplay ability. */
-		// FGameplayEventData Payload;
-		// Payload.EventTag = CrashGameplayTags::TAG_Event_Ability_Generic_Death;
-		// Payload.Instigator = DamageInstigator;
-		// Payload.Target = AbilitySystemComponent->GetAvatarActor();
-		// Payload.OptionalObject = DamageEffectSpec.Def;
-		// Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
-		// Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
-		// Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
-		// Payload.EventMagnitude = DamageMagnitude;
-		//
-		// // Create a new prediction scope for dying.
-		// FScopedPredictionWindow NewScopedWindow(AbilitySystemComponent, true);
-		//
-		// // Send the event to the owner's ASC.
-		// AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
-
-		// Notify the gamemode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
-		ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-
-		if (CrashGM)
+		if (ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
-			CrashGM->StartDeath(AbilitySystemComponent->GetAvatarActor());
+			CrashGM->StartDeath(AbilitySystemComponent->GetAvatarActor(), AbilitySystemComponent, DamageInstigator, DamageCauser, DamageEffectSpec);
 		}
 	}
 	else
