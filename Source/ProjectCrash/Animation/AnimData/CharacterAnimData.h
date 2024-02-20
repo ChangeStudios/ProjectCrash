@@ -136,6 +136,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Additive Poses", DisplayName = "Pitch Offset Poses")
 	TObjectPtr<UBlendSpace1D> PitchOffsetBS_TPP = nullptr;
 
+	/** The maximum normalized pitch to which the character's aim offset will be scaled. Setting this value to 1.0 will
+	 * allow the character to look straight up (90 degrees). Setting it to any value less than 1.0 will clamp the pitch
+	 * of their animation. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Additive Poses", DisplayName = "Maximum Normalized Pitch", Meta = (UIMax = 1, UIMin = -1))
+	float MaxNormalizedPitch = 1.0f;
+
+	/** The maximum normalized pitch to which the character's aim offset will be scaled. Setting this value to -1.0 will
+	 * allow the character to look straight down (-90 degrees). Setting it to any value greater than -1.0 will clamp
+	 * the pitch of their animation. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Additive Poses", DisplayName = "Minimum Normalized Pitch", Meta = (UIMax = 1, UIMin = -1))
+	float MinNormalizedPitch = -1.0f;
+
 // Locomotion.
 public:
 

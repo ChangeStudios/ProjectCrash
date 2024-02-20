@@ -3,3 +3,31 @@
 
 #include "Animation/ChallengerAnimInstanceBase_TPP.h"
 
+#include "AnimData/CharacterAnimData.h"
+#include "Characters/ChallengerBase.h"
+
+void UChallengerAnimInstanceBase_TPP::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
+
+	// Enable multi-threading for animation updates.
+	bUseMultiThreadedAnimationUpdate = true;
+}
+
+void UChallengerAnimInstanceBase_TPP::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
+
+	UpdateAimOffset();
+}
+
+void UChallengerAnimInstanceBase_TPP::UpdateAimOffset()
+{
+	// Cache the character's current normalized aim pitch.
+	if (OwningChallenger)
+	{
+		FVector CurrentRotAsVector = OwningChallenger->GetBaseAimRotation().Vector();
+		CurrentRotAsVector.Normalize();
+		NormalizedAimPitch = FMath::Clamp(CurrentRotAsVector.Z, CurrentAnimationData->MinNormalizedPitch, CurrentAnimationData->MaxNormalizedPitch);
+	}
+}

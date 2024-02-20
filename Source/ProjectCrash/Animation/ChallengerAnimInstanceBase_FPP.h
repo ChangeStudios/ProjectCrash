@@ -27,7 +27,7 @@ public:
 	/** Default constructor. */
 	virtual void NativeInitializeAnimation() override;
 
-	/** Default initializer. Caches the animation's owning character. */
+	/** Disables animation updates if we're not the local client. */
 	virtual void NativeBeginPlay() override;
 
 
@@ -35,22 +35,6 @@ public:
 	// Utils.
 
 protected:
-
-	/** This animation instance's owning pawn, cached for convenience. */
-	UPROPERTY(BlueprintReadOnly, Category = "Crash|Animation")
-	TObjectPtr<AChallengerBase> OwningChallenger;
-
-	/** This animation instance's owning pawn's ASC, cached for convenience. */
-	UPROPERTY(BlueprintReadOnly, Category = "Crash|Animation")
-	TObjectPtr<UCrashAbilitySystemComponent> OwningASC;
-
-	/** Thread-safe function for checking if an ASC has a given tag. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|Animation", Meta = (BLueprintThreadSafe))
-	bool ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const;
-
-	/** Caches this animation's owning pawn's ASC after it is initialized. */
-	UFUNCTION()
-	void OnASCInitialized(UCrashAbilitySystemComponent* CrashASC);
 
 	/**
 	 * Performs a float spring interpolation using the given values.
@@ -101,7 +85,7 @@ protected:
 protected:
 
 	/** The signed vector length of the pawn's current velocity. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
 	float SignedSpeed;
 
 	/** The pawn's signed movement speed relative to their X-axis. */
@@ -111,7 +95,7 @@ protected:
 	float RightLeftSpeed;
 
 	/** The pawn's signed movement speed relative to their Z-axis. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
 	float UpDownSpeed;
 
 // Aim & rotation.
@@ -133,8 +117,8 @@ protected:
 	float AimUpDownSpeed;
 
 	/** The character's camera aim rotation pitch normalized to -1.0 to 1.0, which represent looking straight down and
-	 * straight up, respectively. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Character Transform")
+	 * straight up, respectively. Only accurate on local client. */
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
 	float NormalizedCameraPitch = 0.0f;
 
 
@@ -145,11 +129,11 @@ protected:
 protected:
 
 	/** The current spring value for the forward/backward movement sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|FPP|Spring Values")
 	float CurrentSpringMoveForwardBackward;
 
 	/** The current spring value for the right/left movement sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|FPP|Spring Values")
 	float CurrentSpringMoveRightLeft;
 
 	/** Spring state for the forward/backward movement sway's spring interpolation calculation. */
@@ -162,11 +146,11 @@ protected:
 protected:
 
 	/** The current spring value for the up/down aim sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|FPP|Spring Values")
 	float CurrentSpringAimUpDown;
 
 	/** The current spring value for the right/left aim sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Animation|Spring Values")
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|FPP|Spring Values")
 	float CurrentSpringAimRightLeft;
 
 	/** Spring state for the up/down aim sway's spring interpolation calculation. */
