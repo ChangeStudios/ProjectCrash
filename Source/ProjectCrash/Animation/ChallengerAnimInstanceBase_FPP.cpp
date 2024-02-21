@@ -63,8 +63,6 @@ void UChallengerAnimInstanceBase_FPP::NativeThreadSafeUpdateAnimation(float Delt
 
 	UpdateAimOffset();
 
-	UpdateMovementVelocity();
-
 	UpdateAimSpeed();
 
 	CalculateMovementSway();
@@ -80,21 +78,6 @@ void UChallengerAnimInstanceBase_FPP::UpdateAimOffset()
 		FVector CurrentRotAsVector = OwningChallenger->GetFirstPersonCameraComponent()->GetRelativeRotation().Vector();
 		CurrentRotAsVector.Normalize();
 		NormalizedCameraPitch = CurrentRotAsVector.Z;
-	}
-}
-
-void UChallengerAnimInstanceBase_FPP::UpdateMovementVelocity()
-{
-	// Cache the pawn's current movement values.
-	if (IsValid(OwningChallenger))
-	{
-		const FVector PawnVelocity = OwningChallenger->GetVelocity();
-		SignedSpeed = OwningChallenger->GetVelocity().Length();
-		
-		const FVector UnrotatedVelocity = OwningChallenger->GetActorRotation().UnrotateVector(PawnVelocity);
-		ForwardBackwardSpeed = UnrotatedVelocity.X;
-		RightLeftSpeed = UnrotatedVelocity.Y;
-		UpDownSpeed = UnrotatedVelocity.Z;
 	}
 }
 

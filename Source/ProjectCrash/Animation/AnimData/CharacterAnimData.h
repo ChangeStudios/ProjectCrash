@@ -157,7 +157,7 @@ public:
 
 	/** Third-person walking animations. This includes the idle animation when speed is 0. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Locomotion", DisplayName = "Walking")
-	TObjectPtr<UBlendSpace1D> WalkBS_TPP = nullptr;
+	TObjectPtr<UBlendSpace> WalkBS_TPP = nullptr;
 
 	/** Third-person jump animation. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Locomotion", DisplayName = "Jump")

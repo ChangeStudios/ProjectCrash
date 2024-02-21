@@ -58,3 +58,25 @@ void UChallengerAnimInstanceBase::UpdateAnimData(UCharacterAnimData* NewAnimData
 		CurrentAnimationData = NewAnimData;
 	}
 }
+
+void UChallengerAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
+{
+	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
+
+	UpdateMovementVelocity();
+}
+
+void UChallengerAnimInstanceBase::UpdateMovementVelocity()
+{
+	// Cache the pawn's current movement values.
+	if (IsValid(OwningChallenger))
+	{
+		const FVector PawnVelocity = OwningChallenger->GetVelocity();
+		SignedSpeed = OwningChallenger->GetVelocity().Length();
+		
+		const FVector UnrotatedVelocity = OwningChallenger->GetActorRotation().UnrotateVector(PawnVelocity);
+		ForwardBackwardSpeed = UnrotatedVelocity.X;
+		RightLeftSpeed = UnrotatedVelocity.Y;
+		UpDownSpeed = UnrotatedVelocity.Z;
+	}
+}

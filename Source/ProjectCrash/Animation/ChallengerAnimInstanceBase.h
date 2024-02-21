@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Animation/AnimInstance.h"
 #include "ChallengerAnimInstanceBase.generated.h"
 
@@ -13,6 +14,7 @@
 }
 
 class AChallengerBase;
+class UAbilitySystemComponent;
 class UCharacterAnimData;
 class UCrashAbilitySystemComponent;
 class UEquipmentAnimationData;
@@ -72,4 +74,43 @@ protected:
 	/** The animation data currently being used by this animation instance. */
 	UPROPERTY(BlueprintReadOnly, Category = "Animation|Data")
 	TObjectPtr<UCharacterAnimData> CurrentAnimationData;
+
+
+
+	// Animation updating.
+
+public:
+
+	/** Thread-safe animation update function. This is used instead of NativeUpdateAnimation to utilize multi-threading,
+	 * avoiding a major bottleneck caused by traditional animation updating. This function can only call other thread-
+	 * safe functions. */
+	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
+
+protected:
+
+	/** Update the character movement data used for animation logic. */
+	void UpdateMovementVelocity();
+
+
+
+	// Character transform values updated each animation cycle to perform animation logic for first- and third-person.
+
+// Movement speed.
+protected:
+
+	/** The signed vector length of the pawn's current velocity. */
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
+	float SignedSpeed;
+
+	/** The pawn's signed movement speed relative to their X-axis. */
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
+	float ForwardBackwardSpeed;
+
+	/** The pawn's signed movement speed relative to their Y-axis. */
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
+	float RightLeftSpeed;
+
+	/** The pawn's signed movement speed relative to their Z-axis. */
+	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
+	float UpDownSpeed;
 };

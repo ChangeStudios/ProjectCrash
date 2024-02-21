@@ -65,9 +65,6 @@ protected:
 	/** Update the character's base pose using its current camera pitch. */
 	void UpdateAimOffset();
 
-	/** Update the character movement data used for animation logic. */
-	void UpdateMovementVelocity();
-
 	/** Update the character and camera rotation data used for animation logic. */
 	void UpdateAimSpeed();
 
@@ -79,24 +76,7 @@ protected:
 
 
 
-	// Character transform values updated each animation cycle to perform animation logic.
-
-// Movement speed.
-protected:
-
-	/** The signed vector length of the pawn's current velocity. */
-	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
-	float SignedSpeed;
-
-	/** The pawn's signed movement speed relative to their X-axis. */
-	float ForwardBackwardSpeed;
-
-	/** The pawn's signed movement speed relative to their Y-axis. */
-	float RightLeftSpeed;
-
-	/** The pawn's signed movement speed relative to their Z-axis. */
-	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation|Character Transform")
-	float UpDownSpeed;
+	// Character transform values updated each animation cycle to perform first-person animation logic.
 
 // Aim & rotation.
 protected:
