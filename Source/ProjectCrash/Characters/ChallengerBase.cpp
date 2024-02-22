@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "AbilitySystem/CrashGameplayTags.h"
+#include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
@@ -17,6 +18,8 @@
 #include "Equipment/EquipmentComponent.h"
 #include "Equipment/EquipmentLog.h"
 #include "Input/CrashInputComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -149,19 +152,15 @@ void AChallengerBase::UninitAndDestroy()
 
 void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewCount)
 {
-	// When the dying tag is added, this character's death has started.
-	if (NewCount == 1)
-	{
-		OnDeathStarted();
-	}
-	// When the Dying tag is removed, this character's death has finished.
-	else if (NewCount == 0)
+	/* When the Dying tag is removed, this character's death has finished. We don't need to do anything when the Dying
+	 * tag is added because the ASC's DeathEventDelegate will handle starting the death. */
+	if (NewCount == 0)
 	{
 		OnDeathFinished();
 	}
 }
 
-void AChallengerBase::OnDeathStarted()
+void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 {
 	// Hide the first-person mesh.
 	// FirstPersonMesh->SetVisibility(false, true);
@@ -174,6 +173,13 @@ void AChallengerBase::OnDeathStarted()
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
 	ThirdPersonMesh->WakeAllRigidBodies();
+
+	// Yeet (technical term) the third-person mesh away depending on the amount of damage that killed this character.
+	const FVector SourceLocation = DeathData.KillingDamageCauser->GetActorLocation();
+	const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());
+	const FVector DirectionVec = DirectionRot.Quaternion().GetForwardVector();
+	const float LaunchMultiplier = 200.0f;
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(FVector(DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier));
 }
 
 void AChallengerBase::OnDeathFinished()
@@ -234,8 +240,9 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	// Initialize this character's attribute sets.
 	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
 
-	// Bind Death events.
+	// Bind death events.
 	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);
+	CrashASC->DeathEventDelegate.AddDynamic(this, &AChallengerBase::OnDeathStarted);
 
 	// Broadcast that this character's ASC was initialized.
 	ASCInitializedDelegate.Broadcast(CrashASC);
@@ -247,6 +254,10 @@ void AChallengerBase::OnAbilitySystemUninitialized()
 {
 	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
 	check(CrashASC);
+
+	// Unbind death events.
+	CrashASC->UnregisterGameplayTagEvent(DeathTagChangedDelegate, CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved);
+	CrashASC->DeathEventDelegate.RemoveDynamic(this, &AChallengerBase::OnDeathStarted);
 
 	// Remove the ability set granted by this character.
 	if (CrashASC->IsOwnerActorAuthoritative())

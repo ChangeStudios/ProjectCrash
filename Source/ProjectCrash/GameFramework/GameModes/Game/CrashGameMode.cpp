@@ -47,6 +47,7 @@ void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 			Payload.ContextHandle = DeathData.DamageEffectSpec.GetEffectContext();
 			Payload.InstigatorTags = *DeathData.DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
 			Payload.TargetTags = *DeathData.DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+			Payload.EventMagnitude = DeathData.DamageMagnitude;
 
 			FScopedPredictionWindow NewScopedWindow(DeathData.DyingActorASC, true);
 			DeathData.DyingActorASC->HandleGameplayEvent(Payload.EventTag, &Payload);

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilityDataAsset.h"
-#include "AbilityData_Challenger_Knight.generated.h"
+#include "AbilitySystem/AbilityData/StaticAbilityDataAsset.h"
+#include "StaticAbilityData_Challenger_Knight.generated.h"
 
 /**
  * Static data for the Knight challenger's abilities.
  */
 UCLASS()
-class PROJECTCRASH_API UAbilityData_Challenger_Knight : public UAbilityDataAsset
+class PROJECTCRASH_API UStaticAbilityData_Challenger_Knight : public UStaticAbilityDataAsset
 {
 	GENERATED_BODY()
 

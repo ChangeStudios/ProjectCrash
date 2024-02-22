@@ -76,8 +76,10 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	check(SetToEquip);
 
 	/* We cannot equip a new equipment set if we already have on equipped. EquipEquipmentSet handles this for us, which
-	 * is why we don't call this function directly. */
-	if (CurrentEquipmentSet)
+	 * is why we don't call this function directly. We check the equipment set handle instead of the equipment set
+	 * itself because we may still need to equip an equipment set even if the latter is still valid; i.e. re-equipping
+	 * a temporarily unequipped set. */
+	if (CurrentEquipmentSetHandle.EquipmentSet)
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to equip equipment set [%s] on actor [%s], but the actor's current equipment set, [%s], must be unequipped first."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()), *CurrentEquipmentSet->GetName());
 		return false;

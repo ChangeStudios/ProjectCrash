@@ -72,10 +72,15 @@ private:
 protected:
 
 	/** Called when this character's death starts, to handle logic like ragdolling. */
-	void OnDeathStarted();
+	UFUNCTION()
+	void OnDeathStarted(const FDeathData& DeathData);
 
 	/** Called when this character's death finishes, to handle logic like destruction. */
 	void OnDeathFinished();
+
+	/** Handle for the delegate fired when the "State.Dying" tag is added or removed from this character's ASC. Used to
+	 * handle death events. */
+	FDelegateHandle DeathTagChangedDelegate;
 
 
 

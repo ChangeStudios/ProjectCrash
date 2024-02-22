@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "AbilityDataAsset.generated.h"
+#include "StaticAbilityDataAsset.generated.h"
 
 /**
  * Base class for data asset classes used to store static data for ability sets.
@@ -17,7 +17,7 @@
  * made dynamic to implement user-defined settings for custom games.
  */
 UCLASS(Abstract, BlueprintType, Const)
-class PROJECTCRASH_API UAbilityDataAsset : public UDataAsset
+class PROJECTCRASH_API UStaticAbilityDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 	

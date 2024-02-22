@@ -6,6 +6,9 @@
 #include "AbilitySystemComponent.h"
 #include "CrashAbilitySystemComponent.generated.h"
 
+/** Delegate used to broadcast the Death event and communicate in important information. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathData&, DeathData);
+
 /**
  * The ability system component used for this project.
  *
@@ -45,5 +48,15 @@ public:
 	/** Returns the actor currently acting as this ASC's avatar. Blueprint-exposed wrapper for GetAvatarActor(). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", Meta = (DisplayName = "Get Avatar Actor"))
 	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
+
+
+
+	// Death.
+
+public:
+
+	/** Delegate broadcast when a Death ability is activated to communicate death data. */
+	UPROPERTY()
+	FDeathEventSignature DeathEventDelegate;
 
 };
