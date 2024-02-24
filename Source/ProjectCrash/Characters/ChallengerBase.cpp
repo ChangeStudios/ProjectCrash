@@ -18,7 +18,6 @@
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "Input/CrashInputComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
@@ -69,8 +68,8 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 
 	// Ability system.
 	ASCExtensionComponent = CreateDefaultSubobject<UAbilitySystemExtensionComponent>(TEXT("AbilitySystemExtensionComponent"));
-	ASCExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
-	ASCExtensionComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+	ASCExtensionComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &AChallengerBase::OnAbilitySystemInitialized));
+	ASCExtensionComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &AChallengerBase::OnAbilitySystemUninitialized));
 
 
 	// Attributes.

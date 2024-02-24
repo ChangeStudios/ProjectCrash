@@ -4,6 +4,7 @@
 #include "Animation/ChallengerAnimInstanceBase.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "GameFramework/CrashLogging.h"
@@ -22,7 +23,6 @@ void UChallengerAnimInstanceBase::NativeBeginPlay()
 
 	// Cache the owning challenger character.
 	OwningChallenger = TryGetPawnOwner() ? Cast<AChallengerBase>(TryGetPawnOwner()) : nullptr;
-	ANIMATION_LOG(Warning, TEXT("Begin play called for [%s] on server: %s"), *GetNameSafe(GetOwningActor()), *CONDITIONAL_STRING(OwningChallenger->HasAuthority()));
 
 	// This animation instance won't work without a valid Challenger.
 	if (!IsValid(OwningChallenger))
@@ -31,8 +31,16 @@ void UChallengerAnimInstanceBase::NativeBeginPlay()
 		bUseMultiThreadedAnimationUpdate = false;
 	}
 
-	// Cache this animation's owning pawn's ASC when it's initialized.
-	OwningChallenger->ASCInitializedDelegate.AddDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
+	// If the owning Challenger's ASC has already been initialized, link it to this animation instance.
+	if (UCrashAbilitySystemComponent* CrashASC = OwningChallenger->GetCrashAbilitySystemComponent())
+	{
+		OnASCInitialized(CrashASC);
+	}
+	// If the owning challenger has not initialized its ASC yet, bind to the delegate fired for when it does.
+	else
+	{
+		OwningChallenger->ASCInitializedDelegate.AddDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
+	}
 }
 
 bool UChallengerAnimInstanceBase::ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const
