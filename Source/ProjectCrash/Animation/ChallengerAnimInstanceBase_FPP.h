@@ -24,9 +24,6 @@ class PROJECTCRASH_API UChallengerAnimInstanceBase_FPP : public UChallengerAnimI
 
 public:
 
-	/** Default constructor. */
-	virtual void NativeInitializeAnimation() override;
-
 	/** Disables animation updates if we're not the local client. */
 	virtual void NativeBeginPlay() override;
 

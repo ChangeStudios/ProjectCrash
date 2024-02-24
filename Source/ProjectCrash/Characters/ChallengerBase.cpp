@@ -16,7 +16,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
-#include "Equipment/EquipmentLog.h"
+#include "GameFramework/CrashLogging.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"

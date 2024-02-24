@@ -9,7 +9,7 @@
 /**
  * Collection of utilities for scripting gameplay abilities.
  */
-UCLASS(Meta = (BlueprintThreadSafe, ScriptName = "AbilitySystemLibrary"), MinimalAPI)
+UCLASS(Meta = (BlueprintThreadSafe, ScriptName = "AbilitySystemUtilitiesLibrary"), MinimalAPI)
 class UAbilitySystemUtilitiesLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()

@@ -7,12 +7,6 @@
 #include "Animation/AnimInstance.h"
 #include "ChallengerAnimInstanceBase.generated.h"
 
-// Animation log channel shorthand.
-#define ANIMATION_LOG(Verbosity, Format, ...) \
-{ \
-	UE_LOG(LogAnimation, Verbosity, Format, ##__VA_ARGS__); \
-}
-
 class AChallengerBase;
 class UAbilitySystemComponent;
 class UCharacterAnimData;
@@ -31,6 +25,9 @@ class PROJECTCRASH_API UChallengerAnimInstanceBase : public UAnimInstance
 	// Initialization.
 
 public:
+
+	/** Default constructor. */
+	virtual void NativeInitializeAnimation() override;
 
 	/** Caches static information about this animation instance's owning character. */
 	virtual void NativeBeginPlay() override;

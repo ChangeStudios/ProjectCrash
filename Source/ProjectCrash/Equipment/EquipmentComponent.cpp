@@ -6,7 +6,6 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "EquipmentAnimationData.h"
-#include "EquipmentLog.h"
 #include "EquipmentSet.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
@@ -16,6 +15,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerState.h"
 #include "Characters/ChallengerData.h"
+#include "GameFramework/CrashLogging.h"
 
 UEquipmentComponent::UEquipmentComponent()
 {

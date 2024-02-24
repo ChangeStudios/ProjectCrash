@@ -8,20 +8,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-void UChallengerAnimInstanceBase_FPP::NativeInitializeAnimation()
-{
-	Super::NativeInitializeAnimation();
-
-	// Enable multi-threading for updating animations.
-	bUseMultiThreadedAnimationUpdate = true;
-}
-
 void UChallengerAnimInstanceBase_FPP::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
 	// Only update first-person animations on the local client.
-	if (!OwningChallenger->IsLocallyControlled())
+	if (OwningChallenger && !OwningChallenger->IsLocallyControlled())
 	{
 		bUseMultiThreadedAnimationUpdate = false;
 	}
