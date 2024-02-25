@@ -111,21 +111,19 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 	/** Accessor for this character's first-person mesh component. */
-	UFUNCTION(Category = "Characters|Challenger|Components")
-	USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
+	virtual USkeletalMeshComponent* GetFirstPersonMesh() const override { return FirstPersonMesh; }
 	
 	/** Accessor for this character's third-person mesh component. */
-	UFUNCTION(Category = "Characters|Challenger|Components")
-	USkeletalMeshComponent* GetThirdPersonMesh() const { return ThirdPersonMesh; }
+	virtual USkeletalMeshComponent* GetThirdPersonMesh() const override { return ThirdPersonMesh; }
 
 // Character component sub-objects.
 protected:
 
-	/** The mesh only visible in first-person. This is only seen by the local player and spectators. */
+	/** Mesh only visible in first-person. This is only seen by the local player and spectators. */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
 
-	/** The mesh only visible in third-person. This mesh is seen by all other players, and also the local player when in a third-person perspective. */
+	/** Mesh only visible in third-person. This mesh is seen by all other players, and also the local player when in a third-person perspective. */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
 

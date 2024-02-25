@@ -55,14 +55,21 @@ bool UChallengerAnimInstanceBase::ThreadSafeHasTagExact(UAbilitySystemComponent*
 
 void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent* CrashASC)
 {
-	ANIMATION_LOG(Warning, TEXT("ASC Initialized on %s"), *FString(OwningChallenger->HasAuthority() ? "SERVER" : "CLIENT"));
+	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *AUTHORITY_STRING(OwningChallenger), *GetName(), *GetNameSafe(GetOwningActor()));
 
 	if (!CrashASC)
 	{
 		ANIMATION_LOG(Fatal, TEXT("OnASCInitialized broadcast to [%s] without a valid ASC."), *GetName());
 	}
 
+	if (OwningASC)
+	{
+		ANIMATION_LOG(Warning, TEXT("Attempted to initialize ASC with [%s] when one already exists."), *GetName());
+		return;
+	}
+
 	OwningASC = CrashASC;
+	OwningChallenger->ASCInitializedDelegate.RemoveDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
 }
 
 void UChallengerAnimInstanceBase::UpdateAnimData(UCharacterAnimData* NewAnimData)

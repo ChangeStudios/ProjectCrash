@@ -26,6 +26,20 @@ public:
 
 
 
+	// Components.
+
+public:
+
+	/** Returns this character's first-person-only mesh, if it has one. Only playable characters have an FPP mesh. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Components")
+	virtual USkeletalMeshComponent* GetFirstPersonMesh() const { return nullptr; }
+
+	/** Returns this character's third-person-only mesh. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Components")
+	virtual USkeletalMeshComponent* GetThirdPersonMesh() const { return GetMesh(); }
+
+
+
 	// Movement.
 
 // Jumping.
