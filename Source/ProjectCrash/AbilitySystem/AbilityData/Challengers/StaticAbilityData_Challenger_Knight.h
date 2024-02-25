@@ -38,9 +38,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Parry", DisplayName = "Parry Damage")
 	float Parry_Damage;
 
-	/** Force with which the character dashes forward when using the Parry ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Parry", DisplayName = "Parry Dash Force", Meta = (Units = "CentimetersPerSecond"))
-	float Parry_DashForce;
+	/** Distance traveled by the character with the Parry ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Parry", DisplayName = "Parry Dash Distance", Meta = (Units = "cm"))
+	float Parry_DashDistance;
 
 	/** Duration for which the character dashes forward when using the Parry ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Parry", DisplayName = "Parry Duration", Meta = (Units = "s"))
@@ -66,9 +66,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joust", DisplayName = "Joust Damage")
 	float Joust_Damage;
 
-	/** Force with which the character dashes forward when using the Joust ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joust", DisplayName = "Joust Dash Force", Meta = (Units = "CentimetersPerSecond"))
-	float Joust_DashForce;
+	/** Distance traveled by the character with the Joust ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joust", DisplayName = "Joust Dash Distance", Meta = (Units = "cm"))
+	float Joust_DashDistance;
 
 	/** Duration for which the character dashes forward when using the Joust ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joust", DisplayName = "Joust Duration", Meta = (Units = "s"))
