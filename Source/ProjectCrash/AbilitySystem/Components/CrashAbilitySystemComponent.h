@@ -51,6 +51,37 @@ public:
 
 
 
+	// Animation.
+
+public:
+
+	/**
+	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a ACrashCharacterBase.
+	 * Otherwise, returns -1.0.
+	 *
+	 * This does not affect the ability system's animation data, such as LocalAnimMontageInfo. The ability system's
+	 * animation data is only affected by third-person animations, since first-person animations are rarely relevant to
+	 * anyone besides the local client.
+	 */
+	float PlayFirstPersonMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
+
+	/**
+	 * Plays the given montage on this ASC's avatar's third-person mesh, if the avatar is a ACrashCharacterBase.
+	 * Otherwise, attempts to play the montage on any skeletal mesh in the avatar. If no skeletal mesh is found,
+	 * returns -1.0.
+	 */
+	float PlayThirdPersonMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
+
+protected:
+
+	/** Called when a prediction key that played a first-person montage is rejected. */
+	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
+
+	/** Called when a prediction key that played a third-person montage is rejected. */
+	void OnThirdPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
+	
+
+
 	// Death.
 
 public:

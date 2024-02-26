@@ -75,6 +75,11 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 {
 	check(SetToEquip);
 
+	if (!GetOwner() || !GetWorld())
+	{
+		return false;
+	}
+
 	/* We cannot equip a new equipment set if we already have on equipped. EquipEquipmentSet handles this for us, which
 	 * is why we don't call this function directly. We check the equipment set handle instead of the equipment set
 	 * itself because we may still need to equip an equipment set even if the latter is still valid; i.e. re-equipping
