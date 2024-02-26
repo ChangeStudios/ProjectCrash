@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTypes.h"
-// #include "CrashGameplayAbilityTypes.generated.h"
 
 struct PROJECTCRASH_API FCrashGameplayAbilityActorInfo : FGameplayAbilityActorInfo
 {
