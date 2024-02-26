@@ -6,14 +6,6 @@
 #include "AnimData/CharacterAnimData.h"
 #include "Characters/ChallengerBase.h"
 
-void UChallengerAnimInstanceBase_TPP::NativeInitializeAnimation()
-{
-	Super::NativeInitializeAnimation();
-
-	// Enable multi-threading for animation updates.
-	bUseMultiThreadedAnimationUpdate = true;
-}
-
 void UChallengerAnimInstanceBase_TPP::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);

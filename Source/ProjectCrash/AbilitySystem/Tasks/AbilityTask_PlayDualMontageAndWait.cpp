@@ -183,7 +183,7 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 		}
 
 		// Play the third-person montage.
-		bPlayedThirdPersonMontage = CrashASC->PlayThirdPersonMontage(Ability, Ability->GetCurrentActivationInfo(), ThirdPersonMontageToPlay, ThirdPersonRate, ThirdPersonStartSection, ThirdPersonStartTimeSeconds) > 0.0f;
+		bPlayedThirdPersonMontage = CrashASC->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), ThirdPersonMontageToPlay, ThirdPersonRate, ThirdPersonStartSection, ThirdPersonStartTimeSeconds) > 0.0f;
 
 		// Play the third-person montage if the avatar has a valid first-person animation instance.
 		bPlayedFirstPersonMontage = FirstPersonAnimInstance != nullptr ? CrashASC->PlayFirstPersonMontage(Ability, Ability->GetCurrentActivationInfo(), FirstPersonMontageToPlay, FirstPersonRate, FirstPersonStartSection, FirstPersonStartTimeSeconds) > 0.0f : false;

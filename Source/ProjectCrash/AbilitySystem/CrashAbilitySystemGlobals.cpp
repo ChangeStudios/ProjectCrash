@@ -3,12 +3,18 @@
 
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 
+#include "CrashGameplayAbilityTypes.h"
 #include "Components/CrashAbilitySystemComponent.h"
 #include "Effects/CrashGameplayEffectContext.h"
 
 FGameplayEffectContext* UCrashAbilitySystemGlobals::AllocGameplayEffectContext() const
 {
 	return new FCrashGameplayEffectContext();
+}
+
+FGameplayAbilityActorInfo* UCrashAbilitySystemGlobals::AllocAbilityActorInfo() const
+{
+	return new FCrashGameplayAbilityActorInfo();
 }
 
 UCrashAbilitySystemComponent* UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(const AActor* Actor, bool LookForComponent)

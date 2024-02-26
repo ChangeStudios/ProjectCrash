@@ -12,7 +12,7 @@ void UChallengerAnimInstanceBase_FPP::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	// Only update first-person animations on the local client.
+	// Only update first-person animations on the local client. Updates can be turned back on when spectating.
 	if (OwningChallenger && !OwningChallenger->IsLocallyControlled())
 	{
 		bUseMultiThreadedAnimationUpdate = false;

@@ -16,15 +16,6 @@ class PROJECTCRASH_API UChallengerAnimInstanceBase_TPP : public UChallengerAnimI
 {
 	GENERATED_BODY()
 
-	// Initialization.
-
-public:
-
-	/** Default constructor. */
-	virtual void NativeInitializeAnimation() override;
-
-
-
 	// Animation updating.
 
 public:

@@ -1,0 +1,14 @@
+// Copyright Samuel Reitich 2024.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Abilities/GameplayAbilityTypes.h"
+// #include "CrashGameplayAbilityTypes.generated.h"
+
+struct PROJECTCRASH_API FCrashGameplayAbilityActorInfo : FGameplayAbilityActorInfo
+{
+	/** Attempts to find the third-person mesh from the avatar actor if it's an ACrashCharacterBase. Otherwise, falls
+	 * back to any skeletal mesh component in the avatar actor. */
+	virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override;
+};
