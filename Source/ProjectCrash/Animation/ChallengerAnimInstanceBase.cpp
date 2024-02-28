@@ -53,6 +53,16 @@ bool UChallengerAnimInstanceBase::ThreadSafeHasTagExact(UAbilitySystemComponent*
 	return ASC->GetGameplayTagCount(TagToSearch) > 0;
 }
 
+int UChallengerAnimInstanceBase::ThreadSafeTagCount(UAbilitySystemComponent* ASC, FGameplayTag TagToCount) const
+{
+	if (!IsValid(ASC))
+	{
+		return false;
+	}
+
+	return ASC->GetGameplayTagCount(TagToCount);
+}
+
 void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent* CrashASC)
 {
 	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *AUTHORITY_STRING(OwningChallenger), *GetName(), *GetNameSafe(GetOwningActor()));

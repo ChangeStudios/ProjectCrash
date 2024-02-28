@@ -42,6 +42,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Characters|Challenger|Animation", Meta = (BlueprintThreadSafe))
 	bool ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const;
 
+	/** Thread-safe function for finding the quantity of a tag that an ASC has. */
+	UFUNCTION(BlueprintCallable, Category = "Characters|Challenger|Animation", Meta = (BlueprintThreadSafe))
+	int ThreadSafeTagCount(UAbilitySystemComponent* ASC, FGameplayTag TagToCount) const;
+
 protected:
 
 	/** This animation instance's owning pawn, cached for convenience. */
