@@ -331,13 +331,17 @@ void AChallengerBase::Input_Look_Stick(const FInputActionValue& InputActionValue
 	if (Value.X != 0.0f)
 	{
 		// TODO: Add look-rate multiplier.
-		AddControllerYawInput(Value.X * DeltaTime);
+		const float PitchRateMultiplier = 50.0f;
+
+		AddControllerYawInput(Value.X * DeltaTime * PitchRateMultiplier);
 	}
 
 	if (Value.Y != 0.0f)
 	{
 		// TODO: Add look-rate multiplier.
-		AddControllerPitchInput(Value.Y * DeltaTime);
+		const float YawRateMultiplier = 50.0f;
+
+		AddControllerPitchInput(Value.Y * DeltaTime * YawRateMultiplier);
 	}
 }
 
