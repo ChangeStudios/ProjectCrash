@@ -22,6 +22,10 @@ public class ProjectCrash : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
+			"Slate",
+			"SlateCore",
+			"UMG",
+			"CommonUI",
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks"

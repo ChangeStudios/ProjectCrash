@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "CrashGameModeData.generated.h"
 
+class UCommonActivatableWidget;
 class UGA_Death;
 
 /**
@@ -46,4 +47,13 @@ public:
 	/** The amount of time to wait between StartDeath and FinishDeath. */
 	UPROPERTY(EditDefaultsOnly, Category = "Death", Meta = (Units = "seconds"))
 	float DeathDuration;
+
+
+
+	// UI.
+
+public:
+
+	UPROPERTY(EditDefaultsOnly, Category = "User Interface")
+	TArray<UCommonActivatableWidget*> DefaultWidgets;
 };

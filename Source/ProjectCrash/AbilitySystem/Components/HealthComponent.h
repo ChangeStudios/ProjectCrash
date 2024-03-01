@@ -52,6 +52,16 @@ protected:
 
 
 
+	// Utils.
+
+public:
+
+	/** Retrieves the given actor's HealthComponent, if it has one. Otherwise, returns nullptr. */
+	UFUNCTION(BlueprintPure, Category = "Ability System|Attributes|Health")
+	static UHealthComponent* FindHealthComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UHealthComponent>() : nullptr); }
+
+
+
 	// Attribute accessors.
 
 public:
