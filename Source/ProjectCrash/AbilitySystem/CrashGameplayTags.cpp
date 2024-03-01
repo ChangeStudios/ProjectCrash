@@ -33,4 +33,10 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Falling, "State.Movement.Falling", "The actor is currently airborne with the \"Falling\" movement state. Does not indicate whether the actor jumped or fell. Cleared on land.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Jumping, "State.Movement.Jumping", "The actor is currently airborne as a result of jumping. Cleared on land.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_TemporarilyUnequipped, "State.TemporarilyUnequipped", "The actor has a current equipment set but it is temporarily unequipped. Actors with an EquipmentComponent will automatically unequip and re-equip their current equipment set when they gain and lose this tag, respectively.");
+
+
+	// UI
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Game, "UI.Layer.Game", "The in-game HUD. Displays health, abilities, game mode data, etc.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up in-game, such as the pause menu and its various sub-menus.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu.");
 }

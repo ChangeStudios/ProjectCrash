@@ -12,7 +12,8 @@
 				"EnhancedInput",
 				"Engine",
 				"GameplayAbilities",
-				"CommonUI"
+				"CommonUI",
+				"UMG"
 			]
 		}
 	],

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
-#include "LayeredBaseWidget.generated.h"
+#include "GlobalLayeredWidget.generated.h"
 
 class UCommonActivatableWidgetStack;
 
@@ -13,7 +13,7 @@ class UCommonActivatableWidgetStack;
  * allowing us to push other widgets to this widget.
  */
 UCLASS(Abstract, Blueprintable)
-class PROJECTCRASH_API ULayeredBaseWidget : public UCommonActivatableWidget
+class PROJECTCRASH_API UGlobalLayeredWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 

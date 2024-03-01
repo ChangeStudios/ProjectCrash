@@ -3,38 +3,75 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "UserInterfaceData.generated.h"
 
+class UGlobalLayeredWidget;
 class UCommonActivatableWidget;
-class ULayeredBaseWidget;
+
 
 /**
- * The layers of the user interface to which a UI widget can belong. 
+ * A widget that defines the layouts for slotted widgets, inside of which slotted widgets will be created.
  */
-UENUM(BlueprintType)
-enum EUserInterfaceLayer : uint8
+USTRUCT()
+struct FLayoutWidget
 {
-	// The in-game HUD. Displays health, abilities, game mode data, etc.
-	Game,
-	// Any menus that are brought up in-game, such as the pause menu and its various sub-menus.
-	GameMenu,
-	// UI serving as the primary element of the game outside of gameplay, such as the main menu.
-	Menu
+	GENERATED_BODY()
+
+	/** The layout widget to create. */
+	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (AssetBundles = "Client"))
+	TSoftClassPtr<UCommonActivatableWidget> LayoutWidgetClass;
+
+	/** The layer to which to push the layer. */
+	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (Categories = "UI.Layer"))
+	FGameplayTag TargetLayer;
 };
+
+
+/**
+ * A widget that will be created in a specified slot within any existing layout widget with that slot.
+ */
+USTRUCT()
+struct FSlottedWidget
+{
+	GENERATED_BODY()
+
+	/** The slotted widget to create. */
+	UPROPERTY(EditAnywhere, Category = UserInterface)
+	TSubclassOf<UCommonActivatableWidget> SlottedWidgetClass;
+
+	/** The slot where this widget should be placed. */
+	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (Categories = "UI.Slot"))
+	FGameplayTag SlotID;
+};
+
 
 /**
  * A global collection of data defining the user interface.
  */
 UCLASS(Blueprintable, BlueprintType)
-class PROJECTCRASH_API UUserInterfaceData : public UDataAsset
+class PROJECTCRASH_API UUserInterfaceData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
 
-	/** The base widget that will be created and pushed when the game starts. All other widgets will be pushed to this
-	 * widget. */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ULayeredBaseWidget> BaseWidget;
+	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to
+	 * this widget. */
+	UPROPERTY(EditDefaultsOnly, Meta = (AssetBundles = "Client"))
+	TSoftClassPtr<UGlobalLayeredWidget> GlobalLayeredWidget;
+
+	/** Widgets that will be created and registered as "layout widgets." When modular widgets are added, each layout
+	 * widget's slots will be checked for a tag matching the modular widget, and the widget will be created in that
+	 * slot. */
+	UPROPERTY(EditDefaultsOnly, Meta = (TitleProperty = "{TargetLayer} -> {LayoutWidgetClass}"))
+	TArray<FLayoutWidget> LayoutWidgets;
+
+	/** Widgets that will be created and placed inside any corresponding slot defined in any existing layout
+	 * widgets. */
+	UPROPERTY(EditDefaultsOnly, Meta = (TitleProperty = "{SlotID} -> {SlottedWidgetClass}"))
+	TArray<FSlottedWidget> SlottedWidgets;
+
+	// Pause menu widget (none by default)
 };
