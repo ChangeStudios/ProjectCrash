@@ -76,7 +76,12 @@ protected:
 	void OnDeathStarted(const FDeathData& DeathData);
 
 	/** Called when this character's death finishes, to handle logic like destruction. */
+	UFUNCTION()
 	void OnDeathFinished();
+
+	/** Ragdolls this character and launches them in the given direction. */
+	UFUNCTION(NetMulticast, Reliable)
+	void RagdollCharacter(FVector Direction);
 
 	/** Handle for the delegate fired when the "State.Dying" tag is added or removed from this character's ASC. Used to
 	 * handle death events. */

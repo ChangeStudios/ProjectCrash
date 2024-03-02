@@ -162,28 +162,36 @@ void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewC
 void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 {
 	// Hide the first-person mesh.
-	// FirstPersonMesh->SetVisibility(false, true);
-	FirstPersonMesh->DestroyComponent(false);
+	FirstPersonMesh->SetVisibility(false, true);
 
 	// Reveal third-person mesh to everyone.
 	ThirdPersonMesh->SetOwnerNoSee(false);
 
-	// Ragdoll third-person mesh.
-	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
-	ThirdPersonMesh->SetSimulatePhysics(true);
-	ThirdPersonMesh->WakeAllRigidBodies();
-
 	// Yeet (technical term) the third-person mesh away depending on the amount of damage that killed this character.
-	const FVector SourceLocation = DeathData.KillingDamageCauser->GetActorLocation();
-	const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());
-	const FVector DirectionVec = DirectionRot.Quaternion().GetForwardVector();
-	const float LaunchMultiplier = 200.0f;
-	ThirdPersonMesh->SetAllPhysicsLinearVelocity(FVector(DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier));
+	if (HasAuthority())
+	{
+		const FVector SourceLocation = DeathData.KillingDamageCauser->GetActorLocation();
+		const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());
+		const FVector DirectionVec = DirectionRot.Quaternion().GetForwardVector();
+		const float LaunchMultiplier = 200.0f;
+		RagdollCharacter(FVector(DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier));
+	}
 }
 
 void AChallengerBase::OnDeathFinished()
 {
 	UninitAndDestroy();
+}
+
+void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
+{
+	// Ragdoll third-person mesh.
+	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
+	ThirdPersonMesh->SetSimulatePhysics(true);
+	ThirdPersonMesh->WakeAllRigidBodies();
+
+	// Launch the ragdoll in the given direction.
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(Direction);
 }
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
