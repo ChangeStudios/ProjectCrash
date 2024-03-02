@@ -8,6 +8,10 @@
 
 /** Delegate used to broadcast the Death event and communicate in important information. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathData&, DeathData);
+/** Delegate used to broadcast when this ASC is granted a new ability. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityGrantedSignature, const FGameplayAbilitySpec&, GrantedAbilitySpec);
+/** Delegate used to broadcast when an ability is removed from this ASC. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityRemovedSignature, const FGameplayAbilitySpec&, RemovedAbilitySpec);
 
 /**
  * The ability system component used for this project.
@@ -48,6 +52,25 @@ public:
 	/** Returns the actor currently acting as this ASC's avatar. Blueprint-exposed wrapper for GetAvatarActor(). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", Meta = (DisplayName = "Get Avatar Actor"))
 	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
+
+// Delegates for important ability system events.
+public:
+
+	/** Delegate fired when a new ability is granted to this ASC. */
+	UPROPERTY()
+	FAbilityGrantedSignature AbilityGrantedDelegate;
+
+	/** Delegate fired when an ability is removed from this ASC. */
+	UPROPERTY()
+	FAbilityRemovedSignature AbilityRemovedDelegate;
+
+protected:
+
+	/** Fires the AbilityGrantedDelegate when an ability is granted to this ASC. */
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+
+	/** Fires the AbilityRemovedDelegate when an ability is removed from this ASC. */
+	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
 
 

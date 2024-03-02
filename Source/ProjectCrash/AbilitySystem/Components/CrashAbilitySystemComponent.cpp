@@ -29,6 +29,22 @@ void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayRea
 	}
 }
 
+void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnGiveAbility(AbilitySpec);
+
+	// Broadcast that a new ability was granted to this ASC.
+	AbilityGrantedDelegate.Broadcast(AbilitySpec);
+}
+
+void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnRemoveAbility(AbilitySpec);
+
+	// Broadcast that an ability was removed from this ASC.
+	AbilityRemovedDelegate.Broadcast(AbilitySpec);
+}
+
 float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
 	float Duration = -1.0f;

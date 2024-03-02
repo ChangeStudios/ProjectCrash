@@ -5,7 +5,9 @@
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
+#include "NativeGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
 
@@ -13,6 +15,8 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 {
 	// I can't imagine a situation where the instancing policy *wouldn't* be "instanced per actor."
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	AbilityIcon = nullptr;
 
 	if (InstancingPolicy != EGameplayAbilityInstancingPolicy::InstancedPerActor)
 	{
