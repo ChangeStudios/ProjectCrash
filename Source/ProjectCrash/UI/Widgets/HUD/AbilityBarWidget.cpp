@@ -1,8 +1,9 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "UI/Widgets/AbilityBarWidget.h"
+#include "UI/Widgets/HUD/AbilityBarWidget.h"
 
+#include "AbilitySlotWidget.h"
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
@@ -58,8 +59,11 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		if (!AbilitySlotWidgets.Contains(AbilitySpec.Ability))
 		{
-			if (UCommonActivatableWidget* NewAbilitySlotWidget = CreateWidget<UCommonActivatableWidget>(GetOwningPlayer(), AbilitySlotWidgetClass))
+			if (UAbilitySlotWidget* NewAbilitySlotWidget = CreateWidget<UAbilitySlotWidget>(GetOwningPlayer(), AbilitySlotWidgetClass))
 			{
+				// Bind the widget to its ability.
+				NewAbilitySlotWidget->BindSlotToAbility(AbilitySpec.Ability);
+
 				// Add the new widget to the ability slot container.
 				AbilitySlotPanel->AddChild(NewAbilitySlotWidget);
 				

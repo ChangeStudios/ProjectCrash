@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemWidget.h"
+#include "UI/Widgets/Utils/AbilitySystemWidget.h"
 #include "GameplayAbilitySpec.h"
 #include "AbilityBarWidget.generated.h"
 
+class UAbilitySlotWidget;
 class UCrashAbilitySystemComponent;
 
 /**
@@ -81,7 +82,7 @@ protected:
 	/** The widget that will be spawned for ability slots in the ability bar. Abilities with the
 	 * UI.AbilityBehavior.AbilityBar tag will create their own instance of this widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Bar Data")
-	TSubclassOf<UCommonActivatableWidget> AbilitySlotWidgetClass;
+	TSubclassOf<UAbilitySlotWidget> AbilitySlotWidgetClass;
 
 	/** The widget that will be spawned for weapon slots in the ability bar. Abilities with the
 	 * UI.AbilityBehavior.Weapon tag will create their own instance of this widget. */

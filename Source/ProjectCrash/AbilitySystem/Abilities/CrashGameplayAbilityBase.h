@@ -57,7 +57,7 @@ public:
 	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
 	 * the user interface before the ability will appear. */
 	UPROPERTY(EditDefaultsOnly, Category = "User Interface")
-	TSoftObjectPtr<UTexture> AbilityIcon;
+	TObjectPtr<UTexture2D> AbilityIcon;
 
 
 

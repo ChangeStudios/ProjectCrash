@@ -13,7 +13,7 @@
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widgets/GlobalLayeredWidget.h"
-#include "UI/Widgets/SlottedEntryBox.h"
+#include "UI/Widgets/Utils/SlottedEntryBox.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
 void ACrashPlayerController::OnRep_PlayerState()
