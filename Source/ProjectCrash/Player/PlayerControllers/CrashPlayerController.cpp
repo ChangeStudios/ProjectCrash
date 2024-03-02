@@ -7,6 +7,7 @@
 #include "CommonActivatableWidget.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
+#include "Engine/StreamableManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "GameFramework/GameModes/Game/CrashGameModeData.h"
@@ -16,22 +17,15 @@
 #include "UI/Widgets/Utils/SlottedEntryBox.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
-void ACrashPlayerController::OnRep_PlayerState()
+void ACrashPlayerController::InitializeUserInterface(const UCrashGameModeData* GameModeData)
 {
-	Super::OnRep_PlayerState();
-
 	// Only handle UI on the local machine.
 	if (!IsLocalPlayerController())
 	{
 		return;
 	}
 
-	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
-	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
-	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
-	const UUserInterfaceData* UIData = GMData ? GMData->UIData : nullptr;
-
-	UE_LOG(LogPlayerController, VeryVerbose, TEXT("GS? %s, CrashGS? %s, GMData? %s, UIData? %s"), *CONDITIONAL_STRING(GS), *CONDITIONAL_STRING(CrashGS), *CONDITIONAL_STRING(GMData), *CONDITIONAL_STRING(UIData))
+	const UUserInterfaceData* UIData = GameModeData ? GameModeData->UIData : nullptr;
 
 	// Create and activate the base widget. All widgets we create from here in the future will be pushed to this.
 	if (UIData && UIData->GlobalLayeredWidget)
@@ -81,6 +75,27 @@ void ACrashPlayerController::OnRep_PlayerState()
 		{
 			AddWidgetToSlot(SlottedWidget);
 		}
+	}
+}
+
+void ACrashPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AGameStateBase* GS = UGameplayStatics::GetGameState(this);
+	ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
+
+	/* If the game mode data is already valid (i.e. this is a listen server's player), immediately initialize this
+	 * player's UI. */
+	if (CrashGS->GetGameModeData())
+	{
+		InitializeUserInterface(CrashGS->GetGameModeData());
+	}
+	/* If the game mode data has not been replicated yet, assign InitializeUserInterface as a callback to when it
+	 * becomes available. */
+	else
+	{
+		CrashGS->OnGameModeDataReplicated.AddDynamic(this, &ACrashPlayerController::InitializeUserInterface);
 	}
 }
 

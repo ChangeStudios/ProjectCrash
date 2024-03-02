@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayAbilitySpec.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "GameFramework/GameMode.h"
 #include "CrashGameMode.generated.h"

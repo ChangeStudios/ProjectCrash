@@ -14,10 +14,16 @@ void ACrashGameState::BeginPlay()
 	// Replicate the GM data from the server to the clients.
 	if (HasAuthority())
 	{
-		AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-		ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
+		const AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+		const ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
 		GameModeData = CrashGM ? CrashGM->GetGameModeData() : nullptr;
 	}
+}
+
+void ACrashGameState::OnRep_GameModeData()
+{
+	// Broadcast that the game mode data has been replicated.
+	OnGameModeDataReplicated.Broadcast(GameModeData.Get());
 }
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -25,5 +31,5 @@ void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Since the game mode data is static, we only need to replicate its initial value.
-	DOREPLIFETIME_CONDITION(ACrashGameState, GameModeData, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION_NOTIFY(ACrashGameState, GameModeData, COND_InitialOnly, REPNOTIFY_Always);
 }

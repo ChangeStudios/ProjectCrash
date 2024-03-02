@@ -24,13 +24,13 @@ class PROJECTCRASH_API ACrashPlayerController : public APlayerController
 
 public:
 
-	/**
-	 * Creates and caches the default widget defined in the UI data.
-	 *
-	 * This is done in the OnRep for the player state because certain widgets are bound to the ability system, which
-	 * only exists once a player state has been created, which is done after the player controller is initialized.
-	 */
-	virtual void OnRep_PlayerState() override;
+	/** Initializes this player's user interface if the game mode data is valid. Otherwise, assigns a callback to
+	 * initialize the UI when the game mode data becomes available. */
+	virtual void BeginPlay() override;
+
+	/** Creates and caches the global widget, layout widgets, and slotted widgets defined in the game mode's UI data. */
+	UFUNCTION()
+	virtual void InitializeUserInterface(const UCrashGameModeData* GameModeData);
 
 
 

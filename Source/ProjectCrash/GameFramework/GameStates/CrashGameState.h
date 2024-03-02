@@ -9,6 +9,8 @@
 
 class UCrashGameModeData;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
+
 /**
  * The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles team management and game-wide
  * statistics.
@@ -18,19 +20,36 @@ class PROJECTCRASH_API ACrashGameState : public AGameState
 {
 	GENERATED_BODY()
 
+	// Initialization.
+
 public:
 
 	/** Caches the current game mode data from the server so it can be replicated to clients. */
 	virtual void BeginPlay() override;
 
+
+
+	// Game mode data.
+
+public:
+
 	/** Retrieves the static data for the current game mode. */
 	UFUNCTION(BlueprintPure, Category = "Game Mode Data")
 	const UCrashGameModeData* GetGameModeData() const { return GameModeData.Get(); }
+
+	/** Delegate that fires when the game state receives the game mode data from the server. Allows clients to wait
+	 * for the game mode data to be valid before using it. */
+	UPROPERTY()
+	FGameModeDataReplicatedSignature OnGameModeDataReplicated;
 
 protected:
 
 	/** The static data for the current game mode. Replicated to the game state from the server so it can be accessed
 	 * by clients. This data is static, so it exposing it to clients doesn't pose any risk. */
-	UPROPERTY(Replicated)
-	TSoftObjectPtr<UCrashGameModeData> GameModeData;
+	UPROPERTY(ReplicatedUsing = OnRep_GameModeData)
+	TObjectPtr<UCrashGameModeData> GameModeData;
+
+	/** Broadcasts OnGameModeDataReplicated. */
+	UFUNCTION()
+	void OnRep_GameModeData();
 };

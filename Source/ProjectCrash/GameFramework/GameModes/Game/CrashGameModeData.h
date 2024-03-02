@@ -14,7 +14,7 @@ class UUserInterfaceData;
  * Data defining the properties of a specific game mode, such as players' default starting lives.
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Game Mode Data"))
-class PROJECTCRASH_API UCrashGameModeData : public UDataAsset
+class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
