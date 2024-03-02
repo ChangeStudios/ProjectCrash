@@ -31,6 +31,6 @@ protected:
 
 	/** The static data for the current game mode. Replicated to the game state from the server so it can be accessed
 	 * by clients. This data is static, so it exposing it to clients doesn't pose any risk. */
-	UPROPERTY(Replicated, Meta = (AssetBundles = "Client"))
+	UPROPERTY(Replicated)
 	TSoftObjectPtr<UCrashGameModeData> GameModeData;
 };

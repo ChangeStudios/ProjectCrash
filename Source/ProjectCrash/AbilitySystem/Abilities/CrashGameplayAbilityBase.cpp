@@ -36,6 +36,30 @@ AChallengerBase* UCrashGameplayAbilityBase::GetChallengerFromActorInfo() const
 	return CurrentActorInfo && GetAvatarActorFromActorInfo() ? Cast<AChallengerBase>(GetAvatarActorFromActorInfo()) : nullptr;
 }
 
+#if WITH_EDITOR
+
+bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
+{
+	bool bIsMutable = Super::CanEditChange(InProperty);
+
+	if (bIsMutable && InProperty != NULL)
+	{
+		const FName PropName = InProperty->GetFName();
+
+		// Only display the ability icon property if this ability will appear in the UI.
+		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, AbilityIcon))
+		{
+			bIsMutable = AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_AbilityBar) ||
+							AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Weapon) ||
+								AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Ultimate);
+		}
+	}
+
+	return bIsMutable;
+}
+
+#endif // #if WITH_EDITOR
+
 void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	// Optional blueprint implementation of this callback.

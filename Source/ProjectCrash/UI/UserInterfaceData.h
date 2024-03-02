@@ -20,7 +20,7 @@ struct FLayoutWidget
 	GENERATED_BODY()
 
 	/** The layout widget to create. */
-	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (AssetBundles = "Client"))
+	UPROPERTY(EditAnywhere, Category = UserInterface)
 	TSoftClassPtr<UCommonActivatableWidget> LayoutWidgetClass;
 
 	/** The layer to which to push the layer. */
@@ -59,7 +59,7 @@ public:
 
 	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to
 	 * this widget. */
-	UPROPERTY(EditDefaultsOnly, Meta = (AssetBundles = "Client"))
+	UPROPERTY(EditDefaultsOnly)
 	TSoftClassPtr<UGlobalLayeredWidget> GlobalLayeredWidget;
 
 	/** Widgets that will be created and registered as "layout widgets." When modular widgets are added, each layout

@@ -42,6 +42,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
 	FORCEINLINE AChallengerBase* GetChallengerFromActorInfo() const;
 
+#if WITH_EDITOR
+
+	/** Define when certain properties can be edited in this ability's archetype. */
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+
+#endif // #if WITH_EDITOR
 
 
 	// User interface.
@@ -50,7 +56,7 @@ public:
 
 	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
 	 * the user interface before the ability will appear. */
-	UPROPERTY(EditDefaultsOnly, Category = "User Interface", Meta = (AssetBundles = "Client"))
+	UPROPERTY(EditDefaultsOnly, Category = "User Interface")
 	TSoftObjectPtr<UTexture> AbilityIcon;
 
 
@@ -82,7 +88,7 @@ public:
 
 	/** These tags will be bound to corresponding input actions to trigger this ability. These are bound by the owning
 	 * ability set when it's granted. */
-	UPROPERTY(EditDefaultsOnly, Category = Tags, meta=(Categories="AbilityTagCategory"))
+	UPROPERTY(EditDefaultsOnly, Category = Tags, Meta = (Categories = "AbilityTagCategory"))
 	FGameplayTagContainer InputTags;
 
 
@@ -92,17 +98,17 @@ public:
 protected:
 
 	/** Blueprint-implementable event called when this ability's input is completed. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="Input Released")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "Input Released")
 	void K2_InputReleased();
 
 	/** Blueprint-implementable event called when this ability is given to an ASC. Called BEFORE C++ OnGiveAbility
 	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="On Give Ability")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "On Give Ability")
 	void K2_OnGiveAbility();
 
 	/** Blueprint-implementable event called when this ability is removed from an ASC. Called BEFORE C++ OnRemoveAbility
 	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName="On Remove Ability")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "On Remove Ability")
 	void K2_OnRemoveAbility();
 
 
