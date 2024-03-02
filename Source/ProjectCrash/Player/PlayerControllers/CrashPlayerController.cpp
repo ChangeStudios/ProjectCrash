@@ -5,6 +5,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "CommonActivatableWidget.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
@@ -15,8 +16,16 @@
 #include "UI/Widgets/SlottedEntryBox.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
-void ACrashPlayerController::BeginPlay()
+void ACrashPlayerController::OnRep_PlayerState()
 {
+	Super::OnRep_PlayerState();
+
+	// Only handle UI on the local machine.
+	if (!IsLocalPlayerController())
+	{
+		return;
+	}
+
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
 	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
@@ -27,19 +36,16 @@ void ACrashPlayerController::BeginPlay()
 	// Create and activate the base widget. All widgets we create from here in the future will be pushed to this.
 	if (UIData && UIData->GlobalLayeredWidget)
 	{
-		if (IsLocalPlayerController())
-		{
-			GlobalLayeredWidget = CreateWidget<UGlobalLayeredWidget>(this, UIData->GlobalLayeredWidget.Get());
+		GlobalLayeredWidget = CreateWidget<UGlobalLayeredWidget>(this, UIData->GlobalLayeredWidget);
 
-			if (GlobalLayeredWidget)
-			{
-				GlobalLayeredWidget->AddToViewport();
-			}
+		if (GlobalLayeredWidget)
+		{
+			GlobalLayeredWidget->AddToViewport();
 		}
 	}
 	else
 	{
-		// UE_LOG(LogPlayerController, Fatal, TEXT("ACrashPlayerController: UIData is not defined. This player controller must have a valid UIData asset and BaseWidget asset to manage the user interface."));
+		UE_LOG(LogPlayerController, Error, TEXT("ACrashPlayerController: UIData is not defined. This player controller must have a valid UIData asset and BaseWidget asset to manage the user interface."));
 	}
 
 	// If the global widget was successfully created, push the layout and slotted widgets to it.
@@ -50,7 +56,7 @@ void ACrashPlayerController::BeginPlay()
 		{
 			if (LayoutWidget.LayoutWidgetClass)
 			{
-				if (UCommonActivatableWidget* NewLayout = PushWidgetToLayer(LayoutWidget.LayoutWidgetClass.Get(), LayoutWidget.TargetLayer))
+				if (UCommonActivatableWidget* NewLayout = PushWidgetToLayer(LayoutWidget.LayoutWidgetClass, LayoutWidget.TargetLayer))
 				{
 					// Register the new layout widget.
 					RegisteredLayoutWidgets.Add(NewLayout);
@@ -76,8 +82,6 @@ void ACrashPlayerController::BeginPlay()
 			AddWidgetToSlot(SlottedWidget);
 		}
 	}
-
-	Super::BeginPlay();
 }
 
 UCommonActivatableWidget* ACrashPlayerController::PushWidgetToLayer(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag LayerToPushTo)

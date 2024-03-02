@@ -21,7 +21,7 @@ struct FLayoutWidget
 
 	/** The layout widget to create. */
 	UPROPERTY(EditAnywhere, Category = UserInterface)
-	TSoftClassPtr<UCommonActivatableWidget> LayoutWidgetClass;
+	TSubclassOf<UCommonActivatableWidget> LayoutWidgetClass;
 
 	/** The layer to which to push the layer. */
 	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (Categories = "UI.Layer"))
@@ -60,7 +60,7 @@ public:
 	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to
 	 * this widget. */
 	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<UGlobalLayeredWidget> GlobalLayeredWidget;
+	TSubclassOf<UGlobalLayeredWidget> GlobalLayeredWidget;
 
 	/** Widgets that will be created and registered as "layout widgets." When modular widgets are added, each layout
 	 * widget's slots will be checked for a tag matching the modular widget, and the widget will be created in that

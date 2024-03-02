@@ -7,6 +7,7 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Runtime/UMG/Public/Components/PanelWidget.h"
 
 void UAbilityBarWidget::NativeConstruct()
 {
@@ -57,8 +58,11 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		if (!AbilitySlotWidgets.Contains(AbilitySpec.Ability))
 		{
-			if (UCommonActivatableWidget* NewAbilitySlotWidget = CreateWidget<UCommonActivatableWidget>(GetOwningPlayer(), AbilitySlotWidgetClass.Get()))
+			if (UCommonActivatableWidget* NewAbilitySlotWidget = CreateWidget<UCommonActivatableWidget>(GetOwningPlayer(), AbilitySlotWidgetClass))
 			{
+				// Add the new widget to the ability slot container.
+				AbilitySlotPanel->AddChild(NewAbilitySlotWidget);
+				
 				// Cache the new widget to be able to delete it later.
 				AbilitySlotWidgets.Add(AbilitySpec.Ability, NewAbilitySlotWidget);
 			}
@@ -70,8 +74,11 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		if (!WeaponSlotWidgets.Contains(AbilitySpec.Ability))
 		{
-			if (UCommonActivatableWidget* NewWeaponSlotWidget = CreateWidget<UCommonActivatableWidget>(GetOwningPlayer(), WeaponSlotWidgetClass.Get()))
+			if (UCommonActivatableWidget* NewWeaponSlotWidget = CreateWidget<UCommonActivatableWidget>(GetOwningPlayer(), WeaponSlotWidgetClass))
 			{
+				// Add the new widget to the weapon slot container.
+				WeaponSlotPanel->AddChild(NewWeaponSlotWidget);
+
 				// Cache the new widget to be able to delete it later.
 				WeaponSlotWidgets.Add(AbilitySpec.Ability, NewWeaponSlotWidget);
 			}

@@ -81,10 +81,10 @@ protected:
 	/** The widget that will be spawned for ability slots in the ability bar. Abilities with the
 	 * UI.AbilityBehavior.AbilityBar tag will create their own instance of this widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Bar Data")
-	TSoftClassPtr<UCommonActivatableWidget> AbilitySlotWidgetClass;
+	TSubclassOf<UCommonActivatableWidget> AbilitySlotWidgetClass;
 
 	/** The widget that will be spawned for weapon slots in the ability bar. Abilities with the
 	 * UI.AbilityBehavior.Weapon tag will create their own instance of this widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Bar Data")
-	TSoftClassPtr<UCommonActivatableWidget> WeaponSlotWidgetClass;
+	TSubclassOf<UCommonActivatableWidget> WeaponSlotWidgetClass;
 };
