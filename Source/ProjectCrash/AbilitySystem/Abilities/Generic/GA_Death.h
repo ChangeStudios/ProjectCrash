@@ -42,8 +42,7 @@ struct FDeathData
 	UPROPERTY(BlueprintReadOnly, DisplayName = "Killing Damage Instigator")
 	AActor* DamageInstigator;
 
-	/** Actor that directly caused the damage that killed this actor; e.g. an enemy player pawn or a grenade. This will
-	 * be the same as DamageInstigator for NPCs. */
+	/** Actor that directly caused the damage that killed this actor; e.g. an enemy player pawn or a grenade. */
 	UPROPERTY(BlueprintReadOnly, DisplayName = "Killing Damage Causer")
 	AActor* KillingDamageCauser;
 

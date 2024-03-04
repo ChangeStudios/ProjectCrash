@@ -40,7 +40,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up in-game, such as the pause menu and its various sub-menus.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu.");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_AbilityBar, "UI.AbilityBehavior.AbilityBar", "This ability will appear in the ability bar as a standard ability. These abilities are displayed with their cooldown.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_AbilitySlot, "UI.AbilityBehavior.AbilitySlot", "This ability will appear in the ability bar in a standard ability slot. These abilities are displayed with their cooldown and activation status.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Ultimate, "UI.AbilityBehavior.Ultimate", "This ability will appear with its current charge in the ultimate widget.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Weapon, "UI.AbilityBehavior.Weapon", "This ability will appear in the ability bar as a weapon. These abilities are displayed with an ammo count, if one is defined.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_WeaponSlot, "UI.AbilityBehavior.WeaponSlot", "This ability will appear in the ability bar in a weapon slot. These abilities are displayed with an ammo count, if one is defined.");
 }

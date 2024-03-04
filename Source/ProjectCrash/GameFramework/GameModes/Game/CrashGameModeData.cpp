@@ -5,6 +5,7 @@
 
 UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializer)
 {
+	TeamSize = 1;
 	StartingLives = 1;
 	DefaultDeathAbility = nullptr;
 	DeathDuration = 5.0f;

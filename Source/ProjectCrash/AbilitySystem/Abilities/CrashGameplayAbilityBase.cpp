@@ -49,8 +49,8 @@ bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
 		// Only display the ability icon property if this ability will appear in the UI.
 		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, AbilityIcon))
 		{
-			bIsMutable = AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_AbilityBar) ||
-							AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Weapon) ||
+			bIsMutable = AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_AbilitySlot) ||
+							AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_WeaponSlot) ||
 								AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Ultimate);
 		}
 	}

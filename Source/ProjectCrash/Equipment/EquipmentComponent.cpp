@@ -162,16 +162,16 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	// Update the animation instance being used by the character meshes.
 	if (const UEquipmentAnimationData* AnimData = SetToEquip->AnimationData)
 	{
-		if (const AChallengerBase* CharAsChallenger = Cast<AChallengerBase>(EquippingChar))
+		if (const ACrashCharacterBase* CrashChar = Cast<ACrashCharacterBase>(EquippingChar))
 		{
 			// Update the mesh's animation instances.
-			USkeletalMeshComponent* FPPMesh = CharAsChallenger->GetFirstPersonMesh();
+			USkeletalMeshComponent* FPPMesh = CrashChar->GetFirstPersonMesh();
 			if (UChallengerAnimInstanceBase* FPPAnimInstance = Cast<UChallengerAnimInstanceBase>(FPPMesh->GetAnimInstance()))
 			{
 				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
 			}
 
-			USkeletalMeshComponent* TPPMesh = CharAsChallenger->GetThirdPersonMesh();
+			USkeletalMeshComponent* TPPMesh = CrashChar->GetThirdPersonMesh();
 			if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(TPPMesh->GetAnimInstance()))
 			{
 				TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
@@ -189,7 +189,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 				TPPMesh->GetAnimInstance()->Montage_Play(EquipTPP);
 			}
 		}
-		// Update the TPP animation instance and play the third-person "equip" animation for non-player characters.
+		// Update the TPP animation instance and play the third-person "equip" animation for non-Crash characters.
 		else
 		{
 			if (UChallengerAnimInstanceBase* CharAnimInstance = Cast<UChallengerAnimInstanceBase>(EquippingChar->GetMesh()->GetAnimInstance()))

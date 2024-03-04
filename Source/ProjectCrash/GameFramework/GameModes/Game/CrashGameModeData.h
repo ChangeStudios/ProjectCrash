@@ -27,6 +27,16 @@ public:
 
 
 
+	// Teams.
+
+public:
+
+	/** The number of players per team in this game-mode. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Team Size")
+	uint8 TeamSize;
+
+
+
 	// Lives.
 
 public:
@@ -34,6 +44,7 @@ public:
 	/** The number of lives with which players start games. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lives", DisplayName = "Starting Player Lives", Meta = (UIMin = 1, UIMax = 255))
 	uint8 StartingLives;
+
 
 
 	// Death.

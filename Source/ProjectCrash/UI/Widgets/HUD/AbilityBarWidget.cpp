@@ -55,7 +55,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	const FGameplayTagContainer AbilityTags = AbilitySpec.Ability->AbilityTags;
 
 	// Create a new ability slot widget if this ability should get one. 
-	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_AbilityBar))
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_AbilitySlot))
 	{
 		if (!AbilitySlotWidgets.Contains(AbilitySpec.Ability))
 		{
@@ -74,7 +74,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	}
 
 	// Create a new weapon slot widget if this ability should get one.
-	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Weapon))
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_WeaponSlot))
 	{
 		if (!WeaponSlotWidgets.Contains(AbilitySpec.Ability))
 		{
