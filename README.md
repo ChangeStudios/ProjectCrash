@@ -6,6 +6,7 @@ The codebase of "Project Crash" contains detailed doc comments. But given the co
 
 * [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1lrocajswgfGHrTl-TFuM-Iw5N444_QWDiKfILris98c/edit?usp=sharing)
 * [Enhanced Input System](https://docs.google.com/document/d/14MctqQ5xBJUGY_rECkic1fV7ar-tnsWgIixjtUjG0ho/edit?usp=sharing)
+* [Data-Driven First-Person and Third-Person Character Animation System](https://docs.google.com/document/d/10SJwsWDz0Bdb3wLYZ8Y8bDuiuqd6Wuy79pgpf6HaXfY/edit?usp=sharing)
 * [Equipment System](https://docs.google.com/document/d/1Crvtr5GLEnEXgaKbAM2hrokMUI4bmXdkZud7vnmHgVc/edit?usp=sharing)
 * [User Interface](https://docs.google.com/document/d/1-mVWbRCCULRUAsuPj1OvG-jbYD4xY5aS1YMsj4WkYp0/edit?usp=sharing)
 * [Actor Death](https://docs.google.com/document/d/1I-24OXwK4daYPk848kmgkZWWHcKA4EAg0JMTBuFgVWM/edit?usp=sharing)
