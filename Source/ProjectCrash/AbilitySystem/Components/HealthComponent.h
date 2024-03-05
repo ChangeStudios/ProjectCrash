@@ -11,15 +11,17 @@ class UHealthAttributeSet;
 class UHealthAttributeBaseValues;
 class UCrashAbilitySystemComponent;
 
-/** Broadcast when attribute's values are changed. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChanged, UHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
+/** Broadcast on health attribute events, like when the Health attribute reaches 0. */
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FHealth_AttributeEventSignature, UHealthComponent* /*HealthComponent*/, AActor* /*Instigator*/, float /*DamageMagnitude*/);
+/** Broadcast when health attributes' values are changed. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChangedSignature, UHealthComponent*, HealthComponent, AActor*, Instigator, float, OldValue, float, NewValue);
 
 /**
  * Component used by actors with an ASC to interface with health attributes. This compartmentalizes health functionality
  * into a unique component, while also providing an interface to actors that need to be aware of health events, but may
  * not have the health attribute set itself; e.g. the avatar of an ASC that's held a the player state.
  */
-UCLASS(meta=(BlueprintSpawnableComponent))
+UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -93,7 +95,8 @@ protected:
 	UFUNCTION()
 	void OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
-	/** Called when Health reaches 0. Broadcasts OutOfHealthDelegate. */
+	/** Called when Health reaches 0. Broadcasts OutOfHealthDelegate and notifies the game mode of this component's
+	 * owning actor's death. */
 	UFUNCTION()
 	void OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
 
@@ -103,11 +106,14 @@ public:
 
 	/** Delegate broadcast when the Health attribute's value changes. */
 	UPROPERTY(BlueprintAssignable)
-	FHealth_AttributeChanged HealthChangedDelegate;
+	FHealth_AttributeChangedSignature HealthChangedDelegate;
 
 	/** Delegate broadcast when the MaxHealth attribute's value changes. */
 	UPROPERTY(BlueprintAssignable)
-	FHealth_AttributeChanged MaxHealthChangedDelegate;
+	FHealth_AttributeChangedSignature MaxHealthChangedDelegate;
+
+	/** Delegate broadcast when the Health attribute reaches 0. */
+	FHealth_AttributeEventSignature OutOfHealthDelegate;
 
 
 

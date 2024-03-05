@@ -7,8 +7,10 @@
 #include "CrashAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -29,7 +31,7 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 
 	if (AbilitySystemComponent)
 	{
-		ABILITY_LOG(Error, TEXT("Health component for owner [%s] has already been initialized with an ability system."), *GetNameSafe(Owner));
+		ABILITY_LOG(Error, TEXT("Health component for owner [%s] has already been initialized with an ability system owned by: [%s]."), *GetNameSafe(Owner), *GetNameSafe(AbilitySystemComponent->GetOwnerActor()));
 		return;
 	}
 
@@ -48,9 +50,9 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	}
 
 	// Bind delegates to the health attribute set's attribute changes and events.
-	HealthSet->HealthChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
-	HealthSet->MaxHealthChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
-	HealthSet->OutOfHealthDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
+	HealthSet->HealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
+	HealthSet->MaxHealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
+	HealthSet->OutOfHealthAttributeDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
 
 	// Initialize the attribute set's base values.
 	if (IsValid(InAttributeBaseValues))
@@ -68,17 +70,17 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	}
 
 	// Broadcast the initial changes to the attributes.
-	HealthChangedDelegate.Broadcast(this, HealthSet->GetHealth(), HealthSet->GetHealth(), nullptr);
-	MaxHealthChangedDelegate.Broadcast( this, HealthSet->GetHealth(), HealthSet->GetHealth(), nullptr);
+	HealthChangedDelegate.Broadcast(this, nullptr, HealthSet->GetHealth(), HealthSet->GetHealth());
+	MaxHealthChangedDelegate.Broadcast( this, nullptr, HealthSet->GetMaxHealth(), HealthSet->GetMaxHealth());
 }
 
 void UHealthComponent::UninitializeFromAbilitySystem()
 {
 	if (HealthSet)
 	{
-		HealthSet->HealthChangedDelegate.RemoveAll(this);
-		HealthSet->MaxHealthChangedDelegate.RemoveAll(this);
-		HealthSet->OutOfHealthDelegate.RemoveAll(this);
+		HealthSet->HealthAttributeChangedDelegate.RemoveAll(this);
+		HealthSet->MaxHealthAttributeChangedDelegate.RemoveAll(this);
+		HealthSet->OutOfHealthAttributeDelegate.RemoveAll(this);
 	}
 
 	HealthSet = nullptr;
@@ -117,16 +119,18 @@ float UHealthComponent::GetHealthNormalized() const
 
 void UHealthComponent::OnHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
-	HealthChangedDelegate.Broadcast(this, OldValue, NewValue, EffectInstigator);
+	HealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
 }
 
 void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
-	MaxHealthChangedDelegate.Broadcast(this, OldValue, NewValue, EffectInstigator);
+	MaxHealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
 }
 
 void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
+	OutOfHealthDelegate.Broadcast(this, DamageInstigator, DamageMagnitude);
+
 #if WITH_SERVER_CODE
 
 	// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.

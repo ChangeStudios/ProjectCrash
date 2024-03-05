@@ -106,18 +106,18 @@ private:
 
 
 
-	// Attribute delegates.
+	// Attribute delegates. Most variables in these delegates will not be valid on clients.
 
 public:
 
 	/** Delegate broadcast when Health attribute changes. */
-	mutable FAttributeChangedSignature HealthChangedDelegate;
+	mutable FAttributeChangedSignature HealthAttributeChangedDelegate;
 
 	/** Delegate broadcast when MaxHealth attribute changes. */
-	mutable FAttributeChangedSignature MaxHealthChangedDelegate;
+	mutable FAttributeChangedSignature MaxHealthAttributeChangedDelegate;
 
 	/** Delegate broadcast when health reaches 0. */
-	mutable FAttributeEventSignature OutOfHealthDelegate;
+	mutable FAttributeEventSignature OutOfHealthAttributeDelegate;
 
 
 

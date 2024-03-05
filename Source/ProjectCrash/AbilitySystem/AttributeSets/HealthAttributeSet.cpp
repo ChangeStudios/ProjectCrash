@@ -79,12 +79,12 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	{
 		SetHealth(FMath::Clamp(GetHealth(), MinimumHealth, GetMaxHealth()));
 
-		// Broadcast MaxHealth's value change.
+		// Broadcast MaxHealth's value change on the server.
 		if (GetMaxHealth() != MaxHealthBeforeAttributeChange)
 		{
-			MaxHealthChangedDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, MaxHealthBeforeAttributeChange, GetMaxHealth());
+			MaxHealthAttributeChangedDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, MaxHealthBeforeAttributeChange, GetMaxHealth());
 		}
-			
+
 		ABILITY_LOG(Warning, TEXT("Attribute MaxHealth was modified from an execution. This attribute can be modified directly, without executions. Modification was still processed."));
 	}
 	// No other attributes should be modified with executions.
@@ -93,16 +93,16 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		ABILITY_LOG(Warning, TEXT("Attempted to modify attribute [%s] with an execution. This attribute cannot be directly modified with executions."), *Data.EvaluatedData.Attribute.GetName())
 	}
 
-	// Broadcast Health's value change if it was changed.
+	// Broadcast Health's value change.
 	if (GetHealth() != HealthBeforeAttributeChange)
 	{
-		HealthChangedDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, HealthBeforeAttributeChange, GetHealth());
+		HealthAttributeChangedDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, HealthBeforeAttributeChange, GetHealth());
 	}
 
-	// Broadcast that the target is out of health. 
+	// Broadcast that the target is out of health on the server. 
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
-		OutOfHealthDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
+		OutOfHealthAttributeDelegate.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
 	}
 
 	// This prevents the OutOfHealthDelegate from being broadcast multiple times.
@@ -163,12 +163,19 @@ void UHealthAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthAttributeSet, Health, OldValue);
 
 	const float CurrentHealth = GetHealth();
-	const float EstimatedMagnitude = CurrentHealth - OldValue.GetCurrentValue();
+	const float OldHealth = OldValue.GetCurrentValue();
+	const float EstimatedMagnitude = CurrentHealth - OldHealth;
+
+	// Broadcast the attribute value change to clients.
+	if (CurrentHealth != OldHealth)
+	{
+		HealthAttributeChangedDelegate.Broadcast(nullptr, nullptr, FGameplayEffectSpec(), OldHealth, CurrentHealth);
+	}
 
 	// Broadcast that the target is out of health to clients.
 	if ((GetHealth() <= 0.0f) && !bOutOfHealth)
 	{
-		OutOfHealthDelegate.Broadcast(nullptr, nullptr, FGameplayEffectSpec(), EstimatedMagnitude);
+		OutOfHealthAttributeDelegate.Broadcast(nullptr, nullptr, FGameplayEffectSpec(), EstimatedMagnitude);
 	}
 
 	// This prevents the OutOfHealthDelegate from being broadcast multiple times on each client.
@@ -178,6 +185,15 @@ void UHealthAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 void UHealthAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthAttributeSet, MaxHealth, OldValue);
+
+	const float CurrentHealth = GetHealth();
+	const float OldHealth = OldValue.GetCurrentValue();
+
+	// Broadcast the attribute value change to clients.
+	if (CurrentHealth != OldHealth)
+	{
+		MaxHealthAttributeChangedDelegate.Broadcast(nullptr, nullptr, FGameplayEffectSpec(), OldHealth, CurrentHealth);
+	}
 }
 
 void UHealthAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -8,6 +8,9 @@
 
 class UCrashAbilitySystemComponent;
 
+/** Delegate for broadcasting when this widget has bound to its owner's ASC. */
+DECLARE_MULTICAST_DELEGATE(FASCReadySignature);
+
 /**
  * A widget that is bound to its owner's ability system component and registers to its delegates.
  */
@@ -22,6 +25,10 @@ public:
 
 	/** Binds this widget to its owner's ASC. */
 	virtual void NativeConstruct() override;
+
+	/** Broadcast when this widget has bound to its owner's ASC. This is necessary because clients will create their
+	 * interface (including this widget) before their ASC has been initialized. */
+	FASCReadySignature ASCReadyDelegate;
 
 
 
@@ -42,6 +49,10 @@ protected:
 	// Utils.
 
 protected:
+
+	/** Attempts to retrieve and cache the new player state's owning ASC. */
+	UFUNCTION()
+	void OnPlayerStateChanged();
 
 	/** This widget's owning player's ASC, cached for convenience. */
 	UPROPERTY(BlueprintReadOnly)

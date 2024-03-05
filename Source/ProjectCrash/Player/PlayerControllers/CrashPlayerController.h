@@ -8,8 +8,12 @@
 #include "UI/UserInterfaceData.h"
 #include "CrashPlayerController.generated.h"
 
+class APlayerState;
 class USlottedEntryBox;
 class UGlobalLayeredWidget;
+
+/** Delegate for broadcasting when this controller's player state changes. */
+DECLARE_MULTICAST_DELEGATE(FPlayerStateChangeSignature);
 
 /**
  * The base player controller used by this project. Implements logic for client-only events, such as creating and
@@ -31,6 +35,12 @@ public:
 	/** Creates and caches the global widget, layout widgets, and slotted widgets defined in the game mode's UI data. */
 	UFUNCTION()
 	virtual void InitializeUserInterface(const UCrashGameModeData* GameModeData);
+
+	/** Broadcasts PlayerStateChangedDelegate when this controller's player state has been changed. */
+	virtual void OnRep_PlayerState() override;
+
+	/** Broadcast when this controller's player state is changed. */
+	FPlayerStateChangeSignature PlayerStateChangedDelegate;
 
 
 
