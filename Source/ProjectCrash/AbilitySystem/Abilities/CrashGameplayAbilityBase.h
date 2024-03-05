@@ -35,12 +35,12 @@ public:
 	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
 	 * not found or is of the wrong class. */
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	FORCEINLINE UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
 
 	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
 	 * if the avatar could not be found or is of the wrong class. */
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	FORCEINLINE AChallengerBase* GetChallengerFromActorInfo() const;
+	AChallengerBase* GetChallengerFromActorInfo() const;
 
 #if WITH_EDITOR
 
