@@ -11,6 +11,27 @@ class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
 /**
+ * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
+ * abilities cannot be activated simultaneously.
+ */
+UENUM(BlueprintType)
+enum class EAbilityActivationGroup : uint8
+{
+	// This ability's activation does not affect and does not rely on other abilities.
+	Independent,
+
+	/* This ability cannot be activated while another "exclusive" ability is active. This ability can be cancelled and
+	 * replaced by other exclusive abilities. */
+	Exclusive_Replaceable,
+
+	/* This ability cannot be activated while another "exclusive" ability is active. This ability can never be
+	 * cancelled and replaced by other exclusive abilities. */
+	Exclusive_Blocking
+};
+
+
+
+/**
  * The base class for gameplay abilities in this project. Extends the base gameplay ability class with additional
  * functionality and various helper functions.
  */
@@ -25,6 +46,31 @@ public:
 
 	/** Default constructor. */
 	UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer);
+
+
+
+	// Activation behavior.
+
+public:
+
+	/** Getter for this ability's input tag. */
+	UFUNCTION(BlueprintPure, Category = "Ability System|Ability Activation", Meta = (ToolTip = "This tag will be bound to corresponding input actions to trigger this ability."))
+	const FGameplayTag& GetInputTag() const { return InputTag; }
+
+	/** Getter for this ability's activation group. */
+	UFUNCTION(BlueprintPure, Category = "Ability System|Ability Activation", Meta = (ToolTip = "How this ability's activation affects and relies on other abilities."))
+	EAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
+
+protected:
+
+	/** This tag will be bound to corresponding input actions to trigger this ability. This is bound by the owning
+	 * ability set when it's granted. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", Meta = (Categories = "InputTag"))
+	FGameplayTag InputTag;
+
+	/** How this ability's activation affects and relies on other abilities. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Group")
+	EAbilityActivationGroup ActivationGroup;
 
 
 
@@ -50,6 +96,7 @@ public:
 #endif // #if WITH_EDITOR
 
 
+
 	// User interface.
 
 public:
@@ -72,24 +119,16 @@ protected:
 	/** Calls optional blueprint implementation of OnRemoveAbility. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Applies gameplay effects applied by this ability. */
+	/** Checks this ability's activation group to see if it is currently blocked. */
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
+
+	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	/** Removes gameplay effects applied by this ability that are marked to be removed when it ends. */
+	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	/** Creates an effect context of type FCrashGameplayEffectContext. */
 	virtual FGameplayEffectContextHandle MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const override;
-
-
-
-	// Tags.
-
-public:
-
-	/** These tags will be bound to corresponding input actions to trigger this ability. These are bound by the owning
-	 * ability set when it's granted. */
-	UPROPERTY(EditDefaultsOnly, Category = Tags, Meta = (Categories = "AbilityTagCategory"))
-	FGameplayTagContainer InputTags;
 
 
 

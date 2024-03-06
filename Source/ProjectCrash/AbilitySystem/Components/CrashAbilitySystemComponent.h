@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "CrashAbilitySystemComponent.generated.h"
 
 /** Delegate used to broadcast the Death event and communicate in important information. */
@@ -26,6 +27,15 @@ UCLASS()
 class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UCrashAbilitySystemComponent();
+
+
 
 	// Initialization.
 
@@ -74,6 +84,29 @@ protected:
 
 
 
+	// Ability activation.
+
+public:
+
+	/** Returns whether the given activation group is currently blocked by ongoing abilities. Independent abilities
+	 * are never blocked; exclusive abilities are only blocked if there is an ongoing blocking exclusive ability. */
+	bool IsActivationGroupBlocked(EAbilityActivationGroup ActivationGroup) const;
+
+	/** Caches the given ability if it's an exclusive ability and can override the current exclusive ability. If it can,
+	 * the current exclusive ability will be cancelled. */
+	void HandleAbilityActivatedForActivationGroup(UCrashGameplayAbilityBase* ActivatedAbility);
+
+	/** Clears the given ability from the current exclusive ability cache if it's exclusive, allowing new exclusive
+	 * abilities to be activated. */
+	void HandleAbilityEndedForActivationGroup(UCrashGameplayAbilityBase* EndedAbility);
+
+protected:
+
+	/** The current ongoing exclusive gameplay ability and its activation group. */
+	TPair<UCrashGameplayAbilityBase*, EAbilityActivationGroup> CurrentExclusiveAbility;
+
+
+
 	// Animation.
 
 public:
@@ -92,9 +125,6 @@ protected:
 
 	/** Called when a prediction key that played a first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
-
-	/** Called when a prediction key that played a third-person montage is rejected. */
-	void OnThirdPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
 	
 
 

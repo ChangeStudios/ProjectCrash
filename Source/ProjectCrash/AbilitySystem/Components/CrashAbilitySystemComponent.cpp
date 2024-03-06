@@ -3,9 +3,15 @@
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
+#include "AbilitySystemLog.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "Characters/CrashCharacterBase.h"
 #include "GameFramework/CrashLogging.h"
+
+UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
+{
+	CurrentExclusiveAbility = TPair<UCrashGameplayAbilityBase*, EAbilityActivationGroup>(nullptr, EAbilityActivationGroup::Independent);
+}
 
 void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -43,6 +49,72 @@ void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& Ability
 
 	// Broadcast that an ability was removed from this ASC.
 	AbilityRemovedDelegate.Broadcast(AbilitySpec);
+}
+
+bool UCrashAbilitySystemComponent::IsActivationGroupBlocked(EAbilityActivationGroup ActivationGroup) const
+{
+	// Independent abilities are never blocked.
+	if (ActivationGroup == EAbilityActivationGroup::Independent)
+	{
+		return false;
+	}
+
+	// If there is no active exclusive ability, then no exclusive abilities will be blocked.
+	if (CurrentExclusiveAbility.Key == nullptr)
+	{
+		return false;
+	}
+
+	// New exclusive abilities are blocked if the active exclusive ability is a blocking ability.
+	return CurrentExclusiveAbility.Value == EAbilityActivationGroup::Exclusive_Blocking;
+}
+
+void UCrashAbilitySystemComponent::HandleAbilityActivatedForActivationGroup(UCrashGameplayAbilityBase* ActivatedAbility)
+{
+	switch (ActivatedAbility->GetActivationGroup())
+	{
+		// We don't need to do anything for independent abilities.
+		case EAbilityActivationGroup::Independent:
+		{
+			return;
+		}
+
+		/* If the activated ability is exclusive, cancel the active replaceable exclusive ability, if there is one and
+		 * cache the new exclusive ability */
+		case EAbilityActivationGroup::Exclusive_Replaceable:
+		case EAbilityActivationGroup::Exclusive_Blocking:
+		{
+			if (CurrentExclusiveAbility.Key)
+			{
+				/* If there is an active exclusive ability, it must be replaceable (otherwise the given ability
+				 * wouldn't have been activated). */
+				if (CurrentExclusiveAbility.Value == EAbilityActivationGroup::Exclusive_Replaceable)
+				{
+					CurrentExclusiveAbility.Key->CancelAbility(CurrentExclusiveAbility.Key->GetCurrentAbilitySpecHandle(), CurrentExclusiveAbility.Key->GetCurrentActorInfo(), CurrentExclusiveAbility.Key->GetCurrentActivationInfo(), true);
+				}
+				/* If there is a current exclusive ability but it is not exclusive and replaceable, then it is either
+				 * independent (and should not have been cached as the exclusive ability) or it is blocking (and the
+				 * given ability should not have been activated). */
+				else
+				{
+					ABILITY_LOG(Warning, TEXT("UCrashAbilitySystemComponent: A replaceable ability, [%s], was activated, but the current exclusive ability was not successfully overridden."), *GetNameSafe(ActivatedAbility));
+					return;
+				}
+			}
+
+			// Cache the new exclusive ability.
+			CurrentExclusiveAbility = TPair<UCrashGameplayAbilityBase*, EAbilityActivationGroup>(ActivatedAbility, ActivatedAbility->GetActivationGroup());
+		}
+	}
+}
+
+void UCrashAbilitySystemComponent::HandleAbilityEndedForActivationGroup(UCrashGameplayAbilityBase* EndedAbility)
+{
+	// If the given ability is the current exclusive ability, clear it from the exclusive ability cache.
+	if (CurrentExclusiveAbility.Key == EndedAbility)
+	{
+		CurrentExclusiveAbility = TPair<UCrashGameplayAbilityBase*, EAbilityActivationGroup>(nullptr, EAbilityActivationGroup::Independent);
+	}
 }
 
 float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)

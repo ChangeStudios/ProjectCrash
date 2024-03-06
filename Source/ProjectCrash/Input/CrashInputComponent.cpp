@@ -33,10 +33,10 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 		{
 			if (AbilitySpec.Ability)
 			{
-				if (UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+				if (const UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
 				{
 					// Activate any ability with the matching input tag.
-					if (Ability->InputTags.HasTagExact(InputTag))
+					if (Ability->GetInputTag().MatchesTagExact(InputTag))
 					{
 						ASC->TryActivateAbility(AbilitySpec.Handle);
 					}
@@ -58,9 +58,9 @@ void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 		{
 			if (AbilitySpec.Ability)
 			{
-				if (UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+				if (const UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
 				{
-					if (Ability->InputTags.HasTagExact(InputTag))
+					if (Ability->GetInputTag().MatchesTagExact(InputTag))
 					{
 						/* Broadcast that the input for this ability was released. This is commonly used to end
 						 * abilities when their input is released, such as an automatic shooting ability. */
