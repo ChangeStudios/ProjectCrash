@@ -61,30 +61,6 @@ bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
 
 #endif // #if WITH_EDITOR
 
-void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	// Optional blueprint implementation of this callback.
-	K2_InputReleased();
-
-	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
-}
-
-void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	// Optional blueprint implementation of this callback.
-	K2_OnGiveAbility();
-
-	Super::OnGiveAbility(ActorInfo, Spec);
-}
-
-void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	// Optional blueprint implementation of this callback.
-	K2_OnRemoveAbility();
-
-	Super::OnRemoveAbility(ActorInfo, Spec);
-}
-
 bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
 	// Check if this ability's activation group is currently blocked on its ASC.
@@ -193,6 +169,30 @@ void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Hand
 	}
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	// Optional blueprint implementation of this callback.
+	K2_InputReleased();
+
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+}
+
+void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	// Optional blueprint implementation of this callback.
+	K2_OnGiveAbility();
+
+	Super::OnGiveAbility(ActorInfo, Spec);
+}
+
+void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	// Optional blueprint implementation of this callback.
+	K2_OnRemoveAbility();
+
+	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
 FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const

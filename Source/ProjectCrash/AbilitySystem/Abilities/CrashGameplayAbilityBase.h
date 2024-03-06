@@ -49,6 +49,29 @@ public:
 
 
 
+	// Utilities.
+
+public:
+
+	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
+	 * not found or is of the wrong class. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+
+	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
+	 * if the avatar could not be found or is of the wrong class. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	AChallengerBase* GetChallengerFromActorInfo() const;
+
+#if WITH_EDITOR
+
+	/** Define when certain properties can be edited in this ability's archetype. */
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+
+#endif // #if WITH_EDITOR
+
+
+
 	// Activation behavior.
 
 public:
@@ -74,26 +97,17 @@ protected:
 
 
 
-	// Utilities.
+	// Ability activation.
 
-public:
+protected:
 
-	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
-	 * not found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+	/** Checks this ability's activation group to see if it is currently blocked. */
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
 
-	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
-	 * if the avatar could not be found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	AChallengerBase* GetChallengerFromActorInfo() const;
-
-#if WITH_EDITOR
-
-	/** Define when certain properties can be edited in this ability's archetype. */
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-
-#endif // #if WITH_EDITOR
+	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
 
@@ -108,32 +122,21 @@ public:
 
 
 
-	// Gameplay ability interface.
+	// Blueprint-implementable callback functions.
 
+// Internal callbacks.
 protected:
 
 	/** Calls optional blueprint implementation of InputReleased. */
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+
 	/** Calls optional blueprint implementation of OnGiveAbility. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+
 	/** Calls optional blueprint implementation of OnRemoveAbility. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Checks this ability's activation group to see if it is currently blocked. */
-	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
-
-	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
-	/** Creates an effect context of type FCrashGameplayEffectContext. */
-	virtual FGameplayEffectContextHandle MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const override;
-
-
-
-	// Optional callback functions.
-
+// Optional blueprint callbacks.
 protected:
 
 	/** Blueprint-implementable event called when this ability's input is completed. */
@@ -152,7 +155,12 @@ protected:
 
 
 
-	// Ongoing gameplay effects.
+	// Gameplay effects.
+
+protected:
+
+	/** Creates an effect context of type FCrashGameplayEffectContext. */
+	virtual FGameplayEffectContextHandle MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const override;
 
 protected:
 
