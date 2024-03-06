@@ -8,6 +8,7 @@
 
 class UGameplayAbility;
 class UImage;
+class UProgressBar;
 
 /**
  * A widget that represents an ability in the HUD. Displays the ability's icon, its cooldown, and whether or not it can
@@ -34,7 +35,18 @@ protected:
 	UPROPERTY()
 	UGameplayAbility* BoundAbility;
 
+
+
+	// Widgets.
+
+protected:
+
 	/** The icon of the ability that this widget represents. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UImage> AbilityIcon;
+
+	/** The progress bar displaying the ability's current cooldown. Only visible when the ability can be activated and
+	 * is on a cooldown. */
+	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
+	TObjectPtr<UProgressBar> CooldownProgressBar;
 };
