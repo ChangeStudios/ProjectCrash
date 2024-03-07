@@ -39,8 +39,6 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability)
 		CrashAbility->AbilityActivatedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityActivated);
 		CrashAbility->AbilityEndedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityEnded);
 	}
-
-	// TODO: Bind to ability's CanBeActivatedChangedDelegate
 }
 
 void UAbilitySlotWidget::OnCooldownStarted(const FActiveGameplayEffect& CooldownGameplayEffect)

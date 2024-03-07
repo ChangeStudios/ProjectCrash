@@ -43,7 +43,7 @@ public:
 protected:
 
 	/** The ability to which this slot is currently bound. */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY()
 	UGameplayAbility* BoundAbility;
 
 

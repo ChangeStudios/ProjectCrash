@@ -63,7 +63,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", Meta = (DisplayName = "Get Avatar Actor"))
 	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
 
-// Delegates for important ability system events.
+
+
+	// Ability management.
+
 public:
 
 	/** Delegate fired when a new ability is granted to this ASC. */
@@ -102,8 +105,9 @@ public:
 
 protected:
 
-	/** The current ongoing exclusive gameplay ability and its activation group. */
-	TPair<UCrashGameplayAbilityBase*, EAbilityActivationGroup> CurrentExclusiveAbility;
+	/** The current ongoing exclusive gameplay ability. */
+	UPROPERTY()
+	TObjectPtr<UCrashGameplayAbilityBase> CurrentExclusiveAbility;
 
 
 

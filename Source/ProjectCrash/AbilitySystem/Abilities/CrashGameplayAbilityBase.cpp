@@ -214,18 +214,18 @@ void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle H
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
+	Super::OnGiveAbility(ActorInfo, Spec);
+
 	// Optional blueprint implementation of this callback.
 	K2_OnGiveAbility();
-
-	Super::OnGiveAbility(ActorInfo, Spec);
 }
 
 void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
+	Super::OnRemoveAbility(ActorInfo, Spec);
+
 	// Optional blueprint implementation of this callback.
 	K2_OnRemoveAbility();
-
-	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
 FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const

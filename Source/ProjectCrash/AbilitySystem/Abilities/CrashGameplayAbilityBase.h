@@ -103,12 +103,18 @@ protected:
 
 
 
+	// Ability activation requisites.
+
+public:
+
+	/** Checks this ability is disabled or if its activation group is currently blocked. */
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+
+
+
 	// Ability activation.
 
 protected:
-
-	/** Checks this ability is disabled or if its activation group is currently blocked. */
-	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
 
 	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
