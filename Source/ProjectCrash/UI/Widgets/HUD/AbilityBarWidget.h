@@ -26,12 +26,12 @@ class PROJECTCRASH_API UAbilityBarWidget : public UAbilitySystemWidget
 
 public:
 
-	/** Binds this widget to its owner's ASC and performs an initial update. */
-	virtual void NativeConstruct() override;
+	/** Initializes this widget with the bound ASC. */
+	virtual void OnASCReady() override;
 
 
 
-	// UI updates.
+	// UI initialization.
 
 protected:
 

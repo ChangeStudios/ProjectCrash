@@ -54,7 +54,6 @@ void UAbilitySystemWidget::OnPlayerStateChanged()
 	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilitySystemWidget::OnAbilityGranted);
 	OwningASC->AbilityRemovedDelegate.AddDynamic(this, &UAbilitySystemWidget::OnAbilityRemoved);
 
-	// Broadcast that this widget has now bound (or been re-bound) to an ASC.
-	ASCReadyDelegate.Broadcast();
+	// Call any logic that was waiting for this widget to be bound (or re-bound) to an ASC.
+	OnASCReady();
 }
-

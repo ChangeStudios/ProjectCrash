@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "GameplayAbilitySpec.h"
 #include "AbilitySlotWidget.generated.h"
 
 class UGameplayAbility;
@@ -19,10 +20,18 @@ class PROJECTCRASH_API UAbilitySlotWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 
+	// Construction.
+
 public:
 
 	/** Default constructor. */
 	virtual void NativeConstruct() override;
+
+
+
+	// Ability system.
+
+public:
 
 	/** Binds this widget to the given gameplay ability, updating its ability icon and binding its cooldown display and
 	 * activation status. */
@@ -34,6 +43,28 @@ protected:
 	/** The ability to which this slot is currently bound. */
 	UPROPERTY()
 	UGameplayAbility* BoundAbility;
+
+
+
+	// UI updates.
+
+protected:
+
+	// /** Callback to update this widget when its bound ability is activated. */
+	// UFUNCTION()
+	// void OnAbilityActivated();
+	//
+	// /** Callback to update this widget when its bound ability ends. */
+	// UFUNCTION()
+	// void OnAbilityEnded();
+
+	/** Callback to update this widget when its bound ability's cooldown is activated. Calculates the cooldown's
+	 * duration and passes into K2_OnCooldownStarted. */
+	UFUNCTION()
+	void OnCooldownStarted(const FActiveGameplayEffect& CooldownGameplayEffect);
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Cooldown Started")
+	void K2_OnCooldownStarted(const float CooldownDuration);
 
 
 

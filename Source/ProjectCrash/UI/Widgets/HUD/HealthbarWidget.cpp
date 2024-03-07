@@ -14,17 +14,17 @@ void UHealthbarWidget::NativeConstruct()
 
 	HealthComponent = nullptr;
 
-	// If this widget's owning player has already initialized their ASC, initialize it with its owning player's pawn.
-	if (APawn* PossessedPawn = OwningASC ? GetOwningPlayer()->GetPawn() : nullptr)
-	{
-		InitWidget(PossessedPawn);
-	}
-	/* If this widget's owning player has not initialized their ASC yet, wait until they do to initialize this widget
-	 * so the health component functions correctly. */
-	else
-	{
-		ASCReadyDelegate.AddUObject(this, &UHealthbarWidget::OnASCReady);
-	}
+	// // If this widget's owning player has already initialized their ASC, initialize it with its owning player's pawn.
+	// if (APawn* PossessedPawn = OwningASC ? GetOwningPlayer()->GetPawn() : nullptr)
+	// {
+	// 	InitWidget(PossessedPawn);
+	// }
+	// /* If this widget's owning player has not initialized their ASC yet, wait until they do to initialize this widget
+	//  * so the health component functions correctly. */
+	// else
+	// {
+	// 	ASCReadyDelegate.AddUObject(this, &UHealthbarWidget::OnASCReady);
+	// }
 
 	/* Bind a re-initialization callback to whenever this widget's owner's pawn changes in order to update the health
 	 * component currently being used. */

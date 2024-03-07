@@ -10,18 +10,12 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
 
-void UAbilityBarWidget::NativeConstruct()
+void UAbilityBarWidget::OnASCReady()
 {
-	Super::NativeConstruct();
+	Super::OnASCReady();
 
-	check(AbilitySlotWidgetClass);
-	check(WeaponSlotWidgetClass);
-
-	/** Perform an initial update to this widget with its ASC. */
-	if (OwningASC)
-	{
-		InitializeAbilityBar();
-	}
+	/** Initialize this widget with the bound ASC. */
+	InitializeAbilityBar();
 }
 
 void UAbilityBarWidget::InitializeAbilityBar()

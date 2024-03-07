@@ -39,7 +39,7 @@ protected:
 
 	/** Initializes this widget when its owning player initializes their ASC, if it was not ready when this widget was
 	 * created. */
-	void OnASCReady();
+	virtual void OnASCReady() override;
 
 
 

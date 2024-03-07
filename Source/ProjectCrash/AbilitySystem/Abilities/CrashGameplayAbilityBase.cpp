@@ -10,6 +10,7 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
+#include "GameFramework/CrashLogging.h"
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -169,6 +170,27 @@ void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Hand
 	}
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (CooldownGE)
+	{
+		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+
+		// Broadcast this ability's cooldown.
+		if (CooldownEffectHandle.WasSuccessfullyApplied())
+		{
+			const FActiveGameplayEffect* CooldownEffect = ActorInfo->AbilitySystemComponent->GetActiveGameplayEffect(CooldownEffectHandle);
+
+			const FGameplayAbilitySpec* AbilitySpec = GetAbilitySystemComponentFromActorInfo()->FindAbilitySpecFromHandle(Handle);
+			if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability))
+			{
+				CrashAbility->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
+			}
+		}
+	}
 }
 
 void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)

@@ -11,8 +11,6 @@ void UAbilitySlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	BoundAbility = nullptr;
-
 	// Instead of hiding the cooldown bar when the ability is not on a cooldown, we can just set its progress to 0.
 	CooldownProgressBar->SetPercent(0.0f);
 }
@@ -26,16 +24,25 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability)
 
 	BoundAbility = Ability;
 
-	// Update the ability icon.
-	if (AbilityIcon)
+	if (UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
 	{
-		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
+		// Update the ability icon.
+		if (AbilityIcon)
 		{
 			AbilityIcon->SetBrushFromTexture(CrashAbility->AbilityIcon, true);
 		}
+
+		// Bind to the ability's cooldown.
+		CrashAbility->AbilityCooldownStartedDelegate.AddUniqueDynamic(this, &UAbilitySlotWidget::OnCooldownStarted);
 	}
 
-	// Bind to the ability's cooldown.
+	// TODO: Bind to ability's Activate and End
 
 	// TODO: Bind to ability's CanBeActivated
+}
+
+void UAbilitySlotWidget::OnCooldownStarted(const FActiveGameplayEffect& CooldownGameplayEffect)
+{
+	// Call this widget's blueprint logic for when the cooldown starts.
+	K2_OnCooldownStarted(CooldownGameplayEffect.GetDuration());
 }

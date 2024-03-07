@@ -26,9 +26,9 @@ public:
 	/** Binds this widget to its owner's ASC. */
 	virtual void NativeConstruct() override;
 
-	/** Broadcast when this widget has bound to its owner's ASC. This is necessary because clients will create their
+	/** Called when this widget was bound to its owner's ASC. This is necessary because clients will create their
 	 * interface (including this widget) before their ASC has been initialized. */
-	FASCReadySignature ASCReadyDelegate;
+	virtual void OnASCReady() {};
 
 
 

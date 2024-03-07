@@ -10,6 +10,9 @@ class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
+/** Broadcast when this ability's cooldown is started. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityCooldownStarted, const FActiveGameplayEffect&, CooldownGameplayEffect);
+
 /**
  * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
  * abilities cannot be activated simultaneously.
@@ -108,6 +111,21 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+
+
+	// Ability cooldowns.
+
+protected:
+
+	/** Broadcasts AbilityCooldownStartedDelegate when this ability's cooldown is applied. */
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+	
+public:
+
+	/** Delegate broadcast when this ability's cooldown is committed. */
+	UPROPERTY(BlueprintAssignable)
+	FAbilityCooldownStarted AbilityCooldownStartedDelegate;
 
 
 
