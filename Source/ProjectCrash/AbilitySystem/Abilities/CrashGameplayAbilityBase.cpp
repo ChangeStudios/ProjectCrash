@@ -174,20 +174,19 @@ void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Hand
 
 void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
-	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
-	if (CooldownGE)
+	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
 		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
 
-		// Broadcast this ability's cooldown.
+		// Broadcast this ability's cooldown on the CDO.
 		if (CooldownEffectHandle.WasSuccessfullyApplied())
 		{
 			const FActiveGameplayEffect* CooldownEffect = ActorInfo->AbilitySystemComponent->GetActiveGameplayEffect(CooldownEffectHandle);
 
 			const FGameplayAbilitySpec* AbilitySpec = GetAbilitySystemComponentFromActorInfo()->FindAbilitySpecFromHandle(Handle);
-			if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability))
+			if (const UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability))
 			{
-				CrashAbility->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
+				AbilityCDO->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
 			}
 		}
 	}

@@ -123,7 +123,14 @@ protected:
 	
 public:
 
-	/** Delegate broadcast when this ability's cooldown is committed. */
+	/**
+	 * Delegate broadcast when this ability's cooldown is committed.
+	 *
+	 * This delegate is broadcast on the ability's CDO, instead of each ability instance. This lets us handle multiple
+	 * instances of an ability with a single cooldown. For example, if we have an ability with two charges and we use
+	 * both, they'll both use the same cooldown, instead of each getting their own. This way, the first charge can
+	 * finish its cooldown before the second one starts its cooldown.
+	 */
 	UPROPERTY(BlueprintAssignable)
 	FAbilityCooldownStarted AbilityCooldownStartedDelegate;
 
