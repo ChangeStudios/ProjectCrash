@@ -64,6 +64,12 @@ bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
 
 bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
+	// Check if this ability is explicitly disabled.
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_Disabled))
+	{
+		return false;
+	}
+
 	// Check if this ability's activation group is currently blocked on its ASC.
 	if (GetCrashAbilitySystemComponentFromActorInfo()->IsActivationGroupBlocked(GetActivationGroup()))
 	{
@@ -147,6 +153,9 @@ void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle
 		// Update this ability's activation group if it was successfully activated.
 		CrashASC->HandleAbilityActivatedForActivationGroup(this);
 	}
+
+	// Broadcast that this ability was successfully activated on the CDO.
+	Cast<UCrashGameplayAbilityBase>(GetCurrentAbilitySpec()->Ability)->AbilityActivatedDelegate.Broadcast(this);
 }
 
 void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -168,6 +177,9 @@ void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Hand
 		// Update this ability's activation group after it ends.
 		CrashASC->HandleAbilityEndedForActivationGroup(this);
 	}
+
+	// Broadcast that this ability ended on the CDO.
+	Cast<UCrashGameplayAbilityBase>(GetCurrentAbilitySpec()->Ability)->AbilityEndedDelegate.Broadcast(this);
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

@@ -5,6 +5,7 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashGameplayAbilityBase.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
 void FCrashAbilitySet_GrantedHandles::AddGameplayAbilitySpecHandle(const FGameplayAbilitySpecHandle& HandleToAdd)
@@ -34,7 +35,7 @@ void FCrashAbilitySet_GrantedHandles::AddAttributeSet(UAttributeSet* SetToAdd)
 	}
 }
 
-void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom)
+void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom, bool bDisableInsteadOfRemove)
 {
 	check(AbilitySystemToRemoveFrom);
 
@@ -49,6 +50,18 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	{
 		if (Handle.IsValid())
 		{
+			// If the ability should be disabled instead of being removed, just add a "Disabled" tag to it.
+			if (bDisableInsteadOfRemove)
+			{
+				if (FGameplayAbilitySpec* AbilitySpec = AbilitySystemToRemoveFrom->FindAbilitySpecFromHandle(Handle))
+				{
+					AbilitySpec->DynamicAbilityTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
+				}
+
+				continue;
+			}
+
+			// Remove the ability.
 			AbilitySystemToRemoveFrom->ClearAbility(Handle);
 		}
 	}
@@ -77,7 +90,7 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	GrantedAttributeSets.Reset();
 }
 
-void UCrashAbilitySet::GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
+void UCrashAbilitySet::GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject, bool bEnableInsteadOfGive) const
 {
 	check(AbilitySystemToGiveTo);
 
@@ -94,6 +107,17 @@ void UCrashAbilitySet::GiveToAbilitySystem(UCrashAbilitySystemComponent* Ability
 		{
 			ABILITY_LOG(Warning, TEXT("Ability set [%s] failed to grant an ability because it is not invalid."), *GetName());
 			
+			continue;
+		}
+
+		// If the ability just needs to be re-enabled instead of being granted, just remove any "Disabled" tags it has.
+		if (bEnableInsteadOfGive)
+		{
+			if (FGameplayAbilitySpec* AbilitySpec = AbilitySystemToGiveTo->FindAbilitySpecFromClass(AbilityToGive.GameplayAbility))
+			{
+				AbilitySpec->DynamicAbilityTags.RemoveTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
+			}
+
 			continue;
 		}
 

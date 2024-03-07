@@ -10,8 +10,11 @@ class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
+/** Generic gameplay ability delegate with support for dynamic binding.*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
+
 /** Broadcast when this ability's cooldown is started. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityCooldownStarted, const FActiveGameplayEffect&, CooldownGameplayEffect);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityCooldownStartedSignature, const FActiveGameplayEffect&, CooldownGameplayEffect);
 
 /**
  * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
@@ -104,13 +107,23 @@ protected:
 
 protected:
 
-	/** Checks this ability's activation group to see if it is currently blocked. */
+	/** Checks this ability is disabled or if its activation group is currently blocked. */
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
 
 	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+public:
+
+	/** Broadcast on this ability's CDO when this ability is successfully activated. */
+	UPROPERTY(BlueprintAssignable)
+	FDynamicGameplayAbilityDelegate AbilityActivatedDelegate;
+
+	/** Broadcast on this ability's CDO when this ability ends. */
+	UPROPERTY(BlueprintAssignable)
+	FDynamicGameplayAbilityDelegate AbilityEndedDelegate;
 
 
 
@@ -132,7 +145,7 @@ public:
 	 * finish its cooldown before the second one starts its cooldown.
 	 */
 	UPROPERTY(BlueprintAssignable)
-	FAbilityCooldownStarted AbilityCooldownStartedDelegate;
+	FAbilityCooldownStartedSignature AbilityCooldownStartedDelegate;
 
 
 

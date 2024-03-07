@@ -33,12 +33,14 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability)
 		}
 
 		// Bind to the ability's cooldown.
-		CrashAbility->AbilityCooldownStartedDelegate.AddUniqueDynamic(this, &UAbilitySlotWidget::OnCooldownStarted);
+		CrashAbility->AbilityCooldownStartedDelegate.AddDynamic(this, &UAbilitySlotWidget::OnCooldownStarted);
+
+		// Bind to when this ability is activated and ended.
+		CrashAbility->AbilityActivatedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityActivated);
+		CrashAbility->AbilityEndedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityEnded);
 	}
 
-	// TODO: Bind to ability's Activate and End
-
-	// TODO: Bind to ability's CanBeActivated
+	// TODO: Bind to ability's CanBeActivatedChangedDelegate
 }
 
 void UAbilitySlotWidget::OnCooldownStarted(const FActiveGameplayEffect& CooldownGameplayEffect)

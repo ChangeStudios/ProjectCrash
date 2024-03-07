@@ -71,7 +71,7 @@ UEquipmentSet* UEquipmentComponent::EquipEquipmentSet(UEquipmentSet* SetToEquip)
 	return PreviousSet ? PreviousSet : nullptr;
 }
 
-bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
+bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWasTemporarilyUnequipped)
 {
 	check(SetToEquip);
 
@@ -154,7 +154,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 			// Only grant ability sets on the server.
 			if (CrashASC->IsOwnerActorAuthoritative())
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip);
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip, bWasTemporarilyUnequipped);
 			}
 		}
 	}
@@ -231,7 +231,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip)
 	return true;
 }
 
-bool UEquipmentComponent::UnequipSet_Internal()
+bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 {
 	// If we don't have an equipment set equipped, we don't need to do anything.
 	if (!CurrentEquipmentSet)
@@ -254,7 +254,7 @@ bool UEquipmentComponent::UnequipSet_Internal()
 	// Remove the ability set that was granted by the equipped equipment set (if there was one).
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 	{
-		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
+		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC, bTemporarilyUnequip);
 		CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
 	}
 
@@ -270,7 +270,7 @@ void UEquipmentComponent::OnTemporarilyUnequippedChanged(const FGameplayTag Tag,
 	 * maintain a reference to the equipment set with CurrentEquipmentSet. */
 	if (NewCount > 0)
 	{
-		UnequipSet_Internal();
+		UnequipSet_Internal(true);
 	}
 	/* Re-equip this character's current equipment set when all TemporarilyUnequipped tags have been removed. If our
 	 * equipment set changed while we were unequipped, the new set will be equipped instead.
@@ -279,7 +279,7 @@ void UEquipmentComponent::OnTemporarilyUnequippedChanged(const FGameplayTag Tag,
 	{
 		if (CurrentEquipmentSet)
 		{
-			EquipSet_Internal(CurrentEquipmentSet);
+			EquipSet_Internal(CurrentEquipmentSet, true);
 		}
 	}
 }

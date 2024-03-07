@@ -85,8 +85,15 @@ public:
 	/** Adds the given attribute set to the collection of tracked attribute sets. */
 	void AddAttributeSet(UAttributeSet* SetToAdd);
 
-	/** Removes every ability, effect, and attribute set in this structure from the specified ability system. */
-	void RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom);
+	/**
+	 * Removes every ability, effect, and attribute set in this structure from the specified ability system.
+	 *
+	 * @param AbilitySystemToRemoveFrom		The ASC from which to remove this ability set.
+	 * @param bDisableInsteadOfRemove		If true, this ability set's abilities won't be removed from the given ASC.
+	 *										Instead, they'll be given the "Disabled" tag to disable them without
+	 *										removing them. Used when temporarily unequipping equipment sets.
+	 */
+	void RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom, bool bDisableInsteadOfRemove = false);
 
 
 
@@ -136,8 +143,12 @@ public:
 	 * @param OutGrantedHandles			A collection of handles to the granted abilities, effects, and attribute sets. 
 										This can be used to remove these later.
 	 * @param SourceObject				(Optional) The object responsible for granting this ability set.
+	 * @param bEnableInsteadOfGive		If true, this set's abilities won't be given to the system. Instead, any
+	 *									of them that the system already has will have any "Disabled" tags removed.
+	 *									Used to disable and enable abilities without removing them when temporarily
+	 *									unequipping equipment sets.
 	 */
-	void GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
+	void GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr, bool bEnableInsteadOfGive = false) const;
 
 
 

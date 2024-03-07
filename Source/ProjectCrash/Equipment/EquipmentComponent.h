@@ -68,20 +68,26 @@ private:
 	 * Attempts to equip the given equipment set. Will not equip the set if this character already has an equipment
 	 * set equipped.
 	 * 
-	 * @param SetToEquip	The set to try to equip.
+	 * @param SetToEquip					The set to try to equip.
+	 * @param bWasTemporarilyUnequipped		If the equipment set is being re-equipped after having been temporarily
+	 *										unequipped. If true, the set's granted abilities will be re-enabled instead
+	 *										of being granted again.
 	 * 
-	 * @return				Whether the new set was successfully equipped. Will return false if this character already
-	 *						has an equipment set equipped.
+	 * @return								Whether the new set was successfully equipped. Will return false if this
+	 *										character already has an equipment set equipped.
 	 */
-	bool EquipSet_Internal(UEquipmentSet* SetToEquip);
+	bool EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWasTemporarilyUnequipped = false);
 
 	/**
 	 * Attempts to unequip this character's current equipment set.
 	 *
-	 * @returns		Whether an equipment set was successfully unequipped. Will return false if this character doesn't
-	 *				have a current equipment set to unequip.
+	 * @param bTemporarilyUnequip	If true, the equipment set will only be temporarily unequipped. This disables
+	 *								the set's granted abilities instead of removing them completely.
+	 *
+	 * @returns						Whether an equipment set was successfully unequipped. Will return false if this
+	 *								character doesn't have a current equipment set to unequip.
 	 */
-	bool UnequipSet_Internal();
+	bool UnequipSet_Internal(bool bTemporarilyUnequip = false);
 
 	/**
 	 * Callback bound to when the ASC registered with this component gains or loses a TemporarilyUnequipped gameplay
