@@ -38,6 +38,8 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability)
 		// Bind to when this ability is activated and ended.
 		CrashAbility->AbilityActivatedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityActivated);
 		CrashAbility->AbilityEndedDelegate.AddDynamic(this, &UAbilitySlotWidget::K2_OnAbilityEnded);
+
+		// TODO: Bind to when the ability fails to activate.
 	}
 }
 
