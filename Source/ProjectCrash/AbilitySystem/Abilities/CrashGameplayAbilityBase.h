@@ -69,6 +69,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
 	AChallengerBase* GetChallengerFromActorInfo() const;
 
+	/** Returns this ability's CDO. */
+	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
+
 #if WITH_EDITOR
 
 	/** Define when certain properties can be edited in this ability's archetype. */

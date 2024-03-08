@@ -154,8 +154,8 @@ void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle
 		CrashASC->HandleAbilityActivatedForActivationGroup(this);
 	}
 
-	// Broadcast that this ability was successfully activated on the CDO.
-	Cast<UCrashGameplayAbilityBase>(GetCurrentAbilitySpec()->Ability)->AbilityActivatedDelegate.Broadcast(this);
+	// Locally broadcast that this ability was successfully activated on the CDO.
+	GetAbilityCDO()->AbilityActivatedDelegate.Broadcast(this);
 }
 
 void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -178,8 +178,8 @@ void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Hand
 		CrashASC->HandleAbilityEndedForActivationGroup(this);
 	}
 
-	// Broadcast that this ability ended on the CDO.
-	Cast<UCrashGameplayAbilityBase>(GetCurrentAbilitySpec()->Ability)->AbilityEndedDelegate.Broadcast(this);
+	// Locally broadcast that this ability ended on the CDO.
+	GetAbilityCDO()->AbilityEndedDelegate.Broadcast(this);
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -196,10 +196,7 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 			const FActiveGameplayEffect* CooldownEffect = ActorInfo->AbilitySystemComponent->GetActiveGameplayEffect(CooldownEffectHandle);
 
 			const FGameplayAbilitySpec* AbilitySpec = GetAbilitySystemComponentFromActorInfo()->FindAbilitySpecFromHandle(Handle);
-			if (const UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability))
-			{
-				AbilityCDO->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
-			}
+			GetAbilityCDO()->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
 		}
 	}
 }

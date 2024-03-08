@@ -7,6 +7,7 @@
 #include "GameplayAbilitySpec.h"
 #include "AbilitySlotWidget.generated.h"
 
+class UCrashAbilitySystemComponent;
 class UGameplayAbility;
 class UImage;
 class UProgressBar;
@@ -38,13 +39,17 @@ public:
 	/** Binds this widget to the given gameplay ability, updating its ability icon and binding its cooldown display and
 	 * activation status. */
 	UFUNCTION()
-	void BindSlotToAbility(UGameplayAbility* Ability);
+	void BindSlotToAbility(UGameplayAbility* Ability, UCrashAbilitySystemComponent* OwningASC);
 
 protected:
 
-	/** The ability to which this slot is currently bound. */
+	/** The CDO of the ability to which this slot is currently bound. */
 	UPROPERTY()
 	UGameplayAbility* BoundAbility;
+
+	/** The ASC to which this slot is currently bound. */
+	UPROPERTY()
+	UCrashAbilitySystemComponent* BoundASC;
 
 
 
@@ -69,6 +74,16 @@ protected:
 	/** Called when this widget's bound ability's cooldown is activated. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Cooldown Started")
 	void K2_OnCooldownStarted(const float CooldownDuration);
+
+
+	/** Callback for when the widget's bound ability's ASC fails to activate an ability. Calls K2_OnAbilityFailed if
+	 * the failed ability is the one represented by this widget. */
+	UFUNCTION()
+	void OnAbilityFailed(const UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason);
+
+	/** Called when this widget's bound ability fails to activate. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Failed")
+	void K2_OnAbilityFailed(const UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason);
 
 
 

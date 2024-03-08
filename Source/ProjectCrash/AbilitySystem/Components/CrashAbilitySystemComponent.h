@@ -7,6 +7,8 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "CrashAbilitySystemComponent.generated.h"
 
+/** A generic delegate signature that passes a single gameplay ability pointer. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGenericAbilitySignature, UGameplayAbility*, Ability);
 /** Delegate used to broadcast the Death event and communicate in important information. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathData&, DeathData);
 /** Delegate used to broadcast when this ASC is granted a new ability. */
@@ -129,7 +131,7 @@ protected:
 
 	/** Called when a prediction key that played a first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
-	
+
 
 
 	// Death.

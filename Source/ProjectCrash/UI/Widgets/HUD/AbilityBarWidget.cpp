@@ -56,7 +56,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 			if (UAbilitySlotWidget* NewAbilitySlotWidget = CreateWidget<UAbilitySlotWidget>(GetOwningPlayer(), AbilitySlotWidgetClass))
 			{
 				// Bind the widget to its ability.
-				NewAbilitySlotWidget->BindSlotToAbility(AbilitySpec.Ability);
+				NewAbilitySlotWidget->BindSlotToAbility(AbilitySpec.Ability, OwningASC);
 
 				// Add the new widget to the ability slot container.
 				AbilitySlotPanel->AddChild(NewAbilitySlotWidget);
