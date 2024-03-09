@@ -19,11 +19,21 @@ class PROJECTCRASH_API UInterpolatedProgressBar : public UProgressBar
 {
 	GENERATED_BODY()
 
+	// Construction.
+
 public:
 
+    /** Default constructor. */
 	UInterpolatedProgressBar(const FObjectInitializer& ObjectInitializer);
 
+	/** Refreshes the progress bar. */
 	virtual void SynchronizeProperties() override;
+	
+	
+	
+	// Interpolation.
+	
+public:
 
 	/** Returns the progress bar value this widget will ultimately display if it is interpolating, or the current value
 	 * if it is not. Normalized from 0.0 to 1.0. */
@@ -53,50 +63,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Progress Bar Interpolation")
 	void InterpolateToProgressValue(const float TargetValue, float MaximumInterpolationDuration = 3.0f, float MinimumRechargeRate = 1.0f, float OutroOffset = 0.0f);
 
+	/** Whether this widget is currently interpolating its progress value. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Progress Bar Interpolation")
 	bool IsInterpolatingProgressValue() const;
 
-	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Started")
-	FInterpolationStartedSignature InterpolationStartedDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Updated")
-	FInterpolationUpdatedSignature InterpolatedUpdatedDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Outro Event")
-	FInterpolationOutroSignature InterpolationOutroDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Ended")
-	FInterpolationEndedSignature InterpolationEndedDelegate;
-
-	/** Exponent parameter for the "ease out" interpolation curve. Must be > 0, but should be > 1 in order to "ease out". */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Numeric Interpolation", meta = (ClampMin = "1.0"))
-	float EaseOutInterpolationExponent;
-
-	/** The desired interval, in seconds, between interpolation updates. 0.0 implies per-frame updates. NOTE: Interpolation updates may occur further apart due to tick rates. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Numeric Interpolation", meta = (ClampMin = "0.0"))
-	float InterpolationUpdateInterval;
-
 protected:
 
+	/** Wrapper for updating this progress bar's displayed progress. */
 	void UpdateDisplayedProgress();
 
+// Internals.
 private:
 
+	/** Calculates the duration of this widget's interpolation with the given parameters. */
 	float CalculateInterpolationDuration(const float InTargetValue, const float InMinimumChangeRate, const float InMaximumInterpolationDuration) const;
 
-	void OnTimerTick();
-	void Tick(float DeltaTime);
-
+	/** Starts a new interpolation for this widget with the given parameters. */
 	void EnterProgressInterpolation(const float InitialValue, const float FinalValue, const float Duration, const float OutroOffset);
+
+	/** Ticks this widget's ongoing interpolation, if it exists. */
 	void UpdateProgressInterpolation();
+
+	/** Ends this widget's current interpolation, regardless of if it has finished or not. */
 	void ExitProgressInterpolation(const bool bHasCompleted = false);
 
+	/** Cancels any ongoing interpolation, stopping this widget's progress at its current value. */
 	void CancelInterpolation();
-
-private:
-
-	FTimerHandle TimerTickHandle;
-	float LastTimerTickTime;
 
 	struct
 	{
@@ -111,4 +103,46 @@ private:
 		bool bHasTriggeredOutro;
 		float Duration;
 	} ProgressInterpolationState;
+
+// Timing.
+private:
+
+	void OnTimerTick();
+	void Tick(float DeltaTime);
+
+	FTimerHandle TimerTickHandle;
+	float LastTimerTickTime;
+
+
+	// Interpolation event delegates.
+
+public:
+
+	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Started")
+	FInterpolationStartedSignature InterpolationStartedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Updated")
+	FInterpolationUpdatedSignature InterpolatedUpdatedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Outro Event")
+	FInterpolationOutroSignature InterpolationOutroDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Progress Bar Interpolation", DisplayName = "On Interpolation Ended")
+	FInterpolationEndedSignature InterpolationEndedDelegate;
+
+
+
+	// Interpolation parameters.
+
+public:
+
+	/** Exponent parameter for the "ease out" interpolation curve. Must be > 0, but should be > 1 in order to "ease out". */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Numeric Interpolation", meta = (ClampMin = "1.0"))
+	float EaseOutInterpolationExponent;
+
+	/** The desired interval, in seconds, between interpolation updates. 0.0 implies per-frame updates. NOTE: Interpolation updates may occur further apart due to tick rates. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Numeric Interpolation", meta = (ClampMin = "0.0"))
+	float InterpolationUpdateInterval;
+
+
 };
