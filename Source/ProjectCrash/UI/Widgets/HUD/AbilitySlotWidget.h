@@ -46,23 +46,37 @@ protected:
 
 	// UI updates.
 
+/* TODO: This system uses a lot of delegates and is not well-tested with replication. This is a strong candidate for
+ * being replaced by a global messaging system in the future. For example, we could just locally broadcast a message
+ * that an ability was activated. */
 protected:
+
+	/** Callback for when this widget's bound ability is activated. Calls K2_OnAbilityActivated if the activated
+	 * ability was activated by this widget's owning player. */
+	UFUNCTION()
+	void OnAbilityActivated(UGameplayAbility* Ability);
 
 	/** Callback for when this widget's bound ability is activated. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activated")
 	void K2_OnAbilityActivated(UGameplayAbility* Ability);
+
+
+	/** Callback for when this widget's bound ability ends. Calls K2_OnAbilityEnded if the ending ability was
+	 * originally activated by this widget's owning player. */
+	UFUNCTION()
+	void OnAbilityEnded(UGameplayAbility* Ability);
 
 	/** Callback for when this widget's bound ability ends. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Ended")
 	void K2_OnAbilityEnded(UGameplayAbility* Ability);
 
 
-	/** Callback to update this widget when its bound ability's cooldown is activated. Calculates the cooldown's
-	 * duration and passes into K2_OnCooldownStarted. */
+	/** Callback for when this widget's bound ability's cooldown is activated. Calls K2_OnCooldownStarted if the
+	 * ability's cooldown was triggered by this widget's owning player (i.e. they activated the ability). */
 	UFUNCTION()
 	void OnCooldownStarted(const FActiveGameplayEffect& CooldownGameplayEffect);
 
-	/** Called when this widget's bound ability's cooldown is activated. */
+	/** Callback for when this widget's bound ability's cooldown is activated. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Cooldown Started")
 	void K2_OnCooldownStarted(const float CooldownDuration);
 
