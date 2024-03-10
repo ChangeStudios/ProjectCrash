@@ -23,15 +23,6 @@ class PROJECTCRASH_API UAbilitySlotWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 
-	// Construction.
-
-public:
-
-	/** Default constructor. */
-	virtual void NativeConstruct() override;
-
-
-
 	// Ability system.
 
 public:
@@ -94,9 +85,4 @@ protected:
 	/** The icon of the ability that this widget represents. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UImage> AbilityIcon;
-
-	/** The progress bar displaying the ability's current cooldown. Only visible when the ability can be activated and
-	 * is on a cooldown. */
-	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
-	TObjectPtr<UProgressBar> CooldownProgressBar;
 };

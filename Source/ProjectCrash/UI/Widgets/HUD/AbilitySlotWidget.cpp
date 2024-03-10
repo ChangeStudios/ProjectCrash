@@ -7,15 +7,6 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/Image.h"
-#include "Components/ProgressBar.h"
-
-void UAbilitySlotWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	// Instead of hiding the cooldown bar when the ability is not on a cooldown, we can just set its progress to 0.
-	CooldownProgressBar->SetPercent(0.0f);
-}
 
 void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, UCrashAbilitySystemComponent* OwningASC)
 {
