@@ -5,12 +5,15 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashGameModeData.h"
+#include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Engine/PlayerStartPIE.h"
 #include "GameFramework/GameStates/CrashGameState.h"
+#include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -29,6 +32,238 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 			ABILITY_LOG(Fatal, TEXT("ACrashGameModeBase: Game Mode [%s] does not have a default Death ability. Death logic will not function properly."), *GetName());
 		}
 	}
+}
+
+void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+
+	// Ensure the game has not already ended.
+	if (GameState && GameState->HasMatchEnded())
+	{
+		ErrorMessage = "Match has already ended.";
+	}
+	else
+	{
+		Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	}
+}
+
+void ACrashGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	/* Handle players joining matches that are already in-progress. This will usually result in the new player becoming
+	 * a spectator. */
+	if (NewPlayer && IsMatchInProgress())
+	{
+		/*
+		 * TODO: Notify the player that the match is already in progress:
+		 * - If the player was in the game before and is reconnecting, reconnect them.
+		 * - If there is room for spectators, make the new player a spectator.
+		 * - If there is no room for spectators, kick the new player out.
+		 */
+	}
+
+	if (ACrashPlayerState* CrashPS = NewPlayer ? NewPlayer->GetPlayerState<ACrashPlayerState>() : nullptr)
+	{
+		// TODO: Override this for custom games, where teams are decided before the game begins.
+		const FCrashTeamID NewTeam = ChooseTeam(CrashPS);
+		UE_LOG(LogTemp, Error, TEXT("Assigned player to [%i]"), NewTeam);
+		CrashPS->SetTeamID(NewTeam);
+	}
+
+	// TODO: Make sure that the player start is assigned after teams are assigned.
+	Super::PostLogin(NewPlayer);
+}
+
+FCrashTeamID ACrashGameMode::ChooseTeam(ACrashPlayerState* CrashPS)
+{
+	check(GameModeData);
+
+	FCrashTeamID ReturnTeamID = FCrashTeamID::NO_TEAM;
+
+	// TODO: Implement team tracking in game state. For now, we just increment each player's team ID to the next team.
+
+	ReturnTeamID = NumTeams;
+	NumTeams++; /* This isn't where we'll eventually update the number of teams; this function should either be const
+	or be changed to something like AssignPlayerToTeam. */
+
+	return ReturnTeamID;
+}
+
+void ACrashGameMode::RestartPlayer(AController* NewPlayer)
+{
+	Super::RestartPlayer(NewPlayer);
+
+	/* TODO: Call a Client_GameStarted RPC on the connecting player.
+	 *
+	 * Client_GameStarted should:
+	 * - Enable input
+	 * - Create the HUD
+	 */
+}
+
+AActor* ACrashGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	APlayerStart* DesiredStart = nullptr;
+
+	TArray<APlayerStart*> AllowedStarts;
+
+	// When playing from the editor, always try to use the editor's spawn-point.
+	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
+	{
+		APlayerStart* PlayerStart = *It;
+
+#if WITH_EDITOR
+		if (PlayerStart && PlayerStart->IsA<APlayerStartPIE>())
+		{
+			DesiredStart = PlayerStart;
+			break;
+		}
+#endif // WITH_EDITOR
+
+		// Get every allowed player start that's allowed for this player.
+		if (DesiredStart == nullptr)
+		{
+			if (IsPlayerStartAllowed(PlayerStart, Player))
+			{
+				AllowedStarts.Add(PlayerStart);
+			}
+		}
+
+		// Get the most preferable player start that's allowed for this player.
+		if (AllowedStarts.Num() > 0)
+		{
+			DesiredStart = GetPreferredStart(AllowedStarts, Player);
+		}
+	}
+
+	return DesiredStart ? DesiredStart : Super::ChoosePlayerStart_Implementation(Player);
+}
+
+bool ACrashGameMode::IsPlayerStartAllowed(APlayerStart* PlayerStart, AController* Player)
+{
+	const ACrashPlayerState* CrashPS = Player->GetPlayerState<ACrashPlayerState>();
+
+	// By default, players are only allowed to spawn at player starts intended for their team.
+	if (const APriorityPlayerStart* PriorityPlayerStart = Cast<APriorityPlayerStart>(PlayerStart))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[%s]'s Team: [%i], [%s]'s Team: [%i]"), *GetNameSafe(Player), CrashPS->GetTeamID(), *GetNameSafe(PriorityPlayerStart), PriorityPlayerStart->GetTargetTeamID());
+		if (PriorityPlayerStart->GetTargetTeamID() == CrashPS->GetTeamID())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+APlayerStart* ACrashGameMode::GetPreferredStart(TArray<APlayerStart*> PlayerStarts, AController* Player)
+{
+	// PlayerStarts cannot be empty.
+	check(PlayerStarts.Num() > 0);
+
+	TArray<APlayerStart*> SafePlayerStarts = PlayerStarts;
+
+	for (APlayerStart* PlayerStart : PlayerStarts)
+	{
+		// Remove any player starts that overlap existing pawns from SafePlayerStarts.
+		TArray<AActor*> OverlappingActors;
+		PlayerStart->GetOverlappingActors(OverlappingActors, APawn::StaticClass());
+
+		if (OverlappingActors.Num() > 0)
+		{
+			SafePlayerStarts.Remove(PlayerStart);
+		}
+	}
+
+	APriorityPlayerStart* PreferredStart = nullptr;
+
+	// Iterate over each safe player start. If there are no safe player starts, iterate over the player starts instead.
+	for (APlayerStart* PlayerStart : (SafePlayerStarts.Num() > 0 ? SafePlayerStarts : PlayerStarts) )
+	{
+		if (APriorityPlayerStart* PriorityPlayerStart = Cast<APriorityPlayerStart>(PlayerStart))
+		{
+			// If there is no preferred start yet, initialize it to the first priority player start.
+			if (PreferredStart == nullptr)
+			{
+				PreferredStart = PriorityPlayerStart;
+				continue;
+			}
+
+			/* If the iterated player start is better than the current preferred start, update the preferred start to
+			 * the better one. */
+			if (PreferredStart && (PriorityPlayerStart->GetPlayerSpawnPriority() < PreferredStart->GetPlayerSpawnPriority()) )
+			{
+				PreferredStart = PriorityPlayerStart;
+			}
+		}
+	}
+
+	/* If no preferred start can be found (i.e. there are no priority starts in the given PlayerStarts array), return
+	 * the first safe player start found, if valid, or the first player start found. */
+	if (PreferredStart == nullptr)
+	{
+		if (SafePlayerStarts.Num() > 0)
+		{
+			return SafePlayerStarts[0];
+		}
+		else
+		{
+			return PlayerStarts[0];
+		}
+	}
+
+	return PreferredStart;
+}
+
+bool ACrashGameMode::ShouldSpawnAtStartSpot(AController* Player)
+{
+	return Super::ShouldSpawnAtStartSpot(Player);
+}
+
+void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+}
+
+void ACrashGameMode::StartMatch()
+{
+	Super::StartMatch();
+}
+
+void ACrashGameMode::EndMatch()
+{
+	Super::EndMatch();
+}
+
+void ACrashGameMode::RestartGame()
+{
+	Super::RestartGame();
+}
+
+void ACrashGameMode::HandleMatchIsWaitingToStart()
+{
+	Super::HandleMatchIsWaitingToStart();
+}
+
+void ACrashGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+}
+
+bool ACrashGameMode::ReadyToStartMatch_Implementation()
+{
+	return Super::ReadyToStartMatch_Implementation();
+}
+
+bool ACrashGameMode::ReadyToEndMatch_Implementation()
+{
+	return Super::ReadyToEndMatch_Implementation();
+}
+
+void ACrashGameMode::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
 }
 
 void ACrashGameMode::StartDeath(const FDeathData& DeathData)

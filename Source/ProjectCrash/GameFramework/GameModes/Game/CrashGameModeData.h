@@ -27,11 +27,50 @@ public:
 
 
 
+	// Match.
+
+public:
+
+	/**
+	 * The maximum amount of time for which this match will be played. When this time is reached, the game mode's
+	 * overtime will begin. If the game mode does not implement overtime, the match will be ended with the game mode's
+	 * tie-breaking rules.
+	 *
+	 * Setting this to 0.0 disables this time limit.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", DisplayName = "Maximum Match Time")
+	float MaximumMatchTime;
+
+	/**
+	 * The maximum amount of time for which overtime will be played. When this time is reached, the match will be
+	 * ended with the game mode's tie-breaking rules.
+	 *
+	 * Setting this to 0.0 disables overtime for this game mode.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", DisplayName = "Maximum Overtime")
+	float MaximumOvertimeTime;
+
+
+
 	// Teams.
 
 public:
 
-	/** The number of players per team in this game-mode. */
+	/**
+	 * The number of teams required for the match. The game will not automatically start until there are this many
+	 * teams, each with TeamSize players.
+	 *
+	 * This is overridden in custom games, which are started manually, regardless of the number of teams.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Teams")
+	uint8 NumTeams;
+
+	/**
+	 * The number of players required on each team for the match. The game will not automatically start until there are
+	 * NumTeams teams with TeamSize players each.
+	 *
+	 * This is overridden in custom games, which are started manually, regardless of the teams' sizes.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Team Size")
 	uint8 TeamSize;
 

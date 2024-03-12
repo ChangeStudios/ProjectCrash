@@ -45,7 +45,8 @@ public:
 // ID.
 protected:
 
-	/** The ID of the team that this structure represents. Core value of the FCrashTeamID structure. */
+	/** The ID of the team that this structure represents. Core value of the FCrashTeamID structure. Team values range
+	 * from 0 to 254. 255 is reserved for players with no team. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teams")
 	uint8 TeamID;
 
