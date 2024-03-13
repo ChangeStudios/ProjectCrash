@@ -23,6 +23,15 @@ class PROJECTCRASH_API ACrashGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	ACrashGameMode();
+
+
+
 	// Initialization.
 
 public:
@@ -51,14 +60,20 @@ public:
 	/** Spawns and initializes new players (enables input, draws the game HUD, etc.). */
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
+	/** Selects the optimal player start for the given player. */
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override final;
 
 protected:
 
+	/** Whether the given player is allowed to spawn at the given player start. By default ensures the player spawns
+	 * with their team. */
 	virtual bool IsPlayerStartAllowed(APlayerStart* PlayerStart, AController* Player);
 
+	/** Returns the optimal player start for the given player within the given list of starts. By default, compares the
+	 * priority of each given player start, if they are of the APrioritizedPlayerStart class. */
 	virtual APlayerStart* GetPreferredStart(TArray<APlayerStart*> PlayerStarts, AController* Player);
 
+	/** Disables players' internally cached player start, ensuring ChoosePlayerStart is always used instead. */
 	virtual bool ShouldSpawnAtStartSpot(AController* Player) override;
 
 
@@ -67,25 +82,13 @@ protected:
 
 public:
 
-	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
-
 	virtual void StartMatch() override;
 
 	virtual void EndMatch() override;
 
-	virtual void RestartGame() override;
-
 protected:
 
-	virtual void HandleMatchIsWaitingToStart() override;
-
-	virtual void HandleMatchHasStarted() override;
-
-	virtual bool ReadyToStartMatch_Implementation() override;
-
-	virtual bool ReadyToEndMatch_Implementation() override;
-
-	virtual void HandleMatchHasEnded() override;
+	
 
 
 
@@ -95,8 +98,6 @@ protected:
 
 	/** How many teams are currently registered in the game. */
 	uint8 NumTeams;
-
-	
 
 
 

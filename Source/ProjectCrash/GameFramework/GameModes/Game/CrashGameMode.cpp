@@ -16,6 +16,12 @@
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
+ACrashGameMode::ACrashGameMode()
+{
+	NumTeams = 0;
+	bDelayedStart = true;
+}
+
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -73,6 +79,11 @@ void ACrashGameMode::PostLogin(APlayerController* NewPlayer)
 
 	// TODO: Make sure that the player start is assigned after teams are assigned.
 	Super::PostLogin(NewPlayer);
+
+	if (NumPlayers == GameModeData->NumTeams * GameModeData->TeamSize)
+	{
+		StartMatch();
+	}
 }
 
 FCrashTeamID ACrashGameMode::ChooseTeam(ACrashPlayerState* CrashPS)
@@ -218,12 +229,7 @@ APlayerStart* ACrashGameMode::GetPreferredStart(TArray<APlayerStart*> PlayerStar
 
 bool ACrashGameMode::ShouldSpawnAtStartSpot(AController* Player)
 {
-	return Super::ShouldSpawnAtStartSpot(Player);
-}
-
-void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
-{
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	return false;
 }
 
 void ACrashGameMode::StartMatch()
@@ -234,36 +240,6 @@ void ACrashGameMode::StartMatch()
 void ACrashGameMode::EndMatch()
 {
 	Super::EndMatch();
-}
-
-void ACrashGameMode::RestartGame()
-{
-	Super::RestartGame();
-}
-
-void ACrashGameMode::HandleMatchIsWaitingToStart()
-{
-	Super::HandleMatchIsWaitingToStart();
-}
-
-void ACrashGameMode::HandleMatchHasStarted()
-{
-	Super::HandleMatchHasStarted();
-}
-
-bool ACrashGameMode::ReadyToStartMatch_Implementation()
-{
-	return Super::ReadyToStartMatch_Implementation();
-}
-
-bool ACrashGameMode::ReadyToEndMatch_Implementation()
-{
-	return Super::ReadyToEndMatch_Implementation();
-}
-
-void ACrashGameMode::HandleMatchHasEnded()
-{
-	Super::HandleMatchHasEnded();
 }
 
 void ACrashGameMode::StartDeath(const FDeathData& DeathData)

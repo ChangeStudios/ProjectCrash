@@ -174,6 +174,7 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 		const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());
 		const FVector DirectionVec = DirectionRot.Quaternion().GetForwardVector();
 		const float LaunchMultiplier = 200.0f;
+		const FVector RagdollVector = ClampVector((DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier), FVector(-100.0f), FVector(100.0f));
 		RagdollCharacter(FVector(DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier));
 	}
 }
@@ -339,7 +340,7 @@ void AChallengerBase::Input_Look_Stick(const FInputActionValue& InputActionValue
 	if (Value.X != 0.0f)
 	{
 		// TODO: Add look-rate multiplier.
-		const float PitchRateMultiplier = 50.0f;
+		const float PitchRateMultiplier = 100.0f;
 
 		AddControllerYawInput(Value.X * DeltaTime * PitchRateMultiplier);
 	}
@@ -347,7 +348,7 @@ void AChallengerBase::Input_Look_Stick(const FInputActionValue& InputActionValue
 	if (Value.Y != 0.0f)
 	{
 		// TODO: Add look-rate multiplier.
-		const float YawRateMultiplier = 50.0f;
+		const float YawRateMultiplier = 100.0f;
 
 		AddControllerPitchInput(Value.Y * DeltaTime * YawRateMultiplier);
 	}
