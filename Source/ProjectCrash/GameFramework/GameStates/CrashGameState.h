@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "GameFramework/GameModes/Game/CrashGameModeData.h"
+#include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "CrashGameState.generated.h"
 
 class UCrashGameModeData;

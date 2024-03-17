@@ -11,7 +11,8 @@ class UGA_Death;
 class UUserInterfaceData;
 
 /**
- * Data defining the properties of a specific game mode, such as players' default starting lives.
+ * Data defining the properties of a gameplay-oriented game mode (as opposed to an interface-only game mode). Defines
+ * data like players' starting lives or the UI data to use.
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Game Mode Data"))
 class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset

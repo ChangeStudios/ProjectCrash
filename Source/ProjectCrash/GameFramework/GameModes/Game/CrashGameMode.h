@@ -9,13 +9,14 @@
 #include "CrashGameMode.generated.h"
 
 class ACrashPlayerState;
+class APlayerStart;
 class APriorityPlayerStart;
 class UCrashGameModeData;
 class UCrashAbilitySystemComponent;
 class UGA_Death;
 
 /**
- * The game mode used during gameplay (as opposed to menus, lobbies, etc.). Handles game setup, player death, and
+ * The game mode used during gameplay (as opposed to menus, for example). Handles game setup, player death, and
  * victory conditions.
  */
 UCLASS()
@@ -106,7 +107,7 @@ protected:
 public:
 
 	/** Getter for GameModeData. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game", Meta = (ToolTip = "Data defining various properties of this game mode."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game|Data", Meta = (ToolTip = "Data defining various properties of this game mode."))
 	UCrashGameModeData* GetGameModeData() const { return GameModeData; }
 
 protected:

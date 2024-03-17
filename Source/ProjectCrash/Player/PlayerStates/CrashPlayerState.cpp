@@ -7,7 +7,7 @@
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
-#include "GameFramework/GameModes/Game/CrashGameModeData.h"
+#include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -43,7 +43,10 @@ void ACrashPlayerState::PostInitializeComponents()
 	 * exists on the server) and then replicated to clients. */
 	if (HasAuthority())
 	{
-		const ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(this));
+		/* We may want to change this to use the game state for consistency; the game mode data will be valid on both
+		 * the game mode and the game state on the server. */
+		const AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+		const ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
 		if (CrashGM && CrashGM->GetGameModeData())
 		{
 			const UCrashGameModeData* GameModeData = CrashGM->GetGameModeData();

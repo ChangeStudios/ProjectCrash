@@ -13,17 +13,19 @@ void UAbilitySystemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// If this widget was created for a player with a valid player state, register with it immediately.
-	ACrashPlayerController* CrashPC = Cast<ACrashPlayerController>(GetOwningPlayer());
-	if (CrashPC->GetPlayerState<APlayerState>())
+	if (ACrashPlayerController* CrashPC = Cast<ACrashPlayerController>(GetOwningPlayer()))
 	{
-		OnPlayerStateChanged();
-	}
-	/* If this widget's owner has not yet initialized their player state, wait until they do so the player state can be
-	 * used to retrieve the player's ASC. */
-	else
-	{
-		CrashPC->PlayerStateChangedDelegate.AddUObject(this, &UAbilitySystemWidget::OnPlayerStateChanged);
+		// If this widget was created for a player with a valid player state, register with it immediately.
+		if (CrashPC && CrashPC->GetPlayerState<APlayerState>())
+		{
+			OnPlayerStateChanged();
+		}
+		/* If this widget's owner has not yet initialized their player state, wait until they do so the player state can be
+		 * used to retrieve the player's ASC. */
+		else
+		{
+			CrashPC->PlayerStateChangedDelegate.AddUObject(this, &UAbilitySystemWidget::OnPlayerStateChanged);
+		}
 	}
 }
 

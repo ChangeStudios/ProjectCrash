@@ -5,16 +5,30 @@
 #include "CoreMinimal.h"
 #include "Engine/AssetManager.h"
 #include "Engine/DataAsset.h"
+#include "UI/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
 class UCrashGameModeData;
 class UUserInterfaceData;
 
 /**
- * This project's asset manager singleton. Used for loading and unloading data assets to only keep the relevant assets
- * in memory.
+ * Types of global game data assets that are manually loaded and unloaded. Only one data asset should ever been loaded
+ * for each type at any given time. E.g. in a match, one game mode data asset and one UI data asset will be loaded, but
+ * the main menu data asset should not be.
  */
-UCLASS()
+UENUM()
+enum class EGlobalGameDataType : uint8
+{
+	GameModeData,
+	UserInterfaceData,
+	MainMenuUIData
+};
+
+/**
+ * This project's asset manager singleton. Used for loading and unloading data assets and providing global access to
+ * certain assets.
+ */
+UCLASS(Config = Game)
 class PROJECTCRASH_API UCrashAssetManager : public UAssetManager
 {
 	GENERATED_BODY()
@@ -31,23 +45,47 @@ public:
 
 
 
-	// Game mode asset loading.
+	// Assets.
 
+// Accessors.
 public:
 
-	/** Returns or synchronously loads the current game mode's GM data. */
-	const UCrashGameModeData& GetGameModeData() const;
+	/** Returns or loads the global main menu UI data. */
+	const UUserInterfaceData& GetMainMenuUIData();
 
-	/** Returns or synchronously loads the current game mode's UI data. */
-	const UUserInterfaceData& GetUIData() const;
+protected:
+
+	/** Global main menu UI data asset to use. */
+	UPROPERTY(Config)
+	TSoftObjectPtr<UUserInterfaceData> MainMenuUIDataPath;
+
+	/** Map maintaining references to loaded assets. Each global game data type should only have one asset loaded for
+	 * it at most, at any given time. */
+	UPROPERTY(Transient)
+	TMap<EGlobalGameDataType, TObjectPtr<UPrimaryDataAsset>> GameDataMap;
 
 
 
-	// Synchronous asset loading utilities.
+	// Asset loading.
 
+protected:
 
+	/** Retrieves the game data asset at the specific path if it's loaded. Performs a synchronous load otherwise. */
+	template <typename GameDataClass>
+	const GameDataClass& GetOrSyncLoadGameDataFromPath(EGlobalGameDataType DataType, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath)
+	{
+		// Retrieve the asset if it is already loaded.
+		if (TObjectPtr<UPrimaryDataAsset> const* pResult = GameDataMap.Find(DataType))
+		{
+			return *CastChecked<GameDataClass>(*pResult);
+		}
 
-	// Asynchronous asset loading utilities.
+		// Synchronous load.
+		return *CastChecked<const GameDataClass>(SyncLoadGameDataOfClass(GameDataClass::StaticClass(), DataType, DataPath, GameDataClass::StaticClass()->GetFName()));
+	}
+
+	/** Synchronously loads the asset at the given path. Caches it in GameDataMap. */
+	UPrimaryDataAsset* SyncLoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, EGlobalGameDataType DataType, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType);
 
 
 
@@ -56,7 +94,7 @@ public:
 public:
 
 #if WITH_EDITOR
-	/** Logs all asset currently loaded by the asset manager. */
+	/** Logs all assets currently loaded by the asset manager. */
 	static void DumpLoadedAssets();
 #endif // WITH_EDITOR
 };

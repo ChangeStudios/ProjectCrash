@@ -4,7 +4,7 @@
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 
 #include "AbilitySystemLog.h"
-#include "CrashGameModeData.h"
+#include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
@@ -20,6 +20,7 @@ ACrashGameMode::ACrashGameMode()
 {
 	NumTeams = 0;
 	bDelayedStart = true;
+	GameModeData = nullptr;
 }
 
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)

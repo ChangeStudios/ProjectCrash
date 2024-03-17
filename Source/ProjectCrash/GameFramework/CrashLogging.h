@@ -24,6 +24,13 @@
 
 
 
+	// Crash log.
+
+/** Generic log channel used for this project. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogCrash, Log, All);
+
+
+
 	// Equipment log.
 
 /** Log channel for the equipment system. */
