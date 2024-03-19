@@ -36,6 +36,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UserInterface|Player Controller")
 	UCommonActivatableWidget* PushWidgetToLayer(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag LayerToPushTo);
 
+	/** Pops the top widget from the specific layer. */
+	UFUNCTION(BlueprintCallable, Category = "UserInterface|Player Controller")
+	void PopWidgetFromLayer(FGameplayTag LayerToPop);
+
 	/** Attempts to find a registered slot with a matching slot ID and adds the given widget to that slot. */
 	void AddWidgetToSlot(const FSlottedWidget& SlottedWidgetToCreate);
 

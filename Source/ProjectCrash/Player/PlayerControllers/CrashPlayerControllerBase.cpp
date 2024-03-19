@@ -97,6 +97,37 @@ UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToLayer(TSubclas
 	return NewWidget ? NewWidget : nullptr;
 }
 
+void ACrashPlayerControllerBase::PopWidgetFromLayer(FGameplayTag LayerToPop)
+{
+	if (!GlobalLayeredWidget)
+	{
+		UE_LOG(LogPlayerController, Warning, TEXT("ACrashPlayerController: Could not pop widget. BaseWidget has not yet been created."));
+		return;
+	}
+
+	// Determine the stack from which to pop the widget.
+	UCommonActivatableWidgetStack* TargetStack = nullptr;
+	if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Game))
+	{
+		TargetStack = GlobalLayeredWidget->GameLayerStack;
+	}
+	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_GameMenu))
+	{
+		TargetStack = GlobalLayeredWidget->GameMenuStack;
+	}
+	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Menu))
+	{
+		TargetStack = GlobalLayeredWidget->MenuStack;
+	}
+
+	// Pop the top widget from the specified layer.
+	if (TargetStack)
+	{
+		UCommonActivatableWidget* ActiveWidget = TargetStack->GetActiveWidget();
+		TargetStack->RemoveWidget(*ActiveWidget);
+	}
+}
+
 void ACrashPlayerControllerBase::AddWidgetToSlot(const FSlottedWidget& SlottedWidgetToCreate)
 {
 	// Search the registered slots for one with a matching ID, and add the widget to that slot.
