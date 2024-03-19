@@ -53,6 +53,7 @@ public:
 	/** Returns or loads the global main menu UI data. */
 	const UUserInterfaceData& GetMainMenuUIData();
 
+// Data.
 protected:
 
 	/** Global main menu UI data asset to use. */
@@ -67,6 +68,12 @@ protected:
 
 
 	// Asset loading.
+
+public:
+
+	/** Synchronously loads the asset at the given path. If an asset of the given type has already been loaded, it is 
+	 * before the new asset is loaded. Caches the new asset in GameDataMap. */
+	UPrimaryDataAsset* SyncLoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, EGlobalGameDataType DataType, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType);
 
 protected:
 
@@ -84,9 +91,13 @@ protected:
 		return *CastChecked<const GameDataClass>(SyncLoadGameDataOfClass(GameDataClass::StaticClass(), DataType, DataPath, GameDataClass::StaticClass()->GetFName()));
 	}
 
-	/** Synchronously loads the asset at the given path. Caches it in GameDataMap. */
-	UPrimaryDataAsset* SyncLoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, EGlobalGameDataType DataType, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType);
 
+
+    // Asset unloading.
+
+public:
+
+	bool UnloadGameData(EGlobalGameDataType DataType);
 
 
 	// Utils.

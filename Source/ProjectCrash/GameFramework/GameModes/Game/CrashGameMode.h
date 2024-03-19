@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <GameFramework/GameModes/Data/CrashGameModeData.h>
+
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "GameFramework/GameMode.h"
@@ -11,7 +13,6 @@
 class ACrashPlayerState;
 class APlayerStart;
 class APriorityPlayerStart;
-class UCrashGameModeData;
 class UCrashAbilitySystemComponent;
 class UGA_Death;
 
@@ -40,6 +41,10 @@ public:
 	/** Adds the Death gameplay ability to the global ability system, which will grant it to each ASC as they are
 	 * created. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
 
@@ -108,13 +113,13 @@ public:
 
 	/** Getter for GameModeData. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game|Data", Meta = (ToolTip = "Data defining various properties of this game mode."))
-	UCrashGameModeData* GetGameModeData() const { return GameModeData; }
+	UCrashGameModeData* GetGameModeData() const { return GameModeData.Get(); }
 
 protected:
 
 	/** Data defining various properties of this game mode, such as players' default starting lives. */
 	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Data")
-	TObjectPtr<UCrashGameModeData> GameModeData;
+	TSoftObjectPtr<UCrashGameModeData> GameModeData;
 
 
 

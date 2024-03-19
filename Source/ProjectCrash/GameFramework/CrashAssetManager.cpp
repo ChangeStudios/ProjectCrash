@@ -44,6 +44,20 @@ UPrimaryDataAsset* UCrashAssetManager::SyncLoadGameDataOfClass(TSubclassOf<UPrim
 	if (!DataClassPath.IsNull())
 	{
 
+		// Unload the existing data type if one is already loaded.
+		if (const TObjectPtr<UPrimaryDataAsset>* LoadedAsset = GameDataMap.Find(DataType))
+		{
+			if (LoadedAsset->GetPathName() == DataClassPath->GetPathName())
+			{
+				Asset = LoadedAsset->Get();
+				return Asset;
+			}
+			else
+			{
+				UnloadGameData(DataType);
+			}
+		}
+
 #if WITH_EDITOR
 		FScopedSlowTask SlowTask(0, FText::Format(NSLOCTEXT("CrashEditor", "BeginLoadingGameDataTask", "Loading GameData {0}"), FText::FromName(DataClass->GetFName())));
 		const bool bShowCancelButton = false;
@@ -70,6 +84,18 @@ UPrimaryDataAsset* UCrashAssetManager::SyncLoadGameDataOfClass(TSubclassOf<UPrim
 	}
 
 	return Asset;
+}
+
+bool UCrashAssetManager::UnloadGameData(EGlobalGameDataType DataType)
+{
+	if (const TObjectPtr<UPrimaryDataAsset> GameData = GameDataMap.FindAndRemoveChecked(DataType))
+	{
+		UnloadPrimaryAsset(GameData->GetPrimaryAssetId());
+		GEngine->ForceGarbageCollection();
+		return true;
+	}
+
+	return false;
 }
 
 #if WITH_EDITOR

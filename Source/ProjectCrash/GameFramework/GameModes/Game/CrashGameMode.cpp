@@ -12,6 +12,7 @@
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/PlayerStartPIE.h"
+#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -39,6 +40,22 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 			ABILITY_LOG(Fatal, TEXT("ACrashGameModeBase: Game Mode [%s] does not have a default Death ability. Death logic will not function properly."), *GetName());
 		}
 	}
+}
+
+void ACrashGameMode::BeginPlay()
+{
+	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
+	CrashManager.SyncLoadGameDataOfClass(GameModeData->GetClass(), EGlobalGameDataType::GameModeData, GameModeData, GameModeData->GetFName());
+
+	Super::BeginPlay();
+}
+
+void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
+	CrashManager.UnloadGameData(EGlobalGameDataType::GameModeData);
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
