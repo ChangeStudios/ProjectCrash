@@ -42,8 +42,10 @@ public:
 	 * created. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
+	/** Loads this game mode's data when the game starts. */
 	virtual void BeginPlay() override;
 
+	/** Unloads this game mode's data when the game ends. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 

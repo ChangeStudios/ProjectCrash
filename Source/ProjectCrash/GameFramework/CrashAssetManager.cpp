@@ -3,6 +3,7 @@
 
 #include "GameFramework/CrashAssetManager.h"
 
+#include "CommonActivatableWidget.h"
 #include "CrashLogging.h"
 #include "UnrealEngine.h"
 #include "Engine/Engine.h"
@@ -43,7 +44,6 @@ UPrimaryDataAsset* UCrashAssetManager::SyncLoadGameDataOfClass(TSubclassOf<UPrim
 
 	if (!DataClassPath.IsNull())
 	{
-
 		// Unload the existing data type if one is already loaded.
 		if (const TObjectPtr<UPrimaryDataAsset>* LoadedAsset = GameDataMap.Find(DataType))
 		{
@@ -88,9 +88,12 @@ UPrimaryDataAsset* UCrashAssetManager::SyncLoadGameDataOfClass(TSubclassOf<UPrim
 
 bool UCrashAssetManager::UnloadGameData(EGlobalGameDataType DataType)
 {
-	if (const TObjectPtr<UPrimaryDataAsset> GameData = GameDataMap.FindAndRemoveChecked(DataType))
+	// If there is a loaded asset of the given type, unload it.
+	if (const TObjectPtr<UPrimaryDataAsset>* GameData = GameDataMap.Find(DataType))
 	{
-		UnloadPrimaryAsset(GameData->GetPrimaryAssetId());
+		GameDataMap.Remove(DataType);
+
+		UnloadPrimaryAsset((*GameData)->GetPrimaryAssetId());
 		GEngine->ForceGarbageCollection();
 		return true;
 	}
@@ -99,21 +102,53 @@ bool UCrashAssetManager::UnloadGameData(EGlobalGameDataType DataType)
 }
 
 #if WITH_EDITOR
-void UCrashAssetManager::DumpLoadedAssets()
+void UCrashAssetManager::DumpLoadedAssets(bool bGameDataOnly, UClass* ClassToFilter)
 {
-	UE_LOG(LogCrash, Log, TEXT("========== Start Dumping Loaded Assets =========="));
+	UE_LOG(LogCrash, Log, TEXT("===== Start Dumping Loaded Game Data Assets ====="));
+	UE_LOG(LogCrash, Log, TEXT("================================================="));
 
 	uint32 DumpedAssetsCount = 0;
 
 	// Log every global game data asset that is currently loaded.
 	for (auto LoadedData : Get().GameDataMap)
 	{
-		UE_LOG(LogCrash, Log, TEXT("	* [%s]"), *GetNameSafe(LoadedData.Value));
+		UE_LOG(LogCrash, Log, TEXT("	* Asset Manager: [%s]"), *GetNameSafe(LoadedData.Value));
 
 		DumpedAssetsCount = LoadedData.Value->IsValidLowLevelFast() ? DumpedAssetsCount + 1 : DumpedAssetsCount;
 	}
 
-	UE_LOG(LogCrash, Log, TEXT("Total Assets Dumped: [%i]."), DumpedAssetsCount);
-	UE_LOG(LogCrash, Log, TEXT("========== Finish Dumping Loaded Assets =========="));
+	UE_LOG(LogCrash, Log, TEXT("================================================="));
+	UE_LOG(LogCrash, Log, TEXT("Total Asset Manager Assets Dumped: [%i]."), DumpedAssetsCount);
+	UE_LOG(LogCrash, Log, TEXT("============ Finish Game Data Assets ============"));
+
+
+	if (bGameDataOnly)
+	{
+		return;
+	}
+
+
+	UE_LOG(LogCrash, Log, TEXT("== Start Dumping Loaded Asset Registry Assets ==="));
+	UE_LOG(LogCrash, Log, TEXT("================================================="));
+
+	DumpedAssetsCount = 0;
+
+	// Log every asset that is currently loaded by the asset registry.
+	TArray<FAssetData> OutAssets;
+	Get().GetAssetRegistry().GetAllAssets(OutAssets);
+	UE_LOG(LogCrash, Log, TEXT("Size: %llu"), Get().GetAssetRegistry().GetAllocatedSize());
+	for (auto OutAsset : OutAssets)
+	{
+		if (ClassToFilter && OutAsset.GetAsset()->IsA(ClassToFilter))
+		{
+			UE_LOG(LogCrash, Log, TEXT("	* Asset Registry: [%s]"), *OutAsset.AssetName.ToString());
+		}
+
+		DumpedAssetsCount++;
+	}
+
+	UE_LOG(LogCrash, Log, TEXT("================================================="));
+	UE_LOG(LogCrash, Log, TEXT("Total Asset Registry Assets Dumped: [%i]."), DumpedAssetsCount);
+	UE_LOG(LogCrash, Log, TEXT("========= Finish Asset Registry Assets =========="));
 }
 #endif // WITH_EDITOR

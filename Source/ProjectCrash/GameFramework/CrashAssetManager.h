@@ -106,6 +106,6 @@ public:
 
 #if WITH_EDITOR
 	/** Logs all assets currently loaded by the asset manager. */
-	static void DumpLoadedAssets();
+	static void DumpLoadedAssets(bool bGameDataOnly = true, UClass* ClassToFilter = nullptr);
 #endif // WITH_EDITOR
 };

@@ -23,6 +23,12 @@ public:
 	/** Default constructor. */
 	ACrashGameMode_MainMenu();
 
+
+
+	// Initialization.
+
+public:
+
 	/** When a player enters the level, possess any pawn that can be found. */
 	virtual void OnPostLogin(AController* NewPlayer) override;
 };

@@ -4,6 +4,7 @@
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 
 #include "AbilitySystemLog.h"
+#include "CommonActivatableWidget.h"
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
@@ -13,6 +14,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/PlayerStartPIE.h"
 #include "GameFramework/CrashAssetManager.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -45,17 +47,29 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 void ACrashGameMode::BeginPlay()
 {
 	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
+
+	// Unload the main menu data when we aren't in the main menu.
+	CrashManager.UnloadGameData(EGlobalGameDataType::MainMenuUIData);
+
+	// Load this game mode's data.
 	CrashManager.SyncLoadGameDataOfClass(GameModeData->GetClass(), EGlobalGameDataType::GameModeData, GameModeData, GameModeData->GetFName());
+	CrashManager.SyncLoadGameDataOfClass(GameModeData->UIData->GetClass(), EGlobalGameDataType::UserInterfaceData, GameModeData->UIData, GameModeData->UIData->GetFName());
 
 	Super::BeginPlay();
+
+	CrashManager.DumpLoadedAssets(false, UTexture::StaticClass());
 }
 
 void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Super::EndPlay(EndPlayReason);
+
 	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
 	CrashManager.UnloadGameData(EGlobalGameDataType::GameModeData);
+	CrashManager.UnloadGameData(EGlobalGameDataType::UserInterfaceData);
 
-	Super::EndPlay(EndPlayReason);
+	UE_LOG(LogCrash, Warning, TEXT("Dumping on end..."));
+	CrashManager.DumpLoadedAssets(false, UTexture::StaticClass());
 }
 
 void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
@@ -176,7 +190,6 @@ bool ACrashGameMode::IsPlayerStartAllowed(APlayerStart* PlayerStart, AController
 	// By default, players are only allowed to spawn at player starts intended for their team.
 	if (const APriorityPlayerStart* PriorityPlayerStart = Cast<APriorityPlayerStart>(PlayerStart))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[%s]'s Team: [%i], [%s]'s Team: [%i]"), *GetNameSafe(Player), CrashPS->GetTeamID(), *GetNameSafe(PriorityPlayerStart), PriorityPlayerStart->GetTargetTeamID());
 		if (PriorityPlayerStart->GetTargetTeamID() == CrashPS->GetTeamID())
 		{
 			return true;
