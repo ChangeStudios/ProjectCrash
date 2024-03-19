@@ -10,7 +10,7 @@ class UCommonActivatableWidgetStack;
 
 /**
  * An activatable widget with widget stacks for multiple user interface layers. This exposes layered UI to C++,
- * allowing us to push other widgets to this widget.
+ * allowing us to push widgets to and pop widgets from this widget.
  */
 UCLASS(Abstract, Blueprintable)
 class PROJECTCRASH_API UGlobalLayeredWidget : public UCommonActivatableWidget

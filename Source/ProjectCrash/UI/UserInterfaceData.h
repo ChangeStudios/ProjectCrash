@@ -58,9 +58,9 @@ class PROJECTCRASH_API UUserInterfaceData : public UPrimaryDataAsset
 public:
 
 	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to
-	 * this widget. */
+	 * TaggedActivatableWidgetStacks in this widget. */
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGlobalLayeredWidget> GlobalLayeredWidget;
+	TSubclassOf<UCommonActivatableWidget> GlobalLayeredWidget;
 
 	/** Widgets that will be created and registered as "layout widgets." When modular widgets are added, each layout
 	 * widget's slots will be checked for a tag matching the modular widget, and the widget will be created in that

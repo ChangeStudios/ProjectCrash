@@ -8,6 +8,7 @@
 #include "UI/UserInterfaceData.h"
 #include "UI/Widgets/GlobalLayeredWidget.h"
 #include "UI/Widgets/Utils/SlottedEntryBox.h"
+#include "UI/Widgets/Utils/TaggedActivatableWidgetStack.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
 void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceData* UIData)
@@ -18,13 +19,25 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 		return;
 	}
 
-	// Create and activate the base widget. All widgets we create from here in the future will be pushed to this.
+	/* Create and activate the base widget and cache its layers. All widgets we create from here in the future will be
+	 * pushed to this. */
 	if (UIData && UIData->GlobalLayeredWidget)
 	{
-		GlobalLayeredWidget = CreateWidget<UGlobalLayeredWidget>(this, UIData->GlobalLayeredWidget);
+		GlobalLayeredWidget = CreateWidget<UCommonActivatableWidget>(this, UIData->GlobalLayeredWidget);
 
 		if (GlobalLayeredWidget)
 		{
+			// Register the global layered widget's stacks to which widgets will be pushed and popped.
+			TArray<UWidget*> OutWidgets;
+			GlobalLayeredWidget->WidgetTree->GetAllWidgets(OutWidgets);
+			for (UWidget* Widget : OutWidgets)
+			{
+				if (UTaggedActivatableWidgetStack* WidgetAsStack = Cast<UTaggedActivatableWidgetStack>(Widget))
+				{
+					RegisteredWidgetLayers.Add(WidgetAsStack);
+				}
+			}
+
 			GlobalLayeredWidget->AddToViewport();
 		}
 	}
@@ -69,62 +82,32 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 	}
 }
 
-
 UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToLayer(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag LayerToPushTo)
 {
-	if (!GlobalLayeredWidget)
-	{
-		UE_LOG(LogPlayerController, Warning, TEXT("ACrashPlayerController: Could not push widget. BaseWidget has not yet been created."));
-		return nullptr;
-	}
-
-	// Push the given widget to the specified layer.
 	UCommonActivatableWidget* NewWidget = nullptr;
 
-	if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Game))
+	// Push the given widget to the specified layer.
+	for (UTaggedActivatableWidgetStack* WidgetLayer : RegisteredWidgetLayers)
 	{
-		NewWidget = GlobalLayeredWidget->GameLayerStack->AddWidget(WidgetToPush);
-	}
-	else if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_GameMenu))
-	{
-		NewWidget = GlobalLayeredWidget->GameMenuStack->AddWidget(WidgetToPush);
-	}
-	else if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Menu))
-	{
-		NewWidget = GlobalLayeredWidget->MenuStack->AddWidget(WidgetToPush);
+		if (WidgetLayer->StackID.MatchesTagExact(LayerToPushTo))
+		{
+			NewWidget = WidgetLayer->AddWidget(WidgetToPush);
+		}
 	}
 
 	return NewWidget ? NewWidget : nullptr;
 }
 
-void ACrashPlayerControllerBase::PopWidgetFromLayer(FGameplayTag LayerToPop)
+void ACrashPlayerControllerBase::PopWidgetFromLayer(FGameplayTag LayerToPopFrom)
 {
-	if (!GlobalLayeredWidget)
-	{
-		UE_LOG(LogPlayerController, Warning, TEXT("ACrashPlayerController: Could not pop widget. BaseWidget has not yet been created."));
-		return;
-	}
-
-	// Determine the stack from which to pop the widget.
-	UCommonActivatableWidgetStack* TargetStack = nullptr;
-	if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Game))
-	{
-		TargetStack = GlobalLayeredWidget->GameLayerStack;
-	}
-	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_GameMenu))
-	{
-		TargetStack = GlobalLayeredWidget->GameMenuStack;
-	}
-	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Menu))
-	{
-		TargetStack = GlobalLayeredWidget->MenuStack;
-	}
-
 	// Pop the top widget from the specified layer.
-	if (TargetStack)
+	for (UTaggedActivatableWidgetStack* WidgetLayer : RegisteredWidgetLayers)
 	{
-		UCommonActivatableWidget* ActiveWidget = TargetStack->GetActiveWidget();
-		TargetStack->RemoveWidget(*ActiveWidget);
+		if (WidgetLayer->StackID.MatchesTagExact(LayerToPopFrom))
+		{
+			UCommonActivatableWidget* ActiveWidget = WidgetLayer->GetActiveWidget();
+            WidgetLayer->RemoveWidget(*ActiveWidget);
+		}
 	}
 }
 
