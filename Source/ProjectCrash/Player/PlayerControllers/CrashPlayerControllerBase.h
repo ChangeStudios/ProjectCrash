@@ -8,7 +8,6 @@
 #include "GameFramework/PlayerController.h"
 #include "CrashPlayerControllerBase.generated.h"
 
-class UTaggedActivatableWidgetStack;
 class UCommonActivatableWidget;
 class UGlobalLayeredWidget;
 class USlottedEntryBox;
@@ -21,60 +20,37 @@ class PROJECTCRASH_API ACrashPlayerControllerBase : public APlayerController
 {
 	GENERATED_BODY()
 
-	// UI initialization.
+	// UI.
 
+// Initialization.
 protected:
 
 	/** Creates and caches the global widget, layout widgets, and slotted widgets defined in the given UI data. */
 	UFUNCTION()
 	virtual void InitializeUserInterface(const UUserInterfaceData* UIData);
 
-
-
-	/* Widget stacks. Global stacks of widgets that can have child widgets dynamically pushed to and popped from them
-	 * from anywhere. */
-
+// Management.
 public:
 
-	/** Registers the given stack for this player, allowing widgets to be pushed to and popped from it globally. */
-	void RegisterWidgetStack(UTaggedActivatableWidgetStack* StackToRegister);
+	/** Pushes the given widget to the specific layer. */
+	UFUNCTION(BlueprintCallable, Category = "UserInterface|Player Controller")
+	UCommonActivatableWidget* PushWidgetToLayer(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag LayerToPushTo);
 
-	/** Unregisters the given stack for this player. */
-	void UnregisterWidgetStack(UTaggedActivatableWidgetStack* StackToUnregister);
-
-	/** Pushes the given widget to the specified stack, if one is registered. */
-	UFUNCTION(BlueprintCallable, Category = "UserInterface|Widget Stacks")
-	UCommonActivatableWidget* PushWidgetToStack(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag StackToPushTo);
-
-	/** Pops the top widget from the specific stack. */
-	UFUNCTION(BlueprintCallable, Category = "UserInterface|Widget Stacks")
-	void PopWidgetFromStack(FGameplayTag StackToPopFrom);
-
-protected:
-
-	/** The global widget being rendered by this player controller, created at BeginPlay. Defines the persistent widget
-	 * stacks that will be created by default. */
-	UPROPERTY()
-	UCommonActivatableWidget* GlobalLayeredWidget;
-
-	/** Activatable widget stacks currently registered with this player. When a new widget is requested to pushed via
-	 * tag, it will be pushed to the registered first stack with the matching tag. */
-	UPROPERTY()
-	TArray<UTaggedActivatableWidgetStack*> RegisteredWidgetStacks;
-
-
-
-	// Widget slots. Abstract entry points inside of widgets that can have any kind of widget inserted in their place.
-
-public:
+	/** Pops the top widget from the specific layer. */
+	UFUNCTION(BlueprintCallable, Category = "UserInterface|Player Controller")
+	void PopWidgetFromLayer(FGameplayTag LayerToPop);
 
 	/** Attempts to find a registered slot with a matching slot ID and adds the given widget to that slot. */
 	void AddWidgetToSlot(const FSlottedWidget& SlottedWidgetToCreate);
 
 protected:
 
-	/** Layout widgets that have been created by this player controller. These define optional slots for inserting
-	 * modular widgets. These slots are added to RegisteredSlots when the layout widget is registered. */
+	/** The global widget being rendered by this player controller, created at BeginPlay. New widgets are pushed
+	 * here. */
+	UPROPERTY()
+	UGlobalLayeredWidget* GlobalLayeredWidget;
+
+	/** Layout widgets that have been created by this player controller. */
 	UPROPERTY()
 	TArray<UCommonActivatableWidget*> RegisteredLayoutWidgets;
 

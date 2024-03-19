@@ -8,7 +8,6 @@
 #include "UI/UserInterfaceData.h"
 #include "UI/Widgets/GlobalLayeredWidget.h"
 #include "UI/Widgets/Utils/SlottedEntryBox.h"
-#include "UI/Widgets/Utils/TaggedActivatableWidgetStack.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
 void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceData* UIData)
@@ -42,7 +41,7 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 		{
 			if (LayoutWidget.LayoutWidgetClass)
 			{
-				if (UCommonActivatableWidget* NewLayout = PushWidgetToStack(LayoutWidget.LayoutWidgetClass, LayoutWidget.TargetLayer))
+				if (UCommonActivatableWidget* NewLayout = PushWidgetToLayer(LayoutWidget.LayoutWidgetClass, LayoutWidget.TargetLayer))
 				{
 					// Register the new layout widget.
 					RegisteredLayoutWidgets.Add(NewLayout);
@@ -70,48 +69,62 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 	}
 }
 
-void ACrashPlayerControllerBase::RegisterWidgetStack(UTaggedActivatableWidgetStack* StackToRegister)
-{
-	if (IsValid(StackToRegister))
-	{
-		RegisteredWidgetStacks.AddUnique(StackToRegister);
-	}
-}
 
-void ACrashPlayerControllerBase::UnregisterWidgetStack(UTaggedActivatableWidgetStack* StackToUnregister)
+UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToLayer(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag LayerToPushTo)
 {
-	if (RegisteredWidgetStacks.Contains(StackToUnregister))
+	if (!GlobalLayeredWidget)
 	{
-		RegisteredWidgetStacks.Remove(StackToUnregister);
+		UE_LOG(LogPlayerController, Warning, TEXT("ACrashPlayerController: Could not push widget. BaseWidget has not yet been created."));
+		return nullptr;
 	}
-}
 
-UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToStack(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag StackToPushTo)
-{
-	// Push the given widget to the specified stack.
+	// Push the given widget to the specified layer.
 	UCommonActivatableWidget* NewWidget = nullptr;
 
-	for (UTaggedActivatableWidgetStack* Stack : RegisteredWidgetStacks)
+	if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Game))
 	{
-		if (Stack->StackID.MatchesTagExact(StackToPushTo))
-		{
-			NewWidget = Stack->AddWidget(WidgetToPush);
-		}
+		NewWidget = GlobalLayeredWidget->GameLayerStack->AddWidget(WidgetToPush);
+	}
+	else if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_GameMenu))
+	{
+		NewWidget = GlobalLayeredWidget->GameMenuStack->AddWidget(WidgetToPush);
+	}
+	else if (LayerToPushTo.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Menu))
+	{
+		NewWidget = GlobalLayeredWidget->MenuStack->AddWidget(WidgetToPush);
 	}
 
 	return NewWidget ? NewWidget : nullptr;
 }
 
-void ACrashPlayerControllerBase::PopWidgetFromStack(FGameplayTag StackToPopFrom)
+void ACrashPlayerControllerBase::PopWidgetFromLayer(FGameplayTag LayerToPop)
 {
-	// Pop the top widget from the specified stack.
-	for (UTaggedActivatableWidgetStack* Stack : RegisteredWidgetStacks)
+	if (!GlobalLayeredWidget)
 	{
-		if (Stack->StackID.MatchesTagExact(StackToPopFrom))
-		{
-			UCommonActivatableWidget* WidgetToPop = Stack->GetActiveWidget();
-			Stack->RemoveWidget(*WidgetToPop);
-		}
+		UE_LOG(LogPlayerController, Warning, TEXT("ACrashPlayerController: Could not pop widget. BaseWidget has not yet been created."));
+		return;
+	}
+
+	// Determine the stack from which to pop the widget.
+	UCommonActivatableWidgetStack* TargetStack = nullptr;
+	if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Game))
+	{
+		TargetStack = GlobalLayeredWidget->GameLayerStack;
+	}
+	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_GameMenu))
+	{
+		TargetStack = GlobalLayeredWidget->GameMenuStack;
+	}
+	else if (LayerToPop.MatchesTagExact(CrashGameplayTags::TAG_UI_Layer_Menu))
+	{
+		TargetStack = GlobalLayeredWidget->MenuStack;
+	}
+
+	// Pop the top widget from the specified layer.
+	if (TargetStack)
+	{
+		UCommonActivatableWidget* ActiveWidget = TargetStack->GetActiveWidget();
+		TargetStack->RemoveWidget(*ActiveWidget);
 	}
 }
 
