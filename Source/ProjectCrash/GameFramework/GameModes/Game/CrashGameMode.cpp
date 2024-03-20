@@ -57,7 +57,9 @@ void ACrashGameMode::BeginPlay()
 
 	Super::BeginPlay();
 
+#if WITH_EDITOR
 	CrashManager.DumpLoadedAssets(false, UTexture::StaticClass());
+#endif // WITH_EDITOR
 }
 
 void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -68,8 +70,10 @@ void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	CrashManager.UnloadGameData(EGlobalGameDataType::GameModeData);
 	CrashManager.UnloadGameData(EGlobalGameDataType::UserInterfaceData);
 
+#if WITH_EDITOR
 	UE_LOG(LogCrash, Warning, TEXT("Dumping on end..."));
 	CrashManager.DumpLoadedAssets(false, UTexture::StaticClass());
+#endif // WITH_EDITOR
 }
 
 void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
