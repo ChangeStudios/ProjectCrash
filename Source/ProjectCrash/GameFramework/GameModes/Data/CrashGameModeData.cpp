@@ -13,6 +13,8 @@ UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializ
 	StartingLives(1),
 
 	DefaultDeathAbility(nullptr),
-	DeathDuration(5.0f)
+	DeathDuration(5.0f),
+
+	UIData(nullptr)
 {
 }
