@@ -89,13 +89,21 @@ UPrimaryDataAsset* UCrashAssetManager::SyncLoadGameDataOfClass(TSubclassOf<UPrim
 bool UCrashAssetManager::UnloadGameData(EGlobalGameDataType DataType)
 {
 	// If there is a loaded asset of the given type, unload it.
-	if (const TObjectPtr<UPrimaryDataAsset>* GameData = GameDataMap.Find(DataType))
+	if (GameDataMap.Contains(DataType))
 	{
-		GameDataMap.Remove(DataType);
+		if (const TObjectPtr<UPrimaryDataAsset>* GameDataPtr = GameDataMap.Find(DataType))
+		{
+			const UPrimaryDataAsset* GameData = *GameDataPtr;
+			
+			if (GameData->IsValidLowLevel() && GameData->GetPrimaryAssetId().IsValid())
+			{
+				GameDataMap.Remove(DataType);
 
-		UnloadPrimaryAsset((*GameData)->GetPrimaryAssetId());
-		GEngine->ForceGarbageCollection();
-		return true;
+				UnloadPrimaryAsset(GameData->GetPrimaryAssetId());
+				GEngine->ForceGarbageCollection();
+				return true;
+			}
+		}
 	}
 
 	return false;
