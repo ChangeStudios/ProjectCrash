@@ -119,8 +119,11 @@ public:
 
 protected:
 
-	/** Data defining various properties of this game mode, such as players' default starting lives. */
-	UPROPERTY(EditDefaultsOnly, Category = "Game Mode Data")
+	/** Data defining various properties of this game mode, such as players' default starting lives.
+	 *
+	 * This variable is stored as a path to an object, not the object itself. This path will be used to load the game
+	 * mode data when necessary, and to access it once loaded. */
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Game Mode Data", Meta = (ToolTip = "Data defining various properties of this game mode, such as players' default starting lives."))
 	TSoftObjectPtr<UCrashGameModeData> GameModeData;
 
 

@@ -4,7 +4,7 @@
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
 
 UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializer) :
-	MaximumMatchTime(0.0f),
+	MaximumMatchTime(300.0f),
 	MaximumOvertimeTime(0.0f),
 
 	NumTeams(4),
@@ -15,6 +15,8 @@ UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializ
 	DefaultDeathAbility(nullptr),
 	DeathDuration(5.0f),
 
-	UIData(nullptr)
+	UIData(nullptr),
+	CustomGameActiveImage(nullptr),
+	CustomGameOptionImage(nullptr)
 {
 }
