@@ -5,6 +5,7 @@
 
 UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializer) :
 	MaximumMatchTime(300.0f),
+	bEnableOvertime(false),
 	MaximumOvertimeTime(0.0f),
 
 	NumTeams(4),

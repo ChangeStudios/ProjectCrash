@@ -22,8 +22,8 @@ enum ECustomSettingType : uint8
 	NumericSmall,
 	// A number (int or float) that appears in a wide container. Used for variables that are usually from >= 100.
 	NumericLarge,
-	// A value from an enumerator.
-	Enumerator
+	// A setting that is enabled or disabled.
+	OnOff
 };
 
 
@@ -36,37 +36,49 @@ struct FCustomGameSettingBehavior
 {
 	GENERATED_BODY()
 
+// Setting data.
 public:
 
-	/** How this variable behaves as a custom game setting. */
+	/** The value type of this variable. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TEnumAsByte<ECustomSettingType> CustomSettingType = None;
 
+    /** The user-facing name of this setting. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType != 0", EditConditionHides = true))
+    FString DisplayedName = "";
+
+	/** The value to which this setting will be initialized in the settings menu. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType != 0", EditConditionHides = true))
+	float InitialValue = 0.0f;
+
+// Numeric data.
+public:
+
+	/** Units used by this setting. Can be left empty to disable units. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
+	FString Units = "";
+
+	/** Whether this variable can be a decimal (i.e. if it's an int or a float). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
+	bool bDecimal = true;
+
 	/** Whether a slider can be used to set this variable. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
-	bool bEnableSlider = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
+	bool bEnableSlider = true;
 
 	/** The step values used by this variable's slider, if it has one. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "(CustomSettingType == 1 || CustomSettingType == 2) && bEnableSlider", EditConditionHides = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "(CustomSettingType == 1 || CustomSettingType == 2) && bEnableSlider", EditConditionHides = true))
 	float SliderStep = 0.1f;
 
-	/** The minimum value to which this variable can be set by the user. Defines the scale of the slider. Value will be
-	 * floored if the variable is an integer. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
+	/** The minimum value to which this variable can be set by the user. Defines the scale of the slider if it's
+	 * enabled. Value will be floored if bDecimal is false. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
 	float ValueMin = 0.0f;
 
-	/** The maximum value to which this variable can be set by the user. Defines the scale of the slider. Value will be
-	 * floored if the variable is an integer. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
-	float ValueMax = 0.0f;
-
-	/** When this variable's value is set to or below ValueMin, this will be displayed instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
-	FName OverrideMin = NAME_None;
-
-	/** When this variable's value is set to or above ValueMax, this will be displayed instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
-	FName OverrideMax = NAME_None;
+	/** The maximum value to which this variable can be set by the user. Defines the scale of the slider if it's
+	 * enabled. Value will be floored if bDecimal is false. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Numeric", Meta = (EditCondition = "CustomSettingType == 1 || CustomSettingType == 2", EditConditionHides = true))
+	float ValueMax = 1.0f;
 };
 
 
@@ -117,10 +129,14 @@ public:
 	float MaximumMatchTime;
 
 	/**
+	 * Whether to enable overtime for this game mode.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match")
+	bool bEnableOvertime;
+
+	/**
 	 * The maximum amount of time for which overtime will be played. When this time is reached, the match will be
 	 * ended with the game mode's tie-breaking rules.
-	 *
-	 * Setting this to 0.0 disables overtime for this game mode.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", Meta = (Units = "s"))
 	float MaximumOvertimeTime;
@@ -185,12 +201,12 @@ public:
 	TObjectPtr<UUserInterfaceData> UIData;
 
 	/** Image used when this game mode is selected in the custom game menu. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface", Meta = (AssetBundles = "Client"))
-	TSoftObjectPtr<UTexture2D> CustomGameActiveImage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TObjectPtr<UTexture2D> CustomGameActiveImage;
 
 	/** Image used to represent this game mode in the game mode selection pop-up in the custom game menu. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface", Meta = (AssetBundles = "Client"))
-	TSoftObjectPtr<UTexture2D> CustomGameOptionImage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TObjectPtr<UTexture2D> CustomGameOptionImage;
 
 
 
@@ -203,6 +219,6 @@ protected:
 	 *
 	 * Note: Variables MUST use their name from C++. Editor-only display names will not work.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Settings", Meta = (TitleProperty = CustomSettingType))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Custom Game Settings", Meta = (TitleProperty = CustomSettingType))
 	TMap<FName, FCustomGameSettingBehavior> CustomGameSettingsDefinitions;
 };
