@@ -7,33 +7,32 @@ public class ProjectCrash : ModuleRules
 	public ProjectCrash(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
+		PublicIncludePaths.AddRange(new string[]
+		{
+			"ProjectCrash"
+		});
+
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core",
+			"CoreOnline",
 			"CoreUObject",
 			"Engine",
-			"InputCore",
-			"EnhancedInput",
-			"NetCore"
+			"GameplayAbilities",
+			"GameplayTags",
+			"GameplayTasks",
+			"InputCore"
 		});
-		
-		PublicIncludePaths.Add("ProjectCrash/");
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
+			"CommonUI",
+			"EnhancedInput",
+			"NetCore",
 			"Slate",
 			"SlateCore",
-			"UMG",
-			"CommonUI",
-			"GameplayAbilities",
-			"GameplayTags",
-			"GameplayTasks"
+			"UMG"
 		});
-
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }
