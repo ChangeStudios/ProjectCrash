@@ -4,12 +4,12 @@
 # Documentation
 The codebase of "Project Crash" contains detailed doc comments. But given the complex and intertwining nature of various systems, such as the Gameplay Abilities System (GAS), several external documents have been written to detail these frameworks with greater clarity, from a higher level. These documents can be viewed at the links listed below.
 
-* [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1lrocajswgfGHrTl-TFuM-Iw5N444_QWDiKfILris98c/edit?usp=sharing)
-* [Enhanced Input System](https://docs.google.com/document/d/14MctqQ5xBJUGY_rECkic1fV7ar-tnsWgIixjtUjG0ho/edit?usp=sharing)
-* [Data-Driven First-Person and Third-Person Character Animation System](https://docs.google.com/document/d/10SJwsWDz0Bdb3wLYZ8Y8bDuiuqd6Wuy79pgpf6HaXfY/edit?usp=sharing)
-* [Equipment System](https://docs.google.com/document/d/1Crvtr5GLEnEXgaKbAM2hrokMUI4bmXdkZud7vnmHgVc/edit?usp=sharing)
-* [User Interface](https://docs.google.com/document/d/1-mVWbRCCULRUAsuPj1OvG-jbYD4xY5aS1YMsj4WkYp0/edit?usp=sharing)
-* [Actor Death](https://docs.google.com/document/d/1I-24OXwK4daYPk848kmgkZWWHcKA4EAg0JMTBuFgVWM/edit?usp=sharing)
+* [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1O7YPWexCDY6cmNgkvG8EtkZL657hN82NOsViu8EdND4/edit?usp=sharing)
+* [Enhanced Input System](https://docs.google.com/document/d/1d1LVg-ehceqX3TdfWAj2qzH34_2PBbfLTI1VFw4oOe8/edit?usp=sharing)
+* [Data-Driven First-Person and Third-Person Character Animation System](https://docs.google.com/document/d/1POn8VdkYRQCWdIatEK0ghMp95gNMywwFNnU8s9nxQ3g/edit?usp=sharing)
+* [Equipment System](https://docs.google.com/document/d/1G91uy_aFNAV72H67d4x7UoH8f-cra3pVtYKrFTbXwKo/edit?usp=sharing)
+* [User Interface](https://docs.google.com/document/d/1ppomGeVG1Og-0oerqsT4-H6jTE1x1-Aqw8Y38JgxVIQ/edit?usp=sharing)
+* [Actor Death](https://docs.google.com/document/d/1oJJhID3H6ibK6JepC2oy4YvH9VOQ4_0VlN0PSSjFWXw/edit?usp=sharing)
 
 <h6>Copyright Notice:
 <br></br>
