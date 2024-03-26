@@ -14,7 +14,8 @@
 				"GameplayAbilities",
 				"CommonUI",
 				"UMG",
-				"CoreUObject"
+				"CoreUObject",
+				"OnlineSubsystemUtils"
 			]
 		}
 	],
