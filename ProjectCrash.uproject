@@ -40,10 +40,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "Volumetrics",
-			"Enabled": true
-		},
-		{
 			"Name": "WinDualShock",
 			"Enabled": true,
 			"SupportedTargetPlatforms": [
@@ -76,6 +72,10 @@
 		},
 		{
 			"Name": "SteamSockets",
+			"Enabled": true
+		},
+		{
+			"Name": "Volumetrics",
 			"Enabled": true
 		}
 	],
