@@ -9,7 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTaskDelegate, float, DeltaTime);
 
 /**
- * Ability task that can hook gameplay abilities into the Tick process. Will fire a callback each tim e
+ * Ability task that can hook gameplay abilities into the Tick process.
  */
 UCLASS()
 class PROJECTCRASH_API UAbilityTask_OnTick : public UAbilityTask

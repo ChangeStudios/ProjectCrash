@@ -4,12 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "AbilityTask_WaitReusableTargetData.generated.h"
 
 class AGameplayAbilityTargetActor;
-
-/** Delegate for broadcasting target data events with the target data as a payload. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWaitTargetDataSignature, const FGameplayAbilityTargetData&, Data);
 
 /**
  * Waits to receive target data from a specified target
@@ -46,14 +44,12 @@ public:
 	 * @param OwningAbility								The ability instance executing this task.
 	 * @param TaskInstanceName							An optional name assigned to this ability task instance that can
 	 *													later be used to reference it.
-	 * @param ConfirmationType							How this targeting information will be confirmed. For most
-	 *													cases, this should be "Instant," as we usually don't need
-	 *													external confirmation for an ability's target.
+	 * @param ConfirmationType							How this targeting information will be confirmed. "Instant"
+	 *													targeting will be confirmed automatically. Otherwise, target
+	 *													data must be confirmed manually.
 	 * @param InTargetActor								The target actor being used by this ability. This should
 	 *													be created, configured, and cached by this ability before this
 	 *													task begins.
-	 * @param bAllowMultipleTargets						Allows this task to send target data multiple times per
-	 *													execution.
 	 * @param bCreateKeyIfNotValidForMorePredicting		Whether to create a new scoped prediction key if the current key
 	 *													is no longer valid for predicting. Always creates a new scoped
 	 *													prediction key by default. Set this to "false" to use an
@@ -67,7 +63,6 @@ public:
 		FName TaskInstanceName,
 		TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType,
 		AGameplayAbilityTargetActor* InTargetActor,
-		bool bAllowMultipleTargets,
 		bool bCreateKeyIfNotValidForMorePredicting = true
 	);
 
@@ -149,11 +144,11 @@ protected:
 
 	/** Broadcast when valid target data is sent to server. */
 	UPROPERTY(BlueprintAssignable)
-	FWaitTargetDataSignature ValidDataSentDelegate;
+	FWaitTargetDataDelegate ValidDataSentDelegate;
 
 	/** Broadcast when targeting is cancelled. */
 	UPROPERTY(BlueprintAssignable)
-	FWaitTargetDataSignature CancelledDataDelegate;
+	FWaitTargetDataDelegate CancelledDataDelegate;
 
 
 

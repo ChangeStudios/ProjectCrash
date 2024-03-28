@@ -7,11 +7,30 @@
 #include "GameplayAbilityTargetActor_CollisionDetector.generated.h"
 
 /**
- * TODO: Implement this to detect collision over a duration. Currently, we're performing traces each tick, which isn't performant. Implement a custom WaitTargetData task to accept multiple async target data returns.
+ * A collision shape that detects collision while active. This should be subclassed with custom shapes. 
  */
-UCLASS()
+UCLASS(Abstract, NotPlaceable)
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AGameplayAbilityTargetActor
 {
 	GENERATED_BODY()
 
+public:
+
+	AGameplayAbilityTargetActor_CollisionDetector(const FObjectInitializer& ObjectInitializer);
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void StartTargeting(UGameplayAbility* Ability) override;
+
+	virtual void ConfirmTargetingAndContinue() override;
+
+protected:
+
+	UFUNCTION()
+	void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// The collision component used to detect collision with this actor.
+	TObjectPtr<UShapeComponent> CollisionDetector;
 };
