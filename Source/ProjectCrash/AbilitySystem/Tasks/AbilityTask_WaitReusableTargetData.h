@@ -143,11 +143,11 @@ protected:
 protected:
 
 	/** Broadcast when valid target data is sent to server. */
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, DisplayName = "Valid Data")
 	FWaitTargetDataDelegate ValidDataSentDelegate;
 
 	/** Broadcast when targeting is cancelled. */
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, DisplayName = "Cancelled")
 	FWaitTargetDataDelegate CancelledDataDelegate;
 
 

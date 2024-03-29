@@ -32,7 +32,7 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 	// Add the Death ability to the global ability system, which will grant it to each ASC as they are created.
 	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
 	{
-		if (GameModeData->DefaultDeathAbility)
+		if (GameModeData && GameModeData->DefaultDeathAbility)
 		{
 			GlobalAbilitySystem->GrantGlobalAbility(GameModeData->DefaultDeathAbility);
 		}

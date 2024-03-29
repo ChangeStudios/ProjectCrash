@@ -8,7 +8,7 @@
 #include "AbilityTask_ServerWaitTargetData.generated.h"
 
 /**
- * 
+ * TODO: Implement this task (adding a "can accept multiple targets" param) to execute on the server to wait for target data from clients.
  */
 UCLASS()
 class PROJECTCRASH_API UAbilityTask_ServerWaitTargetData : public UAbilityTask

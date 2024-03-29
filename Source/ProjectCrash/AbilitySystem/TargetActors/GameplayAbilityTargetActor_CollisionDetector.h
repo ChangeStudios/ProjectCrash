@@ -14,23 +14,63 @@ class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AG
 {
 	GENERATED_BODY()
 
+	// Construction.
+
 public:
 
+	/** Default constructor. */
 	AGameplayAbilityTargetActor_CollisionDetector(const FObjectInitializer& ObjectInitializer);
 
-	virtual void BeginPlay() override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	// Targeting.
+
+public:
+	
+	/** Binds callbacks to when another actor overlaps with this actor's collision detector. */
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
-	virtual void ConfirmTargetingAndContinue() override;
+	/** Empties the array of targets. If bRepeatsTargets is false, targets that are detected by this actor can not be
+	 * detected again until this is called to reset cached targets. */
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void ResetTargets() { Targets.Empty(); }
 
 protected:
 
+	/** Generates and sends target data when an actor overlaps with this actor's collision detector. */
 	UFUNCTION()
-	void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	// The collision component used to detect collision with this actor.
+	/** The collision component used to detect collision with this actor. */
 	TObjectPtr<UShapeComponent> CollisionDetector;
+
+
+
+	// Parameters.
+
+protected:
+		
+	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
+	 * before a target can be detected again, after being sent the first time. */
+	UPROPERTY()
+	bool bRepeatTargets;
+
+	/** Optional class by which to filter targets. */
+	UPROPERTY()
+	TSubclassOf<AActor> ClassFilter;
+
+	/** Whether to filter for targets with an ability system component. */
+	UPROPERTY()
+	bool bFilterForGASActors;
+
+
+
+	// Internals.
+
+protected:
+
+	/** Targets that have been sent to the server by this actor. If bRepeatTargets is false, targets that are already
+	 * in this array when they are detected will be filtered out. */
+	UPROPERTY()
+	TArray<AActor*> Targets;
 };
