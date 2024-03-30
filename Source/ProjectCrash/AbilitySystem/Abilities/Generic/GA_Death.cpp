@@ -23,8 +23,7 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	// Fire the death event delegate through the ASC to broadcast the death data to any listeners.
 	if (TriggerEventData)
 	{
-		/* Reconstruct the death data from the given event data. I literally vomited while writing this code but it's
-		 * the safest and most efficient way to do this. */
+		// Reconstruct the death data from the given event data.
 		const FDeathData DeathData = FDeathData(
 			const_cast<AActor*>(TriggerEventData->Target.Get()),
 			UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(TriggerEventData->Target),

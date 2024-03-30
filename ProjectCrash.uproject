@@ -32,6 +32,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "GameplayMessageRouter",
+			"Enabled": true
+		},
+		{
 			"Name": "SkeletalMeshModelingTools",
 			"Enabled": true
 		},
@@ -76,6 +80,10 @@
 		},
 		{
 			"Name": "Volumetrics",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayMessageRouter",
 			"Enabled": true
 		}
 	],

@@ -40,6 +40,8 @@ class PROJECTCRASH_API UCrashAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
 
+public:
+
 	/** Returns the UWorld of this attribute's outer object instead of trying to retrieve it itself. */
 	UWorld* GetWorld() const override;
 

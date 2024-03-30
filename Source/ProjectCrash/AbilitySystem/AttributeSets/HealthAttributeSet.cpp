@@ -6,6 +6,8 @@
 #include "AbilitySystemLog.h"
 #include "GameplayEffectExtension.h"
 #include "AbilitySystem/CrashGameplayTags.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HealthAttributeSet)
@@ -64,6 +66,18 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	// Map Damage to -Health and clamp. Reset the meta Damage attribute after it has been applied.
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
+		/* Send a standardized verb message that other systems can observe. This is used for triggering things like
+		 * hit-markers. */
+		FCrashVerbMessage DamageMessage;
+		DamageMessage.Verb = CrashGameplayTags::TAG_Message_Damage;
+		DamageMessage.Instigator = Instigator;
+		DamageMessage.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
+		DamageMessage.Target = GetOwningActor();
+		DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
+		DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
+
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
 		SetDamage(0.0f);
 	}

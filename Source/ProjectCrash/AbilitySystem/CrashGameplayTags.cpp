@@ -28,6 +28,11 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Move, "InputTag.Move", "Input tag to activate the move action.");
 
 
+	// Messages.
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Death, "Message.Death", "Verbal message communicating a death.");
+
+
 	// States
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The actor is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
