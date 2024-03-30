@@ -192,7 +192,7 @@ void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
 	ThirdPersonMesh->WakeAllRigidBodies();
 
 	// Launch the ragdoll in the given direction.
-	ThirdPersonMesh->SetAllPhysicsLinearVelocity(Direction);
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(ClampVector(Direction, FVector(-1500.0f), FVector(1500.0f)));
 }
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const
