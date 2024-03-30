@@ -5,10 +5,15 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/PlayerState.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/Messages/CrashVerbMessage.h"
+#include "GameFramework/Messages/CrashVerbMessageHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -157,4 +162,19 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 	}
 
 #endif // #if WITH_SERVER_CODE
+
+	/* Send a standardized verb message that other systems can observe. This is used for things like updating the
+	 * kill-feed. */
+	if (AbilitySystemComponent && DamageEffectSpec.Def->IsValidLowLevel())
+	{
+		FCrashVerbMessage DeathMessage;
+		DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
+		DeathMessage.Instigator = DamageInstigator;
+		DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+		DeathMessage.Target = UCrashVerbMessageHelpers::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
+		DeathMessage.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
+	}
 }

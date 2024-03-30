@@ -75,9 +75,11 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		DamageMessage.Target = GetOwningActor();
 		DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
 		DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
+
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
 
+		// Update health.
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
 		SetDamage(0.0f);
 	}
