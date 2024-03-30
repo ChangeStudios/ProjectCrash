@@ -9,13 +9,13 @@
 #include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PlayerState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/PlayerState.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "GameFramework/Messages/CrashVerbMessageHelpers.h"
 #include "Kismet/GameplayStatics.h"
-#include "Net/UnrealNetwork.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -138,9 +138,9 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 
 #if WITH_SERVER_CODE
 
-	// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
 	if (AbilitySystemComponent)
 	{
+		// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
 		if (ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
 			const FDeathData DeathData = FDeathData
@@ -155,6 +155,28 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 
 			CrashGM->StartDeath(DeathData);
 		}
+
+		/* Send a standardized verb message that other systems can observe. This is used for things like updating the
+		 * kill-feed. */
+		if (AbilitySystemComponent)
+		{
+			FCrashVerbMessage DeathMessage;
+			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
+			DeathMessage.Instigator = DamageInstigator;
+			DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+			DeathMessage.Target = UCrashVerbMessageHelpers::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
+			DeathMessage.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+
+			// Broadcast the message on the server.
+			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+			MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
+
+			// Broadcast the message to clients.
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+			{
+				GS->MulticastReliableMessageToClients(DeathMessage);
+			}
+		}
 	}
 	else
 	{
@@ -162,19 +184,4 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 	}
 
 #endif // #if WITH_SERVER_CODE
-
-	/* Send a standardized verb message that other systems can observe. This is used for things like updating the
-	 * kill-feed. */
-	if (AbilitySystemComponent && DamageEffectSpec.Def->IsValidLowLevel())
-	{
-		FCrashVerbMessage DeathMessage;
-		DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
-		DeathMessage.Instigator = DamageInstigator;
-		DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
-		DeathMessage.Target = UCrashVerbMessageHelpers::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
-		DeathMessage.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
-
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
-	}
 }

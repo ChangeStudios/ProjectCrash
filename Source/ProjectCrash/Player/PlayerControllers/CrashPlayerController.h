@@ -12,7 +12,7 @@ class USlottedEntryBox;
 class UGlobalLayeredWidget;
 
 /** Delegate for broadcasting when this controller's player state changes. */
-DECLARE_MULTICAST_DELEGATE(FPlayerStateChangeSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerStateChangeSignature);
 
 /**
  * Base player controller used during gameplay (as opposed to menus, for example). Handles initialization and
@@ -39,5 +39,6 @@ public:
 	virtual void OnRep_PlayerState() override;
 
 	/** Broadcast when this controller's player state is changed. */
+	UPROPERTY(BlueprintAssignable)
 	FPlayerStateChangeSignature PlayerStateChangedDelegate;
 };

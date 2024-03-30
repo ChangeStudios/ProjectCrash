@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
+#include "GameFramework/Messages/CrashVerbMessage.h"
 #include "CrashGameState.generated.h"
 
 class UCrashGameModeData;
@@ -52,4 +53,14 @@ protected:
 	/** Broadcasts OnGameModeDataReplicated. */
 	UFUNCTION()
 	void OnRep_GameModeData();
+
+
+
+	// Messaging.
+
+public:
+
+	// Reliably broadcasts a verbal message to all clients. Used to replicate server-side messages.
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging")
+	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
 };

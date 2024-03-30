@@ -3,6 +3,7 @@
 
 #include "GameFramework/GameStates/CrashGameState.h"
 
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -25,6 +26,14 @@ void ACrashGameState::OnRep_GameModeData()
 	// Broadcast that the game mode data has been replicated.
 	OnGameModeDataReplicated.Broadcast(GameModeData.Get());
 }
+
+void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCrashVerbMessage Message)
+{
+	// Broadcast the given message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
+	}}
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

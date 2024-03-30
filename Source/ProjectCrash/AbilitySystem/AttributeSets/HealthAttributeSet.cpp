@@ -6,8 +6,11 @@
 #include "AbilitySystemLog.h"
 #include "GameplayEffectExtension.h"
 #include "AbilitySystem/CrashGameplayTags.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HealthAttributeSet)
@@ -76,8 +79,15 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
 		DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
 
+		// Broadcast the message on the server.
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
+
+		// Broadcast the message to clients.
+		if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+		{
+			GS->MulticastReliableMessageToClients(DamageMessage);
+		}
 
 		// Update health.
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));

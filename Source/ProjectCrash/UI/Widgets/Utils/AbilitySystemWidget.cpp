@@ -24,7 +24,7 @@ void UAbilitySystemWidget::NativeConstruct()
 		 * used to retrieve the player's ASC. */
 		else
 		{
-			CrashPC->PlayerStateChangedDelegate.AddUObject(this, &UAbilitySystemWidget::OnPlayerStateChanged);
+			CrashPC->PlayerStateChangedDelegate.AddDynamic(this, &UAbilitySystemWidget::OnPlayerStateChanged);
 		}
 	}
 }

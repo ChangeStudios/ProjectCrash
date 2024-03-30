@@ -8,6 +8,7 @@
 #include "AbilitySystem/AttributeSets/CrashAttributeSet.h"
 #include "HealthAttributeSet.generated.h"
 
+struct FCrashVerbMessage;
 class UObject;
 
 /**
