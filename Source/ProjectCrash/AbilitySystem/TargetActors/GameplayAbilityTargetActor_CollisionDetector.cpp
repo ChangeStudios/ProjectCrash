@@ -16,6 +16,7 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 
 	CollisionDetector = nullptr;
 
+	bIgnoreSelf = true;
 	bRepeatTargets = false;
 	ClassFilter = nullptr;
 	bFilterForGASActors = true;
@@ -37,13 +38,30 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	ensureAlwaysMsgf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
 
 	// Bind a callback to when another actor overlaps this collision component.
-	CollisionDetector->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnCollisionBegin);
+	if (!CollisionDetector->OnComponentBeginOverlap.IsAlreadyBound(this, &ThisClass::OnCollisionBegin))
+	{
+		CollisionDetector->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnCollisionBegin);
+	}
+
+	// Perform an initial overlap check for any actors that were already overlapping this component.
+	TArray<UPrimitiveComponent*> OutComponents;
+	CollisionDetector->GetOverlappingComponents(OutComponents);
+	for (UPrimitiveComponent* OverlappingComp : OutComponents)
+	{
+		OnCollisionBegin(CollisionDetector, OverlappingComp->GetOwner(), OverlappingComp, -1, false, FHitResult());
+	}
 }
 
 void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (ShouldProduceTargetData())
 	{
+		// Perform owner filtering.
+		if (bIgnoreSelf && OtherActor == SourceActor)
+		{
+			return;
+		}
+
 		// Perform optional class filtering.
 		if (ClassFilter && OtherActor->GetClass() != ClassFilter)
 		{

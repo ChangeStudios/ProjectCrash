@@ -124,11 +124,12 @@ protected:
 	TMap<AActor*, FEnteredActorAbilitySystemHandle> EnteredActorHandles;
 
 
-
 	// Debug.
 
 public:
 
+#if WITH_EDITOR
 	// Draws debug info when ability system debugging is enabled.
 	static void OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos);
+#endif // WITH_EDITOR
 };

@@ -22,6 +22,9 @@ public:
 	/** Constructs the collision capsule. */
 	AGameplayAbilityTargetActor_CollisionDetector_Capsule(const FObjectInitializer& ObjectInitializer);
 
+	/** Binds debug info to the ability system debugger. */
+	virtual void BeginPlay() override;
+
 
 
 	// Configuration.
@@ -32,22 +35,26 @@ public:
 	 * Configures this actor with the given parameters. This should be used to initialize this target actor before it
 	 * is used.
 	 *
-	 * @param InCapsuleRadius			This actor's detection capsule's radius.
-	 * @param InCapsuleHalfHeight		This actor's detection capsule's half-height.
-	 * @param bInRepeatTargets			Whether the same targets can be detected multiple times. If false, the Targets
-	 *									array must be explicitly cleared before a target can be detected again, after
-	 *									being sent the first time. 
-	 * @param InClassFilter				Optional class by which to filter targets.
-	 * @param bInFilterForGASActors		Whether to filter for targets with an ability system component.
+	 * @param InCapsuleRadius						This actor's detection capsule's radius.
+	 * @param InCapsuleHalfHeight					This actor's detection capsule's half-height.
+	 * @param bInRepeatTargets						Whether the same targets can be detected multiple times. If false,
+	 *												the Targets array must be explicitly cleared before a target can be
+	 *												detected again, after being sent the first time.
+	 * @param InClassFilter							Optional class by which to filter targets.
+	 * @param bInFilterForGASActors					Whether to filter for targets with an ability system component.
+	 * @param bInShouldProduceTargetDataOnServer	Whether the server should wait for target data to be produced on
+	 *												the client or if it should produce the data directly.
 	 */
 	UFUNCTION(BlueprintCallable)
 	void Configure
 	(
 		float InCapsuleRadius = 22.0f,
 		float InCapsuleHalfHeight = 44.0f,
+		bool bInIgnoreSelf = true,
 		bool bInRepeatTargets = false,
 		TSubclassOf<AActor> InClassFilter = nullptr,
-		bool bInFilterForGASActors = true
+		bool bInFilterForGASActors = true,
+		bool bInShouldProduceTargetDataOnServer = true
 	);
 
 
@@ -68,4 +75,15 @@ private:
 
 	/** This actor's collision detector cast to a capsule component for convenience. */
 	TObjectPtr<UCapsuleComponent> DetectorAsCapsule;
+
+
+
+	// Debug.
+
+public:
+
+#if WITH_EDITOR
+	// Draws debug info when ability system debugging is enabled.
+	static void OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos);
+#endif // WITH_EDITOR
 };

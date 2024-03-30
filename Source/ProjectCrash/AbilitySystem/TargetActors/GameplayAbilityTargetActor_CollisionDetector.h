@@ -7,7 +7,8 @@
 #include "GameplayAbilityTargetActor_CollisionDetector.generated.h"
 
 /**
- * A collision shape that detects collision while active. This should be subclassed with custom shapes. 
+ * A collision shape that detects collision while active. This should be subclassed with custom shapes. This actor
+ * generates target data directly on the server.
  */
 UCLASS(Abstract, NotPlaceable)
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AGameplayAbilityTargetActor
@@ -49,10 +50,12 @@ protected:
 	// Parameters.
 
 protected:
+
+	/** Whether to ignore the owner of the gameplay ability utilizing this target actor when checking for targets. */
+	bool bIgnoreSelf;
 		
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
-	UPROPERTY()
 	bool bRepeatTargets;
 
 	/** Optional class by which to filter targets. */
@@ -60,7 +63,6 @@ protected:
 	TSubclassOf<AActor> ClassFilter;
 
 	/** Whether to filter for targets with an ability system component. */
-	UPROPERTY()
 	bool bFilterForGASActors;
 
 

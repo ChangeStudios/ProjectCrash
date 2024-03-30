@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
+#include "GameFramework/CrashLogging.h"
 
 UAbilityTask_WaitReusableTargetData* UAbilityTask_WaitReusableTargetData::WaitTargetDataWithReusableActor(UGameplayAbility* OwningAbility, FName TaskInstanceName, TEnumAsByte<EGameplayTargetingConfirmation::Type> ConfirmationType, AGameplayAbilityTargetActor* InTargetActor, bool bCreateKeyIfNotValidForMorePredicting)
 {
@@ -216,9 +217,11 @@ void UAbilityTask_WaitReusableTargetData::OnTargetDataReady(const FGameplayAbili
 		}
 	}
 
-	// Broadcast that target data was sent to the server.
+	/* Locally broadcast that the target data was generated. Executes on the client when the target data is sent to the
+	 * server. Executes on the server if the target data was generated directly by the server. */
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
+		UE_LOG(LogTemp, Error, TEXT("OnTargetDataReady: Broadcast from %s"), *AUTHORITY_STRING(GetAvatarActor()));
 		ValidDataSentDelegate.Broadcast(Data);
 	}
 
@@ -271,7 +274,7 @@ void UAbilityTask_WaitReusableTargetData::OnTargetDataCancelled(const FGameplayA
 }
 
 void UAbilityTask_WaitReusableTargetData::OnTargetDataReplicated(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag Activation)
-{
+{ 
 	FGameplayAbilityTargetDataHandle MutableData = Data;
 
 	// Clean the target data.
@@ -298,6 +301,7 @@ void UAbilityTask_WaitReusableTargetData::OnTargetDataReplicated(const FGameplay
 	}
 	else
 	{
+		// Broadcast that the server received the data if it was generated and sent by the client.
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			ValidDataSentDelegate.Broadcast(MutableData);

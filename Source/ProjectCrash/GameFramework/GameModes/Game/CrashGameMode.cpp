@@ -28,7 +28,10 @@ ACrashGameMode::ACrashGameMode()
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+}
 
+void ACrashGameMode::BeginPlay()
+{
 	// Add the Death ability to the global ability system, which will grant it to each ASC as they are created.
 	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
 	{
@@ -41,18 +44,6 @@ void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FS
 			ABILITY_LOG(Fatal, TEXT("ACrashGameModeBase: Game Mode [%s] does not have a default Death ability. Death logic will not function properly."), *GetName());
 		}
 	}
-}
-
-void ACrashGameMode::BeginPlay()
-{
-	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
-
-	// Unload the main menu data when we aren't in the main menu.
-	CrashManager.UnloadGameData(EGlobalGameDataType::MainMenuUIData);
-
-	// Load this game mode's data.
-	CrashManager.SyncLoadGameDataOfClass(GameModeData->GetClass(), EGlobalGameDataType::GameModeData, GameModeData, GameModeData->GetFName());
-	CrashManager.SyncLoadGameDataOfClass(GameModeData->UIData->GetClass(), EGlobalGameDataType::UserInterfaceData, GameModeData->UIData, GameModeData->UIData->GetFName());
 
 	Super::BeginPlay();
 }
@@ -60,10 +51,6 @@ void ACrashGameMode::BeginPlay()
 void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
-	UCrashAssetManager& CrashManager = UCrashAssetManager::Get();
-	CrashManager.UnloadGameData(EGlobalGameDataType::GameModeData);
-	CrashManager.UnloadGameData(EGlobalGameDataType::UserInterfaceData);
 }
 
 void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)

@@ -38,11 +38,11 @@ public:
 
 public:
 
-	/** Adds the Death gameplay ability to the global ability system, which will grant it to each ASC as they are
-	 * created. */
+	/** Loads this game mode's data when the game starts. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
-	/** Loads this game mode's data when the game starts. */
+	/** Adds the Death gameplay ability to the global ability system, which will grant it to each ASC as they are
+	 * created. */
 	virtual void BeginPlay() override;
 
 	/** Unloads this game mode's data when the game ends. */
@@ -119,12 +119,9 @@ public:
 
 protected:
 
-	/** Data defining various properties of this game mode, such as players' default starting lives.
-	 *
-	 * This variable is stored as a path to an object, not the object itself. This path will be used to load the game
-	 * mode data when necessary, and to access it once loaded. */
+	/** Data defining various properties of this game mode, such as players' default starting lives. */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Game Mode Data", Meta = (ToolTip = "Data defining various properties of this game mode, such as players' default starting lives."))
-	TSoftObjectPtr<UCrashGameModeData> GameModeData;
+	TObjectPtr<UCrashGameModeData> GameModeData;
 
 
 
