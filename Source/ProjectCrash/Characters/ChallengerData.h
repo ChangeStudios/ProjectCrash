@@ -106,4 +106,14 @@ public:
 	/** Contexts mappings that will be bound by default with the specified priority. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input)
 	TArray<FPrioritizedInputMappingContext> DefaultInputMappings;
+
+
+
+	// UI.
+
+public:
+
+	/** The image that appears in the HUD to represent this Challenger. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TObjectPtr<UTexture2D> ProfileImage;
 };
