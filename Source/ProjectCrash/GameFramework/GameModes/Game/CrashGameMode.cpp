@@ -256,6 +256,24 @@ void ACrashGameMode::EndMatch()
 
 void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 {
+	/* Cache the player controlling the dying actor, if it's a player-controlled pawn. We do this first because we'll
+	 * lose our reference to the dying player once they unpossess their pawn. */
+	const APawn* Pawn = Cast<APawn>(DeathData.DyingActor);
+	const APlayerController* PC = Pawn ? Pawn->GetController<APlayerController>() : nullptr;
+	const UPlayer* Player = PC ? PC->Player : nullptr;
+	const bool bPlayerDeath = IsValid(Player);
+	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DeathData.DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
+
+	/* If a player died, decrement their lives. The player state will handle the rest, and notify us if the player is
+	 * now out of lives. */
+	if (bPlayerDeath)
+	{
+		if (ACrashPlayerState* CrashPS = PC->GetPlayerState<ACrashPlayerState>())
+		{
+			CrashPS->DecrementLives();
+		}
+	}
+
 	/* Send a gameplay event to the ASC of the dying actor to trigger the Death gameplay ability, which handles
 	 * client-side death logic. */
 	if (DeathData.DyingActorASC)
@@ -283,24 +301,6 @@ void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 		{
 			FinishDeath(DeathData);
 		}), GameModeData->DeathDuration, false);
-	}
-
-	// Cache the player controlling the dying actor, if it's a player-controlled pawn.
-	APawn* Pawn = Cast<APawn>(DeathData.DyingActor);
-	APlayerController* PC = Pawn ? Pawn->GetController<APlayerController>() : nullptr;
-	UPlayer* Player = PC ? PC->Player : nullptr;
-	const bool bPlayerDeath = IsValid(Player);
-
-	UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] died. Executing [%s] death."), *DeathData.DyingActor->GetName(), *FString(bPlayerDeath ? "PLAYER PAWN" : "NON-PLAYER ACTOR"));
-
-	/* If a player died, decrement their lives. The player state will handle the rest, and notify us if the player is
-	 * now out of lives. */
-	if (bPlayerDeath)
-	{
-		if (ACrashPlayerState* CrashPS = PC->GetPlayerState<ACrashPlayerState>())
-		{
-			CrashPS->DecrementLives();
-		}
 	}
 }
 

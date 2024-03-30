@@ -101,7 +101,8 @@ void ACrashPlayerState::DecrementLives_Implementation()
 
 void ACrashPlayerState::OnRep_CurrentLives(uint8 OldValue)
 {
-	// Update UI.
+	// Broadcast the change in current lives.
+	LivesChangedDelegate.Broadcast(this, OldValue, CurrentLives);
 }
 
 UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const

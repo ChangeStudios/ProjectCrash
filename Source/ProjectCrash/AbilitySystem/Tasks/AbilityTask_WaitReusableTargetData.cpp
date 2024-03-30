@@ -221,7 +221,6 @@ void UAbilityTask_WaitReusableTargetData::OnTargetDataReady(const FGameplayAbili
 	 * server. Executes on the server if the target data was generated directly by the server. */
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnTargetDataReady: Broadcast from %s"), *AUTHORITY_STRING(GetAvatarActor()));
 		ValidDataSentDelegate.Broadcast(Data);
 	}
 

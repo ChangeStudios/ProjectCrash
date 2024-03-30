@@ -10,6 +10,9 @@
 
 class UHealthAttributeSet;
 
+/** Broadcast when a player's current lives changes. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FLivesChangedSignature, ACrashPlayerState*, Player, uint8, OldLives, uint8, NewLives);
+
 /**
  * The player state used during gameplay (as opposed to menus, lobbies, etc.).
  */
@@ -76,6 +79,10 @@ public:
 	/** Decrements this player's current number of lives. If the player runs out of lives, the game mode is notified. */
 	UFUNCTION(Server, Reliable)
 	void DecrementLives();
+
+	/** Broadcast when this player's number of remaining lives changes. */
+	UPROPERTY(BlueprintAssignable)
+	FLivesChangedSignature LivesChangedDelegate;
 
 protected:
 
