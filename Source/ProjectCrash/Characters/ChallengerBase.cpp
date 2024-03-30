@@ -135,6 +135,9 @@ void AChallengerBase::UninitAndDestroy()
 	// Set a timer to safely destroy this actor on the server.
 	if (GetLocalRole() == ROLE_Authority)
 	{
+		// Unregister the equipment component early so it has time to destroy the equipment actors.
+		EquipmentComponent->UnregisterComponent();
+
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(0.1f);
 	}

@@ -40,6 +40,9 @@ public:
 	/** Binds the OnTemporarilyUnequippedChanged callback. */
 	virtual void InitializeComponent() override;
 
+	/** Unequips the current equipment set when this component is destroyed. */
+	virtual void OnUnregister() override;
+
 
 
 	// Equipment management.

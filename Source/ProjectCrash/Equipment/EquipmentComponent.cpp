@@ -47,6 +47,14 @@ void UEquipmentComponent::InitializeComponent()
 	}
 }
 
+void UEquipmentComponent::OnUnregister()
+{
+	// Unequip the current equipment set before destroying this component.
+	UnequipSet_Internal();
+	
+	Super::OnUnregister();
+}
+
 UEquipmentSet* UEquipmentComponent::EquipEquipmentSet(UEquipmentSet* SetToEquip)
 {
 	// Unequip the currently equipped equipment set, if there is one.
