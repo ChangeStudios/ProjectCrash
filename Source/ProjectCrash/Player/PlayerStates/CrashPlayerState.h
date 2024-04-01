@@ -8,6 +8,7 @@
 #include "GameFramework/Teams/CrashTeams.h"
 #include "CrashPlayerState.generated.h"
 
+class UChallengerData;
 class UHealthAttributeSet;
 
 /** Broadcast when a player's current lives changes. */
@@ -93,6 +94,26 @@ protected:
 	/** OnRep for CurrentLives. Updates client-side information (primarily the user interface). */
 	UFUNCTION()
 	void OnRep_CurrentLives(uint8 OldValue);
+
+
+
+	// Challenger data.
+
+public:
+
+	/** Accessor for CurrentChallenger. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Challenger Data", Meta = (ToolTip = "The challenger currently selected by this player."))
+	UChallengerData* GetCurrentChallenger() const { return CurrentChallenger; }
+
+	/** Server-only setter for CurrentChallenger. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Player|Player State|Challenger Data")
+	void UpdateCurrentChallenger(UChallengerData* InChallengerData);
+
+protected:
+
+	/** The challenger currently selected by this player. */
+	UPROPERTY(Replicated)
+	TObjectPtr<UChallengerData> CurrentChallenger;
 
 
 

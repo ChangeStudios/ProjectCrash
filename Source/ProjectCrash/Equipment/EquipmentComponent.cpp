@@ -16,9 +16,12 @@
 #include "GameFramework/PlayerState.h"
 #include "Characters/ChallengerData.h"
 #include "GameFramework/CrashLogging.h"
+#include "Net/UnrealNetwork.h"
 
 UEquipmentComponent::UEquipmentComponent()
 {
+	// Equipment is server-authoritative and replicated.
+	SetIsReplicatedByDefault(true);
 }
 
 void UEquipmentComponent::OnRegister()
@@ -39,6 +42,8 @@ void UEquipmentComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
+	check(GetOwner());
+
 	/* Bind the OnTemporarilyUnequippedChanged callback to when this component's owner's ASC gains or loses the
 	 * TemporarilyUnequipped tag. */
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
@@ -50,31 +55,25 @@ void UEquipmentComponent::InitializeComponent()
 void UEquipmentComponent::OnUnregister()
 {
 	// Unequip the current equipment set before destroying this component.
-	UnequipSet_Internal();
-	
+	if (GetOwner()->HasAuthority())
+	{
+		EquipEquipmentSet(nullptr);
+	}
+
 	Super::OnUnregister();
 }
 
 UEquipmentSet* UEquipmentComponent::EquipEquipmentSet(UEquipmentSet* SetToEquip)
 {
-	// Unequip the currently equipped equipment set, if there is one.
+	check(GetOwner()->HasAuthority());
+	
+	/** Update the currently equipped set. The previous set will be un-equipped and the new set will be equipped in
+	 * the OnRep. */
 	UEquipmentSet* PreviousSet = CurrentEquipmentSet;
-	if (PreviousSet)
-	{
-		if (UnequipSet_Internal())
-		{
-			CurrentEquipmentSet = nullptr;
-		}
-	}
+	CurrentEquipmentSet = SetToEquip;
 
-	// Equip the new equipment set.
-	if (SetToEquip)
-	{
-		if (EquipSet_Internal(SetToEquip))
-		{
-			CurrentEquipmentSet = SetToEquip;
-		}
-	}
+	// Manually call the OnRep on the server.
+	OnRep_CurrentEquipmentSet(PreviousSet);
 
 	return PreviousSet ? PreviousSet : nullptr;
 }
@@ -290,4 +289,26 @@ void UEquipmentComponent::OnTemporarilyUnequippedChanged(const FGameplayTag Tag,
 			EquipSet_Internal(CurrentEquipmentSet, true);
 		}
 	}
+}
+
+void UEquipmentComponent::OnRep_CurrentEquipmentSet(UEquipmentSet* PreviousEquipmentSet)
+{
+	// Unequip the current equipment set.
+	if (PreviousEquipmentSet)
+	{
+		UnequipSet_Internal();
+	}
+
+	// Equip the new equipment set.
+	if (CurrentEquipmentSet)
+	{
+		EquipSet_Internal(CurrentEquipmentSet);
+	}
+}
+
+void UEquipmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UEquipmentComponent, CurrentEquipmentSet, COND_None, REPNOTIFY_Always);
 }

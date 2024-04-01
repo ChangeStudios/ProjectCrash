@@ -53,6 +53,21 @@ public:
 
 
 
+	// Actors.
+
+public:
+
+	/** The class of the pawn that will be spawned and possessed for players playing this challenger. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Actors")
+	TSubclassOf<AChallengerBase> PawnClass;
+
+	/** The class of the actor that will be spawned in the character selection screen when this character is
+	 * selected. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Actors")
+	TSubclassOf<AActor> CharacterSelectionActor;
+
+
+
 	// Ability system.
 
 public:

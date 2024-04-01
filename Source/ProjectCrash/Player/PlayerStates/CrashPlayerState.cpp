@@ -6,8 +6,6 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/AsyncAction_ListenForGameplayMessage.h"
-#include "GameFramework/AsyncAction_ListenForGameplayMessage.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,6 +25,9 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 
 	// Initialize this player's team to No Team.
 	TeamID = FCrashTeamID::NO_TEAM;
+
+	// Initialize other properties.
+	CurrentChallenger = nullptr;
 }
 
 void ACrashPlayerState::PostInitializeComponents()
@@ -107,6 +108,15 @@ void ACrashPlayerState::OnRep_CurrentLives(uint8 OldValue)
 	LivesChangedDelegate.Broadcast(this, OldValue, CurrentLives);
 }
 
+void ACrashPlayerState::UpdateCurrentChallenger(UChallengerData* InChallengerData)
+{
+	// Only update the challenger on the server.
+	if (HasAuthority() && InChallengerData != nullptr)
+	{
+		CurrentChallenger = InChallengerData;
+	}
+}
+
 UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
 {
 	// The interfaced accessor will always return the typed ASC.
@@ -134,4 +144,5 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, TeamID, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, CurrentLives, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME(ACrashPlayerState, CurrentChallenger);
 }

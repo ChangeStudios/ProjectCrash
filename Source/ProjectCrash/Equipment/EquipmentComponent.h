@@ -54,8 +54,10 @@ public:
 	const UEquipmentSet* GetCurrentEquipmentSet() const { return CurrentEquipmentSet; }
 
 	/**
-	 * Equips the given equipment set. If this character already has an equipment set equipped, that equipment set will
-	 * be unequipped before equipping the new set.
+	 * Authoritatively equips the given equipment set. If this character already has an equipment set equipped, that
+	 * equipment set will be unequipped before equipping the new set.
+	 *
+	 * This can be used to explicitly unequip an equipment set by passing a nullptr as SetToEquip.
 	 *
 	 * @param SetToEquip	The set to equip.
 	 *
@@ -95,6 +97,8 @@ private:
 	/**
 	 * Callback bound to when the ASC registered with this component gains or loses a TemporarilyUnequipped gameplay
 	 * tag. This should be used instead of manual equipment methods because it does not null CurrentEquipmentSet.
+	 *
+	 * This is bound on all machines.
 	 * 
 	 * @param Tag			TemporarilyUnequipped tag.
 	 * @param NewCount		Number of TemporarilyUnequipped tags the ASC now has.
@@ -111,8 +115,12 @@ private:
 
 private:
 
+	/** Unequips this character's previous equipment set and equips the new one. */
+	UFUNCTION()
+	void OnRep_CurrentEquipmentSet(UEquipmentSet* PreviousEquipmentSet);
+
 	/** The equipment set currently equipped by this character. */
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquipmentSet)
 	TObjectPtr<UEquipmentSet> CurrentEquipmentSet;
 
 	/** The handle for the equipment set currently equipped by this character. */
