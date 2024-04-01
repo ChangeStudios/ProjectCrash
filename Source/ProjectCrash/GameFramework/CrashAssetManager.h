@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/AssetManager.h"
 #include "Engine/DataAsset.h"
-#include "UI/UserInterfaceData.h"
+#include "UI/Data/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
 class UCrashGameModeData;

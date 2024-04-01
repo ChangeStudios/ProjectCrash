@@ -116,4 +116,8 @@ public:
 	/** The image that appears in the HUD to represent this Challenger. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	TObjectPtr<UTexture2D> ProfileImage;
+
+	/** The actor that will appear in the selection screen when this character is selected. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TSubclassOf<AActor> SelectionActor;
 };

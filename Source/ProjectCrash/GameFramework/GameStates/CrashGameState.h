@@ -11,12 +11,13 @@
 class UCrashGameModeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMatchStateChangedSignature, FName, NewMatchState);
 
 /**
  * The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles team management and game-wide
  * statistics.
  */
-UCLASS()
+UCLASS(Config = Game)
 class PROJECTCRASH_API ACrashGameState : public AGameState
 {
 	GENERATED_BODY()
@@ -41,7 +42,7 @@ public:
 	/** Delegate that fires when the game state receives the game mode data from the server. Allows clients to wait
 	 * for the game mode data to be valid before using it. */
 	UPROPERTY()
-	FGameModeDataReplicatedSignature OnGameModeDataReplicated;
+	FGameModeDataReplicatedSignature GameModeDataReplicatedDelegate;
 
 protected:
 
@@ -50,7 +51,7 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_GameModeData)
 	TObjectPtr<UCrashGameModeData> GameModeData;
 
-	/** Broadcasts OnGameModeDataReplicated. */
+	/** Broadcasts GameModeDataReplicatedDelegate. */
 	UFUNCTION()
 	void OnRep_GameModeData();
 
@@ -63,4 +64,34 @@ public:
 	// Reliably broadcasts a verbal message to all clients. Used to replicate server-side messages.
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging")
 	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
+
+
+
+	// Match state.
+
+public:
+
+	/** Broadcast when the game state's match state changes. */
+	UPROPERTY(BlueprintAssignable)
+	FMatchStateChangedSignature MatchStateChangedDelegate;
+
+protected:
+
+	/** Broadcasts MatchStateChangedDelegate when the match state changes. */
+	virtual void OnRep_MatchState() override;
+
+
+
+	// Character selection.
+
+public:
+
+	/** Accessor for CharacterSelectionLevel. */
+	FName GetCharacterSelectionLevel() const { return CharacterSelectionLevel; }
+
+protected:
+
+	/** The level that will be streamed in to act as a background for the character selection screen. */
+	UPROPERTY(Config)
+	FName CharacterSelectionLevel;
 };

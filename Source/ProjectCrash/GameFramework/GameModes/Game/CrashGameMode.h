@@ -92,6 +92,8 @@ public:
 
 	virtual void StartMatch() override;
 
+	virtual void HandleMatchHasStarted() override;
+
 	virtual void EndMatch() override;
 
 protected:

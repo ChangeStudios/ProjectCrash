@@ -12,7 +12,6 @@
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/PlayerStartPIE.h"
-#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Player/PriorityPlayerStart.h"
@@ -247,6 +246,11 @@ bool ACrashGameMode::ShouldSpawnAtStartSpot(AController* Player)
 void ACrashGameMode::StartMatch()
 {
 	Super::StartMatch();
+}
+
+void ACrashGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
 }
 
 void ACrashGameMode::EndMatch()

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "UI/UserInterfaceData.h"
+#include "UI/Data/UserInterfaceData.h"
 #include "GameFramework/PlayerController.h"
 #include "CrashPlayerControllerBase.generated.h"
 

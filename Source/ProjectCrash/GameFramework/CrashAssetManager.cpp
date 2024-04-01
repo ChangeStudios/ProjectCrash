@@ -8,7 +8,7 @@
 #include "UnrealEngine.h"
 #include "Engine/Engine.h"
 #include "Misc/ScopedSlowTask.h"
-#include "UI/UserInterfaceData.h"
+#include "UI/Data/UserInterfaceData.h"
 
 UCrashAssetManager::UCrashAssetManager()
 {

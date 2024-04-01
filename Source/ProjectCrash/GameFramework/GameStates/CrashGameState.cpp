@@ -24,7 +24,7 @@ void ACrashGameState::BeginPlay()
 void ACrashGameState::OnRep_GameModeData()
 {
 	// Broadcast that the game mode data has been replicated.
-	OnGameModeDataReplicated.Broadcast(GameModeData.Get());
+	GameModeDataReplicatedDelegate.Broadcast(GameModeData.Get());
 }
 
 void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCrashVerbMessage Message)
@@ -33,7 +33,16 @@ void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCr
 	if (GetNetMode() == NM_Client)
 	{
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
-	}}
+	}
+}
+
+void ACrashGameState::OnRep_MatchState()
+{
+	Super::OnRep_MatchState();
+
+	// Broadcast the new match state.
+	MatchStateChangedDelegate.Broadcast(MatchState);
+}
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
