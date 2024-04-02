@@ -152,19 +152,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	EChallengerClass ChallengerClass;
 
-	/** This Challenger's class as a user-friendly string. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Challenger Data")
-	FString ClassAsString() const
-	{
-		switch (ChallengerClass)
-		{
-			case EChallengerClass::Brawler: return "Brawler";
-			case EChallengerClass::Hybrid: return "Hybrid";
-			case EChallengerClass::Mage: return "Mage";
-			default: return "Undefined";
-		}
-	}
-
 	/** The image that appears in the HUD to represent this Challenger. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	TObjectPtr<UTexture2D> ProfileImage;

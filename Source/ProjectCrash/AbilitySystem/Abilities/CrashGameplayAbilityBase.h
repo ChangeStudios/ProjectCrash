@@ -44,11 +44,11 @@ enum class EAbilityActivationGroup : uint8
 UENUM(BlueprintType)
 enum class EFrontendAbilityType
 {
-	PrimaryWeapon		UMETA(DisplayName = "Primary Weapon"),
-	SecondaryWeapon		UMETA(DisplayName = "Secondary Weapon"),
-	StandardAbility		UMETA(DisplayName = "Ability"),
-	PassiveAbility		UMETA(DisplayName = "Passive Ability"),
-	UltimateAbility		UMETA(DisplayName = "Ultimate")
+	PrimaryWeapon,
+	SecondaryWeapon,
+	StandardAbility,
+	PassiveAbility,
+	UltimateAbility
 };
 
 
@@ -189,7 +189,7 @@ public:
 
 	/** User-facing type of this ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	EFrontendAbilityType FrontendAbilityType;
+	TEnumAsByte<EFrontendAbilityType> FrontendAbilityType;
 
 	/** User-facing description of this ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
