@@ -32,6 +32,22 @@ struct FPrioritizedInputMappingContext
 };
 
 
+
+/**
+ * Classes that categorize the broad play-style of each Challenger. 
+ */
+UENUM(BlueprintType)
+enum class EChallengerClass : uint8
+{
+	None,
+
+	Brawler,
+	Hybrid,
+	Mage
+};
+
+
+
 /**
  * Data used to define the default properties of a challenger, such as their default abilities and input mappings. Each
  * challenger defines its own challenger data asset.
@@ -128,11 +144,36 @@ public:
 
 public:
 
+	/** This Challenger's user-facing name. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	FString ChallengerDisplayName;
+
+	/** This Challenger's user-facing class. Serves to categorize the play-style of this Challenger for players. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	EChallengerClass ChallengerClass;
+
+	/** This Challenger's class as a user-friendly string. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Challenger Data")
+	FString ClassAsString() const
+	{
+		switch (ChallengerClass)
+		{
+			case EChallengerClass::Brawler: return "Brawler";
+			case EChallengerClass::Hybrid: return "Hybrid";
+			case EChallengerClass::Mage: return "Mage";
+			default: return "Undefined";
+		}
+	}
+
 	/** The image that appears in the HUD to represent this Challenger. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	TObjectPtr<UTexture2D> ProfileImage;
 
-	/** The actor that will appear in the selection screen when this character is selected. */
+	/** The image that appears in the character selection screen in the button representing this Challenger. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	TSubclassOf<AActor> SelectionActor;
+	TObjectPtr<UTexture2D> SelectionImage;
+
+	/** The abilities listed in "ability info" screens for this character. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TArray<TSubclassOf<UCrashGameplayAbilityBase>> ListedAbilities; 
 };

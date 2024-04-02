@@ -14,11 +14,13 @@
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
-	// I can't imagine a situation where the instancing policy *wouldn't* be "instanced per actor."
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	AbilityIcon = nullptr;
 	ActivationGroup = EAbilityActivationGroup::Independent;
+	AbilityIcon = nullptr;
+	DisplayedAbilityName = "";
+	FrontendAbilityType = EFrontendAbilityType::StandardAbility;
+	DisplayedAbilityDescription = "";
 
 	if (InstancingPolicy != EGameplayAbilityInstancingPolicy::InstancedPerActor)
 	{

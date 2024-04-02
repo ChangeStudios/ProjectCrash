@@ -44,6 +44,9 @@ void ACrashPlayerController::OpenCharacterSelection()
 		{
 			PushWidgetToLayer(MatchUIData->CharacterSelectionWidget, CrashGameplayTags::TAG_UI_Layer_Game);
 		}
+
+		SetInputMode(FInputModeUIOnly());
+		bShowMouseCursor = true;
 	}
 }
 

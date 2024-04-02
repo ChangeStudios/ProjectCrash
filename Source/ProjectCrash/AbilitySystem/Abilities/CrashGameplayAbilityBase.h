@@ -10,6 +10,7 @@ class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
+
 /** Generic gameplay ability delegate with support for dynamic binding.*/
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
 
@@ -33,6 +34,21 @@ enum class EAbilityActivationGroup : uint8
 	/* This ability cannot be activated while another "exclusive" ability is active. This ability can never be
 	 * cancelled and replaced by other exclusive abilities. */
 	Exclusive_Blocking
+};
+
+
+
+/**
+ * The ability type displayed to players, e.g. in "ability info" screens.
+ */
+UENUM(BlueprintType)
+enum class EFrontendAbilityType
+{
+	PrimaryWeapon		UMETA(DisplayName = "Primary Weapon"),
+	SecondaryWeapon		UMETA(DisplayName = "Secondary Weapon"),
+	StandardAbility		UMETA(DisplayName = "Ability"),
+	PassiveAbility		UMETA(DisplayName = "Passive Ability"),
+	UltimateAbility		UMETA(DisplayName = "Ultimate")
 };
 
 
@@ -164,8 +180,20 @@ public:
 
 	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
 	 * the user interface before the ability will appear. */
-	UPROPERTY(EditDefaultsOnly, Category = "User Interface")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	TObjectPtr<UTexture2D> AbilityIcon;
+
+	/** Display name of this ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	FString DisplayedAbilityName;
+
+	/** User-facing type of this ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	EFrontendAbilityType FrontendAbilityType;
+
+	/** User-facing description of this ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	FString DisplayedAbilityDescription;
 
 
 

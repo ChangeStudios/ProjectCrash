@@ -221,14 +221,12 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
 	check(CrashASC);
 
-	// TODO: Refactor most of this to use the ASCInitialized delegate.
-
 	if (!IsValid(ChallengerData))
 	{
 		ABILITY_LOG(Error, TEXT("[%s]'s ASC could not be properly initialized: Missing ChallengerData asset reference."), *GetName());
 		return;
 	}
-	
+
 	// Grant this character's default ability set on the server.
 	if (CrashASC->IsOwnerActorAuthoritative())
 	{
