@@ -12,6 +12,7 @@ class UCrashGameModeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMatchStateChangedSignature, FName, NewMatchState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, int32, NewTime);
 
 /**
  * The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles team management and game-wide
@@ -79,6 +80,28 @@ protected:
 
 	/** Broadcasts MatchStateChangedDelegate when the match state changes. */
 	virtual void OnRep_MatchState() override;
+
+	virtual void HandleMatchHasStarted() override;
+
+
+
+	// Timers.
+
+public:
+
+	/** Broadcasts changes to the current phase's remaining time. */
+	UPROPERTY(BlueprintAssignable, Category = "Utilities|Time")
+	FPhaseTimeChangedSignature PhaseTimeChangedDelegate;
+
+protected:
+
+	/** The time remaining in the current phase. */
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_PhaseTimeRemaining)
+	int32 PhaseTimeRemaining;
+
+	/** Broadcasts the new time when the phase time changes. */
+	UFUNCTION()
+	void OnRep_PhaseTimeRemaining();
 
 
 

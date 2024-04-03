@@ -4,6 +4,7 @@
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
 
 UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializer) :
+	CharacterSelectionTime(45.0f),
 	MaximumMatchTime(300.0f),
 	bEnableOvertime(false),
 	MaximumOvertimeTime(0.0f),

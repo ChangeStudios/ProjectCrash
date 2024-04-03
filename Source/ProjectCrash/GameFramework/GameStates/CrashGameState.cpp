@@ -42,6 +42,43 @@ void ACrashGameState::OnRep_MatchState()
 
 	// Broadcast the new match state.
 	MatchStateChangedDelegate.Broadcast(MatchState);
+
+	// Start the appropriate timer on the server.
+	if (HasAuthority())
+	{
+		if (MatchState == MatchState::WaitingToStart)
+		{
+			PhaseTimeRemaining = GameModeData->CharacterSelectionTime;
+		}
+
+		GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, FTimerDelegate::CreateLambda([this]
+		{
+			if (PhaseTimeRemaining > 0)
+			{
+				PhaseTimeRemaining--;
+				OnRep_PhaseTimeRemaining();
+			}
+		}), 1.0f, true);
+	}
+}
+
+void ACrashGameState::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	UE_LOG(LogTemp, Error, TEXT("Match Started"));
+}
+
+void ACrashGameState::OnRep_PhaseTimeRemaining()
+{
+	// Broadcast the new time.
+	PhaseTimeChangedDelegate.Broadcast(PhaseTimeRemaining);
+
+	// Start the match when the timer reaches 0. OnReps will handle extra logic.
+	if (PhaseTimeRemaining == 0)
+	{
+		SetMatchState(MatchState::InProgress);
+	}
 }
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -50,4 +87,6 @@ void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 	// Since the game mode data is static, we only need to replicate its initial value.
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashGameState, GameModeData, COND_InitialOnly, REPNOTIFY_Always);
+
+	DOREPLIFETIME(ACrashGameState, PhaseTimeRemaining);
 }
