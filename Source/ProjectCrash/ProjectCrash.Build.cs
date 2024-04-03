@@ -30,6 +30,7 @@ public class ProjectCrash : ModuleRules
 			"CommonUI",
 			"EnhancedInput",
 			"GameplayMessageRuntime",
+			"LevelSequence",
 			"NetCore",
 			"Slate",
 			"SlateCore",
