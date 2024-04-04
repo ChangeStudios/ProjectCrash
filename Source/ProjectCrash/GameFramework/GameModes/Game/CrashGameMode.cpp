@@ -92,10 +92,10 @@ void ACrashGameMode::PostLogin(APlayerController* NewPlayer)
 	// TODO: Make sure that the player start is assigned after teams are assigned.
 	Super::PostLogin(NewPlayer);
 
-	// if (NumPlayers == GameModeData->NumTeams * GameModeData->TeamSize)
-	// {
-	// 	StartMatch();
-	// }
+	if (NumPlayers == GameModeData->NumTeams * GameModeData->TeamSize)
+	{
+		StartMatch();
+	}
 }
 
 FCrashTeamID ACrashGameMode::ChooseTeam(ACrashPlayerState* CrashPS)

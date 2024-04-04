@@ -3,6 +3,10 @@
 
 #include "CharacterSelectionPlayerController.h"
 
+#include "GameFramework/CrashGameInstance.h"
+#include "GameFramework/GameStates/CrashGameState_CharacterSelection.h"
+#include "Kismet/GameplayStatics.h"
+
 void ACharacterSelectionPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -16,4 +20,23 @@ void ACharacterSelectionPlayerController::BeginPlay()
 
 	// TODO: Platform-specific initialization.
 	bShowMouseCursor = true;
+}
+
+void ACharacterSelectionPlayerController::Server_LockInChallenger_Implementation(const UChallengerData* SelectedChallenger)
+{
+	check(SelectedChallenger);
+
+	if (UCrashGameInstance* CrashGI = Cast<UCrashGameInstance>(GetGameInstance()))
+	{
+		// Assign this player's Challenger, checking if they are the final player to do so.
+		if (CrashGI->AssignPlayerChallenger(this, SelectedChallenger))
+		{
+			// If the game instance says all players are ready, tell the game state to start the game.
+			AGameStateBase* GS = UGameplayStatics::GetGameState(this);
+			if (ACrashGameState_CharacterSelection* CharSelectionGS = GS ? Cast<ACrashGameState_CharacterSelection>(GS) : nullptr)
+			{
+				CharSelectionGS->EnterMatch();
+			}
+		}
+	}
 }

@@ -15,10 +15,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMatchStateChangedSignature, FName, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, int32, NewTime);
 
 /**
- * The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles team management and game-wide
- * statistics.
+* The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles the match state, team management,
+* and game-wide information.
  */
-UCLASS(Config = Game)
+UCLASS()
 class PROJECTCRASH_API ACrashGameState : public AGameState
 {
 	GENERATED_BODY()
@@ -81,8 +81,6 @@ protected:
 	/** Broadcasts MatchStateChangedDelegate when the match state changes. */
 	virtual void OnRep_MatchState() override;
 
-	virtual void HandleMatchHasStarted() override;
-
 
 
 	// Timers.
@@ -102,19 +100,4 @@ protected:
 	/** Broadcasts the new time when the phase time changes. */
 	UFUNCTION()
 	void OnRep_PhaseTimeRemaining();
-
-
-
-	// Character selection.
-
-public:
-
-	/** Accessor for CharacterSelectionLevel. */
-	FName GetCharacterSelectionLevel() const { return CharacterSelectionLevel; }
-
-protected:
-
-	/** The level that will be streamed in to act as a background for the character selection screen. */
-	UPROPERTY(Config)
-	FName CharacterSelectionLevel;
 };

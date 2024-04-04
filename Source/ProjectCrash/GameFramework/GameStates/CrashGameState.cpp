@@ -46,9 +46,9 @@ void ACrashGameState::OnRep_MatchState()
 	// Start the appropriate timer on the server.
 	if (HasAuthority())
 	{
-		if (MatchState == MatchState::WaitingToStart)
+		if (MatchState == MatchState::InProgress)
 		{
-			PhaseTimeRemaining = GameModeData->CharacterSelectionTime;
+			PhaseTimeRemaining = GameModeData->MaximumMatchTime;
 		}
 
 		GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, FTimerDelegate::CreateLambda([this]
@@ -60,13 +60,6 @@ void ACrashGameState::OnRep_MatchState()
 			}
 		}), 1.0f, true);
 	}
-}
-
-void ACrashGameState::HandleMatchHasStarted()
-{
-	Super::HandleMatchHasStarted();
-
-	UE_LOG(LogTemp, Error, TEXT("Match Started"));
 }
 
 void ACrashGameState::OnRep_PhaseTimeRemaining()
