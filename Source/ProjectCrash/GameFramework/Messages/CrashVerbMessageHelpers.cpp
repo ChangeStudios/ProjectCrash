@@ -3,8 +3,16 @@
 
 #include "GameFramework/Messages/CrashVerbMessageHelpers.h"
 
+#include "CrashAbilityMessage.h"
 #include "CrashVerbMessage.h"
 #include "GameFramework/PlayerState.h"
+
+FString FCrashAbilityMessage::ToString() const
+{
+	FString HumanReadableMessage;
+	FCrashAbilityMessage::StaticStruct()->ExportText(/* Out */ HumanReadableMessage, this, /* Defaults= */ nullptr, /** OwnerObject= */ nullptr, PPF_None, /* ExportRootScope= */ nullptr);
+	return HumanReadableMessage;
+}
 
 FString FCrashVerbMessage::ToString() const
 {

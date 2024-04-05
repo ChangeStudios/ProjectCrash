@@ -31,7 +31,7 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, UCrashAbil
 		CrashAbility->AbilityCooldownStartedDelegate.AddDynamic(this, &UAbilitySlotWidget::OnCooldownStarted);
 
 		// Bind to when this ability is activated and ended.
-		CrashAbility->AbilityActivatedDelegate.AddDynamic(this, &UAbilitySlotWidget::OnAbilityActivated);
+		// CrashAbility->AbilityActivatedDelegate.AddDynamic(this, &UAbilitySlotWidget::OnAbilityActivated);
 		CrashAbility->AbilityEndedDelegate.AddDynamic(this, &UAbilitySlotWidget::OnAbilityEnded);
 
 		/* Bind to when an ability fails to activate. We'll check in the callback if the ability that failed is the one
