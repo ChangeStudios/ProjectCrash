@@ -113,6 +113,21 @@ protected:
 
 
 
+	// Ability notifications.
+
+public:
+
+	/** Broadcasts a message communicating that the ability successfully activated. */
+	virtual void NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability) override;
+
+	/** Broadcasts a message communicating that the ability ended. */
+	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
+
+	/** Broadcasts a message communicating the ability activation failure. */
+	virtual void NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason) override;
+
+
+
 	// Animation.
 
 public:

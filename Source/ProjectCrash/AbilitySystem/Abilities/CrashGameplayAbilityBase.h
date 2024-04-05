@@ -10,12 +10,8 @@ class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 
-
 /** Generic gameplay ability delegate with support for dynamic binding.*/
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
-
-/** Broadcast when this ability's cooldown is started. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityCooldownStartedSignature, const FActiveGameplayEffect&, CooldownGameplayEffect);
 
 /**
  * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
@@ -140,37 +136,14 @@ protected:
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-public:
-
-	/** Broadcast on this ability's CDO when this ability is successfully activated. */
-	UPROPERTY(BlueprintAssignable)
-	FDynamicGameplayAbilityDelegate AbilityActivatedDelegate;
-
-	/** Broadcast on this ability's CDO when this ability ends. */
-	UPROPERTY(BlueprintAssignable)
-	FDynamicGameplayAbilityDelegate AbilityEndedDelegate;
-
 
 
 	// Ability cooldowns.
 
 protected:
 
-	/** Broadcasts AbilityCooldownStartedDelegate when this ability's cooldown is applied. */
+	/** Sends a gameplay message when this ability's cooldown is applied. */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
-	
-public:
-
-	/**
-	 * Delegate broadcast when this ability's cooldown is committed.
-	 *
-	 * This delegate is broadcast on the ability's CDO, instead of each ability instance. This lets us handle multiple
-	 * instances of an ability with a single cooldown. For example, if we have an ability with two charges and we use
-	 * both, they'll both use the same cooldown, instead of each getting their own. This way, the first charge can
-	 * finish its cooldown before the second one starts its cooldown.
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FAbilityCooldownStartedSignature AbilityCooldownStartedDelegate;
 
 
 

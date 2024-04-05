@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "GameplayAbilitySpec.h"
+#include "Abilities/GameplayAbilityTypes.h"
 
 #include "CrashAbilityMessage.generated.h"
 
@@ -19,20 +19,21 @@ struct FCrashAbilityMessage
 {
 	GENERATED_BODY()
 
-	/** Default constructor. */
-	FCrashAbilityMessage() {}
-
 	/** The type of message: "ability activated," "ability ended," etc. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayTag MessageType;
 
 	/** The ability referred to by the message. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	FGameplayAbilitySpec& AbilitySpec;
+	TObjectPtr<const UGameplayAbility> Ability;
 
 	/** The actor info of this message's ability, with which this message was broadcast. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	FGameplayAbilityActorInfo& ActorInfo;
+	FGameplayAbilityActorInfo ActorInfo;
+
+	/** An optional numeric value to pass as a payload, such as the duration of a cooldown applied. */
+	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
+	float OptionalMagnitude;
 
 	/** Returns a debug string representation of this message. */
 	PROJECTCRASH_API FString ToString() const;

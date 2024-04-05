@@ -11,6 +11,10 @@
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/Messages/CrashAbilityMessage.h"
+#include "Kismet/GameplayStatics.h"
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -83,15 +87,47 @@ bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHan
 
 void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo();
+	check(CrashASC);
+
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	if (UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo())
-	{
-		// Create an effect context with which to apply this ability's effects.
-		const FGameplayEffectContextHandle EffectContextHandle = CrashASC->MakeEffectContext();
+	// Create an effect context with which to apply this ability's effects.
+	const FGameplayEffectContextHandle EffectContextHandle = CrashASC->MakeEffectContext();
 
-		// Apply every ongoing effect that will NOT be automatically removed when this ability ends.
-		for (auto GE : OngoingEffectsToApplyOnStart)
+	// Apply every ongoing effect that will NOT be automatically removed when this ability ends.
+	for (auto GE : OngoingEffectsToApplyOnStart)
+	{
+		if (!GE.Get())
+		{
+			continue;
+		}
+
+		// Make an outgoing spec handle for the effect.
+		FGameplayEffectSpecHandle EffectSpecHandle = CrashASC->MakeOutgoingSpec(GE, 1, EffectContextHandle);
+		if (!EffectSpecHandle.IsValid())
+		{
+			continue;
+		}
+
+		// Apply the effect.
+		FActiveGameplayEffectHandle ActiveEffectHandle = CrashASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+		if (!ActiveEffectHandle.WasSuccessfullyApplied())
+		{
+			ABILITY_LOG(Warning, TEXT("Ability [%s] failed to apply ongoing effect [%s]."), *GetName(), *GetNameSafe(GE));
+		}
+	}
+
+	/* Abilities must be instantiated to store handles to automatically remove effects when the ability ends. If
+	 * this ability is not instantiated, it cannot apply automatically-removed ongoing effects. */ 
+	if (!IsInstantiated() && OngoingEffectsToApplyOnStartAndRemoveOnEnd.Num())
+	{
+		ABILITY_LOG(Warning, TEXT("Ability [%s] tried to apply temporary ongoing abilities, but is not instantiated. Abilities must be instantiated to apply automatically-removed ongoing effects."), *GetName());
+	}
+	else
+	{
+		// Apply every ongoing effect that WILL be automatically removed when this ability ends.
+		for (auto GE : OngoingEffectsToApplyOnStartAndRemoveOnEnd)
 		{
 			if (!GE.Get())
 			{
@@ -107,81 +143,43 @@ void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle
 
 			// Apply the effect.
 			FActiveGameplayEffectHandle ActiveEffectHandle = CrashASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-			if (!ActiveEffectHandle.WasSuccessfullyApplied())
+
+			/* Save the effect's handle if it was successfully applied so it can automatically be removed when this
+			 * ability ends. */
+			if (ActiveEffectHandle.WasSuccessfullyApplied())
+			{
+				EffectsToRemoveOnEndHandles.Add(ActiveEffectHandle);
+			}
+			else
 			{
 				ABILITY_LOG(Warning, TEXT("Ability [%s] failed to apply ongoing effect [%s]."), *GetName(), *GetNameSafe(GE));
 			}
 		}
-
-		/* Abilities must be instantiated to store handles to automatically remove effects when the ability ends. If
-		 * this ability is not instantiated, it cannot apply automatically-removed ongoing effects. */ 
-		if (!IsInstantiated() && OngoingEffectsToApplyOnStartAndRemoveOnEnd.Num())
-		{
-			ABILITY_LOG(Warning, TEXT("Ability [%s] tried to apply temporary ongoing abilities, but is not instantiated. Abilities must be instantiated to apply automatically-removed ongoing effects."), *GetName());
-		}
-		else
-		{
-			// Apply every ongoing effect that WILL be automatically removed when this ability ends.
-			for (auto GE : OngoingEffectsToApplyOnStartAndRemoveOnEnd)
-			{
-				if (!GE.Get())
-				{
-					continue;
-				}
-
-				// Make an outgoing spec handle for the effect.
-				FGameplayEffectSpecHandle EffectSpecHandle = CrashASC->MakeOutgoingSpec(GE, 1, EffectContextHandle);
-				if (!EffectSpecHandle.IsValid())
-				{
-					continue;
-				}
-
-				// Apply the effect.
-				FActiveGameplayEffectHandle ActiveEffectHandle = CrashASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-
-				/* Save the effect's handle if it was successfully applied so it can automatically be removed when this
-				 * ability ends. */
-				if (ActiveEffectHandle.WasSuccessfullyApplied())
-				{
-					EffectsToRemoveOnEndHandles.Add(ActiveEffectHandle);
-				}
-				else
-				{
-					ABILITY_LOG(Warning, TEXT("Ability [%s] failed to apply ongoing effect [%s]."), *GetName(), *GetNameSafe(GE));
-				}
-			}
-		}
-
-		// Update this ability's activation group if it was successfully activated.
-		CrashASC->HandleAbilityActivatedForActivationGroup(this);
 	}
 
-	// Broadcast that this ability was successfully activated on the CDO.
-	GetAbilityCDO()->AbilityActivatedDelegate.Broadcast(this);
+	// Update this ability's activation group if it was successfully activated.
+	CrashASC->HandleAbilityActivatedForActivationGroup(this);
 }
 
 void UCrashGameplayAbilityBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	if (UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo())
+	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo();
+	check(CrashASC);
+
+	// Before ending this ability, remove all ongoing effects that are marked to be removed when the ability ends.
+	for (const FActiveGameplayEffectHandle& ActiveEffectHandle : EffectsToRemoveOnEndHandles)
 	{
-		// Before ending this ability, remove all ongoing effects that are marked to be removed when the ability ends.
-		for (const FActiveGameplayEffectHandle& ActiveEffectHandle : EffectsToRemoveOnEndHandles)
+		if (ActiveEffectHandle.IsValid())
 		{
-			if (ActiveEffectHandle.IsValid())
-			{
-				CrashASC->RemoveActiveGameplayEffect(ActiveEffectHandle);
-			}
+			CrashASC->RemoveActiveGameplayEffect(ActiveEffectHandle);
 		}
-
-		// Reset the array of effect handles to remove on ability end.
-		EffectsToRemoveOnEndHandles.Reset();
-
-		// Update this ability's activation group after it ends.
-		CrashASC->HandleAbilityEndedForActivationGroup(this);
 	}
 
-	// Broadcast that this ability ended on the CDO.
-	GetAbilityCDO()->AbilityEndedDelegate.Broadcast(this);
+	// Reset the array of effect handles to remove on ability end.
+	EffectsToRemoveOnEndHandles.Reset();
+
+	// Update this ability's activation group after it ends.
+	CrashASC->HandleAbilityEndedForActivationGroup(this);
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -190,14 +188,29 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 {
 	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
+		// Apply the cooldown manually so we can get a reference to the active effect.
 		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
 
-		// Broadcast this ability's cooldown on the CDO.
 		if (CooldownEffectHandle.WasSuccessfullyApplied())
 		{
-			const FActiveGameplayEffect* CooldownEffect = ActorInfo->AbilitySystemComponent->GetActiveGameplayEffect(CooldownEffectHandle);
+			// Send a standardized message that this ability's cooldown started.
+			{
+				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
+				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;
+				AbilityMessage.Ability = GetAbilityCDO();
+				AbilityMessage.ActorInfo = GetActorInfo();
+				const FActiveGameplayEffect* CooldownEffect = GetAbilitySystemComponentFromActorInfo_Checked()->GetActiveGameplayEffect(CooldownEffectHandle);
+				AbilityMessage.OptionalMagnitude = CooldownEffect->GetDuration();
 
-			GetAbilityCDO()->AbilityCooldownStartedDelegate.Broadcast(*CooldownEffect);
+				UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+				MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+
+				// Broadcast the message to clients, since ApplyCooldown is only called on the server.
+				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+				{
+					GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
+				}
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "CrashGameState.generated.h"
 
+struct FCrashAbilityMessage;
 class UCrashGameModeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
@@ -65,6 +66,10 @@ public:
 	// Reliably broadcasts a verbal message to all clients. Used to replicate server-side messages.
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging")
 	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
+
+	// Reliably broadcasts an ability message to all clients. Used to replicate server-side messages.
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging")
+	void MulticastReliableAbilityMessageToClients(const FCrashAbilityMessage Message);
 
 
 
