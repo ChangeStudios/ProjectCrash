@@ -41,19 +41,4 @@ public:
 	/** Broadcast when this controller's player state is changed. */
 	UPROPERTY(BlueprintAssignable)
 	FPlayerStateChangeSignature PlayerStateChangedDelegate;
-
-
-
-	// Match state.
-
-public:
-
-	/** Handles client-side logic for changes to the current match state. */
-	UFUNCTION()
-	virtual void OnMatchStateChanged(FName NewMatchState);
-
-protected:
-
-	/** Loads the character selection level and creates the character selection UI. */
-	void OpenCharacterSelection();
 };

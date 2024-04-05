@@ -13,6 +13,7 @@ class UCrashInputActionMapping;
 class UEquipmentSet;
 class UHealthAttributeBaseValues;
 class UInputMappingContext;
+class ULevelSequence;
 
 /**
  * Defines an input mapping context with the priority with which it should be bound.
@@ -124,6 +125,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UCharacterAnimData> DefaultAnimData;
 
+	/** The level sequence that plays on the player camera when this character is selected in the character selection
+	 * screen. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<ULevelSequence> CharacterSelectionSequence;
+
 
 
 	// Input.
@@ -162,5 +168,5 @@ public:
 
 	/** The abilities listed in "ability info" screens for this character. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	TArray<TSubclassOf<UCrashGameplayAbilityBase>> ListedAbilities; 
+	TArray<TSubclassOf<UCrashGameplayAbilityBase>> ListedAbilities;
 };

@@ -42,7 +42,7 @@ enum class EAbilityActivationGroup : uint8
  * The ability type displayed to players, e.g. in "ability info" screens.
  */
 UENUM(BlueprintType)
-enum class EFrontendAbilityType
+enum class EFrontendAbilityType : uint8
 {
 	PrimaryWeapon,
 	SecondaryWeapon,
@@ -189,7 +189,7 @@ public:
 
 	/** User-facing type of this ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	TEnumAsByte<EFrontendAbilityType> FrontendAbilityType;
+	EFrontendAbilityType FrontendAbilityType;
 
 	/** User-facing description of this ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
