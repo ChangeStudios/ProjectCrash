@@ -11,7 +11,6 @@
 UGA_Death::UGA_Death(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	ActivationOwnedTags.AddTag(CrashGameplayTags::TAG_State_Dying);
 	bServerRespectsRemoteAbilityCancellation = false;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
 }
@@ -19,6 +18,13 @@ UGA_Death::UGA_Death(const FObjectInitializer& ObjectInitializer)
 void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo_Checked();
+	const APawn* Pawn = Cast<APawn>(GetAvatarActorFromActorInfo());
+	APlayerController* PC = Pawn ? Cast<APlayerController>(Pawn->Controller) : nullptr;
+
+	// Add the "Dying" tag locally.
+	ASC->AddLooseGameplayTag(CrashGameplayTags::TAG_State_Dying);
+	// Make the dying actor immune to damage while dying.
+	ASC->AddReplicatedLooseGameplayTag(CrashGameplayTags::TAG_State_ImmuneToDamage);
 
 	// Fire the death event delegate through the ASC to broadcast the death data to any listeners.
 	if (TriggerEventData)
@@ -26,6 +32,7 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 		// Reconstruct the death data from the given event data.
 		const FDeathData DeathData = FDeathData(
 			const_cast<AActor*>(TriggerEventData->Target.Get()),
+			PC,
 			UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(TriggerEventData->Target),
 			const_cast<AActor*>(TriggerEventData->Instigator.Get()),
 			Cast<AActor>(const_cast<UObject*>(TriggerEventData->OptionalObject2.Get())),
@@ -38,19 +45,16 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 			CrashASC->DeathEventDelegate.Broadcast(DeathData);
 		}
 	}
-	
+
 	// Cancel ongoing abilities, unless they shouldn't be cancelled by avatar death.
 	FGameplayTagContainer IgnoreAbilitiesWithTags;
 	IgnoreAbilitiesWithTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
 	ASC->CancelAbilities(nullptr, &IgnoreAbilitiesWithTags, this);
 
 	// Unpossess the player from the dying actor.
-	if (APawn* Pawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
+	if (Pawn && Pawn->Controller)
 	{
-		if (Pawn->Controller)
-		{
-			Pawn->Controller->UnPossess();
-		}
+		Pawn->Controller->UnPossess();
 	}
 
 	// Make sure we call the K2 implementation after all of this logic is executed (mostly so DyingActor is valid).
@@ -59,5 +63,13 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 void UGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo_Checked();
+
+	// Remove the local "Dying" tag.
+	ASC->RemoveLooseGameplayTag(CrashGameplayTags::TAG_State_Dying);
+
+	// Remove the actor's damage immunity.
+	ASC->SetReplicatedLooseGameplayTagCount(CrashGameplayTags::TAG_State_ImmuneToDamage, 0);
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

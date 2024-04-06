@@ -33,7 +33,7 @@ void UAbilitySystemExtensionComponent::OnRegister()
 void UAbilitySystemExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	// Uninitialize this component's owning pawn from its current ASC before ending play.
-	UninitializeAbilitySystem();
+	// UninitializeAbilitySystem();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -62,11 +62,12 @@ void UAbilitySystemExtensionComponent::InitializeAbilitySystem(UCrashAbilitySyst
 	{
 		/* If the given ASC has a different avatar already, uninitialize it from the ASC. This can happen on clients
 		 * when lagging: the new pawn is spawned and possessed before the old one is removed. */
-		ensure(!ExistingAvatar->HasAuthority());
-
-		if (UAbilitySystemExtensionComponent* OtherExtensionComponent = FindAbilitySystemExtensionComponent(ExistingAvatar))
+		if (ExistingAvatar->HasAuthority())
 		{
-			OtherExtensionComponent->UninitializeAbilitySystem();
+			if (UAbilitySystemExtensionComponent* OtherExtensionComponent = FindAbilitySystemExtensionComponent(ExistingAvatar))
+			{
+				OtherExtensionComponent->UninitializeAbilitySystem();
+			}
 		}
 	}
 
@@ -120,7 +121,7 @@ void UAbilitySystemExtensionComponent::HandleControllerChanged()
 		// If the ASC's owner has been cleared, remove this component's owning pawn as the avatar.
 		if (AbilitySystemComponent->GetOwnerActor() == nullptr)
 		{
-			UninitializeAbilitySystem();
+			// UninitializeAbilitySystem();
 		}
 		// If the ASC still has the correct owner, refresh its actor info to reflect the pawn's new controller.
 		else

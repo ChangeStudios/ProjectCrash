@@ -17,22 +17,27 @@ struct FDeathData
 
 	/** Default constructor. Initializes all values to null. */
 	FDeathData()
-		: DyingActor(nullptr), DyingActorASC(nullptr), DamageInstigator(nullptr), KillingDamageCauser(nullptr), DamageEffectSpec(FGameplayEffectSpec()), DamageMagnitude(0.0f)
+		: DyingActor(nullptr), DyingPlayer(nullptr), DyingActorASC(nullptr), DamageInstigator(nullptr), KillingDamageCauser(nullptr), DamageEffectSpec(FGameplayEffectSpec()), DamageMagnitude(0.0f)
 	{}
 
 	/** Parameterized constructor. */
-	FDeathData(AActor* InDyingActor, UAbilitySystemComponent* InDyingActorASC, AActor* InDamageInstigator, AActor* InKillingDamageCauser, const FGameplayEffectSpec& InDamageEffectSpec, float InDamageMagnitude)
-		: DyingActor(InDyingActor),
-		  DyingActorASC(InDyingActorASC),
-		  DamageInstigator(InDamageInstigator),
-		  KillingDamageCauser(InKillingDamageCauser),
-		  DamageEffectSpec(InDamageEffectSpec),
-		  DamageMagnitude(InDamageMagnitude)
+	FDeathData(AActor* InDyingActor, APlayerController* InDyingPlayer, UAbilitySystemComponent* InDyingActorASC, AActor* InDamageInstigator, AActor* InKillingDamageCauser, const FGameplayEffectSpec& InDamageEffectSpec, float InDamageMagnitude) :
+		DyingActor(InDyingActor),
+		DyingPlayer(InDyingPlayer),
+		DyingActorASC(InDyingActorASC),
+		DamageInstigator(InDamageInstigator),
+		KillingDamageCauser(InKillingDamageCauser),
+		DamageEffectSpec(InDamageEffectSpec),
+		DamageMagnitude(InDamageMagnitude)
 	{}
 
 	/** Actor that died. This is usually an ASC's avatar; e.g. a player pawn. */
 	UPROPERTY(BlueprintReadOnly)
 	AActor* DyingActor;
+
+	/** The player controlling the dying actor. Will be null for dying non-player actors. */
+	UPROPERTY(BlueprintReadOnly)
+	APlayerController* DyingPlayer;
 
 	/** ASC associated with the dying actor. The dying actor is usually the avatar or/and the owner of this ASC. */
 	UPROPERTY(BlueprintReadOnly, DisplayName = "Dying Actor's ASC")

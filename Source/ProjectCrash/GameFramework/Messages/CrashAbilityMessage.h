@@ -33,7 +33,7 @@ struct FCrashAbilityMessage
 
 	/** An optional numeric value to pass as a payload, such as the duration of a cooldown applied. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	float OptionalMagnitude;
+	float OptionalMagnitude = 0.0f;
 
 	/** Returns a debug string representation of this message. */
 	PROJECTCRASH_API FString ToString() const;

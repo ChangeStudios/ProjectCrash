@@ -98,7 +98,13 @@ public:
 
 protected:
 
-	
+	virtual APlayerController* DetermineMatchWinner();
+
+	/** Calls HandleVictoryCondition if a victory condition has been met. */
+	virtual void CheckVictoryCondition();
+
+	/** Ends the match when the victory condition is met. */
+	virtual void HandleVictoryConditionMet();
 
 
 

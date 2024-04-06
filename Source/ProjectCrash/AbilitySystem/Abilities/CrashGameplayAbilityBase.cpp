@@ -77,7 +77,7 @@ bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHan
 	}
 
 	// Check if this ability's activation group is currently blocked on its ASC.
-	if (GetCrashAbilitySystemComponentFromActorInfo()->IsActivationGroupBlocked(GetActivationGroup()))
+	if (GetCrashAbilitySystemComponentFromActorInfo() && GetCrashAbilitySystemComponentFromActorInfo()->IsActivationGroupBlocked(GetActivationGroup()))
 	{
 		return false;
 	}
@@ -194,6 +194,7 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 		if (CooldownEffectHandle.WasSuccessfullyApplied())
 		{
 			// Send a standardized message that this ability's cooldown started.
+			if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 			{
 				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;

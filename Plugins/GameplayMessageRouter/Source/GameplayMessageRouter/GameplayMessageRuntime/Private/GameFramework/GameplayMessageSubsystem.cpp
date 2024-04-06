@@ -44,7 +44,7 @@ UGameplayMessageSubsystem& UGameplayMessageSubsystem::Get(const UObject* WorldCo
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::Assert);
 	check(World);
 	UGameplayMessageSubsystem* Router = UGameInstance::GetSubsystem<UGameplayMessageSubsystem>(World->GetGameInstance());
-	ensure(Router);
+	check(Router);
 	return *Router;
 }
 

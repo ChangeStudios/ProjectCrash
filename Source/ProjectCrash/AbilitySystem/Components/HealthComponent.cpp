@@ -146,6 +146,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			const FDeathData DeathData = FDeathData
 			(
 				AbilitySystemComponent->GetAvatarActor(),
+				AbilitySystemComponent->AbilityActorInfo->PlayerController.Get(),
 				AbilitySystemComponent,
 				DamageInstigator,
 				DamageCauser,
@@ -158,7 +159,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 
 		/* Send a standardized verb message that other systems can observe. This is used for things like updating the
 		 * kill-feed. */
-		if (AbilitySystemComponent)
+		if (AbilitySystemComponent && UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DeathMessage;
 			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;

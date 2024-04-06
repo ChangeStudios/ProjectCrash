@@ -258,6 +258,19 @@ void ACrashGameMode::EndMatch()
 	Super::EndMatch();
 }
 
+APlayerController* ACrashGameMode::DetermineMatchWinner()
+{
+	return nullptr;
+}
+
+void ACrashGameMode::CheckVictoryCondition()
+{
+}
+
+void ACrashGameMode::HandleVictoryConditionMet()
+{
+}
+
 void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 {
 	/* Cache the player controlling the dying actor, if it's a player-controlled pawn. We do this first because we'll
@@ -317,7 +330,12 @@ void ACrashGameMode::FinishDeath(const FDeathData& DeathData)
 		DeathData.DyingActorASC->CancelAbilities(&DeathTags);
 	}
 
-	// Handle respawn if the game is not over.
+	// Respawn the player if the game is not over.
+	if (MatchState == MatchState::InProgress)
+	{
+		DeathData.DyingPlayer->UnPossess();
+		RestartPlayer(DeathData.DyingPlayer);
+	}
 
     UE_LOG(LogGameMode, Verbose, TEXT("ACrashGameModeBase: Actor [%s] successfully died. Finishing death..."), *GetNameSafe(DeathData.DyingActor));
 }

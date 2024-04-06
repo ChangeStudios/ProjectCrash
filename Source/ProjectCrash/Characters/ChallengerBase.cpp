@@ -102,7 +102,25 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	// Initialize the possessing player's ASC with this pawn as the new avatar.
 	if (ASCExtensionComponent)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Initialized [%s] on [%s] via AChallengerBase::PossessedBy."), *GetName(), *AUTHORITY_STRING(this));
+
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
+
+		// Update the ASC's actor information.
+		ASCExtensionComponent->HandleControllerChanged();
+	}
+}
+
+void AChallengerBase::UnPossessed()
+{
+	Super::UnPossessed();
+
+	// Uninitialize the unpossessing player's ASC from this pawn.
+	if (ASCExtensionComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Uninitialized [%s] on [%s] via AChallengerBase::UnPossessed."), *GetName(), *AUTHORITY_STRING(this));
+
+		ASCExtensionComponent->UninitializeAbilitySystem();
 
 		// Update the ASC's actor information.
 		ASCExtensionComponent->HandleControllerChanged();
@@ -123,9 +141,12 @@ void AChallengerBase::OnRep_PlayerState()
 
 	UCrashAbilitySystemComponent* CrashASC = CrashPS->GetCrashAbilitySystemComponent();
 
-	// Initialize the possessing player's ASC with this pawn as the new avatar.
+	/* Initialize the possessing player's ASC with this pawn as the new avatar. If the ASC was already initialized for
+	 * another player, it will be uninitialized first. */
 	if (ASCExtensionComponent)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Initialized [%s] on [%s] via AChallengerBase::OnRep_PlayerState."), *GetName(), *AUTHORITY_STRING(this));
+
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
 	}
 }
@@ -143,9 +164,12 @@ void AChallengerBase::UninitAndDestroy()
 	}
 
 	// Uninitialize this character from its ASC if it's still the avatar. Otherwise, the ASC's new avatar already did this.
-	if (GetAbilitySystemComponent() && (GetAbilitySystemComponent()->GetAvatarActor() == this))
+	if (UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent())
 	{
-		ASCExtensionComponent->UninitializeAbilitySystem();
+		if (CrashASC->GetAvatarActor() == this)
+		{
+			// ASCExtensionComponent->UninitializeAbilitySystem();
+		}
 	}
 
 	// Hide this actor until it's fully destroyed.
@@ -184,7 +208,12 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 
 void AChallengerBase::OnDeathFinished()
 {
-	UninitAndDestroy();
+	UE_LOG(LogTemp, Error, TEXT("OnDeathFinished called on %s"), *AUTHORITY_STRING(this));
+
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]
+	{
+		UninitAndDestroy();
+	}));
 }
 
 void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)

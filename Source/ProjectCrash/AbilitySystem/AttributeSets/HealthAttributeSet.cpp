@@ -71,22 +71,25 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	{
 		/* Send a standardized verb message that other systems can observe. This is used for triggering things like
 		 * hit-markers. */
-		FCrashVerbMessage DamageMessage;
-		DamageMessage.Verb = CrashGameplayTags::TAG_Message_Damage;
-		DamageMessage.Instigator = Instigator;
-		DamageMessage.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
-		DamageMessage.Target = GetOwningActor();
-		DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
-		DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
-
-		// Broadcast the message on the server.
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
-
-		// Broadcast the message to clients.
-		if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
-			GS->MulticastReliableMessageToClients(DamageMessage);
+			FCrashVerbMessage DamageMessage;
+			DamageMessage.Verb = CrashGameplayTags::TAG_Message_Damage;
+			DamageMessage.Instigator = Instigator;
+			DamageMessage.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
+			DamageMessage.Target = GetOwningActor();
+			DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
+			DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
+
+			// Broadcast the message on the server.
+			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+			MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
+
+			// Broadcast the message to clients.
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+			{
+				GS->MulticastReliableMessageToClients(DamageMessage);
+			}
 		}
 
 		// Update health.

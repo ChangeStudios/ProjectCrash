@@ -125,6 +125,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbility
 	Super::NotifyAbilityActivated(Handle, Ability);
 
 	// Send a standardized message that this ability was activated.
+	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 	{
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Activated;
@@ -150,6 +151,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle
 	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
 
 	// Send a standardized message that this ability ended.
+	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 	{
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Ended;
@@ -175,22 +177,25 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 	Super::NotifyAbilityFailed(Handle, Ability, FailureReason);
 
 	// Send a standardized message that the ability activation failed.
-	FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-	AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
-	AbilityMessage.ActorInfo = *AbilityActorInfo;
-
-	if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
+	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 	{
-		// Observers expect the failed ability's CDO.
-		AbilityMessage.Ability = CrashAbility->GetAbilityCDO();
-	}
-	else
-	{
-		AbilityMessage.Ability = Ability;
-	}
+		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
+		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
+		AbilityMessage.ActorInfo = *AbilityActorInfo;
 
-	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
+		{
+			// Observers expect the failed ability's CDO.
+			AbilityMessage.Ability = CrashAbility->GetAbilityCDO();
+		}
+		else
+		{
+			AbilityMessage.Ability = Ability;
+		}
+
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+	}
 }
 
 float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)

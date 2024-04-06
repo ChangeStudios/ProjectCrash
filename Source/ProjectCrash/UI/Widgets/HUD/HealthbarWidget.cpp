@@ -38,9 +38,6 @@ void UHealthbarWidget::InitWidget(APawn* PawnToBindTo)
 	// If this widget was already bound to a health component, unbind it.
 	if (HealthComponent)
 	{
-
-		UE_LOG(LogTemp, Error, TEXT("Unbound delegates"));
-
 		HealthComponent->HealthChangedDelegate.RemoveDynamic(this, &UHealthbarWidget::OnHealthChanged);
 		HealthComponent->MaxHealthChangedDelegate.RemoveDynamic(this, &UHealthbarWidget::OnMaxHealthChanged);
 
