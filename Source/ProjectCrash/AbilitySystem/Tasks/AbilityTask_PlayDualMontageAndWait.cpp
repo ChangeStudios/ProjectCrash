@@ -81,6 +81,12 @@ void UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled()
 		}
 	}
 
+	// Clean up delegates.
+	OnCompleted.Clear();
+	OnBlendOut.Clear();
+	OnInterrupted.Clear();
+	OnCancelled.Clear();
+
 	EndTask();
 }
 

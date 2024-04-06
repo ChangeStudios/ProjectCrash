@@ -50,12 +50,8 @@ protected:
 	/** Performs server-side initialization of this character with the owning player's ASC. */
 	virtual void PossessedBy(AController* NewController) override;
 
-	/** Performs server-side uninitialization of this character's ASC. */
-	virtual void UnPossessed() override;
-
 	/** Performs client-side initialization of this character with the owning player's ASC, and uninitializes the
-	 * ASC's previous owner, if one exists. If this is called for the PlayerState being nulled, the ASC will simply be
-	 * uninitialized from this character, like calling Uninitialize(old player) and Initialize(nullptr). */
+	 * ASC's previous owner, if one exists. */
 	virtual void OnRep_PlayerState() override;
 
 

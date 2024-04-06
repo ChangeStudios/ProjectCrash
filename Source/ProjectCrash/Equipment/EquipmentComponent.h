@@ -84,7 +84,7 @@ private:
 	bool EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWasTemporarilyUnequipped = false);
 
 	/**
-	 * Attempts to unequip this character's current equipment set.
+	 * Attempts to unequip this character's current equipment set using the current handle.
 	 *
 	 * @param bTemporarilyUnequip	If true, the equipment set will only be temporarily unequipped. This disables
 	 *								the set's granted abilities instead of removing them completely.

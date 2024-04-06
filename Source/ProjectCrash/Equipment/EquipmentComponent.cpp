@@ -163,6 +163,9 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 			{
 				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip, bWasTemporarilyUnequipped);
 			}
+
+			// Cache the ASC to which this equipment set's ability set is granted.
+			CurrentEquipmentSetHandle.GrantedASC = CrashASC;
 		}
 	}
 
@@ -240,8 +243,9 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 
 bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 {
-	// If we don't have an equipment set equipped, we don't need to do anything.
-	if (!CurrentEquipmentSet)
+	/* By the time this is called in the OnRep, CurrentEquipmentSet will have changed already. But we'll still have the
+	 * handle of the previous set, which we can use to unequip it. */
+	if (!CurrentEquipmentSetHandle.EquipmentSet)
 	{
 		return false;
 	}
@@ -258,10 +262,10 @@ bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 	CurrentEquipmentSetHandle.SpawnedActors_FPP.Empty();
 	CurrentEquipmentSetHandle.SpawnedActors_TPP.Empty();
 
-	// Remove the ability set that was granted by the equipped equipment set (if there was one).
-	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
+	// Remove the ability set that was granted by the equipped equipment set (if there was one) on the server.
+	if (CurrentEquipmentSetHandle.GrantedASC && CurrentEquipmentSetHandle.GrantedASC->IsOwnerActorAuthoritative())
 	{
-		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC, bTemporarilyUnequip);
+		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CurrentEquipmentSetHandle.GrantedASC, bTemporarilyUnequip);
 		CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
 	}
 

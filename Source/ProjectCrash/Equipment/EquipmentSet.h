@@ -8,6 +8,7 @@
 #include "EquipmentSet.generated.h"
 
 class UCrashAbilitySet;
+class UCrashAbilitySystemComponent;
 class UEquipmentAnimationData;
 
 /**
@@ -53,6 +54,10 @@ public:
 	/** Reference to the third-person actor spaw+ned after this equipment set is equipped. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
 	TArray<TObjectPtr<AActor>> SpawnedActors_TPP;
+
+	/** The ASC to which this equipment set's ability set is granted. */
+	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
+	TObjectPtr<UCrashAbilitySystemComponent> GrantedASC;
 
 	/** Runtime reference to the granted ability set, used to remove it when this set is unequipped. */
 	FCrashAbilitySet_GrantedHandles GrantedAbilitySetHandles;

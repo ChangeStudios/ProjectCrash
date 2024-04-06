@@ -33,7 +33,7 @@ void UAbilitySystemExtensionComponent::OnRegister()
 void UAbilitySystemExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	// Uninitialize this component's owning pawn from its current ASC before ending play.
-	// UninitializeAbilitySystem();
+	UninitializeAbilitySystem();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -121,7 +121,7 @@ void UAbilitySystemExtensionComponent::HandleControllerChanged()
 		// If the ASC's owner has been cleared, remove this component's owning pawn as the avatar.
 		if (AbilitySystemComponent->GetOwnerActor() == nullptr)
 		{
-			// UninitializeAbilitySystem();
+			UninitializeAbilitySystem();
 		}
 		// If the ASC still has the correct owner, refresh its actor info to reflect the pawn's new controller.
 		else

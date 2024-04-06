@@ -102,25 +102,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	// Initialize the possessing player's ASC with this pawn as the new avatar.
 	if (ASCExtensionComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Initialized [%s] on [%s] via AChallengerBase::PossessedBy."), *GetName(), *AUTHORITY_STRING(this));
-
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
-
-		// Update the ASC's actor information.
-		ASCExtensionComponent->HandleControllerChanged();
-	}
-}
-
-void AChallengerBase::UnPossessed()
-{
-	Super::UnPossessed();
-
-	// Uninitialize the unpossessing player's ASC from this pawn.
-	if (ASCExtensionComponent)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Uninitialized [%s] on [%s] via AChallengerBase::UnPossessed."), *GetName(), *AUTHORITY_STRING(this));
-
-		ASCExtensionComponent->UninitializeAbilitySystem();
 
 		// Update the ASC's actor information.
 		ASCExtensionComponent->HandleControllerChanged();
@@ -145,9 +127,10 @@ void AChallengerBase::OnRep_PlayerState()
 	 * another player, it will be uninitialized first. */
 	if (ASCExtensionComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Initialized [%s] on [%s] via AChallengerBase::OnRep_PlayerState."), *GetName(), *AUTHORITY_STRING(this));
-
 		ASCExtensionComponent->InitializeAbilitySystem(CrashASC, CrashPS);
+
+		// Update the ASC's actor information.
+		ASCExtensionComponent->HandleControllerChanged();
 	}
 }
 
@@ -163,12 +146,14 @@ void AChallengerBase::UninitAndDestroy()
 		SetLifeSpan(0.1f);
 	}
 
-	// Uninitialize this character from its ASC if it's still the avatar. Otherwise, the ASC's new avatar already did this.
+	/* Uninitialize this character from its ASC if it's still the avatar. Otherwise, the ASC's new avatar already did
+	 * this. This is done here instead of on unpossession because we don't want to remove the ASC until AFTER actors
+	 * finish dying, which happens after they are unpossessed. */
 	if (UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent())
 	{
 		if (CrashASC->GetAvatarActor() == this)
 		{
-			// ASCExtensionComponent->UninitializeAbilitySystem();
+			ASCExtensionComponent->UninitializeAbilitySystem();
 		}
 	}
 
@@ -208,8 +193,6 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 
 void AChallengerBase::OnDeathFinished()
 {
-	UE_LOG(LogTemp, Error, TEXT("OnDeathFinished called on %s"), *AUTHORITY_STRING(this));
-
 	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]
 	{
 		UninitAndDestroy();
