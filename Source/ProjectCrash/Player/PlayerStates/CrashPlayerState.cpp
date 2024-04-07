@@ -8,8 +8,11 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "UI/Data/MatchUserInterfaceData.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -62,6 +65,24 @@ void ACrashPlayerState::PostInitializeComponents()
 
 			UE_LOG(LogGameMode, Warning, TEXT("ACrashPlayerState: CrashPlayerState [%s] tried to initialize its current lives, but could not find a game mode with valid GameModeData. ACrashPlayerState must be used with ACrashGameMode, and the game mode must have valid game mode data. Falling back to default starting lives: %i."), *GetName(), StartingLivesFallback);
 		}
+	}
+}
+
+void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
+{
+	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
+	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
+	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
+	const UUserInterfaceData* UIData = GMData ? GMData->UIData : nullptr;
+	const UMatchUserInterfaceData* MatchUIData = UIData ? Cast<UMatchUserInterfaceData>(UIData) : nullptr;
+
+	APlayerController* PC = GetPlayerController();
+	ACrashPlayerController* CrashPC = PC ? Cast<ACrashPlayerController>(PC) : nullptr;
+
+	// Push the "victory"/"defeat" pop-up to the player.
+	if (MatchUIData && CrashPC)
+	{
+		CrashPC->PushWidgetToLayer(bWon ? MatchUIData->VictoryPopUp : MatchUIData->DefeatPopUp, CrashGameplayTags::TAG_UI_Layer_GameMenu);
 	}
 }
 

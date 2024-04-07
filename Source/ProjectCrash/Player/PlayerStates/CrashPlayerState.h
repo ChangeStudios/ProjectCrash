@@ -40,6 +40,15 @@ public:
 
 
 
+	// Match logic.
+
+public:
+
+	UFUNCTION(Client, Reliable)
+	void Client_HandleMatchEnded(bool bWon);
+
+
+
 	// Team.
 
 // Accessors.

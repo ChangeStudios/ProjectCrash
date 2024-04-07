@@ -14,6 +14,7 @@
 #include "Engine/PlayerStartPIE.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStates/CrashGameState.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
@@ -255,7 +256,6 @@ void ACrashGameMode::HandleMatchHasStarted()
 
 void ACrashGameMode::CheckVictoryCondition()
 {
-	UE_LOG(LogTemp, Error, TEXT("A"));
 	if (IsVictoryConditionMet())
 	{
 		EndMatch();
@@ -264,9 +264,18 @@ void ACrashGameMode::CheckVictoryCondition()
 
 void ACrashGameMode::EndMatch()
 {
-	UE_LOG(LogTemp, Error, TEXT("Match ended! Team [%u] wins!"), DetermineMatchWinner());
-
 	Super::EndMatch();
+
+	// Apply the slow-motion effect.
+	UGameplayStatics::SetGlobalTimeDilation(this, 0.1f);
+
+	// Notify players that the game ended.
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
+		const bool bWon = DetermineMatchWinner() == PlayerState->GetTeamID();
+		PlayerState->Client_HandleMatchEnded(bWon);
+	}
 }
 
 FCrashTeamID ACrashGameMode::DetermineMatchWinner()

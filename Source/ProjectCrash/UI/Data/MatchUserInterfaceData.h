@@ -20,4 +20,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Match")
 	TSubclassOf<UCommonActivatableWidget> CharacterSelectionWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Match")
+	TSubclassOf<UCommonActivatableWidget> VictoryPopUp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Match")
+	TSubclassOf<UCommonActivatableWidget> DefeatPopUp;
 };

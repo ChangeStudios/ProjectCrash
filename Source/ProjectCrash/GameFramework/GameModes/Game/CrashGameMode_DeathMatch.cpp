@@ -8,15 +8,12 @@
 
 bool ACrashGameMode_DeathMatch::IsVictoryConditionMet()
 {
-#if DEDI
-	UE_LOG(LogTemp, Error, TEXT("B"));
 	// Build a map of each team ID, mapped to the team's total lives remaining.
 	TMap<uint8, uint8> TotalTeamLives;
 	for (const APlayerState* PS : GameState->PlayerArray)
 	{
 		if (const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(PS))
 		{
-			UE_LOG(LogTemp, Error, TEXT("C"));
 			TotalTeamLives.FindOrAdd(CrashPS->GetTeamID());
 			TotalTeamLives[CrashPS->GetTeamID()] += CrashPS->GetCurrentLives();
 		}
@@ -28,7 +25,6 @@ bool ACrashGameMode_DeathMatch::IsVictoryConditionMet()
 	{
 		if (TeamLives.Value)
 		{
-			UE_LOG(LogTemp, Error, TEXT("D"));
 			TeamsWithLivesRemaining++;
 		}
 	}
@@ -36,7 +32,6 @@ bool ACrashGameMode_DeathMatch::IsVictoryConditionMet()
 	/* If there is only one team remaining, the game is over, with that team having won. */
 	if (TeamsWithLivesRemaining == 1)
 	{
-		UE_LOG(LogTemp, Error, TEXT("E"));
 		return true;
 	}
 

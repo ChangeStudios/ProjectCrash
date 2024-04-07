@@ -88,23 +88,34 @@ protected:
 
 	// Match state.
 
-public:
+// Match start.
+protected:
 
 	virtual void StartMatch() override;
 
 	virtual void HandleMatchHasStarted() override;
 
+// Victory condition.
+public:
+
 	/** Ends the game if IsVictoryConditionMet returns true. Call this in child game modes whenever a victory condition
 	 * may have been met (e.g. when handling deaths in death matches). */
 	virtual void CheckVictoryCondition();
 
-	virtual void EndMatch() override;
-
+// Match end.
 protected:
+
+	virtual bool IsVictoryConditionMet();
 
 	virtual FCrashTeamID DetermineMatchWinner();
 
-	virtual bool IsVictoryConditionMet();
+// End match.
+protected:
+
+	virtual void EndMatch() override;
+
+	/** Timer used to finish the match after the victory/defeat sequence. */
+	FTimerHandle EndMatchTimer;
 
 
 
