@@ -133,18 +133,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", Meta = (ForceUnits = "s"))
 	float MaximumMatchTime;
 
-	/**
-	 * Whether to enable overtime for this game mode.
-	 */
+	/** Whether to enable overtime for this game mode. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match")
 	bool bEnableOvertime;
 
-	/**
-	 * The maximum amount of time for which overtime will be played. When this time is reached, the match will be
-	 * ended with the game mode's tie-breaking rules.
-	 */
+	/** The maximum amount of time for which overtime will be played. When this time is reached, the match will be
+	 * ended with the game mode's tie-breaking rules. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", Meta = (Units = "s"))
 	float MaximumOvertimeTime;
+
+	/** How long to wait in the match after a team has won before traveling back to the menu. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match")
+	float EndMatchTime;
 
 
 

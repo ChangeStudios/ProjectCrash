@@ -42,6 +42,7 @@ public:
 
 	// Match logic.
 
+// End match.
 public:
 
 	UFUNCTION(Client, Reliable)

@@ -114,7 +114,8 @@ protected:
 
 	virtual void EndMatch() override;
 
-	/** Timer used to finish the match after the victory/defeat sequence. */
+	/** Timer used to return to the menu after the post-match sequence (i.e. where the "victory"/"defeat" screen is
+	 * displayed). */
 	FTimerHandle EndMatchTimer;
 
 
