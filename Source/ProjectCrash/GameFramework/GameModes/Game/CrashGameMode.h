@@ -94,17 +94,17 @@ public:
 
 	virtual void HandleMatchHasStarted() override;
 
+	/** Ends the game if IsVictoryConditionMet returns true. Call this in child game modes whenever a victory condition
+	 * may have been met (e.g. when handling deaths in death matches). */
+	virtual void CheckVictoryCondition();
+
 	virtual void EndMatch() override;
 
 protected:
 
-	virtual APlayerController* DetermineMatchWinner();
+	virtual FCrashTeamID DetermineMatchWinner();
 
-	/** Calls HandleVictoryCondition if a victory condition has been met. */
-	virtual void CheckVictoryCondition();
-
-	/** Ends the match when the victory condition is met. */
-	virtual void HandleVictoryConditionMet();
+	virtual bool IsVictoryConditionMet();
 
 
 

@@ -253,22 +253,30 @@ void ACrashGameMode::HandleMatchHasStarted()
 	Super::HandleMatchHasStarted();
 }
 
+void ACrashGameMode::CheckVictoryCondition()
+{
+	UE_LOG(LogTemp, Error, TEXT("A"));
+	if (IsVictoryConditionMet())
+	{
+		EndMatch();
+	}
+}
+
 void ACrashGameMode::EndMatch()
 {
+	UE_LOG(LogTemp, Error, TEXT("Match ended! Team [%u] wins!"), DetermineMatchWinner());
+
 	Super::EndMatch();
 }
 
-APlayerController* ACrashGameMode::DetermineMatchWinner()
+FCrashTeamID ACrashGameMode::DetermineMatchWinner()
 {
-	return nullptr;
+	return FCrashTeamID::NO_TEAM;
 }
 
-void ACrashGameMode::CheckVictoryCondition()
+bool ACrashGameMode::IsVictoryConditionMet()
 {
-}
-
-void ACrashGameMode::HandleVictoryConditionMet()
-{
+	return false;
 }
 
 void ACrashGameMode::StartDeath(const FDeathData& DeathData)

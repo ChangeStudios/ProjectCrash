@@ -15,6 +15,24 @@ class PROJECTCRASH_API ACrashGameMode_DeathMatch : public ACrashGameMode
 {
 	GENERATED_BODY()
 
+	// Game mode logic.
+
+protected:
+
+	/** Returns true if there is only one team remaining that has any lives left. */
+	virtual bool IsVictoryConditionMet() override;
+
+
+
+	// Utils.
+
+protected:
+
+	/** Returns the first team with any lives remaining. */
+	virtual FCrashTeamID DetermineMatchWinner() override;
+
+
+
 	// Death.
 
 protected:
