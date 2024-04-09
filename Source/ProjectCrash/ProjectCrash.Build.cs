@@ -28,6 +28,7 @@ public class ProjectCrash : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"CommonUI",
+			"CommonInput",
 			"EnhancedInput",
 			"GameplayMessageRuntime",
 			"LevelSequence",

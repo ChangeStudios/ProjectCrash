@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
+#include "Input/CrashInputComponent.h"
 #include "ChallengerBase.generated.h"
 
 class UEquipmentComponent;
@@ -22,6 +23,7 @@ class UInputMappingContext;
 class USkeletalMeshComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FASCInitializedSignature, UCrashAbilitySystemComponent*, CrashASC);
+DECLARE_MULTICAST_DELEGATE(FInputComponentInitializedSignature);
 
 /**
  * The base class for all playable characters (a.k.a. "challengers"). Contains universal player character functionality
@@ -214,6 +216,11 @@ protected:
 	// Input.
 
 // Components.
+public:
+
+	/** Public getter for this character's input component. */
+	const UCrashInputComponent* GetCrashInputComponent() const { return CrashInputComponent; }
+
 protected:
 
 	// This character's input component cached as a CrashInputComponent.
@@ -225,6 +232,9 @@ public:
 
 	/** Sets up input configurations, bindings, and settings. */
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	/** Broadcast when this character finishes setting up its input component. */
+	FInputComponentInitializedSignature InputComponentInitializedDelegate;
 
 // Handler functions for native input events.
 protected:

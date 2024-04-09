@@ -23,8 +23,6 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	// Add the "Dying" tag locally.
 	ASC->AddLooseGameplayTag(CrashGameplayTags::TAG_State_Dying);
-	// Make the dying actor immune to damage while dying.
-	ASC->AddReplicatedLooseGameplayTag(CrashGameplayTags::TAG_State_ImmuneToDamage);
 
 	// Fire the death event delegate through the ASC to broadcast the death data to any listeners.
 	if (TriggerEventData)
@@ -67,9 +65,6 @@ void UGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGamep
 
 	// Remove the local "Dying" tag.
 	ASC->RemoveLooseGameplayTag(CrashGameplayTags::TAG_State_Dying);
-
-	// Remove the actor's damage immunity.
-	ASC->SetReplicatedLooseGameplayTagCount(CrashGameplayTags::TAG_State_ImmuneToDamage, 0);
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

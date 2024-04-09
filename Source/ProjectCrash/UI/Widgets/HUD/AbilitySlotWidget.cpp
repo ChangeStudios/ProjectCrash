@@ -3,11 +3,9 @@
 
 #include "UI/Widgets/HUD/AbilitySlotWidget.h"
 
-#include "AbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/Image.h"
-#include "GameFramework/PlayerState.h"
 
 void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, UCrashAbilitySystemComponent* OwningASC)
 {

@@ -279,8 +279,9 @@ void ACrashGameMode::EndMatch()
 		// TODO: Disconnect player.
 
 		// Return to the main menu after the "end match" time.
-		GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateLambda([*GameModeData]
+		GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateLambda([]
 		{
+			return;
 		}), GameModeData->EndMatchTime * UGameplayStatics::GetGlobalTimeDilation(this), false);
 	}
 }

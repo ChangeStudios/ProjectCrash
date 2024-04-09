@@ -28,7 +28,7 @@ const UInputAction* UCrashInputActionMapping::FindAbilityInputActionForTag(const
 {
 	/* Iterate through every ability input action in the native action mapping to find one mapped with the specified
 	 * input tag. */
-	for (const FCrashInputAction& AbilityAction : NativeInputActions)
+	for (const FCrashInputAction& AbilityAction : AbilityInputActions)
 	{
 		if (AbilityAction.InputAction && AbilityAction.InputTag == InputTag)
 		{

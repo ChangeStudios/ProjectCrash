@@ -327,6 +327,9 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	/* Bind the ability input actions from each default ability action mapping to the ability handler functions. */
 	CrashInputComponent->BindAbilityInputActions(ChallengerData->DefaultActionMapping);
+
+	/** Broadcast that this actor's input component was set up. */
+	InputComponentInitializedDelegate.Broadcast();
 }
 
 void AChallengerBase::Input_Look_Mouse(const FInputActionValue& InputActionValue)
