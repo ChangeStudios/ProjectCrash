@@ -71,8 +71,9 @@ public:
 
 protected:
 
-	/** The maximum total duration of the "character selection" phase. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection")
+	/** The maximum total duration of the "character selection" phase. When every player is "ready" (has selected their
+	 * character), the game will begin, regardless of how much time is left. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection",  Meta = (ForceUnits = "s"))
 	int32 TotalSelectionTime;
 
 	/** The time remaining in the character selection phase. */

@@ -118,11 +118,6 @@ public:
 
 public:
 
-	/** The duration of the character selection phase. When every player is "ready" (has selected their character), the
-	 * game will begin, regardless of how much time is left. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match", Meta = (ForceUnits = "s"))
-	float CharacterSelectionTime;
-
 	/**
 	 * The maximum amount of time for which this match will be played. When this time is reached, the game mode's
 	 * overtime will begin. If the game mode does not implement overtime, the match will be ended with the game mode's
