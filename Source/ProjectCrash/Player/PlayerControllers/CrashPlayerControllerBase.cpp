@@ -27,14 +27,14 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 
 		if (GlobalLayeredWidget)
 		{
-			// Register the global layered widget's stacks to which widgets will be pushed and popped.
+			// Register the global layered widget's layers, to and from which layer widgets will be pushed and popped.
 			TArray<UWidget*> OutWidgets;
 			GlobalLayeredWidget->WidgetTree->GetAllWidgets(OutWidgets);
 			for (UWidget* Widget : OutWidgets)
 			{
 				if (UTaggedActivatableWidgetStack* WidgetAsStack = Cast<UTaggedActivatableWidgetStack>(Widget))
 				{
-					RegisteredWidgetLayers.Add(WidgetAsStack);
+					GlobalLayeredWidgetLayers.Add(WidgetAsStack);
 				}
 			}
 
@@ -46,22 +46,21 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 		UE_LOG(LogPlayerController, Error, TEXT("ACrashPlayerController: UIData is not defined. This player controller must have a valid UIData asset and BaseWidget asset to manage the user interface."));
 	}
 
-	// If the global widget was successfully created, push the layout and slotted widgets to it.
+	/* If the global widget was successfully created, push the initial layer widgets to it, and push the slotted
+	 * widgets to those layer widgets. */
 	if (GlobalLayeredWidget && UIData)
 	{
-		// Push and register each layout widget.
-		for (const FLayoutWidget& LayoutWidget : UIData->LayoutWidgets)
+		// Push and register each layer widget.
+		for (const FLayerWidget& LayerWidget : UIData->InitialLayerWidgets)
 		{
-			if (LayoutWidget.LayoutWidgetClass)
+			if (LayerWidget.LayerWidgetClass)
 			{
-				if (UCommonActivatableWidget* NewLayout = PushWidgetToLayer(LayoutWidget.LayoutWidgetClass, LayoutWidget.TargetLayer))
+				// Push the widget.
+				if (UCommonActivatableWidget* NewLayer = PushWidgetToLayer(LayerWidget.LayerWidgetClass, LayerWidget.TargetLayer))
 				{
-					// Register the new layout widget.
-					RegisteredLayoutWidgets.Add(NewLayout);
-
-					// Register each slotted entry in the new layout widget.
+					// Register each slotted entry in the new layer widget.
 					TArray<UWidget*> OutWidgets;
-					NewLayout->WidgetTree->GetAllWidgets(OutWidgets);
+					NewLayer->WidgetTree->GetAllWidgets(OutWidgets);
 
 					for (UWidget* NewWidget : OutWidgets)
 					{
@@ -74,7 +73,7 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 			}
 		}
 
-		// Add each slotted widget to the layout widgets.
+		// Add each slotted widget to the layer widgets.
 		for (const FSlottedWidget& SlottedWidget : UIData->SlottedWidgets)
 		{
 			AddWidgetToSlot(SlottedWidget);
@@ -86,12 +85,26 @@ UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToLayer(TSubclas
 {
 	UCommonActivatableWidget* NewWidget = nullptr;
 
-	// Push the given widget to the specified layer.
-	for (UTaggedActivatableWidgetStack* WidgetLayer : RegisteredWidgetLayers)
+	// Search for the specified layer.
+	for (UTaggedActivatableWidgetStack* WidgetLayer : GlobalLayeredWidgetLayers)
 	{
 		if (WidgetLayer->StackID.MatchesTagExact(LayerToPushTo))
 		{
+			// Push the widget to the specified layer.
 			NewWidget = WidgetLayer->AddWidget(WidgetToPush);
+
+			// Register each of the new layer widget's stacks.
+			TArray<UWidget*> OutWidgets;
+			NewWidget->WidgetTree->GetAllWidgets(OutWidgets);
+			for (UWidget* Widget : OutWidgets)
+			{
+				if (UTaggedActivatableWidgetStack* WidgetAsStack = Cast<UTaggedActivatableWidgetStack>(Widget))
+				{
+					LayerWidgetStacks.Add(WidgetAsStack);
+				}
+			}
+
+			break;
 		}
 	}
 
@@ -100,13 +113,57 @@ UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToLayer(TSubclas
 
 void ACrashPlayerControllerBase::PopWidgetFromLayer(FGameplayTag LayerToPopFrom)
 {
-	// Pop the top widget from the specified layer.
-	for (UTaggedActivatableWidgetStack* WidgetLayer : RegisteredWidgetLayers)
+	// Search for the specified layer.
+	for (UTaggedActivatableWidgetStack* WidgetLayer : GlobalLayeredWidgetLayers)
 	{
 		if (WidgetLayer->StackID.MatchesTagExact(LayerToPopFrom))
 		{
+			// Retrieve the layer's top widget.
 			UCommonActivatableWidget* ActiveWidget = WidgetLayer->GetActiveWidget();
+
+			// Unregister each of the widget's stacks before popping it.
+			TArray<UWidget*> OutWidgets;
+			ActiveWidget->WidgetTree->GetAllWidgets(OutWidgets);
+			for (UWidget* Widget : OutWidgets)
+			{
+				if (UTaggedActivatableWidgetStack* WidgetAsStack = Cast<UTaggedActivatableWidgetStack>(Widget))
+				{
+					LayerWidgetStacks.Remove(WidgetAsStack);
+				}
+			}
+
+			// Pop the widget.
             WidgetLayer->RemoveWidget(*ActiveWidget);
+		}
+	}
+}
+
+UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToStack(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag StackToPushTo)
+{
+	UCommonActivatableWidget* NewWidget = nullptr;
+
+	// Search for the specified stack.
+	for (UTaggedActivatableWidgetStack* WidgetStack : LayerWidgetStacks)
+	{
+		if (WidgetStack->StackID.MatchesTagExact(StackToPushTo))
+		{
+			// Push the widget to the specified stack.
+			NewWidget = WidgetStack->AddWidget(WidgetToPush);
+		}
+	}
+
+	return NewWidget ? NewWidget : nullptr;
+}
+
+void ACrashPlayerControllerBase::PopWidgetFromStack(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag StackToPopFrom)
+{
+	// Search for the specified stack.
+	for (UTaggedActivatableWidgetStack* WidgetStack : LayerWidgetStacks)
+	{
+		if (WidgetStack->StackID.MatchesTagExact(StackToPopFrom))
+		{
+			// Pop the stack's top widget.
+			WidgetStack->RemoveWidget(*WidgetStack->GetActiveWidget());
 		}
 	}
 }

@@ -12,25 +12,27 @@ class UCommonActivatableWidget;
 
 
 /**
- * A widget that defines the layouts for slotted widgets, inside of which slotted widgets will be created.
+ * A widget that is pushed directly to a widget layer ("Game," "UI," etc.), inside of which slotted widgets and layer
+ * widget stacks will be created.
  */
 USTRUCT()
-struct FLayoutWidget
+struct FLayerWidget
 {
 	GENERATED_BODY()
 
-	/** The layout widget to create. */
+	/** The layer widget to create. */
 	UPROPERTY(EditAnywhere, Category = UserInterface)
-	TSubclassOf<UCommonActivatableWidget> LayoutWidgetClass;
+	TSubclassOf<UCommonActivatableWidget> LayerWidgetClass;
 
-	/** The layer to which to push the layer. */
+	/** The layer to which to push the layer widget. */
 	UPROPERTY(EditAnywhere, Category = UserInterface, Meta = (Categories = "UI.Layer"))
 	FGameplayTag TargetLayer;
 };
 
 
 /**
- * A widget that will be created in a specified slot within any existing layout widget with that slot.
+ * A widget that will be created in a specified slot within any existing layer widget or layer widget stack with that
+ * slot.
  */
 USTRUCT()
 struct FSlottedWidget
@@ -57,19 +59,20 @@ class PROJECTCRASH_API UUserInterfaceData : public UPrimaryDataAsset
 
 public:
 
-	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to
-	 * TaggedActivatableWidgetStacks in this widget. */
+	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to the
+	 * layers within in this widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "Generic")
 	TSubclassOf<UCommonActivatableWidget> GlobalLayeredWidget;
 
-	/** Widgets that will be created and registered as "layout widgets." When modular widgets are added, each layout
-	 * widget's slots will be checked for a tag matching the modular widget, and the widget will be created in that
-	 * slot. */
+	/** Widgets that will be created and pushed directly to corresponding widget layers within the global layered
+	 * widget. These widgets will be searched when creating slotted widgets. Additional layer widgets can be pushed and
+	 * popped during runtime. */
 	UPROPERTY(EditDefaultsOnly, Category = "Generic", Meta = (TitleProperty = "{TargetLayer} -> {LayoutWidgetClass}"))
-	TArray<FLayoutWidget> LayoutWidgets;
+	TArray<FLayerWidget> InitialLayerWidgets;
 
-	/** Widgets that will be created and placed inside any corresponding slot defined in any existing layout
-	 * widgets. */
+	/** Widgets that will be created and placed inside any slot with a matching tag within any initial layer widget
+	 * within the global layered widget. These widgets should NOT change during runtime. For runtime-manipulative
+	 * widgets, use layer widget stacks. */
 	UPROPERTY(EditDefaultsOnly, Category = "Generic", Meta = (TitleProperty = "{SlotID} -> {SlottedWidgetClass}"))
 	TArray<FSlottedWidget> SlottedWidgets;
 };

@@ -41,9 +41,13 @@ void UCrashCharacterMovementComponent::BeginPlay()
 	}
 }
 
-void UCrashCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void UCrashCharacterMovementComponent::OnUnregister()
 {
-	Super::EndPlay(EndPlayReason);
+	/* Simulate landing to clear any airborne tags. If we had any other movement tags that might still be active, we'd
+	 * remove them here. */
+	OnLanded(FHitResult());
+
+	Super::OnUnregister();
 }
 
 void UCrashCharacterMovementComponent::OnJumped()

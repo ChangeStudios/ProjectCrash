@@ -17,6 +17,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -141,6 +142,9 @@ void AChallengerBase::UninitAndDestroy()
 	{
 		// Unregister the equipment component early so it has time to destroy the equipment actors.
 		EquipmentComponent->UnregisterComponent();
+
+		// Unregister the movement component to clear any leftover movement tags (e.g. "falling").
+		GetMovementComponent()->UnregisterComponent();
 
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(0.1f);
