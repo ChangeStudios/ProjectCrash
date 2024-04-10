@@ -7,6 +7,7 @@
 #include "CrashGameplayAbilityBase.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "GameFramework/CrashLogging.h"
 
 void FCrashAbilitySet_GrantedHandles::AddGameplayAbilitySpecHandle(const FGameplayAbilitySpecHandle& HandleToAdd)
 {
@@ -45,7 +46,7 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 		return;
 	}
 
-	// Remove each ability granted by this ability set.
+	// Remove or disable each ability granted by this ability set.
 	for (const FGameplayAbilitySpecHandle& Handle : GrantedAbilitySpecHandles)
 	{
 		if (Handle.IsValid())
@@ -85,7 +86,11 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	}
 
 	// Clear the handle collections.
-	GrantedAbilitySpecHandles.Reset();
+	if (!bDisableInsteadOfRemove)
+	{
+		GrantedAbilitySpecHandles.Reset();
+	}
+
 	AppliedEffectHandles.Reset();
 	GrantedAttributeSets.Reset();
 }

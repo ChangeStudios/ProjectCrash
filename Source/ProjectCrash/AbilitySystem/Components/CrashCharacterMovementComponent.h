@@ -33,6 +33,8 @@ public:
 	/** Binds relevant delegates. */
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 
 
 	// Movement modes.

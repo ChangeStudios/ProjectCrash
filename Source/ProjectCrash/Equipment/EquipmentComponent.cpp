@@ -66,7 +66,7 @@ void UEquipmentComponent::OnUnregister()
 UEquipmentSet* UEquipmentComponent::EquipEquipmentSet(UEquipmentSet* SetToEquip)
 {
 	check(GetOwner()->HasAuthority());
-	
+
 	/** Update the currently equipped set. The previous set will be un-equipped and the new set will be equipped in
 	 * the OnRep. */
 	UEquipmentSet* PreviousSet = CurrentEquipmentSet;
@@ -91,18 +91,22 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 	 * is why we don't call this function directly. We check the equipment set handle instead of the equipment set
 	 * itself because we may still need to equip an equipment set even if the latter is still valid; i.e. re-equipping
 	 * a temporarily unequipped set. */
-	if (CurrentEquipmentSetHandle.EquipmentSet)
+	if (CurrentEquipmentSetHandle.EquipmentSet && !bWasTemporarilyUnequipped)
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to equip equipment set [%s] on actor [%s], but the actor's current equipment set, [%s], must be unequipped first."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()), *CurrentEquipmentSet->GetName());
 		return false;
 	}
 	else
 	{
-		EQUIPMENT_LOG(Verbose, TEXT("Equipped [%s] on [%s]."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()));
+		EQUIPMENT_LOG(Verbose, TEXT("%s [%s] on [%s]."), *FString(bWasTemporarilyUnequipped ? "Re-Enabling" : "Equipping"), *SetToEquip->GetName(), *GetNameSafe(GetOwner()));
 	}
 
-	// Cache the equipment set class being equipped.
-	CurrentEquipmentSetHandle.EquipmentSet = SetToEquip;
+	/* Cache the equipment set class being equipped. This will already be valid when temporarily unequipping, since we
+	 * won't have nulled it. */
+	if (!bWasTemporarilyUnequipped)
+	{
+		CurrentEquipmentSetHandle.EquipmentSet = SetToEquip;
+	}
 
 	// Define parameters for attaching equipment actors.
 	ACharacter* EquippingChar = Cast<ACharacter>(GetOwner());
@@ -161,11 +165,14 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 			// Only grant ability sets on the server.
 			if (CrashASC->IsOwnerActorAuthoritative())
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip, bWasTemporarilyUnequipped);
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, bWasTemporarilyUnequipped ? nullptr : &CurrentEquipmentSetHandle.GrantedAbilitySetHandles, SetToEquip, bWasTemporarilyUnequipped);
 			}
 
 			// Cache the ASC to which this equipment set's ability set is granted.
-			CurrentEquipmentSetHandle.GrantedASC = CrashASC;
+			if (!bWasTemporarilyUnequipped)
+			{
+				CurrentEquipmentSetHandle.GrantedASC = CrashASC;
+			}
 		}
 	}
 
@@ -247,7 +254,12 @@ bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 	 * handle of the previous set, which we can use to unequip it. */
 	if (!CurrentEquipmentSetHandle.EquipmentSet)
 	{
+		EQUIPMENT_LOG(Warning, TEXT("Attempted to unequip equipment set from [%s], but there was no equipment set to unequip. from [%s]."), *GetNameSafe(GetOwner()));
 		return false;
+	}
+	else
+	{
+		EQUIPMENT_LOG(Verbose, TEXT("Unequipped [%s] from [%s]."), *CurrentEquipmentSetHandle.EquipmentSet->GetName(), *GetNameSafe(GetOwner()));
 	}
 
 	// Destroy each equipment actor.
@@ -266,11 +278,18 @@ bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 	if (CurrentEquipmentSetHandle.GrantedASC && CurrentEquipmentSetHandle.GrantedASC->IsOwnerActorAuthoritative())
 	{
 		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CurrentEquipmentSetHandle.GrantedASC, bTemporarilyUnequip);
-		CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
+
+		if (!bTemporarilyUnequip)
+		{
+			CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
+		}
 	}
 
-	// Null the current equipment set's class.
-	CurrentEquipmentSetHandle.EquipmentSet = nullptr;
+	if (!bTemporarilyUnequip)
+	{
+		// Null the current equipment set's class.
+		CurrentEquipmentSetHandle.EquipmentSet = nullptr;
+	}
 
 	return true;
 }

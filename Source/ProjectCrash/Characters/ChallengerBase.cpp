@@ -180,7 +180,7 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 	ThirdPersonMesh->SetOwnerNoSee(false);
 
 	// Yeet (technical term) the third-person mesh away depending on the amount of damage that killed this character.
-	if (HasAuthority())
+	if (HasAuthority() && DeathData.KillingDamageCauser)
 	{
 		const FVector SourceLocation = DeathData.KillingDamageCauser->GetActorLocation();
 		const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());

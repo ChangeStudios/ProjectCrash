@@ -41,6 +41,11 @@ void UCrashCharacterMovementComponent::BeginPlay()
 	}
 }
 
+void UCrashCharacterMovementComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+}
+
 void UCrashCharacterMovementComponent::OnJumped()
 {
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
