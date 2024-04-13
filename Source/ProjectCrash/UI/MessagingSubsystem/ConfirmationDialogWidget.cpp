@@ -8,6 +8,7 @@
 #include "CommonTextBlock.h"
 #include "Components/DynamicEntryBox.h"
 #include "ICommonInputModule.h"
+#include "UI/Foundation/CrashButtonBase.h"
 
 void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMessagingResultSignature ResultCallback)
 {
@@ -52,11 +53,10 @@ void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMe
 			}
 		}
 
-		UCommonButtonBase* Button = EntryBox_Buttons->CreateEntry<UCommonButtonBase>();
+		UCrashButtonBase* Button = EntryBox_Buttons->CreateEntry<UCrashButtonBase>();
 		Button->SetTriggeringInputAction(ActionRow);
 		Button->OnClicked().AddUObject(this, &ThisClass::CloseConfirmationWindow, Action.Result);
-
-		// TODO: Update button text.
+		Button->SetButtonText(Action.OptionalDisplayText);
 	}
 
 	// Bind the result callback.
