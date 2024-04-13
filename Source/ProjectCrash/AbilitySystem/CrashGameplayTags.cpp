@@ -48,8 +48,9 @@ namespace CrashGameplayTags
 
 	// UI
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Game, "UI.Layer.Game", "The in-game HUD. Displays health, abilities, game mode data, etc.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up in-game, such as the pause menu and its various sub-menus.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up without interrupting gameplay, such as an inventory menu.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu, pause menu, etc.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Dialog, "UI.Layer.Dialog", "Dialog prompts to which the user can respond, such as confirmations prompts or error messages.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_AbilitySlot, "UI.AbilityBehavior.AbilitySlot", "This ability will appear in the ability bar in a standard ability slot. These abilities are displayed with their cooldown and activation status.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Ultimate, "UI.AbilityBehavior.Ultimate", "This ability will appear with its current charge in the ultimate widget.");

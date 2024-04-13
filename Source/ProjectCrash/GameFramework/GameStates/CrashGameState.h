@@ -31,6 +31,9 @@ public:
 	/** Caches the current game mode data from the server so it can be replicated to clients. */
 	virtual void BeginPlay() override;
 
+	/** Performs some final clean-up, like clearing the timer handle. */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 
 
 	// Game mode data.

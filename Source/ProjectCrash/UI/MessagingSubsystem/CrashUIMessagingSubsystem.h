@@ -6,6 +6,7 @@
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "CrashUIMessagingSubsystem.generated.h"
 
+class UDialogDefinition;
 class UDialogWidget;
 
 DECLARE_DELEGATE_OneParam(FUIMessagingResultSignature, EUIMessageResult /* Result */);
@@ -66,17 +67,31 @@ public:
 // Construction.
 public:
 
-	void CreateConfirmationDialog();
-	void CreateErrorDialog();
+	/** Constructs a new confirmation dialog widget with the given data and config-defined widget class. */
+	void CreateConfirmationDialog(UDialogDefinition* DialogDefinition, FUIMessagingResultSignature ResultCallback = FUIMessagingResultSignature());
 
-// Classes.
+	/** Constructs a new error dialog widget with the given data and config-defined widget class. */
+	void CreateErrorDialog(UDialogDefinition* DialogDefinition, FUIMessagingResultSignature ResultCallback = FUIMessagingResultSignature());
+
+// Loaded classes.
 private:
 
 	/** The widget used for confirmation dialogs. */
-	UPROPERTY(Config)
-	TSoftClassPtr<UDialogWidget> ConfirmationDialogClass;
+	UPROPERTY()
+	TSubclassOf<UDialogWidget> ConfirmationDialogClass;
 
 	/** The widget used for error dialogs. */
+	UPROPERTY()
+	TSubclassOf<UDialogWidget> ErrorDialogClass;
+
+// Class paths.
+private:
+
+	/** Path to the confirmation dialog widget. */
 	UPROPERTY(Config)
-	TSoftClassPtr<UDialogWidget> ErrorDialogClass;
+	TSoftClassPtr<UDialogWidget> ConfirmationDialogClassPath;
+
+	/** Path to the error dialog widget. */
+	UPROPERTY(Config)
+	TSoftClassPtr<UDialogWidget> ErrorDialogClassPath;
 };

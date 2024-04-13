@@ -62,12 +62,12 @@ public:
 	/** The global widget that will be created and pushed when the game starts. All other widgets will be pushed to the
 	 * layers within in this widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "Generic")
-	TSubclassOf<UCommonActivatableWidget> GlobalLayeredWidget;
+	TSubclassOf<UGlobalLayeredWidget> GlobalLayeredWidget;
 
 	/** Widgets that will be created and pushed directly to corresponding widget layers within the global layered
 	 * widget. These widgets will be searched when creating slotted widgets. Additional layer widgets can be pushed and
 	 * popped during runtime. */
-	UPROPERTY(EditDefaultsOnly, Category = "Generic", Meta = (TitleProperty = "{TargetLayer} -> {LayoutWidgetClass}"))
+	UPROPERTY(EditDefaultsOnly, Category = "Generic", Meta = (TitleProperty = "{TargetLayer} -> {LayerWidgetClass}"))
 	TArray<FLayerWidget> InitialLayerWidgets;
 
 	/** Widgets that will be created and placed inside any slot with a matching tag within any initial layer widget

@@ -31,4 +31,8 @@ public:
 	/** UI that comprises the primary experience of a game mode, rather than gameplay; e.g. the main menu. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UCommonActivatableWidgetStack> MenuStack;
+
+	/** Stack for dialog prompts, like action confirmations or error messages. */
+	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
+	TObjectPtr<UCommonActivatableWidgetStack> DialogStack;
 };

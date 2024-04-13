@@ -6,7 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "UI/Data/UserInterfaceData.h"
-#include "UI/Widgets/GlobalLayeredWidget.h"
+#include "UI/Framework/GlobalLayeredWidget.h"
 #include "UI/Widgets/Utils/SlottedEntryBox.h"
 #include "UI/Widgets/Utils/TaggedActivatableWidgetStack.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"

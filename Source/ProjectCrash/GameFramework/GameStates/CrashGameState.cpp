@@ -22,6 +22,14 @@ void ACrashGameState::BeginPlay()
 	}
 }
 
+void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	TimerHandle_DefaultTimer.Invalidate();
+	PhaseTimeChangedDelegate.Clear();
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void ACrashGameState::OnRep_GameModeData()
 {
 	// Broadcast that the game mode data has been replicated.
