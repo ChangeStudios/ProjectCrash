@@ -21,8 +21,13 @@ class PROJECTCRASH_API UAsyncAction_CreateConfirmation : public UBlueprintAsyncA
 
 public:
 
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UserInterface|Actions", Meta = (BlueprintInternalUseOnly = "true", WorldContext = "InWorldContextObject", Keywords = "Dialog"))
-	static UAsyncAction_CreateConfirmation* CreateConfirmation(UObject* InWorldContextObject, UDialogDefinition* DialogDefinition);
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UserInterface|Actions", Meta = (BlueprintInternalUseOnly = "true", WorldContext = "InWorldContextObject"))
+	static UAsyncAction_CreateConfirmation* CreateConfirmationDialog(
+		UObject* InWorldContextObject,
+		FText InHeaderText,
+		FText InBodyText,
+		const TArray<FDialogAction>& InButtonActions
+	);
 
 	virtual void Activate() override;
 

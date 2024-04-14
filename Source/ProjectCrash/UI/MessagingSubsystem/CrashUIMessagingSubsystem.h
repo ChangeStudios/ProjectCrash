@@ -39,7 +39,7 @@ enum class EUIMessageResult : uint8
  * Subsystem that provides various utilities for messaging within this project's UI framework, such as pushing dialogs
  * to specified layers.
  */
-UCLASS(Config = Game)
+UCLASS(config = Game)
 class PROJECTCRASH_API UCrashUIMessagingSubsystem : public ULocalPlayerSubsystem
 {
 	GENERATED_BODY()

@@ -12,21 +12,29 @@
 
 void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMessagingResultSignature ResultCallback)
 {
+	UE_LOG(LogTemp, Error, TEXT("C"));
+	
 	Super::SetupDialog(Definition, ResultCallback);
 
 	// Update the displayed dialog text.
 	Text_Title->SetText(Definition->HeaderText);
 	RichText_Description->SetText(Definition->BodyText);
 
+	UE_LOG(LogTemp, Error, TEXT("definition: %s, title: %s, action size: %i"), *Definition->BodyText.ToString(), *Definition->HeaderText.ToString(), Definition->ButtonActions.Num());
+
 	// Clear any default buttons the dialog has.
 	EntryBox_Buttons->Reset<UCommonButtonBase>([](UCommonButtonBase& Button)
 	{
 		Button.OnClicked().Clear();
 	});
+	
+	UE_LOG(LogTemp, Error, TEXT("B"));
 
+	
 	// Set up the dialog response buttons.
 	for (const FDialogAction& Action : Definition->ButtonActions)
 	{
+		UE_LOG(LogTemp, Error, TEXT("C"));
 		FDataTableRowHandle ActionRow;
 
 		switch (Action.Result)

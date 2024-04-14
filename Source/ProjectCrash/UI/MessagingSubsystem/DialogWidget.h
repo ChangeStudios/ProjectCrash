@@ -52,7 +52,7 @@ public:
 	FText BodyText;
 
 	/** The actions that can be taken in response to this dialog. */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FDialogAction> ButtonActions;
 };
 
