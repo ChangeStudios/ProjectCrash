@@ -163,6 +163,7 @@ void ACrashPlayerControllerBase::PopWidgetFromStack(FGameplayTag StackToPopFrom)
 		if (WidgetStack->StackID.MatchesTagExact(StackToPopFrom))
 		{
 			// Pop the stack's top widget.
+			// UCommonActivatableWidget* TopWidget = WidgetStack->GetActiveWidget();
 			WidgetStack->RemoveWidget(*WidgetStack->GetActiveWidget());
 		}
 	}
