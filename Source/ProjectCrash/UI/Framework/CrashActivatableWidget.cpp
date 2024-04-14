@@ -3,9 +3,9 @@
 
 #include "UI/Framework/CrashActivatableWidget.h"
 
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerControllerBase.h"
 
-ACrashPlayerController* UCrashActivatableWidget::GetOwningCrashPlayer() const
+ACrashPlayerControllerBase* UCrashActivatableWidget::GetOwningCrashPlayer() const
 {
-	return Cast<ACrashPlayerController>(GetOwningPlayer());
+	return Cast<ACrashPlayerControllerBase>(GetOwningPlayer());
 }

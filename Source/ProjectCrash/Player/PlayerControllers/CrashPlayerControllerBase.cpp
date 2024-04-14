@@ -155,7 +155,7 @@ UCommonActivatableWidget* ACrashPlayerControllerBase::PushWidgetToStack(TSubclas
 	return NewWidget ? NewWidget : nullptr;
 }
 
-void ACrashPlayerControllerBase::PopWidgetFromStack(TSubclassOf<UCommonActivatableWidget> WidgetToPush, FGameplayTag StackToPopFrom)
+void ACrashPlayerControllerBase::PopWidgetFromStack(FGameplayTag StackToPopFrom)
 {
 	// Search for the specified stack.
 	for (UTaggedActivatableWidgetStack* WidgetStack : LayerWidgetStacks)

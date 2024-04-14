@@ -78,7 +78,7 @@ protected:
 
 
 
-	// Ability task.
+	// Task construction.
 
 public:
 

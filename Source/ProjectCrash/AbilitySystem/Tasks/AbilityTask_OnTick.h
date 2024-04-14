@@ -22,7 +22,13 @@ public:
 
 	/** Default constructor. */
 	UAbilityTask_OnTick(const FObjectInitializer& ObjectInitializer);
-	
+
+
+
+	// Task construction.
+
+public:
+
 	/** Fires a callback every tick until this task ends. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", Meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
 	static UAbilityTask_OnTick* OnAbilityTick(UGameplayAbility* OwningAbility, FName TaskInstanceName);

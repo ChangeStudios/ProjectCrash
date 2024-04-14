@@ -6,7 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "CrashActivatableWidget.generated.h"
 
-class ACrashPlayerController;
+class ACrashPlayerControllerBase;
 
 /**
  * Base activatable widget class for this project. Provides various utilities for convenience.
@@ -23,5 +23,5 @@ public:
 	/** Returns this widget's owning player controller cast to ACrashPlayerController. Returns null if the player is
 	 * invalid OR is not of the correct class. */
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Widget")
-	FORCEINLINE ACrashPlayerController* GetOwningCrashPlayer() const;
+	FORCEINLINE ACrashPlayerControllerBase* GetOwningCrashPlayer() const;
 };

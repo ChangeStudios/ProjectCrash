@@ -25,6 +25,7 @@ void UCrashUIMessagingSubsystem::Initialize(FSubsystemCollectionBase& Collection
 {
 	Super::Initialize(Collection);
 
+	// Load the dialog classes.
 	ConfirmationDialogClass = ConfirmationDialogClassPath.LoadSynchronous();
 	ErrorDialogClass = ErrorDialogClassPath.LoadSynchronous();
 }
@@ -37,12 +38,9 @@ void UCrashUIMessagingSubsystem::CreateConfirmationDialog(UDialogDefinition* Dia
 	if (CrashPC)
 	{
 		// Create and initialize a new dialog widget with the given data.
-		UE_LOG(LogTemp, Error, TEXT("A"));
 		UCommonActivatableWidget* NewWidget = CrashPC->PushWidgetToLayer(ConfirmationDialogClass, CrashGameplayTags::TAG_UI_Layer_Dialog);
 		if (UDialogWidget* WidgetAsDialog = Cast<UDialogWidget>(NewWidget))
 		{
-			UE_LOG(LogTemp, Error, TEXT("A"));
-
 			WidgetAsDialog->SetupDialog(DialogDefinition, ResultCallback);
 		}
 	}

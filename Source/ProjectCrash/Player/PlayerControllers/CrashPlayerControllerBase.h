@@ -67,7 +67,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UserInterface|Player Controller")
 	void PopWidgetFromStack
 	(
-		TSubclassOf<UCommonActivatableWidget> WidgetToPush,
 		UPARAM(Meta = (Categories = "UI.Stack"))
 		FGameplayTag StackToPopFrom
 	);
