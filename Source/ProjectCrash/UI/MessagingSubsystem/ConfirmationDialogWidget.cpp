@@ -66,6 +66,24 @@ void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMe
 		});
 	}
 
+	// Set the focus to the first response button.
+	if (UWidget* FocusTarget = GetDesiredFocusTarget())
+	{
+		FocusTarget->SetFocus();
+	}
+
 	// Bind the result callback.
 	OnResultCallback = ResultCallback;
+}
+
+UWidget* UConfirmationDialogWidget::NativeGetDesiredFocusTarget() const
+{
+	// Use the first response button as the default focus widget.
+	TArray<UUserWidget*> Buttons = EntryBox_Buttons.Get()->GetAllEntries();
+	if (Buttons.Num())
+	{
+		return Buttons[0];
+	}
+
+	return Super::NativeGetDesiredFocusTarget();
 }
