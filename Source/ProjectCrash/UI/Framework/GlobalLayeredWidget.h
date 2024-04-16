@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonActivatableWidget.h"
+#include "CommonUserWidget.h"
 #include "GlobalLayeredWidget.generated.h"
 
 class UCommonActivatableWidgetStack;
@@ -13,7 +13,7 @@ class UCommonActivatableWidgetStack;
  * allowing us to push widgets to and pop widgets from this widget.
  */
 UCLASS(Abstract, Blueprintable)
-class PROJECTCRASH_API UGlobalLayeredWidget : public UCommonActivatableWidget
+class PROJECTCRASH_API UGlobalLayeredWidget : public UCommonUserWidget
 {
 	GENERATED_BODY()
 

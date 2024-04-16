@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "CrashPlayerControllerBase.generated.h"
 
+class UCommonUserWidget;
 class UTaggedActivatableWidgetStack;
 class UCommonActivatableWidget;
 class UGlobalLayeredWidget;
@@ -76,7 +77,7 @@ protected:
 	/** The global widget being rendered by this player controller, created at BeginPlay. Defines the stacks to which
 	 * layer widgets are pushed. */
 	UPROPERTY()
-	TObjectPtr<UCommonActivatableWidget> GlobalLayeredWidget;
+	TObjectPtr<UCommonUserWidget> GlobalLayeredWidget;
 
 	/** Widget layers (e.g. "Game," "Menu," etc.) inside the current GlobalLayeredWidget. New layer widgets are pushed
 	 * to these layers using matching tags. These layer widgets aren't explicitly cached, since we can access them as

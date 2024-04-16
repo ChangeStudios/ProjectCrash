@@ -3,6 +3,7 @@
 
 #include "Player/PlayerControllers/CrashPlayerControllerBase.h"
 
+#include "CommonActivatableWidget.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "UI/Data/UserInterfaceData.h"
@@ -23,7 +24,7 @@ void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceDat
 	 * pushed to this. */
 	if (UIData && UIData->GlobalLayeredWidget)
 	{
-		GlobalLayeredWidget = CreateWidget<UCommonActivatableWidget>(this, UIData->GlobalLayeredWidget);
+		GlobalLayeredWidget = CreateWidget<UCommonUserWidget>(this, UIData->GlobalLayeredWidget);
 
 		if (GlobalLayeredWidget)
 		{
