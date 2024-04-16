@@ -10,7 +10,8 @@ class UEnhancedInputLocalPlayerSubsystem;
 class UInputAction;
 
 /**
- * An action widget that will get the icon of key that is currently assigned to the common input action on this widget
+ * An action widget that retrieves the icon of the key currently assigned to the common input action bound to this
+ * widget.
  */
 UCLASS(BlueprintType, Blueprintable)
 class PROJECTCRASH_API UCrashActionWidget : public UCommonActionWidget
@@ -19,9 +20,9 @@ class PROJECTCRASH_API UCrashActionWidget : public UCommonActionWidget
 
 public:
 
-	//~ Begin UCommonActionWidget interface
+	/** Attempts to find a key assigned to this widget's input action. If one cannot be found, falls back to the
+	 * Common UI's default data table. */
 	virtual FSlateBrush GetIcon() const override;
-	//~ End of UCommonActionWidget interface
 
 	/** The Enhanced Input Action that is associated with this Common Input action. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
