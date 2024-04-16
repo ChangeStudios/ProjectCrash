@@ -41,6 +41,9 @@ public:
 	/** Uses this widget's properties to determine its desired input configuration. */
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 
+	/** Plays an optional activation animation and sets up this widget's user focus. */
+	virtual void NativeOnActivated() override;
+
 
 
 	// Utils.
@@ -65,4 +68,14 @@ protected:
 	/** The desired mouse behavior when the game gets input. */
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 	EMouseCaptureMode GameMouseCaptureMode = EMouseCaptureMode::CapturePermanently;
+
+
+
+	// Animations.
+
+protected:
+
+	/** Optional animation played when this widget is activated. */
+	UPROPERTY(Transient, BlueprintReadOnly, Meta = (BindWidgetAnimOptional))
+	TObjectPtr<UWidgetAnimation> OnActivated;
 };

@@ -3,6 +3,8 @@
 
 #include "UI/Framework/CrashActivatableWidget.h"
 
+#include "CommonInputSubsystem.h"
+#include "Animation/WidgetAnimation.h"
 #include "Player/PlayerControllers/CrashPlayerControllerBase.h"
 
 UCrashActivatableWidget::UCrashActivatableWidget(const FObjectInitializer& ObjectInitializer)
@@ -31,6 +33,35 @@ TOptional<FUIInputConfig> UCrashActivatableWidget::GetDesiredInputConfig() const
 		default:
 		{
 			return TOptional<FUIInputConfig>();
+		}
+	}
+}
+
+void UCrashActivatableWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	// Play an optional activation animation. 
+	if (OnActivated)
+	{
+		PlayAnimationForward(OnActivated);
+	}
+
+	// Set the default focus target if GetDesiredFocusTarget has been overridden.
+	if (UWidget* FocusTarget = GetDesiredFocusTarget()) // Note: Might need to use BP_GetDesiredFocusTarget
+	{
+		FocusTarget->SetFocus();
+
+		// Each time input method changes, if it changes to a gamepad, reset focus to the default focus target.
+		if (UCommonInputSubsystem* CommonInput = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>())
+		{
+			CommonInput->OnInputMethodChangedNative.AddLambda([FocusTarget] (ECommonInputType NewInputType)
+			{
+				if (NewInputType == ECommonInputType::Gamepad)
+				{
+					FocusTarget->SetFocus();
+				}
+			});
 		}
 	}
 }
