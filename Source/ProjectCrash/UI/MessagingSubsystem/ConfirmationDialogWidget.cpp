@@ -24,38 +24,10 @@ void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMe
 		Button.OnClicked().Clear();
 	});
 
-	// Set up the dialog response buttons.
 	for (const FDialogAction& Action : Definition->ButtonActions)
 	{
-		FDataTableRowHandle ActionRow;
-
-		// Bind each button's input action.
-		switch (Action.Result)
-		{
-			case EUIMessageResult::Confirmed:
-			{
-				ActionRow = ICommonInputModule::GetSettings().GetDefaultClickAction();
-				break;
-			}
-			case EUIMessageResult::Declined:
-			{
-				ActionRow = ICommonInputModule::GetSettings().GetDefaultBackAction();
-				break;
-			}
-			case EUIMessageResult::Cancelled:
-			{
-				ActionRow = CancelAction;
-				break;
-			}
-			default:
-			{
-				ensure(false);
-				continue;
-			}
-		}
-
+		// Set up the dialog response buttons.
 		UCrashButtonBase* Button = EntryBox_Buttons->CreateEntry<UCrashButtonBase>();
-		Button->SetTriggeringInputAction(ActionRow);
 		Button->SetButtonText(Action.OptionalDisplayText);
 
 		// When a response is clicked, close this widget and execute the selected response's callback.
@@ -64,26 +36,40 @@ void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMe
 			DeactivateWidget();
 			OnResultCallback.ExecuteIfBound(Action.Result);
 		});
-	}
 
-	// Set the focus to the first response button.
-	if (UWidget* FocusTarget = GetDesiredFocusTarget())
-	{
-		FocusTarget->SetFocus();
+		// If desired, we can automatically bind Common UI input actions to trigger the corresponding button.
+		if (Definition->bBindInputActions)
+		{
+			FDataTableRowHandle ActionRow;
+
+			switch (Action.Result)
+			{
+			case EUIMessageResult::Confirmed:
+				{
+					ActionRow = ICommonInputModule::GetSettings().GetDefaultClickAction();
+					break;
+				}
+			case EUIMessageResult::Declined:
+				{
+					ActionRow = ICommonInputModule::GetSettings().GetDefaultBackAction();
+					break;
+				}
+			case EUIMessageResult::Cancelled:
+				{
+					ActionRow = CancelAction;
+					break;
+				}
+			default:
+				{
+					ensure(false);
+					continue;
+				}
+			}
+
+			Button->SetTriggeringInputAction(ActionRow);
+		}
 	}
 
 	// Bind the result callback.
 	OnResultCallback = ResultCallback;
-}
-
-UWidget* UConfirmationDialogWidget::NativeGetDesiredFocusTarget() const
-{
-	// Use the first response button as the default focus widget.
-	TArray<UUserWidget*> Buttons = EntryBox_Buttons.Get()->GetAllEntries();
-	if (Buttons.Num())
-	{
-		return Buttons[0];
-	}
-
-	return Super::NativeGetDesiredFocusTarget();
 }

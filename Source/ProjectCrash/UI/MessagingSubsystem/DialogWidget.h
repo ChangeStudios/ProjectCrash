@@ -51,6 +51,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "Body")
 	FText BodyText;
 
+	/** If true, Common UI input actions will automatically be bound each action button in the dialog. E.g. the
+	 * "Confirm" action will automatically trigger any "Confirm" button in the dialog widget. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bBindInputActions;
+
 	/** The actions that can be taken in response to this dialog. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FDialogAction> ButtonActions;

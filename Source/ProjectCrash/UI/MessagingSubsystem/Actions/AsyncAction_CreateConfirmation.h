@@ -33,6 +33,8 @@ public:
 	 *									dialog will be given, or use a widget to push to that widget's owner.
 	 * @param InHeaderText				The dialog's header text.
 	 * @param InBodyText				The dialog's body text.
+	 * @param bInBindInputActions		Whether to bind input actions (e.g. "Confirm", "Back," etc.) to trigger any
+	 *									corresponding buttons inside of the dialog.
 	 * @param InButtonActions			List of actions that will be provided to the player as possible responses.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UserInterface|Actions", Meta = (BlueprintInternalUseOnly = "true", WorldContext = "InWorldContextObject"))
@@ -40,6 +42,7 @@ public:
 		UObject* InWorldContextObject,
 		FText InHeaderText,
 		FText InBodyText,
+		bool bInBindInputActions,
 		const TArray<FDialogAction>& InButtonActions
 	);
 

@@ -48,9 +48,8 @@ void UCrashActivatableWidget::NativeOnActivated()
 	}
 
 	// Set the default focus target if GetDesiredFocusTarget has been overridden.
-	if (UWidget* FocusTarget = GetDesiredFocusTarget()) // Note: Might need to use BP_GetDesiredFocusTarget
+	if (UWidget* FocusTarget = GetDesiredFocusTarget())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Focused %s"), *FocusTarget->GetName());
 		FocusTarget->SetFocus();
 
 		// Each time input method changes, if it changes to a gamepad, reset focus to the default focus target.
@@ -58,10 +57,7 @@ void UCrashActivatableWidget::NativeOnActivated()
 		{
 			CommonInput->OnInputMethodChangedNative.AddLambda([FocusTarget] (ECommonInputType NewInputType)
 			{
-				// if (NewInputType == ECommonInputType::Gamepad)
-				// {
-					FocusTarget->SetFocus();
-				// }
+				FocusTarget->SetFocus();
 			});
 		}
 	}

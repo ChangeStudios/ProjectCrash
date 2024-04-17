@@ -5,7 +5,7 @@
 
 #include "UI/MessagingSubsystem/DialogWidget.h"
 
-UAsyncAction_CreateConfirmation* UAsyncAction_CreateConfirmation::CreateConfirmationDialog(UObject* InWorldContextObject, FText InHeaderText, FText InBodyText, const TArray<FDialogAction>& InButtonActions)
+UAsyncAction_CreateConfirmation* UAsyncAction_CreateConfirmation::CreateConfirmationDialog(UObject* InWorldContextObject, FText InHeaderText, FText InBodyText, bool bBindInputActions, const TArray<FDialogAction>& InButtonActions)
 {
 	// Create a new async action with the given data.
 	UAsyncAction_CreateConfirmation* Action = NewObject<UAsyncAction_CreateConfirmation>();
@@ -14,6 +14,7 @@ UAsyncAction_CreateConfirmation* UAsyncAction_CreateConfirmation::CreateConfirma
 	Action->DialogDefinition = NewObject<UDialogDefinition>();
 	Action->DialogDefinition->HeaderText = InHeaderText;
 	Action->DialogDefinition->BodyText = InBodyText;
+	Action->DialogDefinition->bBindInputActions = bBindInputActions;
 	Action->DialogDefinition->ButtonActions = InButtonActions;
 	Action->RegisterWithGameInstance(InWorldContextObject);
 

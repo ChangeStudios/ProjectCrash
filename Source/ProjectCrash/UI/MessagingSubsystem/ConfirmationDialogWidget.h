@@ -27,9 +27,6 @@ public:
 	/** Populates the dialog content (its title, description, and buttons). */
 	virtual void SetupDialog(UDialogDefinition* Definition, FUIMessagingResultSignature ResultCallback) override;
 
-	/** Sets the user focus to the first button. */
-	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-
 
 
 	// Widgets.
