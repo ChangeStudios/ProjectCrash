@@ -14,16 +14,13 @@ class PROJECTCRASH_API UMatchUserInterfaceData : public UUserInterfaceData
 {
 	GENERATED_BODY()
 
+	// End-game
+
 public:
 
-	// TODO: Add a pause menu widget and an array of stackable widgets to put in it
-
-	UPROPERTY(EditDefaultsOnly, Category = "Match")
-	TSubclassOf<UCommonActivatableWidget> CharacterSelectionWidget;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Match")
+	UPROPERTY(EditDefaultsOnly, Category = "Match|End-Game")
 	TSubclassOf<UCommonActivatableWidget> VictoryPopUp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Match")
+	UPROPERTY(EditDefaultsOnly, Category = "Match|End-Game")
 	TSubclassOf<UCommonActivatableWidget> DefeatPopUp;
 };

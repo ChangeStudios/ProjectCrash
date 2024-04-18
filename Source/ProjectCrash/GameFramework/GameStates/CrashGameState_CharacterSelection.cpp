@@ -26,7 +26,7 @@ void ACrashGameState_CharacterSelection::BeginPlay()
 		SelectionTimeRemaining = TotalSelectionTime;
 
 		// Start the character selection phase timer.
-		GetWorldTimerManager().SetTimer(SelectionTimerHandle, FTimerDelegate::CreateLambda([this]
+		GetWorldTimerManager().SetTimer(SelectionTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]
 		{
 			if (SelectionTimeRemaining > 0)
 			{

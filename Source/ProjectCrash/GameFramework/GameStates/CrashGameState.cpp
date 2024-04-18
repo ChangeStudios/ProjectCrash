@@ -69,7 +69,7 @@ void ACrashGameState::OnRep_MatchState()
 			PhaseTimeRemaining = GameModeData->MaximumMatchTime;
 		}
 
-		GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, FTimerDelegate::CreateLambda([this]
+		GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, FTimerDelegate::CreateWeakLambda(this, [this]
 		{
 			if (PhaseTimeRemaining > 0)
 			{

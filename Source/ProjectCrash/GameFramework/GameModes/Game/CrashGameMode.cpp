@@ -279,7 +279,7 @@ void ACrashGameMode::EndMatch()
 		// TODO: Disconnect player.
 
 		// Return to the main menu after the "end match" time.
-		GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateLambda([]
+		GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateWeakLambda(this, []
 		{
 			return;
 		}), GameModeData->EndMatchTime * UGameplayStatics::GetGlobalTimeDilation(this), false);
@@ -338,12 +338,10 @@ void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 	}
 
 	// Start a timer to finish the Death after DeathDuration.
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this, DeathData]
 	{
-		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateLambda([this, DeathData]
-		{
-			FinishDeath(DeathData);
-		}), GameModeData->DeathDuration, false);
-	}
+		FinishDeath(DeathData);
+	}), GameModeData->DeathDuration, false);
 }
 
 void ACrashGameMode::FinishDeath(const FDeathData& DeathData)

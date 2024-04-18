@@ -55,7 +55,7 @@ void UCrashActivatableWidget::NativeOnActivated()
 		// Each time input method changes, if it changes to a gamepad, reset focus to the default focus target.
 		if (UCommonInputSubsystem* CommonInput = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>())
 		{
-			CommonInput->OnInputMethodChangedNative.AddLambda([FocusTarget] (ECommonInputType NewInputType)
+			CommonInput->OnInputMethodChangedNative.AddWeakLambda(this, [FocusTarget] (ECommonInputType NewInputType)
 			{
 				FocusTarget->SetFocus();
 			});

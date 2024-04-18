@@ -197,7 +197,7 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 
 void AChallengerBase::OnDeathFinished()
 {
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([this]
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]
 	{
 		UninitAndDestroy();
 	}));
