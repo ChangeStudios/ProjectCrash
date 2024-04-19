@@ -46,7 +46,11 @@ public:
 public:
 
 	UFUNCTION(Client, Reliable)
-	void Client_HandleMatchEnded(bool bWon);
+	void Client_HandleMatchEnded(bool bWon, float EndMatchTime);
+
+	/** Timer used to return to the menu after the post-match sequence (i.e. where the "victory"/"defeat" screen is
+	 * displayed). */
+	FTimerHandle EndMatchTimer;
 
 
 

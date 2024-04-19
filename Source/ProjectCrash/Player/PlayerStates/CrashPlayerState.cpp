@@ -68,7 +68,7 @@ void ACrashPlayerState::PostInitializeComponents()
 	}
 }
 
-void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
+void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon, float EndMatchTime)
 {
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
@@ -84,6 +84,13 @@ void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
 	{
 		CrashPC->PushWidgetToLayer(bWon ? MatchUIData->VictoryPopUp : MatchUIData->DefeatPopUp, CrashGameplayTags::TAG_UI_Layer_GameMenu);
 	}
+
+	// Return to the main menu after EndMatchTime.
+	GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateWeakLambda(this, [this]
+	{
+		// TODO: Use data to find the main menu map.
+		UGameplayStatics::OpenLevel(this, FName("L_MenuBackground_Fighters"));
+	}), EndMatchTime * UGameplayStatics::GetGlobalTimeDilation(this), false);
 }
 
 void ACrashPlayerState::SetTeamID(FCrashTeamID InTeamID)

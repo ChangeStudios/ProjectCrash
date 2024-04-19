@@ -55,4 +55,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_AbilitySlot, "UI.AbilityBehavior.AbilitySlot", "This ability will appear in the ability bar in a standard ability slot. These abilities are displayed with their cooldown and activation status.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Ultimate, "UI.AbilityBehavior.Ultimate", "This ability will appear with its current charge in the ultimate widget.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_WeaponSlot, "UI.AbilityBehavior.WeaponSlot", "This ability will appear in the ability bar in a weapon slot. These abilities are displayed with an ammo count, if one is defined.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Action_Escape, "UI.Action.Escape", "Serves as a \"back\" action, and opens the escape menu during gameplay.");
 }

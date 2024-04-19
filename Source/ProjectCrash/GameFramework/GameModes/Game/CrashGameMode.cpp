@@ -274,15 +274,7 @@ void ACrashGameMode::EndMatch()
 	{
 		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
 		const bool bWon = DetermineMatchWinner() == PlayerState->GetTeamID();
-		PlayerState->Client_HandleMatchEnded(bWon);
-
-		// TODO: Disconnect player.
-
-		// Return to the main menu after the "end match" time.
-		GetWorldTimerManager().SetTimer(EndMatchTimer, FTimerDelegate::CreateWeakLambda(this, []
-		{
-			return;
-		}), GameModeData->EndMatchTime * UGameplayStatics::GetGlobalTimeDilation(this), false);
+		PlayerState->Client_HandleMatchEnded(bWon, GameModeData->EndMatchTime);
 	}
 }
 

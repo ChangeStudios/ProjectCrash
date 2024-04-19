@@ -9,15 +9,12 @@
 #include "Player/PlayerControllers/CrashPlayerControllerBase.h"
 #include "UI/Foundation/CrashBoundActionButton.h"
 
-/** Action tags have to be declared statically. */
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_UI_Action_Escape, "UI.Action.Escape")
-
 void UHUDLayout::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
 	// Register the "escape" action.
-	RegisterUIActionBinding(FBindUIActionArgs(FUIActionTag::ConvertChecked(TAG_UI_Action_Escape), false, FSimpleDelegate::CreateWeakLambda(this, [this]
+	RegisterUIActionBinding(FBindUIActionArgs(FUIActionTag::ConvertChecked(CrashGameplayTags::TAG_UI_Action_Escape), false, FSimpleDelegate::CreateWeakLambda(this, [this] // TODO: FUIActionTag::ConvertChecked call is causing a crash.
 	{
 		// Push the escape menu to the "Menu" layer when the "escape" action is activated.
 		if (ensure(EscapeMenuClass))
