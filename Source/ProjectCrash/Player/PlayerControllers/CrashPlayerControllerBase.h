@@ -14,6 +14,9 @@ class UCommonActivatableWidget;
 class UGlobalLayeredWidget;
 class USlottedEntryBox;
 
+/** Delegate for broadcasting when this controller's player state changes. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerStateChangeSignature);
+
 /**
  * Base player controller for this project. Provides utilities for managing the user interface via the Common UI plugin.
  */
@@ -21,6 +24,19 @@ UCLASS(Abstract)
 class PROJECTCRASH_API ACrashPlayerControllerBase : public APlayerController
 {
 	GENERATED_BODY()
+
+	// Initialization.
+
+public:
+
+	/** Broadcasts PlayerStateChangedDelegate when this controller's player state has been changed. */
+	virtual void OnRep_PlayerState() override;
+
+	/** Broadcast when this controller's player state is changed. */
+	UPROPERTY(BlueprintAssignable)
+	FPlayerStateChangeSignature PlayerStateChangedDelegate;
+
+
 
 	// UI.
 

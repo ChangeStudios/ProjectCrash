@@ -26,7 +26,7 @@ public:
 
 	/** The Enhanced Input Action that is associated with this Common Input action. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	const TObjectPtr<UInputAction> AssociatedInputAction;
+	const UInputAction* AssociatedInputAction;
 
 private:
 

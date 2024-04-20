@@ -11,9 +11,6 @@ class APlayerState;
 class USlottedEntryBox;
 class UGlobalLayeredWidget;
 
-/** Delegate for broadcasting when this controller's player state changes. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerStateChangeSignature);
-
 /**
  * Base player controller used during gameplay (as opposed to menus, for example). Handles initialization and
  * manipulation of the user interface.
@@ -34,11 +31,4 @@ public:
 	/** Callback for when the game mode data is first replicated. Wraps InitializeUserInterface. */
 	UFUNCTION()
 	void OnGameModeDataReplicated(const UCrashGameModeData* GameModeData);
-
-	/** Broadcasts PlayerStateChangedDelegate when this controller's player state has been changed. */
-	virtual void OnRep_PlayerState() override;
-
-	/** Broadcast when this controller's player state is changed. */
-	UPROPERTY(BlueprintAssignable)
-	FPlayerStateChangeSignature PlayerStateChangedDelegate;
 };

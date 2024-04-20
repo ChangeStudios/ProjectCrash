@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "UI/Framework/CrashActivatableWidget.h"
 #include "AbilitySystemWidget.generated.h"
 
 class UCrashAbilitySystemComponent;
 
-/** Delegate for broadcasting when this widget has bound to its owner's ASC. */
+/** Delegate for broadcasting when this widget has bound to its owning player's ASC. */
 DECLARE_MULTICAST_DELEGATE(FASCReadySignature);
 
 /**
- * A widget that is bound to its owner's ability system component and registers to its delegates.
+ * A widget that binds to its owning player's ability system component.
  */
 UCLASS(Abstract, Blueprintable)
-class PROJECTCRASH_API UAbilitySystemWidget : public UCommonActivatableWidget
+class PROJECTCRASH_API UAbilitySystemWidget : public UCrashActivatableWidget
 {
 	GENERATED_BODY()
 
@@ -26,23 +27,9 @@ public:
 	/** Binds this widget to its owner's ASC. */
 	virtual void NativeConstruct() override;
 
-	/** Called when this widget was bound to its owner's ASC. This is necessary because clients will create their
+	/** Called when this widget is bound to its owner's ASC. Necessary because clients will usually create their
 	 * interface (including this widget) before their ASC has been initialized. */
 	virtual void OnASCReady() {};
-
-
-
-	// UI updates.
-
-protected:
-
-	/** Called when a new gameplay ability is granted to this widget's owner's ASC. */
-	UFUNCTION()
-	virtual void OnAbilityGranted(const FGameplayAbilitySpec& GrantedAbilitySpec);
-
-	/** Called when a gameplay ability is removed from this widget's owner's ASC. */
-	UFUNCTION()
-	virtual void OnAbilityRemoved(const FGameplayAbilitySpec& RemovedAbilitySpec);
 
 
 

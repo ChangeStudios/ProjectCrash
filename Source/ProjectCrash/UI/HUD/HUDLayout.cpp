@@ -14,7 +14,7 @@ void UHUDLayout::NativeOnInitialized()
 	Super::NativeOnInitialized();
 
 	// Register the "escape" action.
-	RegisterUIActionBinding(FBindUIActionArgs(FUIActionTag::ConvertChecked(CrashGameplayTags::TAG_UI_Action_Escape), false, FSimpleDelegate::CreateWeakLambda(this, [this] // TODO: FUIActionTag::ConvertChecked call is causing a crash.
+	RegisterUIActionBinding(FBindUIActionArgs(FUIActionTag::TryConvert(CrashGameplayTags::TAG_UI_Action_Escape), false, FSimpleDelegate::CreateWeakLambda(this, [this] // TODO: FUIActionTag::ConvertChecked call is causing a crash.
 	{
 		// Push the escape menu to the "Menu" layer when the "escape" action is activated.
 		if (ensure(EscapeMenuClass))

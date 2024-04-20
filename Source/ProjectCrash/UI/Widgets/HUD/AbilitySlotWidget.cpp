@@ -3,11 +3,14 @@
 
 #include "UI/Widgets/HUD/AbilitySlotWidget.h"
 
+#include "CommonInputSubsystem.h"
+#include "InputAction.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/Image.h"
+#include "UI/Foundation/CrashActionWidget.h"
 
-void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, UCrashAbilitySystemComponent* OwningASC)
+void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInputAction* InputAction, UCrashAbilitySystemComponent* OwningASC)
 {
 	if (!Ability)
 	{
@@ -25,4 +28,6 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, UCrashAbil
 			AbilityIcon->SetBrushFromTexture(CrashAbility->AbilityIcon, true);
 		}
 	}
+
+	InputActionWidget->AssociatedInputAction = InputAction;
 }

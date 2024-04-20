@@ -59,6 +59,17 @@ private:
 
 public:
 
+	/** Returns the action mappings currently bound by this input component. */
+	TArray<const UCrashInputActionMapping*> GetCurrentActionMappings() const { return CurrentActionMappings; };
+
+protected:
+
+	/** All action mappings currently bound by this input component. */
+	UPROPERTY()
+	TArray<const UCrashInputActionMapping*> CurrentActionMappings;
+
+public:
+
 	/** Returns the given actor's CrashInputComponent if it has one. Returns a nullptr otherwise. */
 	UFUNCTION(BlueprintPure, Category = "Input")
 	static UCrashInputComponent* FindCrashInputComponent(const AActor* Actor)
@@ -72,6 +83,9 @@ template<class UserClass, typename FuncType>
 void UCrashInputComponent::BindNativeInputAction(const UCrashInputActionMapping* ActionMapping, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType HandlerFunc, bool bLogIfFailed)
 {
 	check(ActionMapping);
+
+	// Cache the new action mapping.
+	CurrentActionMappings.AddUnique(ActionMapping);
 
 	// Try to retrieve the native input action to bind to using the given input tag.
 	if (const UInputAction* NativeAction = ActionMapping->FindNativeInputActionForTag(InputTag, bLogIfFailed))

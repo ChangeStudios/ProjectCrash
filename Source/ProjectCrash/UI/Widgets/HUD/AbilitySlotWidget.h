@@ -7,6 +7,7 @@
 #include "GameplayAbilitySpec.h"
 #include "AbilitySlotWidget.generated.h"
 
+class UCrashActionWidget;
 class UCrashAbilitySystemComponent;
 class UGameplayAbility;
 class UImage;
@@ -28,7 +29,7 @@ public:
 	/** Binds this widget to the given gameplay ability, updating its ability icon and binding its cooldown display and
 	 * activation status. */
 	UFUNCTION()
-	void BindSlotToAbility(UGameplayAbility* Ability, UCrashAbilitySystemComponent* OwningASC);
+	void BindSlotToAbility(UGameplayAbility* Ability, const UInputAction* InputAction, UCrashAbilitySystemComponent* OwningASC);
 
 protected:
 
@@ -49,4 +50,8 @@ protected:
 	/** The icon of the ability that this widget represents. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UImage> AbilityIcon;
+
+	/** The icon of the ability that this widget represents. */
+	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
+	TObjectPtr<UCrashActionWidget> InputActionWidget;
 };

@@ -25,6 +25,9 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	{
 		GlobalAbilitySystem->RegisterASC(this);
 	}
+
+	// Broadcast that this ASC was initialized.
+	InitDelegate.Broadcast(InOwnerActor, InAvatarActor);
 }
 
 void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)

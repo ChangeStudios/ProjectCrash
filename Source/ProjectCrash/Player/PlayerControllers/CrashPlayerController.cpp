@@ -7,14 +7,6 @@
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-void ACrashPlayerController::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	// Broadcast that this controller's player state changed.
-	PlayerStateChangedDelegate.Broadcast();
-}
-
 void ACrashPlayerController::BeginPlay()
 {
 	Super::BeginPlay();

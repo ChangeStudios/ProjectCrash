@@ -11,6 +11,9 @@
 
 void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping)
 {
+	// Cache the new action mapping.
+	CurrentActionMappings.AddUnique(ActionMapping);
+
 	// Bind each ability input action in the given mapping to ability handler functions using their input tags.
 	for (const FCrashInputAction& AbilityInputAction : ActionMapping->AbilityInputActions)
 	{

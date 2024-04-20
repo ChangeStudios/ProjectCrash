@@ -12,6 +12,14 @@
 #include "UI/Widgets/Utils/TaggedActivatableWidgetStack.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
+void ACrashPlayerControllerBase::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// Broadcast that this controller's player state changed.
+	PlayerStateChangedDelegate.Broadcast();
+}
+
 void ACrashPlayerControllerBase::InitializeUserInterface(const UUserInterfaceData* UIData)
 {
 	// Only handle UI on the local machine.
