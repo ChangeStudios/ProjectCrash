@@ -30,4 +30,5 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInp
 	}
 
 	InputActionWidget->AssociatedInputAction = InputAction;
+	InputActionWidget->RebuildWidget();
 }

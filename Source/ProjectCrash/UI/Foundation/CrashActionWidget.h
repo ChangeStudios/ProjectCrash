@@ -12,6 +12,12 @@ class UInputAction;
 /**
  * An action widget that retrieves the icon of the key currently assigned to the common input action bound to this
  * widget.
+ *
+ * TODO: Figure out why the icon isn't appearing when the game starts, and only works after changing the input method
+ * once.
+ *
+ * TODO: Figure out why this isn't working for gamepads (probably something to do with the names, i.e. "Generic" vs.
+ * "XSX").
  */
 UCLASS(BlueprintType, Blueprintable)
 class PROJECTCRASH_API UCrashActionWidget : public UCommonActionWidget
