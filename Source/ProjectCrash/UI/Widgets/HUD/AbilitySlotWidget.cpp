@@ -3,8 +3,6 @@
 
 #include "UI/Widgets/HUD/AbilitySlotWidget.h"
 
-#include "CommonInputSubsystem.h"
-#include "InputAction.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/Image.h"
@@ -17,18 +15,20 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInp
 		return;
 	}
 
+	// Cache widget data.
 	BoundAbility = Ability;
 	BoundASC = OwningASC;
 
+	// Update the ability icon.
 	if (UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
 	{
-		// Update the ability icon.
 		if (AbilityIcon)
 		{
 			AbilityIcon->SetBrushFromTexture(CrashAbility->AbilityIcon, true);
 		}
 	}
 
+	// Update the input action bound to this widget.
 	InputActionWidget->AssociatedInputAction = InputAction;
 	InputActionWidget->RebuildWidget();
 }

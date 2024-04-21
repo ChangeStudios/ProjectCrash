@@ -26,8 +26,7 @@ class PROJECTCRASH_API UAbilitySlotWidget : public UCommonActivatableWidget
 
 public:
 
-	/** Binds this widget to the given gameplay ability, updating its ability icon and binding its cooldown display and
-	 * activation status. */
+	/** Binds this widget to the given gameplay ability, updating its ability icon and binding its input action. */
 	UFUNCTION()
 	void BindSlotToAbility(UGameplayAbility* Ability, const UInputAction* InputAction, UCrashAbilitySystemComponent* OwningASC);
 
@@ -51,7 +50,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UImage> AbilityIcon;
 
-	/** The icon of the ability that this widget represents. */
+	/** The icon of the key bound to the input action to which this ability is bound. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
 	TObjectPtr<UCrashActionWidget> InputActionWidget;
 };

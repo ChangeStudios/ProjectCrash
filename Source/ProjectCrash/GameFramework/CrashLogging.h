@@ -41,3 +41,10 @@ PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogEquipment, Log, All);
 { \
 	UE_LOG(LogEquipment, Verbosity, Format, ##__VA_ARGS__); \
 }
+
+
+
+	// User interface log.
+
+/** Generic log channel for the user interface. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogUserInterface, Log, All);
