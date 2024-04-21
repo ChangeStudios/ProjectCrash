@@ -90,7 +90,7 @@ protected:
 
 	/** The text widget used for dynamic icons to display the key's name. Must be set manually by the action widget's
 	 * outer user widget. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UserInterface|HUD|Action Widget")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dynamic Icon")
 	TObjectPtr<UCommonTextBlock> KeyText;
 
 

@@ -89,4 +89,6 @@ protected:
 	/** References to the current weapon slot widgets that have been created for abilities. */
 	UPROPERTY()
 	TMap<UGameplayAbility*, UAbilitySlotWidget*> WeaponSlotWidgets;
+
+	FTimerHandle TimerHandle;
 };

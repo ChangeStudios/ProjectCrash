@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "UI/Widgets/HUD/AbilitySlotWidget.h"
+#include "UI/HUD/Abilities/AbilitySlotWidget.h"
 
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
@@ -30,5 +30,4 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInp
 
 	// Update the input action bound to this widget.
 	InputActionWidget->AssociatedInputAction = InputAction;
-	InputActionWidget->RebuildWidget();
 }

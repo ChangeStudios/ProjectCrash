@@ -3,13 +3,14 @@
 
 #include "UI/HUD/Abilities/AbilityBarWidget.h"
 
-#include "EnhancedInputSubsystems.h"
+#include "AbilitySlotWidget.h"
+#include "CommonInputSubsystem.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "Components/DynamicEntryBox.h"
+#include "GameFramework/CrashLogging.h"
 #include "Input/CrashInputComponent.h"
-#include "UI/Widgets/HUD/AbilitySlotWidget.h"
 
 void UAbilityBarWidget::OnASCReady()
 {
@@ -130,6 +131,14 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 			}
 		}
 	}
+
+	// TODO: Figure out why we need this delayed refresh. Everything should already be initialized at this point.
+	FTimerManager& Timer = GetWorld()->GetTimerManager();
+	Timer.SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]
+	{
+		UCommonInputSubsystem* Subsystem = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>();
+		Subsystem->OnInputMethodChangedNative.Broadcast(Subsystem->GetCurrentInputType());
+	}), 2.0f, false);
 }
 
 void UAbilityBarWidget::UninitializeAbilityWithUI(const FGameplayAbilitySpec& AbilitySpec)
