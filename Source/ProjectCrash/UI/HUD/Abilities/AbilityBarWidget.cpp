@@ -138,7 +138,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		UCommonInputSubsystem* Subsystem = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>();
 		Subsystem->OnInputMethodChangedNative.Broadcast(Subsystem->GetCurrentInputType());
-	}), 2.0f, false);
+	}), 0.5f, false);
 }
 
 void UAbilityBarWidget::UninitializeAbilityWithUI(const FGameplayAbilitySpec& AbilitySpec)

@@ -67,8 +67,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	const UInputAction* AssociatedInputAction;
 
-protected:
-
 
 
 	// Dynamic icon.
