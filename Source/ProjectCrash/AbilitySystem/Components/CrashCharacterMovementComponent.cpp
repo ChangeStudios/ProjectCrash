@@ -56,14 +56,11 @@ void UCrashCharacterMovementComponent::OnJumped()
 	{
 		/* Apply the "jumping" gameplay tag when this character becomes airborne. It will be removed when the character
 		 * lands. */
+		CrashASC->AddLooseGameplayTag(JUMPING_TAG);
+
 		if (CrashASC->IsOwnerActorAuthoritative())
 		{
-			CrashASC->AddLooseGameplayTag(JUMPING_TAG);
 			CrashASC->AddReplicatedLooseGameplayTag(JUMPING_TAG);
-		}
-		else
-		{
-			CrashASC->AddLooseGameplayTag(JUMPING_TAG);
 		}
 	}
 }
@@ -78,14 +75,11 @@ void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previ
 		 * animation much more efficiently than with animation updates. */
 		if (PreviousMovementMode != MOVE_Falling && MovementMode == MOVE_Falling)
 		{
+			CrashASC->AddLooseGameplayTag(FALLING_TAG);
+
 			if (CrashASC->IsOwnerActorAuthoritative())
 			{
-				CrashASC->AddLooseGameplayTag(FALLING_TAG);
 				CrashASC->AddReplicatedLooseGameplayTag(FALLING_TAG);
-			}
-			else
-			{
-				CrashASC->AddLooseGameplayTag(FALLING_TAG);
 			}
 		}
 	}
@@ -97,8 +91,12 @@ void UCrashCharacterMovementComponent::OnLanded(const FHitResult& Hit)
 	{
 		// Remove all "Jumping" and "Falling" tags when the character lands.
 		CrashASC->SetLooseGameplayTagCount(JUMPING_TAG, 0);
-		CrashASC->SetReplicatedLooseGameplayTagCount(JUMPING_TAG, 0);
 		CrashASC->SetLooseGameplayTagCount(FALLING_TAG,0);
-		CrashASC->SetReplicatedLooseGameplayTagCount(FALLING_TAG,0);
+
+		if (CrashASC->IsOwnerActorAuthoritative())
+		{
+			CrashASC->SetReplicatedLooseGameplayTagCount(JUMPING_TAG, 0);
+			CrashASC->SetReplicatedLooseGameplayTagCount(FALLING_TAG,0);
+		}
 	}
 }

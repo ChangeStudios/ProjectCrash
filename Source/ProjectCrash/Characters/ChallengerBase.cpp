@@ -143,9 +143,6 @@ void AChallengerBase::UninitAndDestroy()
 		// Unregister the equipment component early so it has time to destroy the equipment actors.
 		EquipmentComponent->UnregisterComponent();
 
-		// Unregister the movement component to clear any leftover movement tags (e.g. "falling").
-		GetMovementComponent()->UnregisterComponent();
-
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(0.1f);
 	}
@@ -177,6 +174,10 @@ void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewC
 
 void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 {
+	/* Unregister the movement component to clear any leftover movement tags (e.g. "falling"). This is done when death
+	 * begins to ensure the ASC is still valid. */
+	GetMovementComponent()->UnregisterComponent();
+
 	// Hide the first-person mesh.
 	FirstPersonMesh->SetVisibility(false, true);
 

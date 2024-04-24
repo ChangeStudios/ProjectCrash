@@ -134,7 +134,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 
 	// TODO: Figure out why we need this delayed refresh. Everything should already be initialized at this point.
 	FTimerManager& Timer = GetWorld()->GetTimerManager();
-	Timer.SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]
+	Timer.SetTimer(TimerHandle, FTimerDelegate::CreateWeakLambda(this, [this]
 	{
 		UCommonInputSubsystem* Subsystem = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>();
 		Subsystem->OnInputMethodChangedNative.Broadcast(Subsystem->GetCurrentInputType());
