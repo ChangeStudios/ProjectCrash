@@ -135,6 +135,24 @@ void AChallengerBase::OnRep_PlayerState()
 	}
 }
 
+void AChallengerBase::InitializeGameplayTags()
+{
+	// Clear any unwanted tags that may be leftover from the ASC's previous pawn.
+	if (UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent())
+	{
+		FGameplayTagContainer OutTags;
+		CrashASC->GetOwnedGameplayTags(OutTags);
+		for (FGameplayTag Tag : OutTags.GetGameplayTagArray())
+		{
+			// Clear any transient movement tags.
+			if (Tag.MatchesTag(CrashGameplayTags::TAG_State_Movement))
+			{
+				CrashASC->SetLooseGameplayTagCount(Tag, 0);
+			}
+		}
+	}
+}
+
 void AChallengerBase::UninitAndDestroy()
 {
 	// Set a timer to safely destroy this actor on the server.
@@ -174,10 +192,6 @@ void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewC
 
 void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 {
-	/* Unregister the movement component to clear any leftover movement tags (e.g. "falling"). This is done when death
-	 * begins to ensure the ASC is still valid. */
-	GetMovementComponent()->UnregisterComponent();
-
 	// Hide the first-person mesh.
 	FirstPersonMesh->SetVisibility(false, true);
 
@@ -237,6 +251,9 @@ void AChallengerBase::OnAbilitySystemInitialized()
 {
 	UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponent();
 	check(CrashASC);
+
+	// Clear any tags that may be lingering from the ASC's previous pawn.
+	InitializeGameplayTags();
 
 	if (!IsValid(ChallengerData))
 	{

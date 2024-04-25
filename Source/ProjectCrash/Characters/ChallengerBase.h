@@ -56,6 +56,9 @@ protected:
 	 * ASC's previous owner, if one exists. */
 	virtual void OnRep_PlayerState() override;
 
+	/** Clears any unwanted gameplay tags that may be leftover from this character's ASC's previous pawn. */
+	virtual void InitializeGameplayTags();
+
 
 
 	// Uninitialization.

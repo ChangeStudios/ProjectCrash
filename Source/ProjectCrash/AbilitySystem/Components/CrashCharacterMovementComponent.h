@@ -33,9 +33,6 @@ public:
 	/** Binds relevant delegates. */
 	virtual void BeginPlay() override;
 
-	/** Clears any movement tags that haven't been removed yet. */
-	virtual void OnUnregister() override;
-
 
 
 	// Movement modes.
@@ -47,16 +44,9 @@ protected:
 	UFUNCTION()
 	void OnJumped();
 
-// Falling.
 protected:
 
-	/** Adds the "Falling" gameplay tag when this component's owning character begins falling. */
+	/** Adds the "Falling" gameplay tag when this component's owning character begins falling. Removes the "Jumping"
+	 * and "Falling" tags when landing. */
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
-
-// Landing.
-protected:
-
-	/** Clears this component's owning character's "Jumping" and "Falling" tags when they land. */
-	UFUNCTION()
-	void OnLanded(const FHitResult& Hit);
 };

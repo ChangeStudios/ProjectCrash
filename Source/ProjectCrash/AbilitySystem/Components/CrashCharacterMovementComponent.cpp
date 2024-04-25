@@ -35,19 +35,7 @@ void UCrashCharacterMovementComponent::BeginPlay()
 	{
 		// Bind the OnJumped callback to when this character jumps.
 		OwningChar->JumpedDelegate.AddDynamic(this, &UCrashCharacterMovementComponent::OnJumped);
-
-		// Bind the OnLanded callback to when this character lands.
-		OwningChar->LandedDelegate.AddDynamic(this, &UCrashCharacterMovementComponent::OnLanded);
 	}
-}
-
-void UCrashCharacterMovementComponent::OnUnregister()
-{
-	/* Simulate landing to clear any airborne tags. If we had any other movement tags that might still be active, we'd
-	 * remove them here. */
-	OnLanded(FHitResult());
-
-	Super::OnUnregister();
 }
 
 void UCrashCharacterMovementComponent::OnJumped()
@@ -57,11 +45,6 @@ void UCrashCharacterMovementComponent::OnJumped()
 		/* Apply the "jumping" gameplay tag when this character becomes airborne. It will be removed when the character
 		 * lands. */
 		CrashASC->AddLooseGameplayTag(JUMPING_TAG);
-
-		if (CrashASC->IsOwnerActorAuthoritative())
-		{
-			CrashASC->AddReplicatedLooseGameplayTag(JUMPING_TAG);
-		}
 	}
 }
 
@@ -75,28 +58,13 @@ void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previ
 		 * animation much more efficiently than with animation updates. */
 		if (PreviousMovementMode != MOVE_Falling && MovementMode == MOVE_Falling)
 		{
-			CrashASC->AddLooseGameplayTag(FALLING_TAG);
-
-			if (CrashASC->IsOwnerActorAuthoritative())
-			{
-				CrashASC->AddReplicatedLooseGameplayTag(FALLING_TAG);
-			}
+			CrashASC->SetLooseGameplayTagCount(FALLING_TAG, 1);
 		}
-	}
-}
-
-void UCrashCharacterMovementComponent::OnLanded(const FHitResult& Hit)
-{
-	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
-	{
-		// Remove all "Jumping" and "Falling" tags when the character lands.
-		CrashASC->SetLooseGameplayTagCount(JUMPING_TAG, 0);
-		CrashASC->SetLooseGameplayTagCount(FALLING_TAG,0);
-
-		if (CrashASC->IsOwnerActorAuthoritative())
+		// Remove the "falling" and "jumping" tags when this character lands on the ground.
+		else if (PreviousMovementMode == MOVE_Falling && MovementMode == MOVE_Walking)
 		{
-			CrashASC->SetReplicatedLooseGameplayTagCount(JUMPING_TAG, 0);
-			CrashASC->SetReplicatedLooseGameplayTagCount(FALLING_TAG,0);
+			CrashASC->SetLooseGameplayTagCount(FALLING_TAG, 0);
+			CrashASC->SetLooseGameplayTagCount(JUMPING_TAG, 0);
 		}
 	}
 }
