@@ -126,4 +126,16 @@ private:
 	/** The handle for the equipment set currently equipped by this character. */
 	FEquipmentSetHandle CurrentEquipmentSetHandle;
 
+
+
+	// Utils.
+
+public:
+
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	static UEquipmentComponent* FindEquipmentComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UEquipmentComponent>() : nullptr); };
+	
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	TArray<AActor*> GetEquipmentActors();
+
 };

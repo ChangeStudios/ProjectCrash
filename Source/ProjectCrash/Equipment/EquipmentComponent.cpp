@@ -314,6 +314,19 @@ void UEquipmentComponent::OnTemporarilyUnequippedChanged(const FGameplayTag Tag,
 	}
 }
 
+TArray<AActor*> UEquipmentComponent::GetEquipmentActors()
+{
+	TArray<AActor*> ReturnArray;
+
+	if (CurrentEquipmentSetHandle.EquipmentSet)
+	{
+		ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_FPP);
+		ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
+	}
+
+	return ReturnArray;
+}
+
 void UEquipmentComponent::OnRep_CurrentEquipmentSet(UEquipmentSet* PreviousEquipmentSet)
 {
 	// Unequip the current equipment set.

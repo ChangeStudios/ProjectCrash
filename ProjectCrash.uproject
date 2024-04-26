@@ -85,6 +85,10 @@
 		{
 			"Name": "GameplayMessageRouter",
 			"Enabled": true
+		},
+		{
+			"Name": "AudioModulation",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
