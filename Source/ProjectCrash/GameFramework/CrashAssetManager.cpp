@@ -3,10 +3,10 @@
 
 #include "GameFramework/CrashAssetManager.h"
 
-#include "CommonActivatableWidget.h"
 #include "CrashLogging.h"
 #include "UnrealEngine.h"
 #include "Engine/Engine.h"
+#include "GameFramework/GlobalGameData.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UI/Data/UserInterfaceData.h"
 
@@ -28,6 +28,12 @@ UCrashAssetManager& UCrashAssetManager::Get()
 
 	// Fallback for safety. This should never happen.
 	return *NewObject<UCrashAssetManager>();
+}
+
+const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
+{
+	// Retrieve the loaded global game data. If it's not loaded, perform a blocking load.
+	return GetOrSyncLoadGameDataFromPath<UGlobalGameData>(EGlobalGameDataType::GlobalGameData, GlobalGameDataPath);
 }
 
 const UUserInterfaceData& UCrashAssetManager::GetMainMenuUIData()

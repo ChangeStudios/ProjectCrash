@@ -144,6 +144,14 @@ protected:
 
 
 
+	// Teams.
+
+protected:
+
+	void UpdateTeamFresnel();
+
+
+
 	// Equipment.
 
 // Components.

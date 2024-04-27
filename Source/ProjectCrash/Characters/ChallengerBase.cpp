@@ -16,8 +16,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
+#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PawnMovementComponent.h"
+#include "GameFramework/GlobalGameData.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -108,6 +109,9 @@ void AChallengerBase::PossessedBy(AController* NewController)
 		// Update the ASC's actor information.
 		ASCExtensionComponent->HandleControllerChanged();
 	}
+
+	// Update this character's team fresnel.
+	UpdateTeamFresnel();
 }
 
 void AChallengerBase::OnRep_PlayerState()
@@ -133,6 +137,9 @@ void AChallengerBase::OnRep_PlayerState()
 		// Update the ASC's actor information.
 		ASCExtensionComponent->HandleControllerChanged();
 	}
+
+	// Update this character's team fresnel.
+	UpdateTeamFresnel();
 }
 
 void AChallengerBase::InitializeGameplayTags()
@@ -227,6 +234,30 @@ void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
 
 	// Launch the ragdoll in the given direction.
 	ThirdPersonMesh->SetAllPhysicsLinearVelocity(ClampVector(Direction, FVector(-1500.0f), FVector(1500.0f)));
+}
+
+void AChallengerBase::UpdateTeamFresnel()
+{
+	// Set the third-person mesh's color depending on the player state's team.
+	const UGlobalGameData* GlobalGameData = &UCrashAssetManager::Get().GetGlobalGameData();
+	switch (FCrashTeamID::GetAttitude(GetPlayerState(), GetWorld()->GetFirstLocalPlayerFromController()->PlayerController->PlayerState))
+	{
+		case Friendly:
+		{
+			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
+			break;
+		}
+		case Hostile:
+		{
+			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Hostile);
+			break;
+		}
+		default:
+		{
+			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
+			break;
+		}
+	}
 }
 
 UAbilitySystemComponent* AChallengerBase::GetAbilitySystemComponent() const

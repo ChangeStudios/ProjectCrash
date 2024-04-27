@@ -132,9 +132,11 @@ private:
 
 public:
 
+	/** Retrieves the given actor's EquipmentComponent, if it has one. Otherwise, returns nullptr. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	static UEquipmentComponent* FindEquipmentComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UEquipmentComponent>() : nullptr); };
-	
+
+	/** Returns all first-person and third-person equipment actors currently spawned by this component. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	TArray<AActor*> GetEquipmentActors();
 

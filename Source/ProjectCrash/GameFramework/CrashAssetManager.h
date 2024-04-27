@@ -8,6 +8,7 @@
 #include "UI/Data/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
+class UGlobalGameData;
 class UCrashGameModeData;
 class UUserInterfaceData;
 
@@ -19,6 +20,7 @@ class UUserInterfaceData;
 UENUM()
 enum class EGlobalGameDataType : uint8
 {
+	GlobalGameData,
 	GameModeData,
 	UserInterfaceData,
 	MainMenuUIData
@@ -50,11 +52,18 @@ public:
 // Accessors.
 public:
 
+	/** Returns or loads the global game data. */
+	const UGlobalGameData& GetGlobalGameData();
+
 	/** Returns or loads the global main menu UI data. */
 	const UUserInterfaceData& GetMainMenuUIData();
 
 // Data.
 protected:
+
+	/** Global game data asset to use. */
+	UPROPERTY(Config)
+	TSoftObjectPtr<UUserInterfaceData> GlobalGameDataPath;
 
 	/** Global main menu UI data asset to use. */
 	UPROPERTY(Config)
