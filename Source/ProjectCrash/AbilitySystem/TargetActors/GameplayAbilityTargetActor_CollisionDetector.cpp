@@ -84,7 +84,10 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 		Targets.Add(OtherActor);
 
 		// Generate and send target data with the overlapped actor.
-		const FGameplayAbilityTargetDataHandle TargetDataHandle = StartLocation.MakeTargetDataHandleFromActors(TArray<TWeakObjectPtr<AActor>>({  OtherActor }), true);
+		FHitResult HitResult = FHitResult();
+		GetWorld()->LineTraceSingleByChannel(HitResult, OverlappedComponent->GetComponentLocation(), OtherComp->GetComponentLocation(), ECC_Camera);
+		FGameplayAbilityTargetDataHandle TargetDataHandle = StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, HitResult);
+		TargetDataHandle.Get(0)->SetActors(TArray<TWeakObjectPtr<AActor>>({  OtherActor }));
 		TargetDataReadyDelegate.Broadcast(TargetDataHandle);
 	}
 }
