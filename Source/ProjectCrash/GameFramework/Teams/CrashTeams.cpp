@@ -18,7 +18,7 @@ ECrashTeamAttitude FCrashTeamID::GetAttitude(const AActor* TeamMemberA, const AA
 	// If the either actor does not implement ICrashTeamMemberInterface, return Neutral.
 	if (!TeamA || !TeamB)
 	{
-		return ECrashTeamAttitude::Neutral;
+		return Neutral;
 	}
 
 	// Wrap GetAttitude using the given actor's Team IDs.

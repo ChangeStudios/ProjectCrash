@@ -147,6 +147,11 @@ public:
 
 public:
 
+	/** Whether to use a distinct fresnel for each team. This is usually true for team-based game modes, and false for
+	 * FFA modes. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Use Hostile Team Fresnels?")
+	bool bUseHostileTeamFresnels;
+
 	/**
 	 * The number of teams required for the match. The game will not automatically start until there are this many
 	 * teams, each with TeamSize players.

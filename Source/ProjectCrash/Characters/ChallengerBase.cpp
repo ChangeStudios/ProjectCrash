@@ -19,8 +19,11 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GlobalGameData.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "Input/CrashInputComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Player/PlayerControllers/CrashPlayerController.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -86,6 +89,14 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	OverrideInputComponentClass = UCrashInputComponent::StaticClass(); // Use the custom input component.
 }
 
+void AChallengerBase::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	// Update this character's fresnel when a new controller possesses it on clients.
+	UpdateTeamFresnel();
+}
+
 void AChallengerBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -110,7 +121,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 		ASCExtensionComponent->HandleControllerChanged();
 	}
 
-	// Update this character's team fresnel.
+	// Update this character's fresnel when a new controller possesses it on the server.
 	UpdateTeamFresnel();
 }
 
@@ -138,7 +149,7 @@ void AChallengerBase::OnRep_PlayerState()
 		ASCExtensionComponent->HandleControllerChanged();
 	}
 
-	// Update this character's team fresnel.
+	// Update this character's fresnel when a new PS possesses it.
 	UpdateTeamFresnel();
 }
 
@@ -238,25 +249,70 @@ void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
 
 void AChallengerBase::UpdateTeamFresnel()
 {
-	// Set the third-person mesh's color depending on the player state's team.
+	// Global game data and gamemode data determine which materials to use.
 	const UGlobalGameData* GlobalGameData = &UCrashAssetManager::Get().GetGlobalGameData();
-	switch (FCrashTeamID::GetAttitude(GetPlayerState(), GetWorld()->GetFirstLocalPlayerFromController()->PlayerController->PlayerState))
+	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
+	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
+	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
+
+	// Get this character's player state.
+	const ACrashPlayerState* CharacterPS = GetPlayerState<ACrashPlayerState>();
+
+	// Get the local player's player state to check attitude with this character.
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	APlayerController* LocalPC = LocalPlayer ? LocalPlayer->PlayerController.Get() : Cast<APlayerController>(GetController());
+	ACrashPlayerController* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController>(LocalPC) : nullptr;
+	const APlayerState* LocalPS = LocalPC ? LocalPC->GetPlayerState<APlayerState>() : nullptr;
+
+
+	if (CharacterPS && LocalPS && GlobalGameData && GMData)
 	{
-		case Friendly:
+		/* If we tried updating the fresnel again and it worked this time, clear the delegate that this function was
+		 * bound to. */
+		LocalCrashPC->PlayerStateChangedDelegate.RemoveAll(this);
+
+		// Set the third-person mesh's color depending on the player state's team.
+		switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))
 		{
-			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
-			break;
+			// For characters on the same team, use the constant "friendly" fresnel.
+			case Friendly:
+			{
+				GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
+				break;
+			}
+			// For non-neutral characters on other teams, use a hostile fresnel.
+			case Hostile:
+			{
+				// If each team should get a distinct hostile fresnel, use their team ID to select one.
+				if (GMData->bUseHostileTeamFresnels)
+				{
+					if (!(GlobalGameData->HostileTeamFresnels.Num() > CharacterPS->GetTeamID()))
+					{
+						UE_LOG(LogTemp, Fatal, TEXT("Not enough hostile fresnels in global game data for the number of teams in the game!"));
+					}
+
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->HostileTeamFresnels[CharacterPS->GetTeamID()]);
+				}
+				// If every hostile character should get the same fresnel, regardless of team, use the generic fresnel.
+				else
+				{
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Hostile);
+				}
+
+				break;
+			}
+			// For neutral characters, use the constant "neutral" fresnel.
+			default:
+			{
+				GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
+				break;
+			}
 		}
-		case Hostile:
-		{
-			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Hostile);
-			break;
-		}
-		default:
-		{
-			GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
-			break;
-		}
+	}
+	// The local player state may not be ready when this is called. If it's not, try again when it's set.
+	else if (LocalCrashPC)
+	{
+		LocalCrashPC->PlayerStateChangedDelegate.AddDynamic(this, &AChallengerBase::UpdateTeamFresnel);
 	}
 }
 

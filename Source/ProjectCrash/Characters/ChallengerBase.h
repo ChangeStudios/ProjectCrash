@@ -45,6 +45,11 @@ public:
 
 	// Initialization.
 
+public:
+
+	/** Updates this character's team fresnel. */
+	virtual void OnRep_Controller() override;
+
 /* Uses the AbilitySystemExtensionComponent to initialize this character as the avatar of the owning player's ASC when
  * possessed. */
 protected:
@@ -148,6 +153,9 @@ protected:
 
 protected:
 
+	/** Locally sets this character's third-person mesh's overlay material to a team-indicating fresnel, defined in
+	 * global game data, to match this character's attitude towards the local player's team. */
+	UFUNCTION()
 	void UpdateTeamFresnel();
 
 
