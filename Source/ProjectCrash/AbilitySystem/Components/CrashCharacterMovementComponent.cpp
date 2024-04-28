@@ -16,15 +16,18 @@
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 {
 	GravityScale = 1.5;
-	MaxAcceleration = 4096.0f;
+	MaxAcceleration = 16384.0f;
+	BrakingFriction = 4.0f;
+	bUseSeparateBrakingFriction = true;
 
 	GroundFriction = 0.0f;
 	MaxWalkSpeed = 800.0f;
 	MaxWalkSpeedCrouched = 400.0f;
-	BrakingDecelerationWalking = 4096.0f;
+	BrakingDecelerationWalking = 8192.0f;
 
 	JumpZVelocity = 700.0f;
-	AirControl = 0.5f;
+	AirControl = 0.75f;
+	FallingLateralFriction = 0.4;
 }
 
 void UCrashCharacterMovementComponent::BeginPlay()
@@ -45,12 +48,18 @@ void UCrashCharacterMovementComponent::OnJumped()
 		/* Apply the "jumping" gameplay tag when this character becomes airborne. It will be removed when the character
 		 * lands. */
 		CrashASC->AddLooseGameplayTag(JUMPING_TAG);
+
+		// Jumping is a local event, so the server needs to be notified.
+		CrashASC->AddReplicatedLooseGameplayTag(JUMPING_TAG);
 	}
 }
 
 void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+
+	// We don't want to use separate braking friction while airborne.
+	bUseSeparateBrakingFriction = (MovementMode != MOVE_Falling);
 
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 	{
@@ -65,6 +74,8 @@ void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previ
 		{
 			CrashASC->SetLooseGameplayTagCount(FALLING_TAG, 0);
 			CrashASC->SetLooseGameplayTagCount(JUMPING_TAG, 0);
+
+			CrashASC->SetReplicatedLooseGameplayTagCount(JUMPING_TAG, 0);
 		}
 	}
 }
