@@ -329,15 +329,23 @@ void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 		}
 	}
 
-	// Start a timer to finish the Death after DeathDuration.
-	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, FTimerDelegate::CreateWeakLambda(this, [this, DeathData]
+	// Start a timer to finish the Death after DeathDuration. Create a new distinct timer to handle this death.
+	FTimerHandle NewDeathTimer = DeathTimerHandles.AddDefaulted_GetRef();
+	GetWorld()->GetTimerManager().SetTimer(NewDeathTimer, FTimerDelegate::CreateWeakLambda(this, [this, &NewDeathTimer, DeathData]
 	{
-		FinishDeath(DeathData);
+		FinishDeath(NewDeathTimer, DeathData);
 	}), GameModeData->DeathDuration, false);
 }
 
-void ACrashGameMode::FinishDeath(const FDeathData& DeathData)
+void ACrashGameMode::FinishDeath(FTimerHandle& DeathTimer, const FDeathData& DeathData)
 {
+	// Destroy the timer used for this death.
+	DeathTimer.Invalidate();
+	if (DeathTimerHandles.Find(DeathTimer))
+	{
+		DeathTimerHandles.Remove(DeathTimer);
+	}
+
 	// End the Death ability when the death finishes.
 	if (DeathData.DyingActorASC)
 	{

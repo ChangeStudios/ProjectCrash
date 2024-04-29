@@ -152,8 +152,9 @@ public:
 protected:
 
 	/** Ends the DeathAbility if one was given. */
-	virtual void FinishDeath(const FDeathData& DeathData);
+	virtual void FinishDeath(FTimerHandle& DeathTimer, const FDeathData& DeathData);
 
-	/** Timer used to finish an actor death a certain amount of time after it was started. */
-	FTimerHandle DeathTimerHandle;
+	/** Timers used to finish an actor death a certain amount of time after it was started. We need multiple timers to
+	 * handle deaths that occur simultaneously. */
+	TArray<FTimerHandle> DeathTimerHandles;
 };

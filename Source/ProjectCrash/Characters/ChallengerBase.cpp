@@ -166,6 +166,7 @@ void AChallengerBase::InitializeGameplayTags()
 			if (Tag.MatchesTag(CrashGameplayTags::TAG_State_Movement))
 			{
 				CrashASC->SetLooseGameplayTagCount(Tag, 0);
+				CrashASC->SetReplicatedLooseGameplayTagCount(Tag, 0);
 			}
 		}
 	}
@@ -264,7 +265,6 @@ void AChallengerBase::UpdateTeamFresnel()
 	ACrashPlayerController* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController>(LocalPC) : nullptr;
 	const APlayerState* LocalPS = LocalPC ? LocalPC->GetPlayerState<APlayerState>() : nullptr;
 
-
 	if (CharacterPS && LocalPS && GlobalGameData && GMData)
 	{
 		/* If we tried updating the fresnel again and it worked this time, clear the delegate that this function was
@@ -310,9 +310,20 @@ void AChallengerBase::UpdateTeamFresnel()
 		}
 	}
 	// The local player state may not be ready when this is called. If it's not, try again when it's set.
-	else if (LocalCrashPC)
+	else if (LocalCrashPC && !LocalCrashPC->PlayerStateChangedDelegate.IsAlreadyBound(this, &AChallengerBase::UpdateTeamFresnel))
 	{
 		LocalCrashPC->PlayerStateChangedDelegate.AddDynamic(this, &AChallengerBase::UpdateTeamFresnel);
+
+		return;
+	}
+
+	// Clear the retrying delegate if we successfully updated the fresnel.
+	if (LocalCrashPC)
+	{
+		if (LocalCrashPC->PlayerStateChangedDelegate.IsAlreadyBound(this, &AChallengerBase::UpdateTeamFresnel))
+		{
+			LocalCrashPC->PlayerStateChangedDelegate.RemoveDynamic(this, &AChallengerBase::UpdateTeamFresnel);
+		}
 	}
 }
 
