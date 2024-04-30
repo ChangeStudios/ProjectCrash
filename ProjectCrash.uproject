@@ -15,7 +15,8 @@
 				"CommonUI",
 				"UMG",
 				"CoreUObject",
-				"OnlineSubsystemUtils"
+				"OnlineSubsystemUtils",
+				"GameplayTags"
 			]
 		}
 	],
@@ -80,10 +81,6 @@
 		},
 		{
 			"Name": "Volumetrics",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayMessageRouter",
 			"Enabled": true
 		},
 		{
