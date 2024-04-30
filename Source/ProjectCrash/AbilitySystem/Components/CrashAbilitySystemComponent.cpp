@@ -220,6 +220,8 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 
 		if (Duration > 0.f)
 		{
+			UAnimSequenceBase* Animation = NewAnimMontage->IsDynamicMontage() ? NewAnimMontage->GetFirstAnimReference() : NewAnimMontage;
+
 			if (NewAnimMontage->HasRootMotion() && AnimInstance->GetOwningActor())
 			{
 				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayFirstPersonMontage [%s], Role: [%s]")
@@ -243,14 +245,14 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
 
 				// Static parameters. These are set when the montage is played and are never changed afterwards.
-				MutableRepAnimMontageInfo.AnimMontage = NewAnimMontage;
+				MutableRepAnimMontageInfo.Animation = Animation;
 				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
 
 				MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-				if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
+				if (MutableRepAnimMontageInfo.Animation && StartSectionName != NAME_None)
 				{
 					// Add one so INDEX_NONE can be used in the OnRep.
-					MutableRepAnimMontageInfo.SectionIdToPlay = MutableRepAnimMontageInfo.AnimMontage->GetSectionIndex(StartSectionName) + 1;
+					MutableRepAnimMontageInfo.SectionIdToPlay = NewAnimMontage->GetSectionIndex(StartSectionName) + 1;
 				}
 
 				// Update replicated data that changed during the montage's lifetime.
