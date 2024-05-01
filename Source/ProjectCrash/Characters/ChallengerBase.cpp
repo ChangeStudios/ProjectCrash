@@ -267,46 +267,52 @@ void AChallengerBase::UpdateTeamFresnel()
 
 	if (CharacterPS && LocalPS && GlobalGameData && GMData)
 	{
+		#if !UE_BUILD_SHIPPING
+			// Ensure we have enough hostile fresnels in global game data.
+			if (!(GlobalGameData->HostileTeamFresnels.Num() > CharacterPS->GetTeamID()))
+			{
+				UE_LOG(LogTemp, Fatal, TEXT("Not enough hostile fresnels in global game data for the number of teams in the game!"));
+			}
+		#endif // !UE_BUILD_SHIPPING
+
+
 		/* If we tried updating the fresnel again and it worked this time, clear the delegate that this function was
 		 * bound to. */
 		LocalCrashPC->PlayerStateChangedDelegate.RemoveAll(this);
 
-		// Set the third-person mesh's color depending on the player state's team.
-		switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))
+		// If the local player is on a team (i.e. not spectating), use their team to determine this character's fresnel.
+		if (LocalPS->Implements<UCrashTeamMemberInterface>())
 		{
-			// For characters on the same team, use the constant "friendly" fresnel.
-			case Friendly:
+			switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))
 			{
-				GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
-				break;
-			}
-			// For non-neutral characters on other teams, use a hostile fresnel.
-			case Hostile:
-			{
-				// If each team should get a distinct hostile fresnel, use their team ID to select one.
-				if (GMData->bUseHostileTeamFresnels)
+				// For characters on the same team, use the constant "friendly" fresnel.
+				case Friendly:
 				{
-					if (!(GlobalGameData->HostileTeamFresnels.Num() > CharacterPS->GetTeamID()))
-					{
-						UE_LOG(LogTemp, Fatal, TEXT("Not enough hostile fresnels in global game data for the number of teams in the game!"));
-					}
-
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
+					break;
+				}
+				// For non-neutral characters on other teams, use a hostile fresnel determined by their team ID.
+				case Hostile:
+				{
 					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->HostileTeamFresnels[CharacterPS->GetTeamID()]);
-				}
-				// If every hostile character should get the same fresnel, regardless of team, use the generic fresnel.
-				else
-				{
-					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Hostile);
-				}
 
-				break;
+					break;
+				}
+				// For neutral characters, use the constant "neutral" fresnel.
+				default:
+				{
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
+					break;
+				}
 			}
-			// For neutral characters, use the constant "neutral" fresnel.
-			default:
-			{
-				GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
-				break;
-			}
+		}
+		/* If the local player is NOT on a team (i.e. spectating), non-spectating players will use a fresnel
+		 * corresponding to their team ID. */
+		else
+		{
+			/* For spectators, we also want to use the friendly fresnel, so we set it to Team 0's fresnel, and shift
+			 * everyone else's fresnel index. */
+			GetThirdPersonMesh()->SetOverlayMaterial(CharacterPS->GetTeamID() == 0 ? GlobalGameData->TeamFresnel_Friendly : GlobalGameData->HostileTeamFresnels[CharacterPS->GetTeamID() - 1]);
 		}
 	}
 	// The local player state may not be ready when this is called. If it's not, try again when it's set.

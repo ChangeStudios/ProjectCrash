@@ -27,10 +27,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Neutral Fresnel")
 	UMaterialInstance* TeamFresnel_Neutral;
 
-	/** Generic fresnel to use on hostile actors, if each hostile team should get the same fresnel. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Hostile Fresnel")
-	UMaterialInstance* TeamFresnel_Hostile;
-
 	/** Fresnels to use on hostile actors, if each hostile team should get a unique fresnel. Used for team-based game-
 	 * modes. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Hostile Team Fresnels")
