@@ -88,7 +88,12 @@ protected:
 
 	/** References to the current weapon slot widgets that have been created for abilities. */
 	UPROPERTY()
-	TMap<UGameplayAbility*, UAbilitySlotWidget*> WeaponSlotWidgets;
+	TMap<UGameplayAbility*, UWeaponSlotWidget*> WeaponSlotWidgets;
+
+// Utils.
+protected:
+
+	void SortAbilityWidgets(UDynamicEntryBox* BoxToSort);
 
 	FTimerHandle TimerHandle;
 };

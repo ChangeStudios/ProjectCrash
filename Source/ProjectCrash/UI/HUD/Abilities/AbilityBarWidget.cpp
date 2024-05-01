@@ -5,6 +5,7 @@
 
 #include "AbilitySlotWidget.h"
 #include "CommonInputSubsystem.h"
+#include "WeaponSlotWidget.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/ChallengerBase.h"
@@ -21,8 +22,17 @@ void UAbilityBarWidget::OnASCReady()
 	OwningASC->DeathEventDelegate.AddDynamic(this, &UAbilityBarWidget::OnDeath);
 	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
 
+	// Get the player's current abilities and sort them by their input tag, so they always appear in the same order.
+	TArray<FGameplayAbilitySpec>& ActivatableAbilities = OwningASC->GetActivatableAbilities();
+	ActivatableAbilities.Sort([] (FGameplayAbilitySpec A, FGameplayAbilitySpec B) -> bool
+	{
+		const UCrashGameplayAbilityBase* ATyped = Cast<UCrashGameplayAbilityBase>(A.Ability);
+		const UCrashGameplayAbilityBase* BTyped = Cast<UCrashGameplayAbilityBase>(B.Ability);
+		return ATyped->GetInputTag().ToString() > BTyped->GetInputTag().ToString();
+	});
+
 	// Initialize this widget with each of its owner's current abilities.
-	for (FGameplayAbilitySpec AbilitySpec : OwningASC->GetActivatableAbilities())
+	for (FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
 	{
 		InitializeAbilityWithUI(AbilitySpec);
 	}
@@ -121,10 +131,10 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		if (!WeaponSlotWidgets.Contains(AbilitySpec.Ability))
 		{
-			if (UAbilitySlotWidget* NewWeaponSlotWidget = WeaponSlotBox->CreateEntry<UAbilitySlotWidget>())
+			if (UWeaponSlotWidget* NewWeaponSlotWidget = WeaponSlotBox->CreateEntry<UWeaponSlotWidget>())
 			{
-				// Bind the widget to its ability.
-				NewWeaponSlotWidget->BindSlotToAbility(AbilitySpec.Ability, AbilityInputAction, OwningASC);
+				// // Bind the widget to its ability.
+				// NewWeaponSlotWidget->BindSlotToAbility(AbilitySpec.Ability, AbilityInputAction, OwningASC);
 
 				// Cache the new widget to be able to delete it later.
 				WeaponSlotWidgets.Add(AbilitySpec.Ability, NewWeaponSlotWidget);
@@ -138,7 +148,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	{
 		UCommonInputSubsystem* Subsystem = GetOwningLocalPlayer()->GetSubsystem<UCommonInputSubsystem>();
 		Subsystem->OnInputMethodChangedNative.Broadcast(Subsystem->GetCurrentInputType());
-	}), 0.5f, false);
+	}), 0.25f, false);
 }
 
 void UAbilityBarWidget::UninitializeAbilityWithUI(const FGameplayAbilitySpec& AbilitySpec)
@@ -160,7 +170,7 @@ void UAbilityBarWidget::UninitializeAbilityWithUI(const FGameplayAbilitySpec& Ab
 	// Destroy any weapon slot widget associated with the removed ability.
 	if (WeaponSlotWidgets.Contains(AbilitySpec.Ability))
 	{
-		UAbilitySlotWidget* WeaponSlotWidget = WeaponSlotWidgets.FindAndRemoveChecked(AbilitySpec.Ability);
+		UWeaponSlotWidget* WeaponSlotWidget = WeaponSlotWidgets.FindAndRemoveChecked(AbilitySpec.Ability);
 		WeaponSlotWidget->RemoveFromParent();
 	}
 }
