@@ -1,3 +1,5 @@
+// Copyright Samuel Reitich 2024.
+
 #include "CrashGameplayTags.h"
 
 // Definitions of gameplay tags declared in the header file.

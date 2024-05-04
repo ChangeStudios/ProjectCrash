@@ -1,3 +1,5 @@
+// Copyright Samuel Reitich 2024.
+
 #pragma once
 
 #include "NativeGameplayTags.h"
