@@ -45,8 +45,13 @@ public:
 // End match.
 public:
 
+	/** Displays a match result pop-up when the match ends. */
 	UFUNCTION(Client, Reliable)
-	void Client_HandleMatchEnded(bool bWon, float EndMatchTime);
+	void Client_HandleMatchEnded(bool bWon);
+
+	/** Returns the player to the menu when the post-match phase ends. */
+	UFUNCTION(Client, Reliable)
+	void Client_HandleLeavingMap();
 
 	/** Timer used to return to the menu after the post-match sequence (i.e. where the "victory"/"defeat" screen is
 	 * displayed). */

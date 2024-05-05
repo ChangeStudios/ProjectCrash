@@ -13,7 +13,7 @@ class UCrashGameModeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMatchStateChangedSignature, FName, NewMatchState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, int32, NewTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, uint32, NewTime);
 
 /**
 * The game state used during gameplay (as opposed to menus, lobbies, etc.). Handles the match state, team management,
@@ -104,6 +104,10 @@ protected:
 	/** The time remaining in the current phase. */
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_PhaseTimeRemaining)
 	int32 PhaseTimeRemaining;
+
+	/** Updates the current phase time and triggers state-specific logic when the phase timer ends. */
+	UFUNCTION()
+	virtual void UpdatePhaseTime();
 
 	/** Broadcasts the new time when the phase time changes. */
 	UFUNCTION()

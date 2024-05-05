@@ -18,6 +18,6 @@ class PROJECTCRASH_API USlottedEntryBox : public UDynamicEntryBox
 public:
 
 	/** The tag identifying this slot. Used to match slotted widgets to their target locations. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slot")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slot", Meta = (Categories = "UI.Slot"))
 	FGameplayTag SlotID;
 };

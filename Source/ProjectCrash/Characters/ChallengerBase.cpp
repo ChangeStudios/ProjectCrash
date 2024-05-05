@@ -269,7 +269,7 @@ void AChallengerBase::UpdateTeamFresnel()
 	{
 		#if !UE_BUILD_SHIPPING
 			// Ensure we have enough hostile fresnels in global game data.
-			if (!(GlobalGameData->HostileTeamFresnels.Num() > CharacterPS->GetTeamID()))
+			if (!(GlobalGameData->TeamColor_HostileList.Num() > CharacterPS->GetTeamID()))
 			{
 				UE_LOG(LogTemp, Fatal, TEXT("Not enough hostile fresnels in global game data for the number of teams in the game!"));
 			}
@@ -281,27 +281,30 @@ void AChallengerBase::UpdateTeamFresnel()
 		LocalCrashPC->PlayerStateChangedDelegate.RemoveAll(this);
 
 		// If the local player is on a team (i.e. not spectating), use their team to determine this character's fresnel.
-		if (LocalPS->Implements<UCrashTeamMemberInterface>())
+		if (const ACrashPlayerState* LocalCrashPS = Cast<ACrashPlayerState>(LocalPS))
 		{
+			
 			switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))
 			{
 				// For characters on the same team, use the constant "friendly" fresnel.
 				case Friendly:
 				{
-					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Friendly);
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamColor_Friendly.TeamFresnel);
 					break;
 				}
 				// For non-neutral characters on other teams, use a hostile fresnel determined by their team ID.
 				case Hostile:
 				{
-					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->HostileTeamFresnels[CharacterPS->GetTeamID()]);
+					const FCrashTeamID LocalID = LocalCrashPS->GetTeamID();
+					const FCrashTeamID CharTeamID = CharacterPS->GetTeamID();
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamColor_HostileList[ (CharTeamID < LocalID) || (CharTeamID == 0) ? (int)CharTeamID : CharTeamID - 1 ].TeamFresnel);
 
 					break;
 				}
 				// For neutral characters, use the constant "neutral" fresnel.
 				default:
 				{
-					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamFresnel_Neutral);
+					GetThirdPersonMesh()->SetOverlayMaterial(GlobalGameData->TeamColor_Neutral.TeamFresnel);
 					break;
 				}
 			}
@@ -312,7 +315,7 @@ void AChallengerBase::UpdateTeamFresnel()
 		{
 			/* For spectators, we also want to use the friendly fresnel, so we set it to Team 0's fresnel, and shift
 			 * everyone else's fresnel index. */
-			GetThirdPersonMesh()->SetOverlayMaterial(CharacterPS->GetTeamID() == 0 ? GlobalGameData->TeamFresnel_Friendly : GlobalGameData->HostileTeamFresnels[CharacterPS->GetTeamID() - 1]);
+			GetThirdPersonMesh()->SetOverlayMaterial(CharacterPS->GetTeamID() == 0 ? GlobalGameData->TeamColor_Friendly.TeamFresnel : GlobalGameData->TeamColor_HostileList[CharacterPS->GetTeamID() - 1].TeamFresnel);
 		}
 	}
 	// The local player state may not be ready when this is called. If it's not, try again when it's set.

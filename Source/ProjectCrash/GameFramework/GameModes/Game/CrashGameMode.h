@@ -16,6 +16,12 @@ class APriorityPlayerStart;
 class UCrashAbilitySystemComponent;
 class UGA_Death;
 
+/** Possible state of the current match, where a match is all the gameplay that happens on a single map */
+namespace CrashMatchState
+{
+	extern const FName InProgress_OT;	// Normal gameplay is occurring in overtime. Note that not all game-modes have overtime.
+}
+
 /**
  * The game mode used during gameplay (as opposed to menus, for example). Handles game setup, player death, and
  * victory conditions.
@@ -102,17 +108,18 @@ public:
 	 * may have been met (e.g. when handling deaths in death matches). */
 	virtual void CheckVictoryCondition();
 
-// Match end.
 protected:
 
 	virtual bool IsVictoryConditionMet();
 
 	virtual FCrashTeamID DetermineMatchWinner();
 
-// End match.
-protected:
+// Match end.
+public:
 
 	virtual void EndMatch() override;
+
+	virtual void HandleLeavingMap() override;
 
 
 

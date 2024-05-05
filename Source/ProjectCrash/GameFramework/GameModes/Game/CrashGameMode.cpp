@@ -12,11 +12,18 @@
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/PlayerStartPIE.h"
+#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GlobalGameData.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
+
+namespace CrashMatchState
+{
+	const FName InProgress_OT = FName(TEXT("In Progress (Overtime)"));
+}
 
 ACrashGameMode::ACrashGameMode()
 {
@@ -93,7 +100,7 @@ void ACrashGameMode::PostLogin(APlayerController* NewPlayer)
 	// TODO: Make sure that the player start is assigned after teams are assigned.
 	Super::PostLogin(NewPlayer);
 
-	if (NumPlayers == GameModeData->NumTeams * GameModeData->TeamSize)
+	if (NumPlayers == GameModeData->NumTeams * GameModeData->TeamSize && !IsMatchInProgress())
 	{
 		StartMatch();
 	}
@@ -267,15 +274,29 @@ void ACrashGameMode::EndMatch()
 	Super::EndMatch();
 
 	// Apply the slow-motion effect.
-	UGameplayStatics::SetGlobalTimeDilation(this, 0.1f);
+	UGameplayStatics::SetGlobalTimeDilation(this, UCrashAssetManager::Get().GetGlobalGameData().EndMatchTimeDilation);
+
+	GetGameState<ACrashGameState>()->SetMatchState(MatchState::WaitingPostMatch);
 
 	// Notify players that the game ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
 		const bool bWon = DetermineMatchWinner() == PlayerState->GetTeamID();
-		PlayerState->Client_HandleMatchEnded(bWon, GameModeData->EndMatchTime);
+		PlayerState->Client_HandleMatchEnded(bWon);
 	}
+}
+
+void ACrashGameMode::HandleLeavingMap()
+{
+	// Notify players that the post-match phase has ended.
+	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
+	{
+		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
+		PlayerState->Client_HandleLeavingMap();
+	}
+
+	Super::HandleLeavingMap();
 }
 
 FCrashTeamID ACrashGameMode::DetermineMatchWinner()
