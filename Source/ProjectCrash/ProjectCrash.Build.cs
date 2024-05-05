@@ -22,7 +22,8 @@ public class ProjectCrash : ModuleRules
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-			"InputCore"
+			"InputCore",
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -16,7 +16,8 @@
 				"UMG",
 				"CoreUObject",
 				"OnlineSubsystemUtils",
-				"GameplayTags"
+				"GameplayTags",
+				"PhysicsCore"
 			]
 		}
 	],
