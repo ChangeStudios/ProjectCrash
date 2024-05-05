@@ -3,7 +3,9 @@
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
+#include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
+#include "GameplayCueManager.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "Characters/CrashCharacterBase.h"
@@ -199,6 +201,25 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
 	}
+}
+
+void UCrashAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+{
+	// Handle execution of the gameplay cue directly, without replication.
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Executed, GameplayCueParameters);
+}
+
+void UCrashAbilitySystemComponent::AddGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+{
+	// Handle addition of the gameplay cue locally.
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::OnActive, GameplayCueParameters);
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::WhileActive, GameplayCueParameters);
+}
+
+void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)
+{
+	// Handle removal of the gameplay cue locally.
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters);
 }
 
 float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)

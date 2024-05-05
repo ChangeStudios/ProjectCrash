@@ -106,6 +106,10 @@ void ACrashPlayerState::SetTeamID(FCrashTeamID InTeamID)
 	}
 }
 
+void ACrashPlayerState::OnRep_TeamID(FCrashTeamID OldTeamID)
+{
+}
+
 void ACrashPlayerState::DecrementLives_Implementation()
 {
 	if (CurrentLives == 0)
