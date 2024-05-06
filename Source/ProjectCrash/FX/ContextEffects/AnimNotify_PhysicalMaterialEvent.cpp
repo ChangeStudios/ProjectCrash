@@ -34,6 +34,27 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 
 	if (MeshComp)
 	{
+		// If any montage is playing, don't trigger this notify, unless it came from one of those montages.
+		UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
+		if (MeshComp->GetAnimInstance()->Montage_IsPlaying(nullptr))
+		{
+			// Check if this notify is from an active montage.
+			bool bFound = false;
+			for (const FAnimMontageInstance* Montage : AnimInstance->MontageInstances)
+			{
+				if (Montage->Montage == Animation)
+				{
+					bFound = true;
+				}
+			}
+
+			// If this notify is not from an active montage, throw it out.
+			if (!bFound)
+			{
+				return;
+			}
+		}
+
 		// Make sure this notify's mesh component and its owning actor are valid.
 		if (AActor* OwningActor = MeshComp->GetOwner())
 		{

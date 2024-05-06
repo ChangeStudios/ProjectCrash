@@ -36,6 +36,7 @@ void UCrashPhysicalMaterial::HandlePhysicalMaterialEvent(FGameplayTag Event, con
 		// Spawn the system at the target location.
 		if (MaterialEffect->Effect)
 		{
+			UE_LOG(LogTemp, Error, TEXT("Spawned effect %s"), *GetNameSafe(MaterialEffect->Effect));
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation
 			(
 				TriggeringComponent,
