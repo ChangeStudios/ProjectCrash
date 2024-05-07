@@ -21,10 +21,9 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
 	ActivationGroup = EAbilityActivationGroup::Independent;
-	AbilityIcon = nullptr;
 	DisplayedAbilityName = "";
-	FrontendAbilityType = EFrontendAbilityType::StandardAbility;
 	DisplayedAbilityDescription = "";
+	AbilityIcon = nullptr;
 
 	if (InstancingPolicy != EGameplayAbilityInstancingPolicy::InstancedPerActor)
 	{
@@ -57,10 +56,14 @@ bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
 		// Only display the ability icon property if this ability will appear in the UI.
 		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, AbilityIcon))
 		{
-			bIsMutable = AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Generic) ||
-						 AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Equipment) ||
-						 AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Weapon) ||
-						 AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Ultimate);
+			bIsMutable = UserInterfaceTags.HasTag(CrashGameplayTags::TAG_Ability_Behavior_UI_Slotted_Generic.GetTag().RequestDirectParent());
+		}
+		/* Only display frontend ability properties if this ability will appear in the frontend (e.g. character
+		 * selection screens). */
+		else if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, DisplayedAbilityName) ||
+			PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, DisplayedAbilityDescription))
+		{
+			bIsMutable = UserInterfaceTags.HasTag(CrashGameplayTags::TAG_Ability_Behavior_UI_Frontend_PrimaryWeapon.GetTag().RequestDirectParent());
 		}
 	}
 

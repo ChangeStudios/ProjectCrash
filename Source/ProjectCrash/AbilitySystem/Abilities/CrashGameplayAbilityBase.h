@@ -35,21 +35,6 @@ enum class EAbilityActivationGroup : uint8
 
 
 /**
- * The ability type displayed to players, e.g. in "ability info" screens.
- */
-UENUM(BlueprintType)
-enum class EFrontendAbilityType : uint8
-{
-	PrimaryWeapon,
-	SecondaryWeapon,
-	StandardAbility,
-	PassiveAbility,
-	UltimateAbility
-};
-
-
-
-/**
  * The base class for gameplay abilities in this project. Extends the base gameplay ability class with additional
  * functionality and various helper functions.
  */
@@ -93,8 +78,9 @@ public:
 
 
 
-	// Activation behavior.
+	// Ability behavior.
 
+// Ability activation.
 public:
 
 	/** Getter for this ability's input tag. */
@@ -115,6 +101,26 @@ protected:
 	/** How this ability's activation affects and relies on other abilities. */
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Group")
 	EAbilityActivationGroup ActivationGroup;
+
+// User interface.
+public:
+
+	/** Tags defining this ability's behavior in the user interface. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface", Meta = (Categories = "Ability.Behavior.UI"))
+	FGameplayTagContainer UserInterfaceTags;
+
+	/** Display name of this ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	FString DisplayedAbilityName;
+
+	/** User-facing description of this ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	FString DisplayedAbilityDescription;
+
+	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
+	 * the user interface before the ability will appear. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TObjectPtr<UTexture2D> AbilityIcon;
 
 
 
@@ -144,29 +150,6 @@ protected:
 
 	/** Sends a gameplay message when this ability's cooldown is applied. */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
-
-
-
-	// User interface.
-
-public:
-
-	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
-	 * the user interface before the ability will appear. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	TObjectPtr<UTexture2D> AbilityIcon;
-
-	/** Display name of this ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	FString DisplayedAbilityName;
-
-	/** User-facing type of this ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	EFrontendAbilityType FrontendAbilityType;
-
-	/** User-facing description of this ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	FString DisplayedAbilityDescription;
 
 
 

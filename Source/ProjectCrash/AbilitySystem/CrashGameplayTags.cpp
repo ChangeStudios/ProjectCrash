@@ -10,6 +10,17 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_InputBlocking, "Ability.Behavior.InputBlocking", "This ability blocks movement and camera input while active.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_Disabled, "Ability.Behavior.Disabled", "This ability is disabled and cannot be activated. Used to explicitly block abilities without removing them.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Equipment, "Ability.Behavior.UI.Slotted.Equipment", "This ability will ability in the HUD as an equipment-granted ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Generic, "Ability.Behavior.UI.Slotted.Generic", "This ability will ability in the HUD as a generic ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Weapon, "Ability.Behavior.UI.Slotted.Weapon", "This ability will ability in the HUD as a weapon.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Ultimate, "Ability.Behavior.UI.Slotted.Ultimate", "This ability will ability in the HUD as the character's ultimate.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_PrimaryWeapon, "Ability.Behavior.UI.Frontend.PrimaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a primary weapon.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_SecondaryWeapon, "Ability.Behavior.UI.Frontend.SecondaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a secondary weapon.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_StandardAbility, "Ability.Behavior.UI.Frontend.StandardAbility", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a standard ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Passive, "Ability.Behavior.UI.Frontend.Passive", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a passive ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Ultimate, "Ability.Behavior.UI.Frontend.Ultimate", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as an ultimate ability.");
+
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Identifier_Generic_Jump, "Ability.Identifier.Generic.Jump", "Identifier for the generic character jump ability. Includes abilities like double-jump.");
 
 
@@ -55,11 +66,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up without interrupting gameplay, such as an inventory menu.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu, pause menu, etc.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Dialog, "UI.Layer.Dialog", "Dialog prompts to which the user can respond, such as confirmations prompts or error messages.");
-
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Slotted_Equipment, "UI.AbilityBehavior.Slotted.Equipment", "This ability will appear in the ability bar as an equipment ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Slotted_Generic, "UI.AbilityBehavior.Slotted.Generic", "This ability will appear in the ability bar as a standard ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Slotted_Weapon, "UI.AbilityBehavior.Slotted.Weapon", "This ability will appear in the ability bar as a weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_AbilityBehavior_Ultimate, "UI.AbilityBehavior.Ultimate", "This ability will appear with its current charge in the ultimate widget.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Action_Escape, "UI.Action.Escape", "Serves as a \"back\" action, and opens the escape menu during gameplay.");
 }

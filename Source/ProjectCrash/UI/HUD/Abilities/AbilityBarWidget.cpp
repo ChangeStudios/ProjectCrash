@@ -87,10 +87,11 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	}
 
 	// Decide which widget type to create for this ability: generic, equipment, or weapon.
-	const FGameplayTagContainer AbilityTags = AbilitySpec.Ability->AbilityTags;
+	const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+	const FGameplayTagContainer AbilityTags = CrashAbility->UserInterfaceTags;
 
 	// Create a new ability slot widget if this ability should get one.
-	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Generic))
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_UI_Slotted_Generic))
 	{
 		if (!AbilitySlotWidgets.Contains(AbilitySpec.Ability))
 		{
@@ -109,7 +110,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	}
 
 	// Create a new equipment slot widget if this ability should get one.
-	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Equipment))
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_UI_Slotted_Equipment))
 	{
 		if (!EquipmentSlotWidgets.Contains(AbilitySpec.Ability))
 		{
@@ -127,7 +128,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 	}
 
 	// Create a new weapon slot widget if this ability should get one.
-	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_UI_AbilityBehavior_Slotted_Weapon))
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_UI_Slotted_Weapon))
 	{
 		if (!WeaponSlotWidgets.Contains(AbilitySpec.Ability))
 		{
