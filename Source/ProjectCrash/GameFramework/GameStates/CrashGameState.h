@@ -95,21 +95,7 @@ protected:
 
 public:
 
-	/** Broadcasts changes to the current phase's remaining time. */
-	UPROPERTY(BlueprintAssignable, Category = "Utilities|Time")
-	FPhaseTimeChangedSignature PhaseTimeChangedDelegate;
-
-protected:
-
 	/** The time remaining in the current phase. */
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_PhaseTimeRemaining)
+	UPROPERTY(Transient, Replicated)
 	int32 PhaseTimeRemaining;
-
-	/** Updates the current phase time and triggers state-specific logic when the phase timer ends. */
-	UFUNCTION()
-	virtual void UpdatePhaseTime();
-
-	/** Broadcasts the new time when the phase time changes. */
-	UFUNCTION()
-	void OnRep_PhaseTimeRemaining();
 };

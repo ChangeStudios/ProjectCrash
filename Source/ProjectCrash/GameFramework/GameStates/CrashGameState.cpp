@@ -24,9 +24,6 @@ void ACrashGameState::BeginPlay()
 
 void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	TimerHandle_DefaultTimer.Invalidate();
-	PhaseTimeChangedDelegate.Clear();
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -60,83 +57,6 @@ void ACrashGameState::OnRep_MatchState()
 
 	// Broadcast the new match state.
 	MatchStateChangedDelegate.Broadcast(MatchState);
-
-	// Start the appropriate timer on the server.
-	if (HasAuthority())
-	{
-		// Standard match time.
-		if (MatchState == MatchState::InProgress)
-		{
-			PhaseTimeRemaining = GameModeData->MaximumMatchTime;
-		}
-		// Overtime match time.
-		else if (MatchState == CrashMatchState::InProgress_OT)
-		{
-			PhaseTimeRemaining = GameModeData->MaximumOvertimeTime;
-		}
-		// Post-match match time.
-		else if (MatchState == MatchState::WaitingPostMatch)
-		{
-			PhaseTimeRemaining = GameModeData->EndMatchTime;
-		}
-
-		GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ThisClass::UpdatePhaseTime, UGameplayStatics::GetGlobalTimeDilation(this), true);
-	}
-}
-
-void ACrashGameState::UpdatePhaseTime()
-{
-	if (PhaseTimeRemaining > 0)
-	{
-		PhaseTimeRemaining--;
-		OnRep_PhaseTimeRemaining();
-	}
-	// End of phase time logic.
-	else
-	{
-		// Match time has just ended.
-		if (MatchState == MatchState::InProgress)
-		{
-			// Start overtime if it's enabled in this game mode.
-			if (GameModeData->bEnableOvertime)
-			{
-				SetMatchState(CrashMatchState::InProgress_OT);
-			}
-			// End the game otherwise.
-			else
-			{
-				AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-				ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
-				CrashGM->EndMatch();
-			}
-		}
-		// Always end the game when overtime ends.
-		else if (MatchState == CrashMatchState::InProgress_OT)
-		{
-			AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-			ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
-			CrashGM->EndMatch();
-		}
-		// Leave the map when the post-match timer ends.
-		else if (MatchState == MatchState::WaitingPostMatch)
-		{
-			AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-			ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
-			CrashGM->StartToLeaveMap();
-		}
-	}
-}
-
-void ACrashGameState::OnRep_PhaseTimeRemaining()
-{
-	// Broadcast the new time.
-	PhaseTimeChangedDelegate.Broadcast(PhaseTimeRemaining);
-
-	// Start the match when the timer reaches 0 in the pre-match phase. OnReps will handle extra logic.
-	if (MatchState == MatchState::WaitingToStart && PhaseTimeRemaining == 0)
-	{
-		SetMatchState(MatchState::InProgress);
-	}
 }
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

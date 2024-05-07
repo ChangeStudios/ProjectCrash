@@ -32,6 +32,14 @@ ACrashGameMode::ACrashGameMode()
 	GameModeData = nullptr;
 }
 
+void ACrashGameMode::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+
+	// Start the match timer.
+	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
+}
+
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -251,6 +259,45 @@ bool ACrashGameMode::ShouldSpawnAtStartSpot(AController* Player)
 	return false;
 }
 
+void ACrashGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	// Set the current match time.
+	if (ACrashGameState* const CrashGS = Cast<ACrashGameState>(GameState))
+	{
+		// Standard match time.
+		if (MatchState == MatchState::InProgress)
+		{
+			CrashGS->PhaseTimeRemaining = GameModeData->MaximumMatchTime;
+		}
+		// Overtime match time.
+		else if (MatchState == CrashMatchState::InProgress_OT)
+		{
+			CrashGS->PhaseTimeRemaining = GameModeData->MaximumOvertimeTime;
+		}
+		// Post-match match time.
+		else if (MatchState == MatchState::WaitingPostMatch)
+		{
+			CrashGS->PhaseTimeRemaining = GameModeData->EndMatchTime;
+		}
+	}
+
+	// Refresh the timer. This is required to update the timer when the global time dilation changes.
+	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
+}
+
+bool ACrashGameMode::IsMatchInProgress() const
+{
+	// Add "InProgress_OT" as an in-progress match state.
+	if (GetMatchState() == MatchState::InProgress || GetMatchState() == CrashMatchState::InProgress_OT)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void ACrashGameMode::StartMatch()
 {
 	Super::StartMatch();
@@ -271,19 +318,25 @@ void ACrashGameMode::CheckVictoryCondition()
 
 void ACrashGameMode::EndMatch()
 {
-	Super::EndMatch();
+	if (!IsMatchInProgress())
+	{
+		return;
+	}
 
 	// Apply the slow-motion effect.
-	UGameplayStatics::SetGlobalTimeDilation(this, UCrashAssetManager::Get().GetGlobalGameData().EndMatchTimeDilation);
+	GetWorldSettings()->SetTimeDilation(UCrashAssetManager::Get().GetGlobalGameData().EndMatchTimeDilation);
 
-	GetGameState<ACrashGameState>()->SetMatchState(MatchState::WaitingPostMatch);
+	// Transition to the post-match state.
+	SetMatchState(MatchState::WaitingPostMatch);
 
 	// Notify players that the game ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
-		const bool bWon = DetermineMatchWinner() == PlayerState->GetTeamID();
-		PlayerState->Client_HandleMatchEnded(bWon);
+		if (ACrashPlayerState* CrashPS = (*It)->GetPlayerState<ACrashPlayerState>())
+		{
+			const bool bWon = DetermineMatchWinner() == CrashPS->GetTeamID();
+			CrashPS->Client_HandleMatchEnded(bWon);
+		}
 	}
 }
 
@@ -292,11 +345,56 @@ void ACrashGameMode::HandleLeavingMap()
 	// Notify players that the post-match phase has ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		ACrashPlayerState* PlayerState = Cast<ACrashPlayerState>((*It)->PlayerState);
-		PlayerState->Client_HandleLeavingMap();
+		if (ACrashPlayerState* CrashPS = (*It)->GetPlayerState<ACrashPlayerState>())
+		{
+			CrashPS->Client_HandleLeavingMap();
+		}
 	}
 
 	Super::HandleLeavingMap();
+}
+
+void ACrashGameMode::UpdateMatchTime()
+{
+	ACrashGameState* const CrashGS = Cast<ACrashGameState>(GameState);
+	if (CrashGS && CrashGS->PhaseTimeRemaining > 0)
+	{
+		// Update the current match time.
+		CrashGS->PhaseTimeRemaining--;
+
+		// Handle match state timer finishing.
+		if (CrashGS->PhaseTimeRemaining <= 0)
+		{
+			// Start the match when the pre-match timer ends.
+			if (MatchState == MatchState::WaitingToStart)
+			{
+				SetMatchState(MatchState::InProgress);
+			}
+			else if (MatchState == MatchState::InProgress)
+			{
+				// When the standard match time ends, start overtime if it's enabled for this game mode.
+				if (GameModeData->bEnableOvertime)
+				{
+					SetMatchState(CrashMatchState::InProgress_OT);
+				}
+				// If this game mode does not have overtime, end the match when the standard match time ends.
+				else
+				{
+					EndMatch();
+				}
+			}
+			// End the match unconditionally when overtime ends.
+			else if (MatchState == CrashMatchState::InProgress_OT)
+			{
+				EndMatch();
+			}
+			// Leave the match when the post-match timer ends.
+			else if (MatchState == MatchState::WaitingPostMatch)
+			{
+				StartToLeaveMap();
+			}
+		}
+	}
 }
 
 FCrashTeamID ACrashGameMode::DetermineMatchWinner()

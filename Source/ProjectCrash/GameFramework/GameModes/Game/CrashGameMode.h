@@ -44,6 +44,8 @@ public:
 
 public:
 
+	virtual void PreInitializeComponents() override;
+
 	/** Loads this game mode's data when the game starts. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
@@ -94,6 +96,15 @@ protected:
 
 	// Match state.
 
+// Match progress.
+protected:
+
+	/** Re-initializes the current match time and refreshes the match timer. */
+	virtual void OnMatchStateSet() override;
+
+	/** Adds "InProgress_OT" as an in-progress match state. */
+	virtual bool IsMatchInProgress() const override;
+
 // Match start.
 protected:
 
@@ -120,6 +131,18 @@ public:
 	virtual void EndMatch() override;
 
 	virtual void HandleLeavingMap() override;
+
+
+
+	// Match time.
+
+protected:
+
+	// Handles the match time.
+	FTimerHandle TimerHandle_DefaultTimer;
+
+	// Updates the current match time, handling match state logic when the timer ends.
+	void UpdateMatchTime();
 
 
 

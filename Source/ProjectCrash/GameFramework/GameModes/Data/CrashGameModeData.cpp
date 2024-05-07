@@ -7,7 +7,7 @@ UCrashGameModeData::UCrashGameModeData(const FObjectInitializer& ObjectInitializ
 	MaximumMatchTime(300.0f),
 	bEnableOvertime(false),
 	MaximumOvertimeTime(0.0f),
-	EndMatchTime(6.0f),
+	EndMatchTime(5.0f),
 
 	NumTeams(4),
 	TeamSize(1),

@@ -22,11 +22,34 @@ void UGameModeInfoBase::NativeConstruct()
 
 	if (CrashGS)
 	{
-		// Bind the match timer text.
-		CrashGS->PhaseTimeChangedDelegate.AddUniqueDynamic(this, &ThisClass::OnTimeChanged);
-
 		// Register for match state updates.
 		CrashGS->MatchStateChangedDelegate.AddUniqueDynamic(this, &ThisClass::OnMatchStateChanged);
+	}
+}
+
+void UGameModeInfoBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (CrashGS)
+	{
+		// Update the timer text.
+		if (Timer_Text)
+		{
+			// We have to manually format the timer text because UCommonNumericTextBlock::SetCurrentValue lags slightly.
+			const FTimespan CurrentSeconds = FTimespan::FromSeconds(CrashGS->PhaseTimeRemaining);
+			FText::AsTimespan(CurrentSeconds);
+			Timer_Text->SetText(FText::AsTimespan(CurrentSeconds));
+		}
+
+		// Check if there are any players in the match that the owning player hasn't created widgets for yet.
+		for (APlayerState* PS : CrashGS->PlayerArray)
+		{
+			if (!PlayerWidgets.Contains(PS))
+			{
+				CreatePlayerWidget(PS);
+			}
+		}
 	}
 }
 
@@ -37,17 +60,7 @@ void UGameModeInfoBase::NativeDestruct()
 	// Clear callbacks.
 	if (CrashGS)
 	{
-		CrashGS->PhaseTimeChangedDelegate.RemoveDynamic(this, &ThisClass::OnTimeChanged);
 		CrashGS->MatchStateChangedDelegate.RemoveDynamic(this, &ThisClass::OnMatchStateChanged);
-	}
-}
-
-void UGameModeInfoBase::OnTimeChanged(uint32 NewTime)
-{
-	// Update the timer text.
-	if (Timer_Text)
-	{
-		Timer_Text->SetCurrentValue(NewTime);
 	}
 }
 
@@ -99,21 +112,3 @@ void UGameModeInfoBase::CreatePlayerWidget(APlayerState* TargetPlayer)
 		PlayerWidgets.Add(TargetPlayer, TeamWidget);
 	}
 }
-
-void UGameModeInfoBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	// Check if there are any players in the match that the owning player hasn't created widgets for yet.
-	if (CrashGS)
-	{
-		for (APlayerState* PS : CrashGS->PlayerArray)
-		{
-			if (!PlayerWidgets.Contains(PS))
-			{
-				CreatePlayerWidget(PS);
-			}
-		}
-	}
-}
-

@@ -28,6 +28,9 @@ public:
 	/** Registers to timer and match state updates. */
 	virtual void NativeConstruct() override;
 
+	/** Updates the timer and checks for any players that have joined the match, but don't have widgets yet. */
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 
 
 	// Destruction.
@@ -36,16 +39,6 @@ public:
 
 	/** Clears callbacks. */
 	virtual void NativeDestruct() override;
-
-
-
-	// Match timer.
-
-protected:
-
-	/** Updates this widget's timer text. */
-	UFUNCTION()
-	virtual void OnTimeChanged(uint32 NewTime);
 
 
 
@@ -70,9 +63,6 @@ protected:
 	/** Tracks which players the owning player has created widgets for. */
 	UPROPERTY()
 	TMap<APlayerState*, UTeamWidget*> PlayerWidgets;
-
-	/** Checks for any players that have joined the match, but don't have widgets yet. */
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 
 
