@@ -124,7 +124,7 @@ private:
 	TObjectPtr<UEquipmentSet> CurrentEquipmentSet;
 
 	/** The handle for the equipment set currently equipped by this character. */
-	FEquipmentSetHandle CurrentEquipmentSetHandle;
+	FEquipmentSetHandleDep CurrentEquipmentSetHandle;
 
 
 

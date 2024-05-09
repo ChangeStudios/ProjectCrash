@@ -134,8 +134,7 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 		{
 			if (UWeaponSlotWidget* NewWeaponSlotWidget = WeaponSlotBox->CreateEntry<UWeaponSlotWidget>())
 			{
-				// // Bind the widget to its ability.
-				// NewWeaponSlotWidget->BindSlotToAbility(AbilitySpec.Ability, AbilityInputAction, OwningASC);
+				// TODO: Bind the widget to its weapon.
 
 				// Cache the new widget to be able to delete it later.
 				WeaponSlotWidgets.Add(AbilitySpec.Ability, NewWeaponSlotWidget);

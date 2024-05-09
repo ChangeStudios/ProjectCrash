@@ -91,7 +91,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 	 * is why we don't call this function directly. We check the equipment set handle instead of the equipment set
 	 * itself because we may still need to equip an equipment set even if the latter is still valid; i.e. re-equipping
 	 * a temporarily unequipped set. */
-	if (CurrentEquipmentSetHandle.EquipmentSet && !bWasTemporarilyUnequipped)
+	if (CurrentEquipmentSetHandle.EquipmentSetData && !bWasTemporarilyUnequipped)
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to equip equipment set [%s] on actor [%s], but the actor's current equipment set, [%s], must be unequipped first."), *SetToEquip->GetName(), *GetNameSafe(GetOwner()), *CurrentEquipmentSet->GetName());
 		return false;
@@ -105,7 +105,7 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 	 * won't have nulled it. */
 	if (!bWasTemporarilyUnequipped)
 	{
-		CurrentEquipmentSetHandle.EquipmentSet = SetToEquip;
+		CurrentEquipmentSetHandle.EquipmentSetData = SetToEquip;
 	}
 
 	// Define parameters for attaching equipment actors.
@@ -119,43 +119,43 @@ bool UEquipmentComponent::EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWas
 	const FTransform SpawnTransform = FTransform();
 	const FAttachmentTransformRules AttachRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
 	
-	// Spawn each first-person equipment actor.
-	for (FEquipmentActorData EquipmentActor : SetToEquip->FirstPersonEquipmentActors)
-	{
-		// Only playable characters need to spawn separate actors for first-person.
-		if (EquipmentActor.SpawnedActorClass && EquippingChar->IsA(AChallengerBase::StaticClass()))
-		{
-			// Spawn the first-person actor.
-			AActor* SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
-			SpawnedActor_FPP->SetOwner(GetOwner());
-
-			// Attach the first-person actor to the specified socket.
-			SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSocket);
-			SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
-
-			// Cache the new actor in the current equipment set handle.
-			CurrentEquipmentSetHandle.SpawnedActors_FPP.Add(SpawnedActor_FPP);
-		}
-	}
-
-	// Spawn each third-person equipment actor.
-	for (FEquipmentActorData EquipmentActor : SetToEquip->ThirdPersonEquipmentActors)
-	{
-		if (IsValid(EquipmentActor.SpawnedActorClass))
-		{
-			// Spawn the third-person actor.
-			AActor* SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
-			SpawnedActor_TPP->SetOwner(GetOwner());
-
-			// Attach the third-person actor to the specified socket.
-			USceneComponent* ParentComp = Cast<AChallengerBase>(EquippingChar) ? Cast<AChallengerBase>(EquippingChar)->GetThirdPersonMesh() : EquippingChar->GetMesh();
-			SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSocket);
-			SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
-
-			// Cache the new actor in the current equipment set handle.
-			CurrentEquipmentSetHandle.SpawnedActors_TPP.Add(SpawnedActor_TPP);
-		}
-	}
+	// // Spawn each first-person equipment actor.
+	// for (FEquipmentActorData EquipmentActor : SetToEquip->FirstPersonEquipmentActors)
+	// {
+	// 	// Only playable characters need to spawn separate actors for first-person.
+	// 	if (EquipmentActor.SpawnedActorClass && EquippingChar->IsA(AChallengerBase::StaticClass()))
+	// 	{
+	// 		// Spawn the first-person actor.
+	// 		AActor* SpawnedActor_FPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
+	// 		SpawnedActor_FPP->SetOwner(GetOwner());
+	//
+	// 		// Attach the first-person actor to the specified socket.
+	// 		SpawnedActor_FPP->AttachToComponent(Cast<AChallengerBase>(EquippingChar)->GetFirstPersonMesh(), AttachRules, EquipmentActor.AttachSocket);
+	// 		SpawnedActor_FPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
+	//
+	// 		// Cache the new actor in the current equipment set handle.
+	// 		CurrentEquipmentSetHandle.SpawnedActors_FPP.Add(SpawnedActor_FPP);
+	// 	}
+	// }
+	//
+	// // Spawn each third-person equipment actor.
+	// for (FEquipmentActorData EquipmentActor : SetToEquip->ThirdPersonEquipmentActors)
+	// {
+	// 	if (IsValid(EquipmentActor.SpawnedActorClass))
+	// 	{
+	// 		// Spawn the third-person actor.
+	// 		AActor* SpawnedActor_TPP = GetWorld()->SpawnActor(EquipmentActor.SpawnedActorClass, &SpawnTransform, SpawnParams);
+	// 		SpawnedActor_TPP->SetOwner(GetOwner());
+	//
+	// 		// Attach the third-person actor to the specified socket.
+	// 		USceneComponent* ParentComp = Cast<AChallengerBase>(EquippingChar) ? Cast<AChallengerBase>(EquippingChar)->GetThirdPersonMesh() : EquippingChar->GetMesh();
+	// 		SpawnedActor_TPP->AttachToComponent(ParentComp, AttachRules, EquipmentActor.AttachSocket);
+	// 		SpawnedActor_TPP->SetActorRelativeTransform(EquipmentActor.AttachOffset);
+	//
+	// 		// Cache the new actor in the current equipment set handle.
+	// 		CurrentEquipmentSetHandle.SpawnedActors_TPP.Add(SpawnedActor_TPP);
+	// 	}
+	// }
 
 	// Grant the equipment's ability set to the equipping character.
 	if (SetToEquip->GrantedAbilitySet)
@@ -252,43 +252,43 @@ bool UEquipmentComponent::UnequipSet_Internal(bool bTemporarilyUnequip)
 {
 	/* By the time this is called in the OnRep, CurrentEquipmentSet will have changed already. But we'll still have the
 	 * handle of the previous set, which we can use to unequip it. */
-	if (!CurrentEquipmentSetHandle.EquipmentSet)
+	if (!CurrentEquipmentSetHandle.EquipmentSetData)
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to unequip equipment set from [%s], but there was no equipment set to unequip. from [%s]."), *GetNameSafe(GetOwner()));
 		return false;
 	}
 	else
 	{
-		EQUIPMENT_LOG(Verbose, TEXT("Unequipped [%s] from [%s]."), *CurrentEquipmentSetHandle.EquipmentSet->GetName(), *GetNameSafe(GetOwner()));
+		EQUIPMENT_LOG(Verbose, TEXT("Unequipped [%s] from [%s]."), *CurrentEquipmentSetHandle.EquipmentSetData->GetName(), *GetNameSafe(GetOwner()));
 	}
 
-	// Destroy each equipment actor.
-	TArray<AActor*> EquipmentActors = CurrentEquipmentSetHandle.SpawnedActors_FPP;
-	EquipmentActors.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
-	for (AActor* EquipmentActor : EquipmentActors)
-	{
-		EquipmentActor->Destroy();
-	}
-
-	// Clear the equipment set handle's spawned actors.
-	CurrentEquipmentSetHandle.SpawnedActors_FPP.Empty();
-	CurrentEquipmentSetHandle.SpawnedActors_TPP.Empty();
-
-	// Remove the ability set that was granted by the equipped equipment set (if there was one) on the server.
-	if (CurrentEquipmentSetHandle.GrantedASC && CurrentEquipmentSetHandle.GrantedASC->IsOwnerActorAuthoritative())
-	{
-		CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CurrentEquipmentSetHandle.GrantedASC, bTemporarilyUnequip);
-
-		if (!bTemporarilyUnequip)
-		{
-			CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
-		}
-	}
+	// // Destroy each equipment actor.
+	// TArray<AActor*> EquipmentActors = CurrentEquipmentSetHandle.SpawnedActors_FPP;
+	// EquipmentActors.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
+	// for (AActor* EquipmentActor : EquipmentActors)
+	// {
+	// 	EquipmentActor->Destroy();
+	// }
+	//
+	// // Clear the equipment set handle's spawned actors.
+	// CurrentEquipmentSetHandle.SpawnedActors_FPP.Empty();
+	// CurrentEquipmentSetHandle.SpawnedActors_TPP.Empty();
+	//
+	// // Remove the ability set that was granted by the equipped equipment set (if there was one) on the server.
+	// if (CurrentEquipmentSetHandle.GrantedASC && CurrentEquipmentSetHandle.GrantedASC->IsOwnerActorAuthoritative())
+	// {
+	// 	CurrentEquipmentSetHandle.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CurrentEquipmentSetHandle.GrantedASC, bTemporarilyUnequip);
+	//
+	// 	if (!bTemporarilyUnequip)
+	// 	{
+	// 		CurrentEquipmentSetHandle.GrantedAbilitySetHandles = FCrashAbilitySet_GrantedHandles();
+	// 	}
+	// }
 
 	if (!bTemporarilyUnequip)
 	{
 		// Null the current equipment set's class.
-		CurrentEquipmentSetHandle.EquipmentSet = nullptr;
+		CurrentEquipmentSetHandle.EquipmentSetData = nullptr;
 	}
 
 	return true;
@@ -318,10 +318,10 @@ TArray<AActor*> UEquipmentComponent::GetEquipmentActors()
 {
 	TArray<AActor*> ReturnArray;
 
-	if (CurrentEquipmentSetHandle.EquipmentSet)
+	if (CurrentEquipmentSetHandle.EquipmentSetData)
 	{
-		ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_FPP);
-		ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
+		// ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_FPP);
+		// ReturnArray.Append(CurrentEquipmentSetHandle.SpawnedActors_TPP);
 	}
 
 	return ReturnArray;

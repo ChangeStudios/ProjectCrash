@@ -7,53 +7,56 @@
 #include "Engine/DataAsset.h"
 #include "EquipmentSet.generated.h"
 
+class AEquipmentActor;
 class UCrashAbilitySet;
 class UCrashAbilitySystemComponent;
 class UEquipmentAnimationData;
 
 /**
- * Data used to define an actor in an equipment set. Used to spawn the actor when the set is equipped. Purely cosmetic;
- * equipment logic is handled by the equipment set.
+ * Data used to define an equipment actor created by an equipment set. Used to spawn new equipment actors when the set
+ * is equipped: one for first-person and one for third-person. Purely cosmetic; equipment logic is handled by the
+ * equipment set.
  */
 USTRUCT(BlueprintType)
 struct FEquipmentActorData
 {
 	GENERATED_BODY()
 
-	/** The actor to spawn when this equipment set is equipped. */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AActor> SpawnedActorClass;
+	/** The mesh to spawn when this equipment set is equipped. */
+	UPROPERTY(EditDefaultsOnly, Meta = (AllowedClasses="/Script/Engine.SkeletalMesh, /Script/Engine.StaticMesh"))
+	TObjectPtr<UStreamableRenderAsset> SpawnedMesh;
 
-	/** The name of the bone or socket on the character mesh to attach this actor to. */
+	/** The name of the bone or socket to which this actor will be attached. */
 	UPROPERTY(EditDefaultsOnly)
 	FName AttachSocket;
 
-	/** The offset from the attached bone or socket to apply to this actor. */
-	UPROPERTY(EditDefaultsOnly)
-	FTransform AttachOffset;
+	/** The offset from the AttachSocket to apply to this actor in first-person. */
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Attachment Offset (First-Person)")
+	FTransform AttachOffset_FPP;
+
+	/** The offset from the attached bone or socket to apply to this actor in third-person. */
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Attachment Offset (Third-Person)")
+	FTransform AttachOffset_TPP;
 };
 
 
 /**
  * Structure used to maintain references to runtime equipment set data.
  */
-USTRUCT(BlueprintType)
-struct FEquipmentSetHandle
+USTRUCT(BlueprintType, Meta = (Deprecated))
+struct FEquipmentSetHandleDep
 {
 	GENERATED_BODY()
 
 public:
 
+	/** The equipment set that this handle is an instance of. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
-	TObjectPtr<UEquipmentSet> EquipmentSet;
+	TObjectPtr<UEquipmentSet> EquipmentSetData;
 
-	/** Reference to the first-person actor spawned after this equipment set is equipped. */
+	/** Reference to the actors spawned after this equipment set is equipped. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
-	TArray<TObjectPtr<AActor>> SpawnedActors_FPP;
-
-	/** Reference to the third-person actor spaw+ned after this equipment set is equipped. */
-	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
-	TArray<TObjectPtr<AActor>> SpawnedActors_TPP;
+	TArray<TObjectPtr<AEquipmentActor>> SpawnedActors;
 
 	/** The ASC to which this equipment set's ability set is granted. */
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment|Handles")
@@ -83,13 +86,10 @@ class PROJECTCRASH_API UEquipmentSet : public UDataAsset
 
 public:
 
-	/** The actors that will be spawned to visually represent this equipment in first-person. */
+	/** The meshes that will be spawned to visually represent this equipment. Two objects of the AEquipmentActor class
+	 * will be spawned for each mesh: one for first-person and one for third-person. */
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FEquipmentActorData> FirstPersonEquipmentActors;
-
-	/** The actors that will be spawned to visually represent this equipment in third-person. */
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FEquipmentActorData> ThirdPersonEquipmentActors;
+	TArray<FEquipmentActorData> EquipmentMeshes;
 
 	/** The animation data used by characters while this equipment is equipped. Character animations are driven by
 	 * the character's current equipment, rather than the character itself. */

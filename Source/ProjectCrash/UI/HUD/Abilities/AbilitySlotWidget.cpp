@@ -20,7 +20,7 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInp
 	BoundASC = OwningASC;
 
 	// Update the ability icon.
-	if (UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
+	if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
 	{
 		if (AbilityIcon)
 		{

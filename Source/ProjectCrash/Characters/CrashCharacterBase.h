@@ -9,6 +9,19 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpedSignature);
 
 /**
+ * The perspective through which a character can be viewed.
+ */
+UENUM(BlueprintType)
+enum class ECharacterPerspective : uint8
+{
+	None,
+	FirstPerson,
+	ThirdPerson
+};
+
+
+
+/**
  * Base class for characters in this project. Contains universal logic used by all characters, such as custom
  * delegates.
  */
