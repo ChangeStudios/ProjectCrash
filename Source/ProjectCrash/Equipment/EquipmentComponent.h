@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquipmentSet.h"
-#include "Components/ActorComponent.h"
+#include "EquipmentSetDefinition.h"
 #include "GameplayTagContainer.h"
+#include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
 class UEquipmentSet;
 
 /**
- * Manages the owning character's equipment, acting as an interface to the equipment system. Can only be given to
- * character classes.
+ * Grants a character access to the equipment system. Acts as an interface between the character and the equipment
+ * system, allowing them to equip and unequip equipment sets.
  */
 UCLASS()
 class PROJECTCRASH_API UEquipmentComponent : public UActorComponent
@@ -28,20 +28,18 @@ public:
 
 protected:
 
-	/** Ensures that this component is attached to a character class and is the only instance of this component. */
+	/** Ensures this component is attached to a character class. */
 	virtual void OnRegister() override;
 
 
 
-	// Initialization.
+	// Effects.
 
 public:
 
-	/** Binds the OnTemporarilyUnequippedChanged callback. */
-	virtual void InitializeComponent() override;
-
-	/** Unequips the current equipment set when this component is destroyed. */
-	virtual void OnUnregister() override;
+	/** Sends the given equipment effect event to this component, which routes it to all active equipment actors. */
+	UFUNCTION(BlueprintCallable, Category = "Equipment", Meta = (Categories = "Event.EquipmentEffect"))
+	void SendEquipmentEffectEvent(FGameplayTag EffectEvent);
 
 
 
@@ -49,82 +47,80 @@ public:
 
 public:
 
-	/** Returns the equipment set currently equipped by this character. */
-	UFUNCTION(BlueprintPure, Category = "Equipment")
-	const UEquipmentSet* GetCurrentEquipmentSet() const { return CurrentEquipmentSet; }
+	/** Equips the given equipment set on the server. If the equipping character already has a set equipped, that set
+	 * will be unequipped before the new set is equipped. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
+	void EquipSet(UEquipmentSet* SetToEquip);
 
 	/**
-	 * Authoritatively equips the given equipment set. If this character already has an equipment set equipped, that
-	 * equipment set will be unequipped before equipping the new set.
+	 * Temporarily equips the given equipment set on the server. If an equipment set was already temporarily equipped,
+	 * that set will be unequipped before the new set is equipped.
 	 *
-	 * This can be used to explicitly unequip an equipment set by passing a nullptr as SetToEquip.
-	 *
-	 * @param SetToEquip	The set to equip.
-	 *
-	 * @returns				The equipment set that was unequipped and replaced by the new set. Returns nullptr if this
-	 *						character did not have an equipment set equipped.
+	 * The temporarily equipped set will override the current EquippedSet until UnequipTemporarySet is called, or until
+	 * the temporary set is replaced by another temporary set.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
-	UEquipmentSet* EquipEquipmentSet(UEquipmentSet* SetToEquip);
+	void TemporarilyEquipSet(UEquipmentSet* SetToTemporarilyEquip);
 
+	/**
+	 * Unequips the current temporarily equipped set and equips EquippedSet. This should NOT be called when switching
+	 * temporarily equipped sets.
+	 *
+	 * @returns		Whether a set was unequipped. Is false if this function is called when there isn't a set
+	 *				temporarily equipped.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
+	bool UnequipTemporarySet();
+
+
+
+	// Internals.
+
+// Equipment management.
 private:
 
-	/**
-	 * Attempts to equip the given equipment set. Will not equip the set if this character already has an equipment
-	 * set equipped.
-	 * 
-	 * @param SetToEquip					The set to try to equip.
-	 * @param bWasTemporarilyUnequipped		If the equipment set is being re-equipped after having been temporarily
-	 *										unequipped. If true, the set's granted abilities will be re-enabled instead
-	 *										of being granted again.
-	 * 
-	 * @return								Whether the new set was successfully equipped. Will return false if this
-	 *										character already has an equipment set equipped.
-	 */
-	bool EquipSet_Internal(UEquipmentSet* SetToEquip, bool bWasTemporarilyUnequipped = false);
+	/** Internal logic for equipping a new equipment set. Granting abilities, spawning actors, etc. */
+	void EquipSet_Internal(UEquipmentSet* SetToEquip);
 
 	/**
-	 * Attempts to unequip this character's current equipment set using the current handle.
+	 * Internal logic for unequipping an equipment set. Equipment sets cannot be unequipped directly, so this is only
+	 * called as a result of new sets being equipped, replacing old ones.
 	 *
-	 * @param bTemporarilyUnequip	If true, the equipment set will only be temporarily unequipped. This disables
-	 *								the set's granted abilities instead of removing them completely.
-	 *
-	 * @returns						Whether an equipment set was successfully unequipped. Will return false if this
-	 *								character doesn't have a current equipment set to unequip.
+	 * @param bUnequipTemporarySet		Whether to unequip TemporarilyEquippedSet or EquippedSet.
+	 * @param bUnequipTemporarily		Whether to fully unequip the set, or only unequip it temporarily. If true,
+	 *									the set will only be visually unequipped, allowing its granted abilities and
+	 *									effects to remain active.
 	 */
-	bool UnequipSet_Internal(bool bTemporarilyUnequip = false);
+	void UnequipSet_Internal(bool bUnequipTemporarySet, bool bUnequipTemporarily);
 
-	/**
-	 * Callback bound to when the ASC registered with this component gains or loses a TemporarilyUnequipped gameplay
-	 * tag. This should be used instead of manual equipment methods because it does not null CurrentEquipmentSet.
-	 *
-	 * This is bound on all machines.
-	 * 
-	 * @param Tag			TemporarilyUnequipped tag.
-	 * @param NewCount		Number of TemporarilyUnequipped tags the ASC now has.
-	 */
-	UFUNCTION()
-	void OnTemporarilyUnequippedChanged(const FGameplayTag Tag, int32 NewCount);
-
-	/** Delegate to bind the OnTemporarilyUnequippedChanged callback. */
-	FDelegateHandle TemporarilyUnequippedDelegate;
-
-
-
-	// Equipment.
-
+// Current equipment set.
 private:
 
-	/** Unequips this character's previous equipment set and equips the new one. */
+	/** Unequips the previously equipped set and equips the new set. */
 	UFUNCTION()
-	void OnRep_CurrentEquipmentSet(UEquipmentSet* PreviousEquipmentSet);
+	void OnRep_EquippedSet(UEquipmentSet* PreviouslyEquippedSet);
 
-	/** The equipment set currently equipped by this character. */
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquipmentSet)
-	TObjectPtr<UEquipmentSet> CurrentEquipmentSet;
+	/** The equipment set currently equipped by this character. Can be overridden by TemporarilyEquippedSet. */
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedSet)
+	TObjectPtr<UEquipmentSet> EquippedSet;
 
-	/** The handle for the equipment set currently equipped by this character. */
-	FEquipmentSetHandleDep CurrentEquipmentSetHandle;
+	/** Handle for the current equipment set. */
+	FEquipmentSetHandle EquippedSetHandle;
+
+// Temporarily equipment set.
+private:
+
+	/** Unequips the previous temporary set and equips the new temporary set. If no temporary set was previously
+	 * equipped, the current EquippedSet is unequipped, to override it with the new temporary set. */
+	UFUNCTION()
+	void OnRep_TemporarilyEquippedSet(UEquipmentSet* PreviouslyTemporarilyEquippedSet);
+
+	/** An equipment set temporarily overriding EquippedSet. */
+	UPROPERTY(ReplicatedUsing = OnRep_TemporarilyEquippedSet)
+	TObjectPtr<UEquipmentSet> TemporarilyEquippedSet;
+
+	/** Handle for the current temporary equipment set. */
+	FEquipmentSetHandle TemporarilyEquippedSetHandle;
 
 
 
@@ -132,12 +128,7 @@ private:
 
 public:
 
-	/** Retrieves the given actor's EquipmentComponent, if it has one. Otherwise, returns nullptr. */
+	/** Retrieves the given actor's EquipmentComponent, if it has one. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
-	static UEquipmentComponent* FindEquipmentComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UEquipmentComponent>() : nullptr); };
-
-	/** Returns all first-person and third-person equipment actors currently spawned by this component. */
-	UFUNCTION(BlueprintPure, Category = "Equipment")
-	TArray<AActor*> GetEquipmentActors();
-
+	static UEquipmentComponent* FindEquipmentComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UEquipmentComponent>() : nullptr); }
 };
