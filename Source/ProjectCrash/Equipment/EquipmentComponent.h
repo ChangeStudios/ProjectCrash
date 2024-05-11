@@ -8,7 +8,7 @@
 #include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
-class UEquipmentSet;
+class UEquipmentSetDefinition;
 
 /**
  * Grants a character access to the equipment system. Acts as an interface between the character and the equipment
@@ -50,7 +50,7 @@ public:
 	/** Equips the given equipment set on the server. If the equipping character already has a set equipped, that set
 	 * will be unequipped before the new set is equipped. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
-	void EquipSet(UEquipmentSet* SetToEquip);
+	void EquipSet(UEquipmentSetDefinition* SetToEquip);
 
 	/**
 	 * Temporarily equips the given equipment set on the server. If an equipment set was already temporarily equipped,
@@ -60,7 +60,7 @@ public:
 	 * the temporary set is replaced by another temporary set.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
-	void TemporarilyEquipSet(UEquipmentSet* SetToTemporarilyEquip);
+	void TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemporarilyEquip);
 
 	/**
 	 * Unequips the current temporarily equipped set and equips EquippedSet. This should NOT be called when switching
@@ -79,8 +79,17 @@ public:
 // Equipment management.
 private:
 
-	/** Internal logic for equipping a new equipment set. Granting abilities, spawning actors, etc. */
-	void EquipSet_Internal(UEquipmentSet* SetToEquip);
+	/** Internal logic for equipping a new equipment set. Granting abilities, spawning actors, etc.
+	 *
+	 * @param SetToEquip					The new set to equip.
+	 * @param bEquipAsTemporarySet			Whether to equip this new set as the primary equipment set or as the
+	 *										temporarily equipped set. Determines which handle to use.
+	 * @param bWasTemporarilyUnequipped		Whether the given set is being re-equipped after having only been
+	 *										overridden by a temporary set. Sets that are unequipped this way are not
+	 *										completely destroyed, so they don't need to do everything a brand new
+	 *										equipment set needs to do.
+	 */
+	void EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, bool bEquipAsTemporarySet, bool bWasTemporarilyUnequipped);
 
 	/**
 	 * Internal logic for unequipping an equipment set. Equipment sets cannot be unequipped directly, so this is only
@@ -98,11 +107,11 @@ private:
 
 	/** Unequips the previously equipped set and equips the new set. */
 	UFUNCTION()
-	void OnRep_EquippedSet(UEquipmentSet* PreviouslyEquippedSet);
+	void OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyEquippedSet);
 
 	/** The equipment set currently equipped by this character. Can be overridden by TemporarilyEquippedSet. */
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedSet)
-	TObjectPtr<UEquipmentSet> EquippedSet;
+	TObjectPtr<UEquipmentSetDefinition> EquippedSet;
 
 	/** Handle for the current equipment set. */
 	FEquipmentSetHandle EquippedSetHandle;
@@ -113,11 +122,11 @@ private:
 	/** Unequips the previous temporary set and equips the new temporary set. If no temporary set was previously
 	 * equipped, the current EquippedSet is unequipped, to override it with the new temporary set. */
 	UFUNCTION()
-	void OnRep_TemporarilyEquippedSet(UEquipmentSet* PreviouslyTemporarilyEquippedSet);
+	void OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* PreviouslyTemporarilyEquippedSet);
 
 	/** An equipment set temporarily overriding EquippedSet. */
 	UPROPERTY(ReplicatedUsing = OnRep_TemporarilyEquippedSet)
-	TObjectPtr<UEquipmentSet> TemporarilyEquippedSet;
+	TObjectPtr<UEquipmentSetDefinition> TemporarilyEquippedSet;
 
 	/** Handle for the current temporary equipment set. */
 	FEquipmentSetHandle TemporarilyEquippedSetHandle;

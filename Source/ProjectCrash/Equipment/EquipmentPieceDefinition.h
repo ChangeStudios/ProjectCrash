@@ -70,15 +70,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment Actor", Meta = (AllowedClasses="/Script/Engine.SkeletalMesh, /Script/Engine.StaticMesh"))
 	TObjectPtr<UStreamableRenderAsset> Mesh;
 
-	/** The socket to which this equipment piece's actor will be attached when spawned. */
+	/** The bone or socket to which this equipment piece's actor will be attached when spawned. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment Actor", DisplayName = "Attachment Socket")
 	FName AttachSocket;
 
-	/** The socket to which this equipment piece's actor will be attached when spawned. */
+	/** The offset from the attached socket at which this equipment piece's first-person actor will be spawned. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment Actor", DisplayName = "Attachment Offset (First-Person)")
 	FTransform AttachOffset_FPP;
 
-	/** The socket to which this equipment piece's actor will be attached when spawned. */
+	/** The offset from the attached socket at which this equipment piece's third-person actor will be spawned. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment Actor", DisplayName = "Attachment Offset (Third-Person)")
 	FTransform AttachOffset_TPP;
 

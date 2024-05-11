@@ -6,25 +6,31 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "EquipmentComponent.h"
+#include "Engine/ActorChannel.h"
+#include "GameFramework/CrashLogging.h"
+#include "Kismet/KismetMaterialLibrary.h"
 
 
-AEquipmentActor::AEquipmentActor() :
-	Mesh(nullptr),
-	EquipmentPerspective(ECharacterPerspective::None)
+AEquipmentActor::AEquipmentActor()
 {
+	PrimaryActorTick.bCanEverTick = false;
+
+	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
+	SetRootComponent(Root);
 }
 
 void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, ECharacterPerspective InEquipmentPerspective)
 {
 	check(InEquipmentPieceDefinition);
 
-	// Cache this equipment actor's parameters.
+	// Cache this equipment actor's properties.
 	OwningEquipmentComponent = InOwningEquipmentComponent;
+	SetOwner(InOwningEquipmentComponent->GetOwner());
 	SourceEquipmentPiece = InEquipmentPieceDefinition;
 	EquipmentPerspective = InEquipmentPerspective;
 
 	// Spawn the equipment actor's mesh.
-	Mesh = SpawnMeshComponent(SourceEquipmentPiece->Mesh, EquipmentPerspective);
+	SpawnMeshComponent(InEquipmentPieceDefinition->Mesh, EquipmentPerspective);
 }
 
 void AEquipmentActor::OnUnequip()
@@ -93,36 +99,43 @@ void AEquipmentActor::EndEquipmentEvent(FGameplayTag EventTag)
 	}
 }
 
-UMeshComponent* AEquipmentActor::SpawnMeshComponent(TObjectPtr<UStreamableRenderAsset> InMesh, ECharacterPerspective InEquipmentPerspective)
+void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharacterPerspective InEquipmentPerspective)
 {
 	// Spawn the mesh if it's a static mesh.
-	if (Mesh.GetClass() == UStaticMesh::StaticClass())
+	if (UStaticMesh* InStaticMesh = Cast<UStaticMesh>(InMesh))
 	{
-		if (UStaticMeshComponent* StaticMesh = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass()))
+		if (UStaticMeshComponent* StaticMesh = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), TEXT("MeshComponent")))
 		{
-			StaticMesh->SetOnlyOwnerSee(InEquipmentPerspective == ECharacterPerspective::FirstPerson);
-			StaticMesh->SetOwnerNoSee(InEquipmentPerspective == ECharacterPerspective::ThirdPerson);
-	
-			StaticMesh->SetStaticMesh(Cast<UStaticMesh>(InMesh));
-
-			return StaticMesh;
+			StaticMesh->RegisterComponent();
+			StaticMesh->SetStaticMesh(InStaticMesh);
+			StaticMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			Mesh = StaticMesh;
 		}
 	}
 	// Spawn the mesh if it's a skeletal mesh.
-	else if (Mesh.GetClass() == USkeletalMesh::StaticClass())
+	else if (USkeletalMesh* InSkeletalMesh = Cast<USkeletalMesh>(InMesh))
 	{
-		if (USkeletalMeshComponent* SkeletalMesh = NewObject<USkeletalMeshComponent>(this, USkeletalMeshComponent::StaticClass()))
+		if (USkeletalMeshComponent* SkeletalMesh = NewObject<USkeletalMeshComponent>(this, USkeletalMeshComponent::StaticClass(), TEXT("MeshComponent")))
 		{
-			SkeletalMesh->SetOnlyOwnerSee(InEquipmentPerspective == ECharacterPerspective::FirstPerson);
-			SkeletalMesh->SetOwnerNoSee(InEquipmentPerspective == ECharacterPerspective::ThirdPerson);
-
-			SkeletalMesh->SetSkeletalMesh(Cast<USkeletalMesh>(InMesh));
-
-			return SkeletalMesh;
+			SkeletalMesh->RegisterComponent();
+			SkeletalMesh->SetSkeletalMesh(InSkeletalMesh);
+			SkeletalMesh->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			Mesh = SkeletalMesh;
 		}
 	}
 
-	return nullptr;
+	// Initialize the new mesh component's properties.
+	Mesh->SetOnlyOwnerSee(InEquipmentPerspective == ECharacterPerspective::FirstPerson);
+	Mesh->SetOwnerNoSee(InEquipmentPerspective == ECharacterPerspective::ThirdPerson);
+	Mesh->SetCollisionProfileName("NoCollision");
+
+	// Enable/disable first-person depth rendering.
+	for (int MatIndex = 0; MatIndex < Mesh->GetNumMaterials(); MatIndex++)
+	{
+		UMaterialInstanceDynamic* DynamicMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, Mesh->GetMaterial(MatIndex));
+		Mesh->SetMaterial(MatIndex, DynamicMat);
+		DynamicMat->SetScalarParameterValue("FirstPerson", InEquipmentPerspective == ECharacterPerspective::FirstPerson ? 1.0f : 0.0f);
+	}
 }
 
 UAbilitySystemComponent* AEquipmentActor::GetASCFromEquipmentComponent(const UEquipmentComponent* InEquipmentComponent)

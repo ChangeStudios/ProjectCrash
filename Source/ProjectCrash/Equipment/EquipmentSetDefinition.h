@@ -56,7 +56,7 @@ public:
 	/** The pieces of equipment that comprise this equipment set. These are purely cosmetic; they represent the
 	 * equipment in-game. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Pieces")
-	TArray<TSubclassOf<UEquipmentPieceDefinition>> EquipmentPieces;
+	TArray<UEquipmentPieceDefinition*> EquipmentPieces;
 
 	/** The ability set granted to an actor when they equip this set, removed when they unequip it. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Ability Set")

@@ -40,13 +40,16 @@ public:
 
 
 
-	// Mesh components.
+	// Components.
 
 protected:
 
+	UPROPERTY()
+	USceneComponent* Root = nullptr;
+
 	/** The mesh representing this piece of equipment. */
-	UPROPERTY(DisplayName = "Mesh")
-	TObjectPtr<UMeshComponent> Mesh;
+	UPROPERTY()
+	UMeshComponent* Mesh = nullptr;
 
 
 
@@ -90,7 +93,7 @@ protected:
 private:
 
 	/** Spawns and returns a mesh component with the given mesh. */
-	UMeshComponent* SpawnMeshComponent(TObjectPtr<UStreamableRenderAsset> InMesh, ECharacterPerspective InEquipmentPerspective);
+	void SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharacterPerspective InEquipmentPerspective);
 
 	/** Retrieves any ASC owned by the owner of the given equipment component. */
 	static UAbilitySystemComponent* GetASCFromEquipmentComponent(const UEquipmentComponent* InEquipmentComponent);

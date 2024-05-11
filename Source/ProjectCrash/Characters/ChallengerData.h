@@ -10,7 +10,7 @@
 class AChallengerBase;
 class UCharacterAnimData;
 class UCrashInputActionMapping;
-class UEquipmentSet;
+class UEquipmentSetDefinition;
 class UHealthAttributeBaseValues;
 class UInputMappingContext;
 class ULevelSequence;
@@ -61,15 +61,6 @@ class PROJECTCRASH_API UChallengerData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	// Construction.
-
-public:
-
-	/** Default constructor. */
-	UChallengerData(const FObjectInitializer& ObjectInitializer);
-
-
-
 	// Actors.
 
 public:
@@ -111,7 +102,7 @@ public:
 
 	/** The default equipment set granted to this character when it's created. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<UEquipmentSet> DefaultEquipmentSet;
+	TObjectPtr<UEquipmentSetDefinition> DefaultEquipmentSet;
 
 
 
@@ -156,7 +147,7 @@ public:
 
 	/** This Challenger's user-facing class. Serves to categorize the play-style of this Challenger for players. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	EChallengerClass ChallengerClass;
+	EChallengerClass ChallengerClass = EChallengerClass::Brawler;
 
 	/** The image that appears in the HUD to represent this Challenger. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
