@@ -99,30 +99,40 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(GetOwner());
 
 	// Determine which equipment handle to store the equipped set into.
-	FEquipmentSetHandle* TargetHandle = bEquipAsTemporarySet ? &TemporarilyEquippedSetHandle : &EquippedSetHandle;
+	FEquipmentSetHandle& TargetHandle = bEquipAsTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
 
 
-	/* On the server, grant the new equipment's ability set if it is not being re-equipped. If the new set was only
-	 * temporarily unequipped, its abilities will still be granted. */
+	// Cache the set, if it hasn't been already. If the set is being re-equipped, it should already be cached.
 	if (!bWasTemporarilyUnequipped)
 	{
-		// If the set was only temporarily unequipped, it will still be cached by the handle.
-		TargetHandle->EquipmentSetDefinition = SetToEquip;
+		TargetHandle.EquipmentSetDefinition = SetToEquip;
+	}
 
-		if (GetOwner()->HasAuthority() && SetToEquip->GrantedAbilitySet)
+
+	// Grant or re-enable the new equipment's ability set on the server.
+	if (GetOwner()->HasAuthority() && SetToEquip->GrantedAbilitySet)
+	{
+		if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 		{
-			if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
+			/* If this set was only unequipped temporarily, we still have our abilities granted and cached; we just
+			 * need to re-enable them. */
+			if (bWasTemporarilyUnequipped)
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &TargetHandle->GrantedAbilitySetHandle, this);
-				TargetHandle->GrantedASC = CrashASC;
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, nullptr, this, true);
+			}
+			// If we're equipping this set from scratch, grant and cache its ability set.
+			else
+			{
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &TargetHandle.GrantedAbilitySetHandle, this);
+				TargetHandle.GrantedASC = CrashASC;
 			}
 		}
 	}
 
 
-	/* If we're equipping a primary equipment set, but a temporary set is currently overriding it, we don't need to
-	 * spawn any new actors or update our animations. */
-	if (!bWasTemporarilyUnequipped)
+	/* Visually equip the set (spawn its pieces and switch animations) if (A) we're equipping an overriding temporary
+	 * set or (B) we're equipping a primary equipment set and there is no overriding temporary set. */
+	if (bEquipAsTemporarySet || (!bEquipAsTemporarySet && TemporarilyEquippedSet == nullptr))
 	{
 		// Spawn the new equipment set's pieces.
 		for (const UEquipmentPieceDefinition* EquipmentPiece : SetToEquip->EquipmentPieces)
@@ -137,7 +147,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 					EquipmentActor_FPP->AttachToComponent(EquippingCrashChar->GetFirstPersonMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
 					EquipmentActor_FPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_FPP);
 
-					TargetHandle->SpawnedEquipmentActors.Add(EquipmentActor_FPP);
+					TargetHandle.SpawnedEquipmentActors.Add(EquipmentActor_FPP);
 				}
 			}
 
@@ -155,7 +165,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				EquipmentActor_TPP->AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
 				EquipmentActor_TPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_TPP);
 
-				TargetHandle->SpawnedEquipmentActors.Add(EquipmentActor_TPP);
+				TargetHandle.SpawnedEquipmentActors.Add(EquipmentActor_TPP);
 			}
 		}
 
@@ -195,6 +205,39 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 void UEquipmentComponent::UnequipSet_Internal(bool bUnequipTemporarySet, bool bUnequipTemporarily)
 {
+	if (!GetOwner() || !GetWorld())
+	{
+		return;
+	}
+
+	// Determine which equipment handle to use to unequip the desired set.
+	FEquipmentSetHandle& TargetHandle = bUnequipTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
+
+
+	// Remove or disable the unequipped set's ability set on the server.
+	if (GetOwner()->HasAuthority() && TargetHandle.GrantedASC)
+	{
+		// If we're only temporarily unequipping this set, we disable the granted ability set instead of removing it.
+		if (bUnequipTemporarily)
+		{
+			TargetHandle.GrantedAbilitySetHandle.RemoveFromAbilitySystem(TargetHandle.GrantedASC, true);
+		}
+		// If we're completely unequipping this set, remove its ability set and null its granted ASC.
+		else
+		{
+			TargetHandle.GrantedAbilitySetHandle.RemoveFromAbilitySystem(TargetHandle.GrantedASC);
+			TargetHandle.GrantedASC = nullptr;
+		}
+	}
+
+
+	// Destroy the unequipped set's spawned actors (i.e. pieces).
+	for (AEquipmentActor* EquipmentActor : TargetHandle.SpawnedEquipmentActors)
+	{
+		EquipmentActor->Destroy();
+	}
+
+	TargetHandle.SpawnedEquipmentActors.Reset();
 }
 
 void UEquipmentComponent::OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyEquippedSet)
