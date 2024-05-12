@@ -29,7 +29,9 @@ struct FEquipmentEffect
 	FVector Offset;
 
 	/** Whether this effect should be triggered on the first-person or the third-person equipment actor. Effects
-	 * with no designated perspective will be triggered on both actors. */
+	 * with no designated perspective will be triggered on both actors. These should be used to create data-driven
+	 * effects, such as those that change depending on a selected skin. Otherwise, traditional effects should be used,
+	 * such as replicated gameplay cues. */
 	UPROPERTY(EditDefaultsOnly)
 	ECharacterPerspective EffectPerspective;
 

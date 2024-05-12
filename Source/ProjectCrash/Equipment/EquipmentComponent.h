@@ -37,9 +37,16 @@ protected:
 
 public:
 
-	/** Sends the given equipment effect event to this component, which routes it to all active equipment actors. */
+	/** Sends the given equipment effect event to this component, which routes it to all active equipment actors. Note
+	 * that since equipment is not replicated, neither are equipment effects. */
 	UFUNCTION(BlueprintCallable, Category = "Equipment", Meta = (Categories = "Event.EquipmentEffect"))
 	void SendEquipmentEffectEvent(FGameplayTag EffectEvent);
+
+	/** Ends the given equipment effect event on all active equipment actors. This can be called to end persistent
+	 * effects early. Note that persistent effects are also ended automatically when their equipment actor is
+	 * destroyed. */
+	UFUNCTION(BlueprintCallable, Category = "Equipment", Meta = (Categories = "Event.EquipmentEffect"))
+	void EndEquipmentEffectEvent(FGameplayTag EffectEvent);
 
 
 

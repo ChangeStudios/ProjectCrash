@@ -46,7 +46,7 @@ public:
  * A collection of "equipment pieces," represented by actors, that characters can persistently hold. Characters can
  * only have one equipment set at a time. Equipment sets grant abilities and drive characters' animation.
  */
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTCRASH_API UEquipmentSetDefinition : public UDataAsset
 {
 	GENERATED_BODY()

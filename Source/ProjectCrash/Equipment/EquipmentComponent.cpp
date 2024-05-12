@@ -38,6 +38,32 @@ void UEquipmentComponent::OnRegister()
 
 void UEquipmentComponent::SendEquipmentEffectEvent(FGameplayTag EffectEvent)
 {
+	// Send the event to every active equipment actor.
+	for (AEquipmentActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
+	{
+		EquipmentActor->HandleEquipmentEvent(EffectEvent);
+	}
+
+	// Send the event to every active temporary equipment actor.
+	for (AEquipmentActor* TemporaryEquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
+	{
+		TemporaryEquipmentActor->HandleEquipmentEvent(EffectEvent);
+	}
+}
+
+void UEquipmentComponent::EndEquipmentEffectEvent(FGameplayTag EffectEvent)
+{
+	// End the event on every active equipment actor.
+	for (AEquipmentActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
+	{
+		EquipmentActor->EndEquipmentEvent(EffectEvent);
+	}
+
+	// End the event on every active temporary equipment actor.
+	for (AEquipmentActor* TemporaryEquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
+	{
+		TemporaryEquipmentActor->EndEquipmentEvent(EffectEvent);
+	}
 }
 
 void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
@@ -182,7 +208,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				// Play the first-person "equip" montage.
 				if (SetToEquip->AnimationData->Equip_FPP)
 				{
-					FPPAnimInstance->Montage_Pause(SetToEquip->AnimationData->Equip_FPP);
+					FPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_FPP);
 				}
 			}
 
@@ -196,7 +222,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				// Play the third-person "equip" montage.
 				if (SetToEquip->AnimationData->Equip_TPP)
 				{
-					TPPAnimInstance->Montage_Pause(SetToEquip->AnimationData->Equip_TPP);
+					TPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_TPP);
 				}
 			}
 		}
@@ -234,6 +260,7 @@ void UEquipmentComponent::UnequipSet_Internal(bool bUnequipTemporarySet, bool bU
 	// Destroy the unequipped set's spawned actors (i.e. pieces).
 	for (AEquipmentActor* EquipmentActor : TargetHandle.SpawnedEquipmentActors)
 	{
+		EquipmentActor->OnUnequip();
 		EquipmentActor->Destroy();
 	}
 
@@ -257,17 +284,6 @@ void UEquipmentComponent::OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyE
 
 void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* PreviouslyTemporarilyEquippedSet)
 {
-	// If a temporary set was previously equipped, unequip it.
-	if (PreviouslyTemporarilyEquippedSet)
-	{
-		UnequipSet_Internal(true, false);
-	}
-	/* If a persistent equipment set was previously equipped, and a new temporary set is overriding it, temporarily
-	 * unequip the persistent set. */
-	else if (TemporarilyEquippedSet)
-	{
-		UnequipSet_Internal(false, true);
-	}
 
 	// If a new set was just temporarily equipped, equip it.
 	if (TemporarilyEquippedSet)
@@ -278,6 +294,17 @@ void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* 
 	else
 	{
 		EquipSet_Internal(EquippedSet, false, true);
+	}
+	// If a temporary set was previously equipped, unequip it.
+	if (PreviouslyTemporarilyEquippedSet)
+	{
+		UnequipSet_Internal(true, false);
+	}
+	/* If a persistent equipment set was previously equipped, and a new temporary set is overriding it, temporarily
+	 * unequip the persistent set. */
+	else if (TemporarilyEquippedSet)
+	{
+		UnequipSet_Internal(false, true);
 	}
 }
 

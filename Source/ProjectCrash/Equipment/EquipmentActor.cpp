@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "EquipmentComponent.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
 #include "Kismet/KismetMaterialLibrary.h"
@@ -51,29 +52,40 @@ void AEquipmentActor::HandleEquipmentEvent(FGameplayTag EventTag)
 
 		// Throw out the effect if this actor is in the wrong perspective.
 		if (Effect->EffectPerspective == ECharacterPerspective::FirstPerson && EquipmentPerspective == ECharacterPerspective::ThirdPerson ||
-		Effect->EffectPerspective == ECharacterPerspective::ThirdPerson && EquipmentPerspective == ECharacterPerspective::FirstPerson)
+			Effect->EffectPerspective == ECharacterPerspective::ThirdPerson && EquipmentPerspective == ECharacterPerspective::FirstPerson)
 		{
 			return;
 		}
 
-		// If the effect has a cue, trigger the cue.
-		if (UAbilitySystemComponent* ASC = Effect->GameplayCue.IsValid() ? GetASCFromEquipmentComponent(OwningEquipmentComponent) : nullptr)
+		// If the effect has a cue, try to trigger the cue.
+		if (UCrashAbilitySystemComponent* CrashASC = Effect->GameplayCue.IsValid() ? Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)) : nullptr)
 		{
+			// Throw out the effect if the actor's local role is not correct.
+			const bool bLocallyControlled = Cast<APawn>(CrashASC->GetAvatarActor())->IsLocallyControlled();
+			if (Effect->EffectPerspective == ECharacterPerspective::FirstPerson && !bLocallyControlled ||
+				Effect->EffectPerspective == ECharacterPerspective::ThirdPerson && bLocallyControlled ||
+				EquipmentPerspective == ECharacterPerspective::FirstPerson && !bLocallyControlled ||
+				EquipmentPerspective == ECharacterPerspective::ThirdPerson && bLocallyControlled)
+			{
+				return;
+			}
+
+			// Trigger the cue if all checks pass.
 			FGameplayCueParameters CueParams = FGameplayCueParameters();
-			CueParams.EffectContext = ASC->MakeEffectContext();
-			CueParams.Instigator = ASC->GetOwner();
-			CueParams.EffectCauser = ASC->GetAvatarActor();
+			CueParams.EffectContext = CrashASC->MakeEffectContext();
+			CueParams.Instigator = CrashASC->GetOwner();
+			CueParams.EffectCauser = CrashASC->GetAvatarActor();
 			CueParams.TargetAttachComponent = Effect->bAttachToSocket ? Mesh : nullptr;
 			CueParams.Location = Effect->bAttachToSocket ? Effect->Offset : Mesh->GetSocketLocation(Effect->Socket) + Effect->Offset;
 
 			if (Effect->bAddCue)
 			{
-				ASC->AddGameplayCue(Effect->GameplayCue, CueParams);
-				ActiveEffectCues.Add(Effect->GameplayCue);
+				CrashASC->AddGameplayCueLocal(Effect->GameplayCue, CueParams);
+				ActiveEffectCues.AddUnique(Effect->GameplayCue);
 			}
 			else
 			{
-				ASC->ExecuteGameplayCue(Effect->GameplayCue, CueParams);
+				CrashASC->ExecuteGameplayCueLocal(Effect->GameplayCue, CueParams);
 			}
 		}
 
@@ -87,14 +99,23 @@ void AEquipmentActor::HandleEquipmentEvent(FGameplayTag EventTag)
 
 void AEquipmentActor::EndEquipmentEvent(FGameplayTag EventTag)
 {
-	const FGameplayTag EventCue = SourceEquipmentPiece->EffectMap.Find(EventTag)->GameplayCue;
-
-	// Remove the event's active cues, if it has any.
-	if (ActiveEffectCues.Contains(EventCue))
+	if (const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag))
 	{
-		if (UAbilitySystemComponent* ASC = GetASCFromEquipmentComponent(OwningEquipmentComponent))
+		const FGameplayTag EventCue = Effect->GameplayCue;
+
+		// Remove the event's active cues, if it has any.
+		if (Effect->bAddCue && ActiveEffectCues.Contains(EventCue))
 		{
-			ASC->RemoveGameplayCue(EventCue);
+			if (UCrashAbilitySystemComponent* CrashASC = Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)))
+			{
+				FGameplayCueParameters CueParams = FGameplayCueParameters();
+				CueParams.EffectContext = CrashASC->MakeEffectContext();
+				CueParams.Instigator = CrashASC->GetOwner();
+				CueParams.EffectCauser = CrashASC->GetAvatarActor();
+
+				CrashASC->RemoveGameplayCueLocal(EventCue, CueParams);
+				ActiveEffectCues.Remove(EventCue);
+			}
 		}
 	}
 }
