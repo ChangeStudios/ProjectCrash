@@ -149,6 +149,8 @@ void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharac
 	Mesh->SetOnlyOwnerSee(InEquipmentPerspective == ECharacterPerspective::FirstPerson);
 	Mesh->SetOwnerNoSee(InEquipmentPerspective == ECharacterPerspective::ThirdPerson);
 	Mesh->SetCollisionProfileName("NoCollision");
+	Mesh->bCastDynamicShadow = InEquipmentPerspective != ECharacterPerspective::FirstPerson;
+	Mesh->CastShadow = InEquipmentPerspective != ECharacterPerspective::FirstPerson;
 
 	// Enable/disable first-person depth rendering.
 	for (int MatIndex = 0; MatIndex < Mesh->GetNumMaterials(); MatIndex++)
