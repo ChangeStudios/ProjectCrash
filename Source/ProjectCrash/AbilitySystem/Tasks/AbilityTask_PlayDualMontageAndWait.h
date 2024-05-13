@@ -50,7 +50,7 @@ public:
 	/** Callback function for when the owning Gameplay Ability is cancelled. Stops playing this task's montages and
 	 * ends this task. */
 	UFUNCTION()
-	void OnGameplayAbilityCancelled();
+	virtual void OnGameplayAbilityCancelled();
 
 	/** Callback function for when the third-person montage finishes. */
 	UFUNCTION()
