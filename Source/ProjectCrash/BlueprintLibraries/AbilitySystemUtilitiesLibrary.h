@@ -14,6 +14,8 @@ class UAbilitySystemUtilitiesLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+public:
+
 	/**
 	 * Tests if two actors have line-of-sight to each other by performing a line trace between them. Uses the location
 	 * of the starting actor's root component and traces to the root of the target actor.

@@ -34,7 +34,7 @@ public:
 	/** Empties the array of targets. If bRepeatsTargets is false, targets that are detected by this actor can not be
 	 * detected again until this is called to reset cached targets. */
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void ResetTargets() { Targets.Empty(); }
+	void ResetTargets() { Targets.Empty(); }
 
 protected:
 

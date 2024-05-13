@@ -151,7 +151,7 @@ protected:
 
 	// Delegates.
 
-protected:
+public:
 
 	/** Broadcast on the client when valid target data is sent to the server. Broadcast on the server when valid target
 	 * data is received by a client or is generated directly on the server. */

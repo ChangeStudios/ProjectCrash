@@ -7,6 +7,7 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "MeleeAttackAbility.generated.h"
 
+class AGameplayAbilityTargetActor_CollisionDetector_Capsule;
 /**
  * A standard melee attack. When activated, a collision detector capsule will be drawn ahead of the user's camera to
  * check for any targets for the duration of the ability. This is intended for primary attacks that can be performed
@@ -27,14 +28,24 @@ class PROJECTCRASH_API UMeleeAttackAbility : public UCrashGameplayAbilityBase
 
 public:
 
-	UMeleeAttackAbility();
+	/** Default constructor. */
+	UMeleeAttackAbility(const FObjectInitializer& ObjectInitializer);
 
+	/** Plays the subsequent attack animation and waits for target data. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	/** Called when a target is hit by this melee attack ability. Should check line-of-sight, apply damage, or perform
-	 * any other necessary hit logic. */
+protected:
+
+	/** Called when an actor with an ASC is hit by this melee attack ability. Line-of-sight has already been checked at
+	 * this point. */
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnTargetDataReceived(FGameplayAbilityTargetDataHandle& Data);
+	void OnTargetHit(UAbilitySystemComponent* TargetASC);
+
+private:
+
+	/** Checks line-of-sight and triggers an optional impact cue at the impact point. */
+	UFUNCTION()
+	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& Data);
 
 
 
@@ -77,24 +88,63 @@ protected:
 
 protected:
 
-	/** Gameplay cue fired at the end of an attack if the attack did not hit any ability system actors, but hit a
-	 * surface. */
+	/** Optional gameplay cue fired when an ability system actor is hit. This cue is triggered at the location of the
+	 * hit. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects")
-	FGameplayCueTag SurfaceHitCue;
+	FGameplayCueTag HitImpactCue;
+
+	/** Optional gameplay cue fired at the end of an attack if the attack did not hit any ability system actors, but
+	 * hit a surface. */
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects")
+	FGameplayCueTag SurfaceImpactCue;
 
 
 
 	// Utils.
 
+// Internals.
 private:
+
+	/** The target actor used to detect hits. */
+	UPROPERTY()
+	TObjectPtr<AGameplayAbilityTargetActor_CollisionDetector_Capsule> TargetActor;
 
 	/** Tracks the last time this ability was used. When this ability is activated, the attack animation sequence will
 	 * be reset if a sufficiently long amount of time has passed since the ability was last activated. */
 	float LastUsed;
 
+	/** The amount of time succeeding an attack, after which we will reset our sequence of attack animations. */
+	float TimeBeforeReset;
+
 	/** The index of the next first-person attack animation we'll play in the sequence. */
-	uint32 CurrentAttackAnim_FPP;
+	int32 CurrentAttackAnim_FPP;
 
 	/** The index of the next third-person attack animation we'll play in the sequence. */
-	uint32 CurrentAttackAnim_TPP;
+	int32 CurrentAttackAnim_TPP;
+
+	/** Tracks whether this instance of the ability hit any targets. Used to determine if we should perform a hit
+	 * test on a surface instead. */
+	bool bHitTargets;
+
+// Targeting logic.
+private:
+
+	/** Starts or ends targeting, when the Start or End events are received. */
+	UFUNCTION()
+	void OnEventReceived(FGameplayEventData Payload);
+
+	/** Begins targeting with TargetActor. */
+	UFUNCTION()
+	void StartTargeting();
+
+	/** Ends targeting with TargetActor. */
+	UFUNCTION()
+	void EndTargeting();
+
+// Helpers.
+private:
+
+	/** Wraps EndAbility so it can be called via delegate from PlayDualMontageAndWait. */
+	UFUNCTION()
+	void EndAbilityWrapper();
 };

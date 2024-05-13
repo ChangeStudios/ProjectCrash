@@ -433,7 +433,7 @@ void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 	{
 		{
 			FGameplayEventData Payload;
-			Payload.EventTag = CrashGameplayTags::TAG_Event_Death;
+			Payload.EventTag = CrashGameplayTags::TAG_Event_Ability_Death;
 			Payload.Instigator = DeathData.DamageInstigator;
 			Payload.Target = DeathData.DyingActorASC->GetAvatarActor();
 			Payload.OptionalObject = DeathData.DamageEffectSpec.Def;
@@ -468,7 +468,7 @@ void ACrashGameMode::FinishDeath(FTimerHandle& DeathTimer, const FDeathData& Dea
 	// End the Death ability when the death finishes.
 	if (DeathData.DyingActorASC)
 	{
-		const FGameplayTagContainer DeathTags = FGameplayTagContainer(CrashGameplayTags::TAG_Event_Death);
+		const FGameplayTagContainer DeathTags = FGameplayTagContainer(CrashGameplayTags::TAG_Event_Ability_Death);
 		DeathData.DyingActorASC->CancelAbilities(&DeathTags);
 	}
 
