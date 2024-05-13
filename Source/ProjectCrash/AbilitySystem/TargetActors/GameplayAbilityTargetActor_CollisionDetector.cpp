@@ -3,8 +3,11 @@
 
 #include "GameplayAbilityTargetActor_CollisionDetector.h"
 
+#include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystemLog.h"
 #include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Components/ShapeComponent.h"
 
 AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_CollisionDetector(const FObjectInitializer& ObjectInitializer)
@@ -52,6 +55,40 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	}
 }
 
+void AGameplayAbilityTargetActor_CollisionDetector::StopTargeting()
+{
+	// Clear callbacks.
+	TargetDataReadyDelegate.Clear();
+	CanceledDelegate.Clear();
+	CollisionDetector->OnComponentBeginOverlap.RemoveDynamic(this, &ThisClass::OnCollisionBegin);
+
+	if (GenericDelegateBoundASC)
+	{
+		GenericDelegateBoundASC->GenericLocalCancelCallbacks.RemoveDynamic(this, &AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting);
+		GenericDelegateBoundASC = nullptr;
+	}
+}
+
+void AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting()
+{
+	// Perform cancellation-specific targeting-ending logic.
+	const FGameplayAbilityActorInfo* ActorInfo = (OwningAbility ? OwningAbility->GetCurrentActorInfo() : nullptr);
+	UAbilitySystemComponent* ASC = (ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr);
+	if (ASC)
+	{
+		ASC->AbilityReplicatedEventDelegate(EAbilityGenericReplicatedEvent::GenericCancel, OwningAbility->GetCurrentAbilitySpecHandle(), OwningAbility->GetCurrentActivationInfo().GetActivationPredictionKey() ).Remove(GenericCancelHandle);
+	}
+	else
+	{
+		ABILITY_LOG(Warning, TEXT("AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting called with null ASC! Actor %s"), *GetName());
+	}
+
+	CanceledDelegate.Broadcast(FGameplayAbilityTargetDataHandle());
+
+	// Clean up targeting actor.
+	StopTargeting();
+}
+
 void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (ShouldProduceTargetData())
@@ -69,9 +106,13 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 		}
 
 		// Perform GAS filtering.
-		if (bFilterForGASActors && !UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor))
+		if (bFilterForGASActors)
 		{
-			return;
+			const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
+			if (!ASC || ASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
+			{
+				return;
+			}
 		}
 
 		// Check if the actor has already been detected as a target.

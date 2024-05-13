@@ -17,9 +17,9 @@ class AGameplayAbilityTargetActor_CollisionDetector_Capsule;
  * animation will be played in a looping order with each subsequent attack, until the attack sequence is reset (i.e.
  * the user stops attacking).
  *
- * By default, hit detection is performed the entire duration the ability is active. This behavior can be overridden
- * with the bDetectEntireDuration property, and by sending Event.Ability.MeleeAttack.Start and .End events to this
- * ability during each animation.
+ * By default, hit detection is performed once during an attack, when the Event.Ability.PerformTargeting event is
+ * received by the owning ASC. The bUseInstantTargeting property can be disabled to switch to duration-based targeting,
+ * which will use a target actor to continuously perform hit detection while the ability is active.
  */
 UCLASS()
 class PROJECTCRASH_API UMeleeAttackAbility : public UCrashGameplayAbilityBase
@@ -34,6 +34,9 @@ public:
 	/** Plays the subsequent attack animation and waits for target data. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	/** Ends targeting if duration-based targeting is being used. */
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
 protected:
 
 	/** Called when an actor with an ASC is hit by this melee attack ability. Line-of-sight has already been checked at
@@ -43,7 +46,8 @@ protected:
 
 private:
 
-	/** Checks line-of-sight and triggers an optional impact cue at the impact point. */
+	/** Checks line-of-sight and triggers an optional impact cue at the impact point. Used for both instant and
+	 * duration-based targeting. */
 	UFUNCTION()
 	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& Data);
 
@@ -61,11 +65,30 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection", Meta = (ForceUnits = "cm"))
 	float AttackRadius;
 
-	/** Whether to perform hit detection for the entirety of each animation. If false, the
-	 * Event.Ability.MeleeAttack.Start event tag must be sent to the owning ASC to instruct this ability to begin
-	 * targeting. MeleeAttack.End can be used to end targeting; otherwise targeting will end when this ability ends. */
+	/**
+	 * Whether to perform instantaneous targeting or duration-based targeting.
+	 *
+	 * * Instantaneous Targeting: A capsule collision test is performed at exactly one point during the attack: when the
+	 * Event.Ability.MeleeAttack event is received.
+	 *
+	 * When using instant targeting, ensure you're only using one set of events (usually just one) per animation pair.
+	 * I.e. do not fire events in both the first-person and third-person montages; only fire them in one. Since both
+	 * are played on the server, it does not matter which one you choose.
+	 *
+	 * * Duration-Based Targeting: A target actor is used to perform continuous collision testing while the ability is
+	 * active.
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection")
-	bool bDetectEntireDuration;
+	bool bUseInstantTargeting;
+
+	/** TODO: Implement event-based durations that can be controlled by gameplay events—i.e. "MeleeAttack.Start" and
+	 * "MeleeAttack.Stop." */
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection", Meta = (EditCondition = "bUseInstantTargeting == false", EditConditionHides = "true", ToolTip = "WARNING: Not implemented; Do not use!"))
+	bool bUseEventBasedDuration;
+
+	/** Any targets with any of these tags will be ignored. */
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection")
+	FGameplayTagContainer IgnoreTargetsWithTags;
 
 
 
@@ -77,8 +100,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Attack Montages", Category = "Melee Attack|Animations")
 	TArray<TObjectPtr<UAnimMontage>> AttackMontages_FPP;
 
-	/** The ordered sequence of third-person attack montages used for this melee ability. These will be played in the
-	 * given order with each subsequent attack. */
+	/** The ordered sequence of third-person attack montages used for this melee ability. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Attack Montages", Category = "Melee Attack|Animations")
 	TArray<TObjectPtr<UAnimMontage>> AttackMontages_TPP;
 
@@ -90,13 +112,13 @@ protected:
 
 	/** Optional gameplay cue fired when an ability system actor is hit. This cue is triggered at the location of the
 	 * hit. */
-	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects")
-	FGameplayCueTag HitImpactCue;
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
+	FGameplayTag HitImpactCue;
 
 	/** Optional gameplay cue fired at the end of an attack if the attack did not hit any ability system actors, but
 	 * hit a surface. */
-	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects")
-	FGameplayCueTag SurfaceImpactCue;
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
+	FGameplayTag SurfaceImpactCue;
 
 
 
@@ -131,7 +153,7 @@ private:
 
 	/** Starts or ends targeting, when the Start or End events are received. */
 	UFUNCTION()
-	void OnEventReceived(FGameplayEventData Payload);
+	void OnPerformTargetingReceived(FGameplayEventData Payload);
 
 	/** Begins targeting with TargetActor. */
 	UFUNCTION()
@@ -141,8 +163,15 @@ private:
 	UFUNCTION()
 	void EndTargeting();
 
+	/** Performs a forward trace to attempt to hit a surface. */
+	UFUNCTION()
+	void TryHitSurface(FGameplayEventData Payload);
+
 // Helpers.
 private:
+
+	/** Calculates the position of the trace capsule, with or without the end-point radius. */
+	void GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top);
 
 	/** Wraps EndAbility so it can be called via delegate from PlayDualMontageAndWait. */
 	UFUNCTION()

@@ -42,6 +42,7 @@ public:
 	 *												detected again, after being sent the first time.
 	 * @param InClassFilter							Optional class by which to filter targets.
 	 * @param bInFilterForGASActors					Whether to filter for targets with an ability system component.
+	 * @param IgnoreTargetsWithTags					Ignore any targets with any of these tags.
 	 * @param bInShouldProduceTargetDataOnServer	Whether the server should wait for target data to be produced on
 	 *												the client or if it should produce the data directly.
 	 */
@@ -54,6 +55,7 @@ public:
 		bool bInRepeatTargets = false,
 		TSubclassOf<AActor> InClassFilter = nullptr,
 		bool bInFilterForGASActors = true,
+		FGameplayTagContainer IgnoreTargetsWithTags = FGameplayTagContainer(),
 		bool bInShouldProduceTargetDataOnServer = true
 	);
 

@@ -31,6 +31,12 @@ public:
 	/** Binds callbacks to when another actor overlaps with this actor's collision detector. */
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
+	/** Stops targeting and cleans up this target actor. */
+	virtual void StopTargeting();
+	
+	/** Fires cancellation notifies and stops targeting. */
+	virtual void CancelTargeting() override;
+
 	/** Empties the array of targets. If bRepeatsTargets is false, targets that are detected by this actor can not be
 	 * detected again until this is called to reset cached targets. */
 	UFUNCTION(BlueprintCallable)
@@ -64,6 +70,10 @@ protected:
 
 	/** Whether to filter for targets with an ability system component. */
 	bool bFilterForGASActors;
+
+	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
+	UPROPERTY()
+	FGameplayTagContainer IgnoredTargetTags;
 
 
 
