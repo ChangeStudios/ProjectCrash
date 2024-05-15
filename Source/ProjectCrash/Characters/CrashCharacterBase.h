@@ -8,17 +8,6 @@
 #include "CrashCharacterBase.generated.h"
 
 
-/**
- * The perspective through which a character can be viewed.
- */
-UENUM(BlueprintType)
-enum class ECharacterPerspective : uint8
-{
-	FirstPerson,
-	ThirdPerson
-};
-
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpedSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPerspectiveChangedSignature, FGameplayTag, NewPerspective);
 
@@ -37,21 +26,6 @@ public:
 
 	/** Default constructor. */
 	ACrashCharacterBase(const FObjectInitializer& ObjectInitializer);
-
-
-
-	// Initialization.
-
-public:
-
-	/** Initializes perspective on the server. */
-	virtual void PossessedBy(AController* NewController) override;
-
-	/** Initializes perspective on the client. */
-	virtual void OnRep_Controller() override;
-
-	/** Additional perspective initialization for safety. */
-	virtual void PostInitializeComponents() override;
 
 
 
@@ -102,10 +76,13 @@ protected:
 	 * camera to use. */
 	FORCEINLINE virtual bool CanEnterFirstPerson() const;
 
-	/** The perspective from which this character is being locally viewed. Determines which meshes are visible and
+	/**
+	 * The perspective from which this character is being locally viewed. Determines which meshes are visible and
 	 * which camera is used. By default, all characters support third-person viewing. For first-person viewing, the
-	 * character must have a first-person camera and mesh defined. */
-	UPROPERTY(Meta = (Categories = "State.Perspective"))
+	 * character must have a first-person camera and mesh defined.
+	 *
+	 * Sub-tag of State.Perspective.
+	 */
 	FGameplayTag CharacterPerspective;
 
 

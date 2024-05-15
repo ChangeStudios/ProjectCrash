@@ -9,6 +9,7 @@
 #include "Animation/AnimData/CharacterAnimData.h"
 #include "EquipmentActor.h"
 #include "EquipmentPieceDefinition.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Equipment/EquipmentAnimationData.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"
@@ -169,7 +170,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				// Note: May need to use SpawnActorDeferred if there's any delay between spawning and initialization.
 				if (AEquipmentActor* EquipmentActor_FPP = GetWorld()->SpawnActor<AEquipmentActor>())
 				{
-					EquipmentActor_FPP->InitEquipmentActor(this, EquipmentPiece, ECharacterPerspective::FirstPerson);
+					EquipmentActor_FPP->InitEquipmentActor(this, EquipmentPiece, CrashGameplayTags::TAG_State_Perspective_FirstPerson);
 					EquipmentActor_FPP->AttachToComponent(EquippingCrashChar->GetFirstPersonMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
 					EquipmentActor_FPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_FPP);
 
@@ -187,7 +188,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 			// Spawn the equipment piece's third-person actor.
 			if (AEquipmentActor* EquipmentActor_TPP = GetWorld()->SpawnActor<AEquipmentActor>())
 			{
-				EquipmentActor_TPP->InitEquipmentActor(this, EquipmentPiece, ECharacterPerspective::ThirdPerson);
+				EquipmentActor_TPP->InitEquipmentActor(this, EquipmentPiece, CrashGameplayTags::TAG_State_Perspective_ThirdPerson);
 				EquipmentActor_TPP->AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
 				EquipmentActor_TPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_TPP);
 

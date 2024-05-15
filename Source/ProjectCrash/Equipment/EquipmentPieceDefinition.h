@@ -32,8 +32,8 @@ struct FEquipmentEffect
 	 * with no designated perspective will be triggered on both actors. These should be used to create data-driven
 	 * effects, such as those that change depending on a selected skin. Otherwise, traditional effects should be used,
 	 * such as replicated gameplay cues. */
-	UPROPERTY(EditDefaultsOnly)
-	ECharacterPerspective EffectPerspective;
+	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "State.Perspective"))
+	FGameplayTag EffectPerspective;
 
 	/** Gameplay cue to trigger for the owning when this effect is activated. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Cue", Meta = (Categories = "GameplayCue"))

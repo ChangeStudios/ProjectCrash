@@ -60,14 +60,8 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 		{
 			if (const APawn* Pawn = Cast<APawn>(OwningActor))
 			{
-				// Don't play remote-only notifies locally.
-				if (MeshComp->bOwnerNoSee && Pawn->IsLocallyControlled())
-				{
-					return;
-				}
-
-				// Don't play local-only notifies remotely.
-				if (MeshComp->bOnlyOwnerSee && !Pawn->IsLocallyControlled())
+				// Don't play effects triggered by invisible meshes.
+				if (!MeshComp->IsVisible())
 				{
 					return;
 				}

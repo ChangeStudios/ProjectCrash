@@ -33,7 +33,7 @@ public:
 public:
 
 	/** Spawns this equipment actor's mesh. */
-	void InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, ECharacterPerspective InEquipmentPerspective);
+	void InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective);
 
 	/** Clears active effects */
 	void OnUnequip();
@@ -65,14 +65,14 @@ protected:
 	/** This equipment actor's owner as a CrashCharacter. Taken from the owner of the owning equipment component. Not
 	 * valid if the owner is not of the type ACrashCharacterBase. */
 	UPROPERTY()
-	const ACrashCharacterBase* OwningCharacter;
+	ACrashCharacterBase* OwningCharacter;
 
 	/** The equipment piece that this actor is representing. */
 	UPROPERTY()
 	TObjectPtr<const UEquipmentPieceDefinition> SourceEquipmentPiece;
 
 	/** Whether this actor represents its equipment piece in first-person or third-person. */
-	ECharacterPerspective EquipmentPerspective;
+	FGameplayTag EquipmentPerspective;
 
 
 
@@ -98,13 +98,13 @@ protected:
 
 private:
 
-	/** Spawns and returns a mesh component with the given mesh. */
-	void SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharacterPerspective InEquipmentPerspective);
+	/** Spawns and returns a mesh component with the given mesh. The mesh will be created with EquipmentPerspective. */
+	void SpawnMeshComponent(UStreamableRenderAsset* InMesh);
 
 	/** Retrieves any ASC owned by the owner of the given equipment component. */
 	static UAbilitySystemComponent* GetASCFromEquipmentComponent(const UEquipmentComponent* InEquipmentComponent);
 
 	/** Called when the local perspective of this equipment actor's owning character changes. */
 	UFUNCTION()
-	void OnLocalPerspectiveChanged(ECharacterPerspective NewPerspective);
+	void OnOuterPerspectiveChanged(FGameplayTag NewPerspective);
 };

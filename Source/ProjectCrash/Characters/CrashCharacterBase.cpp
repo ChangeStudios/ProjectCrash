@@ -10,6 +10,7 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CrashLogging.h"
 
 
 #define FIRST_PERSON_TAG CrashGameplayTags::TAG_State_Perspective_FirstPerson
@@ -18,30 +19,6 @@
 ACrashCharacterBase::ACrashCharacterBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass(CharacterMovementComponentName, UCrashCharacterMovementComponent::StaticClass()))
 {
-}
-
-void ACrashCharacterBase::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	// Initialize this character's perspective on the server.
-	InitializePerspective();
-}
-
-void ACrashCharacterBase::OnRep_Controller()
-{
-	Super::OnRep_Controller();
-
-	// Initialize this character's perspective on the client.
-	InitializePerspective();
-}
-
-void ACrashCharacterBase::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	// One last perspective initialization attempt, now that we are guaranteed to have the components we need.
-	InitializePerspective();
 }
 
 void ACrashCharacterBase::SetPerspective(FGameplayTag NewPerspective)
@@ -60,7 +37,7 @@ void ACrashCharacterBase::SetPerspective(FGameplayTag NewPerspective)
 	{
 		/* If we can't enter first-person, return to third-person. This should only be necessary if we ever add more
 		 * than two character perspectives. */
-		SetPerspective(CrashGameplayTags::TAG_State_Perspective_FirstPerson);
+		SetPerspective(THIRD_PERSON_TAG);
 		return;
 	}
 
@@ -69,6 +46,12 @@ void ACrashCharacterBase::SetPerspective(FGameplayTag NewPerspective)
 
 	if (NewPerspective == FIRST_PERSON_TAG)
 	{
+		// A listen server will return a nullptr from GetLocalViewingPlayerController when it controls this pawn.
+		if (!IsValid(PC))
+		{
+			PC = GetController<APlayerController>();
+		}
+
 		/* We need a local viewing controller if we want to view in first-person. This is already checked by
 		 * CanEnterFirstPerson. */
 		check(PC);
@@ -113,7 +96,7 @@ void ACrashCharacterBase::InitializePerspective()
 bool ACrashCharacterBase::CanEnterFirstPerson() const
 {
 	// Only enter first-person if we have a valid camera, mesh, and someone is actually viewing this character.
-	return GetFirstPersonCameraComponent() && GetFirstPersonMesh() && GetLocalViewingPlayerController(); // BUG: GetLocalViewingPlayerController is causing a crash on listen servers
+	return GetFirstPersonCameraComponent() && GetFirstPersonMesh() && (IsLocallyControlled() || IsLocallyViewed());
 }
 
 void ACrashCharacterBase::ListenForPerspectiveStates()

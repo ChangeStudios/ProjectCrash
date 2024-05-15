@@ -5,12 +5,15 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
-#include "EquipmentComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "Engine/ActorChannel.h"
-#include "GameFramework/CrashLogging.h"
+#include "AbilitySystem/CrashGameplayTags.h"
+#include "Characters/CrashCharacterBase.h"
+#include "EquipmentComponent.h"
 #include "Kismet/KismetMaterialLibrary.h"
 
+
+#define FIRST_PERSON_TAG CrashGameplayTags::TAG_State_Perspective_FirstPerson
+#define THIRD_PERSON_TAG CrashGameplayTags::TAG_State_Perspective_ThirdPerson
 
 AEquipmentActor::AEquipmentActor()
 {
@@ -20,9 +23,12 @@ AEquipmentActor::AEquipmentActor()
 	SetRootComponent(Root);
 }
 
-void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, ECharacterPerspective InEquipmentPerspective)
+void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective)
 {
 	check(InEquipmentPieceDefinition);
+
+	// Make sure a perspective tag was given.
+	check(InEquipmentPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
 
 	// Cache this equipment actor's properties.
 	OwningEquipmentComponent = InOwningEquipmentComponent;
@@ -30,8 +36,16 @@ void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEqui
 	SourceEquipmentPiece = InEquipmentPieceDefinition;
 	EquipmentPerspective = InEquipmentPerspective;
 
+	/* If our owning character is an ACrashCharacterBase, we can use perspectives. Start listening for perspective
+	 * changes if we can. */
+	OwningCharacter = Cast<ACrashCharacterBase>(InOwningEquipmentComponent->GetOwner());
+	if (OwningCharacter)
+	{
+		OwningCharacter->PerspectiveChangedDelegate.AddDynamic(this, &AEquipmentActor::OnOuterPerspectiveChanged);
+	}
+
 	// Spawn the equipment actor's mesh.
-	SpawnMeshComponent(InEquipmentPieceDefinition->Mesh, EquipmentPerspective);
+	SpawnMeshComponent(InEquipmentPieceDefinition->Mesh);
 }
 
 void AEquipmentActor::OnUnequip()
@@ -51,8 +65,7 @@ void AEquipmentActor::HandleEquipmentEvent(FGameplayTag EventTag)
 		const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag);
 
 		// Throw out the effect if this actor is in the wrong perspective.
-		if (Effect->EffectPerspective == ECharacterPerspective::FirstPerson && EquipmentPerspective == ECharacterPerspective::ThirdPerson ||
-			Effect->EffectPerspective == ECharacterPerspective::ThirdPerson && EquipmentPerspective == ECharacterPerspective::FirstPerson)
+		if (Effect->EffectPerspective != EquipmentPerspective)
 		{
 			return;
 		}
@@ -60,16 +73,6 @@ void AEquipmentActor::HandleEquipmentEvent(FGameplayTag EventTag)
 		// If the effect has a cue, try to trigger the cue.
 		if (UCrashAbilitySystemComponent* CrashASC = Effect->GameplayCue.IsValid() ? Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)) : nullptr)
 		{
-			// Throw out the effect if the actor's local role is not correct.
-			const bool bLocallyControlled = Cast<APawn>(CrashASC->GetAvatarActor())->IsLocallyControlled();
-			if (Effect->EffectPerspective == ECharacterPerspective::FirstPerson && !bLocallyControlled ||
-				Effect->EffectPerspective == ECharacterPerspective::ThirdPerson && bLocallyControlled ||
-				EquipmentPerspective == ECharacterPerspective::FirstPerson && !bLocallyControlled ||
-				EquipmentPerspective == ECharacterPerspective::ThirdPerson && bLocallyControlled)
-			{
-				return;
-			}
-
 			// Trigger the cue if all checks pass.
 			FGameplayCueParameters CueParams = FGameplayCueParameters();
 			CueParams.EffectContext = CrashASC->MakeEffectContext();
@@ -120,7 +123,7 @@ void AEquipmentActor::EndEquipmentEvent(FGameplayTag EventTag)
 	}
 }
 
-void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharacterPerspective InEquipmentPerspective)
+void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh)
 {
 	// Spawn the mesh if it's a static mesh.
 	if (UStaticMesh* InStaticMesh = Cast<UStaticMesh>(InMesh))
@@ -145,19 +148,17 @@ void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh, ECharac
 		}
 	}
 
-	// Initialize the new mesh component's properties.
-	Mesh->SetOnlyOwnerSee(InEquipmentPerspective == ECharacterPerspective::FirstPerson);
-	Mesh->SetOwnerNoSee(InEquipmentPerspective == ECharacterPerspective::ThirdPerson);
+	// Initialize the new mesh component's properties. Equipment without an owning character is always visible.
+	Mesh->SetVisibility(OwningCharacter ? EquipmentPerspective == OwningCharacter->GetCurrentPerspective() : true);
 	Mesh->SetCollisionProfileName("NoCollision");
-	Mesh->bCastDynamicShadow = InEquipmentPerspective != ECharacterPerspective::FirstPerson;
-	Mesh->CastShadow = InEquipmentPerspective != ECharacterPerspective::FirstPerson;
+	Mesh->CastShadow = EquipmentPerspective != FIRST_PERSON_TAG;
 
 	// Enable/disable first-person depth rendering.
 	for (int MatIndex = 0; MatIndex < Mesh->GetNumMaterials(); MatIndex++)
 	{
 		UMaterialInstanceDynamic* DynamicMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, Mesh->GetMaterial(MatIndex));
+		DynamicMat->SetScalarParameterValue("FirstPerson", EquipmentPerspective == FIRST_PERSON_TAG ? 1.0f : 0.0f);
 		Mesh->SetMaterial(MatIndex, DynamicMat);
-		DynamicMat->SetScalarParameterValue("FirstPerson", InEquipmentPerspective == ECharacterPerspective::FirstPerson ? 1.0f : 0.0f);
 	}
 }
 
@@ -172,6 +173,8 @@ UAbilitySystemComponent* AEquipmentActor::GetASCFromEquipmentComponent(const UEq
 	return nullptr;
 }
 
-void AEquipmentActor::OnLocalPerspectiveChanged(ECharacterPerspective NewPerspective)
+void AEquipmentActor::OnOuterPerspectiveChanged(FGameplayTag NewPerspective)
 {
+	// Update the mesh's visibility depending on the character's new perspective.
+	Mesh->SetVisibility(EquipmentPerspective == NewPerspective);
 }

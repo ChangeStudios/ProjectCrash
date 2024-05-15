@@ -417,7 +417,8 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);
 	CrashASC->DeathEventDelegate.AddDynamic(this, &AChallengerBase::OnDeathStarted);
 
-	// Start listening for perspective state events. 
+	// Initialive perspective and start listening for perspective state events.
+	InitializePerspective();
 	ListenForPerspectiveStates();
 
 	// Broadcast that this character's ASC was initialized.
