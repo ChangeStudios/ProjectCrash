@@ -17,6 +17,7 @@
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -203,65 +204,82 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 				{
 					bHitTargets = true;
 
-					// Play a "hit impact" gameplay cue, if desired.
-					if (HitImpactCue.IsValid())
+					// Determine where we hit.
+					UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo_Checked();
+					FHitResult ImpactHit;
+
+					/* Try to trace straight forward along the target actor to the point of impact. This is more
+					 * accurate than the target actor's default hit result, which comes from an overlap, instead of
+					 * a trace. */
+					FVector Start = OwningASC->GetAvatarActor()->GetActorLocation();
+					FVector Forward = OwningASC->GetAvatarActor()->GetActorForwardVector();
+
+					// If the ability user is a pawn, trace from their camera instead of their root.
+					if (const APawn* Pawn = Cast<APawn>(OwningASC->GetAvatarActor()))
 					{
-						UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo_Checked();
-						FHitResult ImpactHit;
+						Start = Pawn->GetPawnViewLocation();
+						const FRotator Rot = Pawn->GetBaseAimRotation();
+						Forward = FRotationMatrix::Make(Rot).GetUnitAxis(EAxis::X);
+					}
+					const FVector End = Start + (Forward * AttackRange);
 
-						/* Try to trace straight forward along the target actor to the point of impact. This is more
-						 * accurate than the target actor's default hit result, which comes from an overlap, instead of
-						 * a trace. */
-						FVector Start = OwningASC->GetAvatarActor()->GetActorLocation();
-						FVector Forward = OwningASC->GetAvatarActor()->GetActorForwardVector();
+					// Try to perform a line trace for the highest accuracy.
+					FCollisionQueryParams QueryParams;
+					QueryParams.AddIgnoredActor(GetAvatarActorFromActorInfo());
+					GetWorld()->LineTraceSingleByChannel(ImpactHit, Start, End, ECC_Camera, QueryParams);
 
-						// If the ability user is a pawn, trace from their camera instead of their root.
-						if (const APawn* Pawn = Cast<APawn>(OwningASC->GetAvatarActor()))
-						{
-							Start = Pawn->GetPawnViewLocation();
-							const FRotator Rot = Pawn->GetBaseAimRotation();
-							Forward = FRotationMatrix::Make(Rot).GetUnitAxis(EAxis::X);
-						}
-						const FVector End = Start + (Forward * AttackRange);
-
-						// Try to perform a line trace for the highest accuracy.
-						FCollisionQueryParams QueryParams;
-						QueryParams.AddIgnoredActor(GetAvatarActorFromActorInfo());
-						GetWorld()->LineTraceSingleByChannel(ImpactHit, Start, End, ECC_Camera, QueryParams);
-
-						/* If the line trace did not hit our target, trace around the target actor. This should always
-						 * succeed, since the target actor itself already found a hit. */
-						if (!(ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor))
-						{
-							UKismetSystemLibrary::CapsuleTraceSingle
-							(
-								this,
-								Start,
-								End,
-								AttackRadius,
-								AttackRange / 2.0f,
-								UEngineTypes::ConvertToTraceType(ECC_Camera),
-								true,
-								TArray<AActor*>({GetAvatarActorFromActorInfo()}),
-								EDrawDebugTrace::None,
-								ImpactHit,
-								true
-							);
-						}
-
-						// Play the impact cue.
-						if (ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor)
-						{
-							FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
-							Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
-							Context.AddOrigin(ImpactHit.ImpactPoint);
-							Context.AddHitResult(ImpactHit);
-							TargetASC->ExecuteGameplayCue(HitImpactCue, Context);
-						}
+					/* If the line trace did not hit our target, trace around the target actor. This should always
+					 * succeed, since the target actor itself already found a hit. */
+					if (!(ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor))
+					{
+						UKismetSystemLibrary::CapsuleTraceSingle
+						(
+							this,
+							Start,
+							End,
+							AttackRadius,
+							AttackRange / 2.0f,
+							UEngineTypes::ConvertToTraceType(ECC_Camera),
+							true,
+							TArray<AActor*>({GetAvatarActorFromActorInfo()}),
+							EDrawDebugTrace::None,
+							ImpactHit,
+							true
+						);
 					}
 
-					// Call blueprint implementation for hitting a target, which will handle applying gameplay effects. 
-					OnTargetHit(TargetASC);
+					// If we still somehow don't have a valid point to play our cue, just use the hit actor.
+					if (!(ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor))
+					{
+						ImpactHit = FHitResult
+						(
+							HitActor.Get(),
+							nullptr,
+							HitActor->GetActorLocation(),
+							FVector()
+						);
+						ImpactHit.bBlockingHit = true;
+
+						ABILITY_LOG(Warning, TEXT("MeleeAttackAbility %s failed to generate a hit for triggering effects."), *GetName());
+					}
+
+					// Trigger the hit effects.
+					if (ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor)
+					{
+						FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
+						Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
+						Context.AddOrigin(ImpactHit.ImpactPoint);
+						Context.AddHitResult(ImpactHit);
+
+						// Play an impact cue, if desired.
+						if (HitImpactCue.IsValid())
+						{
+							TargetASC->ExecuteGameplayCue(HitImpactCue, Context);
+						}
+
+						// Call blueprint implementation for hitting a target, which will handle applying gameplay effects. 
+						OnTargetHit(TargetASC, Context);
+					}
 				}
 			}
 		}
@@ -354,7 +372,7 @@ void UMeleeAttackAbility::EndTargeting()
 
 void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 {
-	if (CurrentActorInfo->IsNetAuthority() && SurfaceImpactCue.IsValid())
+	if (SurfaceImpactCue.IsValid())
 	{
 		UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo();
 		if (!OwningASC || !OwningASC->GetAvatarActor())

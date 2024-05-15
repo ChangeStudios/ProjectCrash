@@ -28,11 +28,9 @@ void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
 	{
-		// Cache the array in case it changes during iteration.
-		const TArray<FGameplayAbilitySpec> ActivatableAbilities = ASC->GetActivatableAbilities();
-
 		// Search the ASC's list of activatable abilities for one with a matching input tag.
-		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
+		FScopedAbilityListLock ActiveScopeLock(*ASC);
+		for (const FGameplayAbilitySpec& AbilitySpec : ASC->GetActivatableAbilities())
 		{
 			if (AbilitySpec.Ability)
 			{
@@ -53,11 +51,9 @@ void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
 	{
-		// Cache the array in case it changes during iteration.
-		const TArray<FGameplayAbilitySpec> ActivatableAbilities = ASC->GetActivatableAbilities();
-
 		// Search the ASC's list of activatable abilities for one with a matching input tag.
-		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities)
+		FScopedAbilityListLock ActiveScopeLock(*ASC);
+		for (const FGameplayAbilitySpec& AbilitySpec : ASC->GetActivatableAbilities())
 		{
 			if (AbilitySpec.Ability)
 			{

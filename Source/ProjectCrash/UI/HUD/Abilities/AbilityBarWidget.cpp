@@ -23,6 +23,7 @@ void UAbilityBarWidget::OnASCReady()
 	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
 
 	// Get the player's current abilities and sort them by their input tag, so they always appear in the same order.
+	FScopedAbilityListLock ActiveScopeLock(*OwningASC);
 	TArray<FGameplayAbilitySpec>& ActivatableAbilities = OwningASC->GetActivatableAbilities();
 	ActivatableAbilities.Sort([] (FGameplayAbilitySpec A, FGameplayAbilitySpec B) -> bool
 	{

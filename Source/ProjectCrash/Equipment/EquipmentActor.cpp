@@ -171,3 +171,7 @@ UAbilitySystemComponent* AEquipmentActor::GetASCFromEquipmentComponent(const UEq
 
 	return nullptr;
 }
+
+void AEquipmentActor::OnLocalPerspectiveChanged(ECharacterPerspective NewPerspective)
+{
+}

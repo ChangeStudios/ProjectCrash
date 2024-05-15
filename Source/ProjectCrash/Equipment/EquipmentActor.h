@@ -44,6 +44,7 @@ public:
 
 protected:
 
+	/** Default root. */
 	UPROPERTY()
 	USceneComponent* Root = nullptr;
 
@@ -60,6 +61,11 @@ protected:
 	/** The equipment component responsible for creating this equipment actor. */
 	UPROPERTY()
 	const UEquipmentComponent* OwningEquipmentComponent;
+
+	/** This equipment actor's owner as a CrashCharacter. Taken from the owner of the owning equipment component. Not
+	 * valid if the owner is not of the type ACrashCharacterBase. */
+	UPROPERTY()
+	const ACrashCharacterBase* OwningCharacter;
 
 	/** The equipment piece that this actor is representing. */
 	UPROPERTY()
@@ -97,4 +103,8 @@ private:
 
 	/** Retrieves any ASC owned by the owner of the given equipment component. */
 	static UAbilitySystemComponent* GetASCFromEquipmentComponent(const UEquipmentComponent* InEquipmentComponent);
+
+	/** Called when the local perspective of this equipment actor's owning character changes. */
+	UFUNCTION()
+	void OnLocalPerspectiveChanged(ECharacterPerspective NewPerspective);
 };

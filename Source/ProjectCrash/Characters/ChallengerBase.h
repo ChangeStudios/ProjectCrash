@@ -11,6 +11,7 @@
 #include "Input/CrashInputComponent.h"
 #include "ChallengerBase.generated.h"
 
+class USpringArmComponent;
 class UEquipmentComponent;
 class UHealthComponent;
 class UAbilitySystemExtensionComponent;
@@ -45,14 +46,9 @@ public:
 
 	// Initialization.
 
-public:
-
-	/** Updates this character's team fresnel. */
-	virtual void OnRep_Controller() override;
-
 /* Uses the AbilitySystemExtensionComponent to initialize this character as the avatar of the owning player's ASC when
  * possessed. */
-protected:
+public:
 
 	/** Performs server-side initialization of this character with the owning player's ASC. */
 	virtual void PossessedBy(AController* NewController) override;
@@ -60,6 +56,9 @@ protected:
 	/** Performs client-side initialization of this character with the owning player's ASC, and uninitializes the
 	 * ASC's previous owner, if one exists. */
 	virtual void OnRep_PlayerState() override;
+
+	/** Refreshes ability actor info and updates this character's team fresnel. */
+	virtual void OnRep_Controller() override;
 
 	/** Clears any unwanted gameplay tags that may be leftover from this character's ASC's previous pawn. */
 	virtual void InitializeGameplayTags();
@@ -105,7 +104,7 @@ protected:
 public:
 
 	/** Getter for ChallengerData. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Characters|Challenger|Data", Meta = (ToolTip = "Data used to define the default properties of a challenger."))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Character|Challenger|Data", Meta = (ToolTip = "Data used to define the default properties of a challenger."))
 	UChallengerData* GetChallengerData() const { return ChallengerData; }
 
 protected:
@@ -123,8 +122,10 @@ protected:
 public:
 
 	/** Accessor for this character's first-person camera component. */
-	UFUNCTION(Category = "Characters|Challenger|Components")
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	virtual UCameraComponent* GetFirstPersonCameraComponent() const override { return FirstPersonCameraComponent; }
+
+	/** Accessor for this character's third-person camera component. */
+	virtual UCameraComponent* GetThirdPersonCameraComponent() const override { return ThirdPersonCameraComponent; }
 
 	/** Accessor for this character's first-person mesh component. */
 	virtual USkeletalMeshComponent* GetFirstPersonMesh() const override { return FirstPersonMesh; }
@@ -146,6 +147,14 @@ protected:
 	/** First-person camera. */
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> FirstPersonCameraComponent;
+
+	/** Third-person camera spring arm. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USpringArmComponent> ThirdPersonCameraArm;
+
+	/** Third-person camera. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCameraComponent> ThirdPersonCameraComponent;
 
 
 

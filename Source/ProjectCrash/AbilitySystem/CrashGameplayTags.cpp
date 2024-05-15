@@ -62,6 +62,10 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Falling, "State.Movement.Falling", "The actor is currently airborne with the \"Falling\" movement state. Does not indicate whether the actor jumped or fell. Cleared on land.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Jumping, "State.Movement.Jumping", "The actor is currently airborne as a result of jumping. Cleared on land.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective, "State.Perspective", "Overrides a character's current perspective. When a Perspective tag is added for the first time, the character's current perspective is cached, and will be restored once the final Perspective tag is removed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective_FirstPerson, "State.Perspective.FirstPerson", "Overrides a character's perspective into first-person.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective_ThirdPerson, "State.Perspective.ThirdPerson", "Overrides a character's perspective into third-person.");
+
 
 	// UI
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Game, "UI.Layer.Game", "The in-game HUD. Displays health, abilities, game mode data, etc.");

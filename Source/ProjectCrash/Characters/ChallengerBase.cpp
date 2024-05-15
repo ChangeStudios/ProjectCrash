@@ -19,6 +19,7 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GlobalGameData.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -40,7 +41,7 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	GetCapsuleComponent()->InitCapsuleSize(35.0f, 90.0f);
 
 
-	// Camera.
+	// First-person camera.
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, 60.f)); // Default position.
@@ -49,10 +50,24 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	FirstPersonCameraComponent->bConstrainAspectRatio = true;
 
 
+	// Third-person camera arm.
+	ThirdPersonCameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
+	ThirdPersonCameraArm->SetupAttachment(GetCapsuleComponent());
+	ThirdPersonCameraArm->TargetArmLength = 300.0f;
+	ThirdPersonCameraArm->SetRelativeRotation(FRotator(-30.0f, 0.0f, 0.0f));
+
+
+	// Third-person camera.
+	ThirdPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	ThirdPersonCameraComponent->SetupAttachment(ThirdPersonCameraArm);
+	ThirdPersonCameraComponent->SetFieldOfView(110.0f);
+	ThirdPersonCameraComponent->bConstrainAspectRatio = true;
+
+
 	// First-person mesh.
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FirstPersonMesh->SetupAttachment(FirstPersonCameraComponent);
-	FirstPersonMesh->bCastDynamicShadow = false;
+	FirstPersonMesh->bReceivesDecals = false;
 	FirstPersonMesh->CastShadow = false;
 	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -165.0f)); // Default position.
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
@@ -60,8 +75,10 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 
 	// Third-person mesh.
 	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonMesh"));
-	ThirdPersonMesh->SetupAttachment(FirstPersonCameraComponent);
-	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -150.0f)); // Default position.
+	ThirdPersonMesh->SetupAttachment(GetCapsuleComponent());
+	ThirdPersonMesh->bReceivesDecals = false;
+	ThirdPersonMesh->bCastHiddenShadow = true;
+	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f)); // Default position.
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // Default rotation.
 
 
@@ -90,6 +107,12 @@ AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 void AChallengerBase::OnRep_Controller()
 {
 	Super::OnRep_Controller();
+
+	// Refresh actor info if necessary.
+	if (ASCExtensionComponent)
+	{
+		ASCExtensionComponent->HandleControllerChanged();
+	}
 
 	// Update this character's fresnel when a new controller possesses it on clients.
 	UpdateTeamFresnel();
@@ -209,11 +232,8 @@ void AChallengerBase::HandleDeathStateChanged(const FGameplayTag Tag, int32 NewC
 
 void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 {
-	// Hide the first-person mesh.
-	FirstPersonMesh->SetVisibility(false, true);
-
-	// Reveal third-person mesh to everyone.
-	ThirdPersonMesh->SetOwnerNoSee(false);
+	// Switch to third-person.
+	SetPerspective(CrashGameplayTags::TAG_State_Perspective_ThirdPerson);
 
 	// Yeet (technical term) the third-person mesh away depending on the amount of damage that killed this character.
 	if (HasAuthority() && DeathData.KillingDamageCauser)
@@ -396,6 +416,9 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	// Bind death events.
 	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);
 	CrashASC->DeathEventDelegate.AddDynamic(this, &AChallengerBase::OnDeathStarted);
+
+	// Start listening for perspective state events. 
+	ListenForPerspectiveStates();
 
 	// Broadcast that this character's ASC was initialized.
 	ASCInitializedDelegate.Broadcast(CrashASC);

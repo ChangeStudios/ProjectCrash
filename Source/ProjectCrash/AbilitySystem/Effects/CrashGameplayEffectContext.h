@@ -30,6 +30,19 @@ public:
 	/** Returns this structure's static structure. */
 	virtual UScriptStruct* GetScriptStruct() const override { return FCrashGameplayEffectContext::StaticStruct(); }
 
+	/** Performs a deep copy of this struct. */
+	virtual FGameplayEffectContext* Duplicate() const override
+	{
+		FCrashGameplayEffectContext* NewContext = new FCrashGameplayEffectContext();
+		*NewContext = *this;
+		if (GetHitResult())
+		{
+			// Does a deep copy of the hit result.
+			NewContext->AddHitResult(*GetHitResult(), true);
+		}
+		return NewContext;
+	}
+
 	/** If new fields are added to this structure, serializes them here. */
 	virtual bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess) override;
 };

@@ -40,9 +40,9 @@ public:
 protected:
 
 	/** Called when an actor with an ASC is hit by this melee attack ability. Line-of-sight has already been checked at
-	 * this point. */
+	 * this point. EffectContext contains the hit location in HitResult. */
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnTargetHit(UAbilitySystemComponent* TargetASC);
+	void OnTargetHit(UAbilitySystemComponent* TargetASC, FGameplayEffectContextHandle EffectContext);
 
 private:
 

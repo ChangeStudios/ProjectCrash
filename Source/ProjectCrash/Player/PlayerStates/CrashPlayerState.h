@@ -15,7 +15,8 @@ class UHealthAttributeSet;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FLivesChangedSignature, ACrashPlayerState*, Player, uint8, OldLives, uint8, NewLives);
 
 /**
- * The player state used during gameplay (as opposed to menus, lobbies, etc.).
+ * The player state used during gameplay (as opposed to menus, lobbies, etc.). Contains the player's ability system
+ * component.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilitySystemInterface, public ICrashTeamMemberInterface
