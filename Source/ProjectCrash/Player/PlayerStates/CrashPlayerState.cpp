@@ -68,6 +68,12 @@ void ACrashPlayerState::PostInitializeComponents()
 
 			UE_LOG(LogGameMode, Warning, TEXT("ACrashPlayerState: CrashPlayerState [%s] tried to initialize its current lives, but could not find a game mode with valid GameModeData. ACrashPlayerState must be used with ACrashGameMode, and the game mode must have valid game mode data. Falling back to default starting lives: %i."), *GetName(), StartingLivesFallback);
 		}
+
+// Initialize Challenger and Skin from editor instead of game mode.
+#if WITH_EDITOR
+		UpdateCurrentChallenger(DefaultChallenger);
+		UpdateCurrentSkin(DefaultSkin);
+#endif // WITH_EDITOR
 	}
 }
 
@@ -145,6 +151,17 @@ void ACrashPlayerState::UpdateCurrentChallenger(UChallengerData* InChallengerDat
 	if (HasAuthority() && InChallengerData != nullptr)
 	{
 		CurrentChallenger = InChallengerData;
+	}
+}
+
+void ACrashPlayerState::UpdateCurrentSkin(UChallengerSkinData* InSkinData)
+{
+	// Only update the character skin on the server.
+	if (HasAuthority() && InSkinData)
+	{
+		// TODO: Perform additional API validation with player cloud data.
+
+		CurrentSkin = InSkinData;
 	}
 }
 

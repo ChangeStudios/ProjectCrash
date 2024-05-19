@@ -8,6 +8,7 @@
 #include "GameFramework/Teams/CrashTeams.h"
 #include "CrashPlayerState.generated.h"
 
+class UChallengerSkinData;
 class UChallengerData;
 class UHealthAttributeSet;
 
@@ -122,18 +123,34 @@ protected:
 public:
 
 	/** Accessor for CurrentChallenger. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Player|Player State|Challenger Data", Meta = (ToolTip = "The challenger currently selected by this player."))
 	UChallengerData* GetCurrentChallenger() const { return CurrentChallenger; }
 
 	/** Server-only setter for CurrentChallenger. */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Player|Player State|Challenger Data")
 	void UpdateCurrentChallenger(UChallengerData* InChallengerData);
+
+	/** Accessor for CurrentSkin. */
+	UChallengerSkinData* GetCurrentSkin() const { return CurrentSkin; }
+
+	/** Server-only setter for CurrentSkin. */
+	void UpdateCurrentSkin(UChallengerSkinData* InSkinData);
+
+
+	// Used for debugging.
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UChallengerData> DefaultChallenger;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UChallengerSkinData> DefaultSkin;
 
 protected:
 
 	/** The challenger currently selected by this player. */
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
 	TObjectPtr<UChallengerData> CurrentChallenger;
+
+	/** The current skin being used for the current Challenger. */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
+	TObjectPtr<UChallengerSkinData> CurrentSkin;
 
 
 
