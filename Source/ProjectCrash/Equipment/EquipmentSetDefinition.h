@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
+#include "Characters/ChallengerSkinData.h"
 #include "Engine/DataAsset.h"
 #include "EquipmentSetDefinition.generated.h"
 
@@ -14,7 +15,7 @@ class UCrashAbilitySet;
 class UEquipmentPieceDefinition;
 
 /**
- * Represents an active instance of an equipment set.
+ * Represents an active instance of an equipment set: either a currently equipped set or a temporarily unequipped set.
  */
 USTRUCT()
 struct FEquipmentSetHandle
@@ -43,25 +44,45 @@ public:
 
 
 /**
- * A collection of "equipment pieces," represented by actors, that characters can persistently hold. Characters can
- * only have one equipment set at a time. Equipment sets grant abilities and drive characters' animation.
+ * A set of equipment that can be collectively "equipped" by an actor with an EquipmentComponent. Characters can only
+ * have one equipment set equipped at any time. Equipment sets drive character animation, grant abilities, and spawn
+ * actors to visually represent themselves.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, Const, Meta = (ShortToolTip = "A set of equipment that can be equipped by any actor with an EquipmentComponent. Intended for use with CrashCharacters."))
 class PROJECTCRASH_API UEquipmentSetDefinition : public UDataAsset
 {
 	GENERATED_BODY()
 	
 public:
 
-	/** The pieces of equipment that comprise this equipment set. These are purely cosmetic; they represent the
-	 * equipment in-game. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Pieces")
-	TArray<UEquipmentPieceDefinition*> EquipmentPieces;
+	/** Identifying tag for this equipment set. Used to keep this equipment set skin-agnostic, allowing skins to use
+	 * tags to define which equipment sets they may override certain properties of. */
+	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "EquipmentSet"))
+	FGameplayTag SetID;
 
-	/** The ability set granted to an actor when they equip this set, removed when they unequip it. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Ability Set")
+	/** Animation data used by the equipping character while this equipment set is equipped. */
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UCharacterAnimData> AnimationData;
+
+	/** The ability set granted to an actor when they equip this set, removed when they fully unequip it (as opposed
+	 * to temporarily unequipping it). */
+	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCrashAbilitySet> GrantedAbilitySet;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Animation Set")
-	TObjectPtr<UEquipmentAnimationData> AnimationData;
+	/** Equipment skin data to use if there is no data defined for this equipment set in the equipping character's skin
+	 * data. This should only be used if a character for whom this set is not designed for equips this set. */
+	UPROPERTY(EditDefaultsOnly)
+	FEquipmentSetSkinData DefaultSkinData;
+
+
+
+
+	/**
+	 * The pieces of equipment that comprise this equipment set. These are purely cosmetic; they represent the
+	 * equipment in-game.
+	 *
+	 * TODO: DEPRECATE
+	 */
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Pieces")
+	TArray<UEquipmentPieceDefinition*> EquipmentPieces;
 };

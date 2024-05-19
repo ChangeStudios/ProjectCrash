@@ -206,11 +206,11 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 			{
 				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
 
-				// Play the first-person "equip" montage.
-				if (SetToEquip->AnimationData->Equip_FPP)
-				{
-					FPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_FPP);
-				}
+				// // Play the first-person "equip" montage.
+				// if (SetToEquip->AnimationData->Equip_FPP)
+				// {
+				// 	FPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_FPP);
+				// }
 			}
 
 			// Third-person mesh.
@@ -220,11 +220,11 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 			{
 				TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
 
-				// Play the third-person "equip" montage.
-				if (SetToEquip->AnimationData->Equip_TPP)
-				{
-					TPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_TPP);
-				}
+				// // Play the third-person "equip" montage.
+				// if (SetToEquip->AnimationData->Equip_TPP)
+				// {
+				// 	TPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_TPP);
+				// }
 			}
 		}
 	}
