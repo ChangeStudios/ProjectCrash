@@ -72,7 +72,7 @@ public:
 	/** Equipment skin data to use if there is no data defined for this equipment set in the equipping character's skin
 	 * data. This should only be used if a character for whom this set is not designed for equips this set. */
 	UPROPERTY(EditDefaultsOnly)
-	FEquipmentSetSkinData DefaultSkinData;
+	TObjectPtr<UEquipmentSetSkinData> DefaultSkinData;
 
 
 

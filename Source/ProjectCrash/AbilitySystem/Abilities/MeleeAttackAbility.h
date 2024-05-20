@@ -8,6 +8,7 @@
 #include "MeleeAttackAbility.generated.h"
 
 class AGameplayAbilityTargetActor_CollisionDetector_Capsule;
+
 /**
  * A standard melee attack. When activated, a collision detector capsule will be drawn ahead of the user's camera to
  * check for any targets for the duration of the ability. This is intended for primary attacks that can be performed

@@ -7,7 +7,6 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "GameplayCueFunctionLibrary.h"
-#include "Abilities/Tasks/AbilityTask_SpawnActor.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
@@ -16,9 +15,7 @@
 #include "BlueprintLibraries/AbilitySystemUtilitiesLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/CrashLogging.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -154,7 +151,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	if (bUseInstantTargeting)
 	{
 		UAbilityTask_WaitGameplayEvent* PerformTargetingTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-			this,CrashGameplayTags::TAG_Event_Ability_PerformTargeting, nullptr, true, true);
+			this, CrashGameplayTags::TAG_Event_Ability_PerformTargeting, nullptr, true, true);
 		PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::OnPerformTargetingReceived);
 		PerformTargetingTask->ReadyForActivation();
 	}
@@ -290,7 +287,6 @@ void UMeleeAttackAbility::OnPerformTargetingReceived(FGameplayEventData Payload)
 	FVector Start;
 	FVector End;
 	GetCapsulePosition(false, Start, End);
-	// The capsule's root is always halfway between its top and base.
 
 	TArray<FHitResult> Hits;
 
@@ -394,8 +390,7 @@ void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 			FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
 			Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
 			Context.AddOrigin(SurfaceHit.ImpactPoint);
-			Context.AddHitResult(SurfaceHit);
-			OwningASC->ExecuteGameplayCue(SurfaceImpactCue, Context);
+			OwningASC->ExecuteGameplayCue(SurfaceImpactCue, UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(SurfaceHit));
 		}
 	}
 }

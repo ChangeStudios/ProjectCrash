@@ -29,11 +29,11 @@ public:
 
 	/** The offset from the attached socket with which to spawn this equipment piece's first-person actor. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Offset")
-	FVector Offset_FPP;
+	FTransform Offset_FPP;
 
 	/** The offset from the attached socket with which to spawn this equipment piece's third-person actor. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Offset")
-	FVector Offset_TPP;
+	FTransform Offset_TPP;
 
 	/** Animations that can be played on this mesh. Static character animations (animations used regardless of skin)
 	 * can trigger equipment animations by tag. Any equipped piece with the specific tag defined in this map will play
@@ -47,8 +47,8 @@ public:
 /**
  * Defines cosmetic data for an equipment set.
  */
-USTRUCT(BlueprintType)
-struct FEquipmentSetSkinData
+UCLASS(BlueprintType, Const, Meta = (DisplayName = "Equipment Skin Data", ShortToolTip = "Data used to define a cosmetic skin's appearance on an equipment set."))
+class PROJECTCRASH_API UEquipmentSetSkinData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
@@ -60,20 +60,20 @@ public:
 
 	/** The pose used as the base for first-person character animations while this equipment set is equipped. All other
 	 * equipment-based character animations are additive. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Base Pose")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Base Pose", Category = "Animation")
 	TObjectPtr<UAnimSequenceBase> BasePose_FPP;
 
 	/** The pose used as the base for third-person character animations while this equipment set is equipped. All other
 	 * equipment-based character animations are additive. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Base Pose")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Base Pose", Category = "Animation")
 	TObjectPtr<UAnimSequenceBase> BasePose_TPP;
 
 	/** Montage played in first-person when equipping this set. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Equip Animation")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "First-Person Equip Animation", Category = "Animation")
 	TObjectPtr<UAnimMontage> EquipAnim_FPP;
 
 	/** Montage played in third-person when equipping this set. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Equip Animation")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Third-Person Equip Animation", Category = "Animation")
 	TObjectPtr<UAnimMontage> EquipAnim_TPP;
 };
 
@@ -83,11 +83,11 @@ public:
  * Defines a cosmetic Challenger skin. Whenever a player controls a Challenger, they must have a corresponding skin
  * equipped for it, even if it's just the default skin.
  */
-UCLASS(BlueprintType, Const, Meta = (DisplayName = "Skin Data", ShortToolTip = "Data used to define a cosmetic Challenger skin."))
+UCLASS(BlueprintType, Const, Meta = (DisplayName = "Challenger Skin Data", ShortToolTip = "Data used to define a cosmetic Challenger skin."))
 class PROJECTCRASH_API UChallengerSkinData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	/** The character mesh used for this skin. */
@@ -97,7 +97,7 @@ public:
 	/** Collection of skin data to use when any given equipment set is equipped by this character. If an equipment set
 	 * that is not defined here is equipped by this character, it will use default skin data. */
 	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "EquipmentSet"))
-	TMap<FGameplayTag, FEquipmentSetSkinData> EquipmentSetSkins;
+	TMap<FGameplayTag, TObjectPtr<UEquipmentSetSkinData>> EquipmentSetSkins;
 
 	/**
 	 * Gameplay cues overriding cues used by this character's abilities. When this character activates an ability that

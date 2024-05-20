@@ -242,7 +242,8 @@ void AChallengerBase::OnDeathStarted(const FDeathData& DeathData)
 		const FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(SourceLocation, GetActorLocation());
 		const FVector DirectionVec = DirectionRot.Quaternion().GetForwardVector();
 		const float LaunchMultiplier = 200.0f;
-		const FVector RagdollVector = ClampVector((DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier), FVector(-100.0f), FVector(100.0f));
+		const float LaunchClampAbs = 1500.0f;
+		const FVector RagdollVector = ClampVector((DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier), FVector(-LaunchClampAbs), FVector(LaunchClampAbs));
 		RagdollCharacter(FVector(DirectionVec * DeathData.DamageMagnitude * LaunchMultiplier));
 	}
 }
@@ -263,10 +264,7 @@ void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
 	ThirdPersonMesh->WakeAllRigidBodies();
 
 	// Launch the ragdoll in the given direction.
-	if (HasAuthority())
-	{
-		ThirdPersonMesh->SetAllPhysicsLinearVelocity(ClampVector(Direction, FVector(-1500.0f), FVector(1500.0f)));
-	}
+	ThirdPersonMesh->SetAllPhysicsLinearVelocity(ClampVector(Direction, FVector(-1500.0f), FVector(1500.0f)));
 }
 
 void AChallengerBase::UpdateTeamFresnel()
