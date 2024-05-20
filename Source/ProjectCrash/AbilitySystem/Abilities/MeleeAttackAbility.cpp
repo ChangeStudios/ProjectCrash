@@ -18,6 +18,7 @@
 #include "Characters/ChallengerBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CrashLogging.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -267,8 +268,6 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 					if (ImpactHit.bBlockingHit && ImpactHit.GetActor() == HitActor)
 					{
 						FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
-						Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
-						Context.AddOrigin(ImpactHit.ImpactPoint);
 						Context.AddHitResult(ImpactHit);
 
 						// Play an impact cue, if desired.

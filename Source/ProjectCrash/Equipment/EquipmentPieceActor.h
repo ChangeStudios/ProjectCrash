@@ -29,7 +29,7 @@ protected:
 	TObjectPtr<UEquipmentComponent> OwningEquipmentComp;
 
 	/** The equipment piece data used to spawn this equipment piece actor. */
-	FEquipmentPiece& EquipmentPiece;
+	FEquipmentPiece* EquipmentPiece;
 
 	/** The perspective in which this actor represents its equipment piece. Each piece spawns both a first- and a
 	 * third-person actor. */
