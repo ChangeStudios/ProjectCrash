@@ -52,32 +52,6 @@ public:
 
 
 
-	// Utilities.
-
-public:
-
-	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
-	 * not found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
-
-	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
-	 * if the avatar could not be found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	AChallengerBase* GetChallengerFromActorInfo() const;
-
-	/** Returns this ability's CDO. */
-	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
-
-#if WITH_EDITOR
-
-	/** Define when certain properties can be edited in this ability's archetype. */
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-
-#endif // #if WITH_EDITOR
-
-
-
 	// Ability behavior.
 
 // Ability activation.
@@ -207,4 +181,35 @@ protected:
 
 	/** Handles used to track effects applied by this ability that need to be removed when it ends. */
 	TArray<FActiveGameplayEffectHandle> EffectsToRemoveOnEndHandles;
+
+
+
+	// Utilities.
+
+public:
+
+	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
+	 * not found or is of the wrong class. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+
+	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
+	 * if the avatar could not be found or is of the wrong class. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	AChallengerBase* GetChallengerFromActorInfo() const;
+
+	/** Attempts to retrieve any controller responsible for this ability: the owning actor's PC, the avatar's
+	 * controller, etc. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	AController* GetControllerFromActorInfo() const;
+
+	/** Returns this ability's CDO. */
+	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
+
+#if WITH_EDITOR
+
+	/** Define when certain properties can be edited in this ability's archetype. */
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+
+#endif // #if WITH_EDITOR
 };

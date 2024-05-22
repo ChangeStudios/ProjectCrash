@@ -21,7 +21,7 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 
 	bIgnoreSelf = true;
 	bRepeatTargets = false;
-	ClassFilter = nullptr;
+	bResetTargetsOnStart = true;
 	bFilterForGASActors = true;
 
 	Targets = TArray<AActor*>();
@@ -39,6 +39,12 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	/* Ensure the collision detector has been created. Subclasses of AGameplayAbilityTargetActor_CollisionDetector
 	 * must create their own collision detector component. */
 	ensureAlwaysMsgf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
+
+	// Reset the hit targets each time targeting restarts, if desired.
+	if (bResetTargetsOnStart)
+	{
+		Targets.Empty();
+	}
 
 	// Bind a callback to when another actor overlaps this collision component.
 	if (!CollisionDetector->OnComponentBeginOverlap.IsAlreadyBound(this, &ThisClass::OnCollisionBegin))
@@ -64,7 +70,8 @@ void AGameplayAbilityTargetActor_CollisionDetector::StopTargeting()
 
 	if (GenericDelegateBoundASC)
 	{
-		GenericDelegateBoundASC->GenericLocalCancelCallbacks.RemoveDynamic(this, &AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting);
+		GenericDelegateBoundASC->GenericLocalConfirmCallbacks.RemoveDynamic(this, &ThisClass::ConfirmTargeting);
+		GenericDelegateBoundASC->GenericLocalCancelCallbacks.RemoveDynamic(this, &ThisClass::CancelTargeting);
 		GenericDelegateBoundASC = nullptr;
 	}
 }
@@ -99,8 +106,8 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 			return;
 		}
 
-		// Perform optional class filtering.
-		if (ClassFilter && OtherActor->GetClass() != ClassFilter)
+		// Perform target data filtering.
+		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
 			return;
 		}

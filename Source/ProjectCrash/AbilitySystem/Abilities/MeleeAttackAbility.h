@@ -7,7 +7,34 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "MeleeAttackAbility.generated.h"
 
+class AGameplayAbilityTargetActor_Trace;
+class AGameplayAbilityTargetActor_SingleLineTrace;
 class AGameplayAbilityTargetActor_CollisionDetector_Capsule;
+
+
+UENUM(BlueprintType)
+enum class EMeleeTargetingType : uint8
+{
+	/**
+	 * A capsule collision test is performed at exactly one point during the attack: when the Event.Ability.MeleeAttack
+	 * event is received.
+	 *
+	 * When using instant targeting, ensure you're only using one set of events (usually just one) per animation pair.
+	 * I.e. do not fire events in both the first-person and third-person montages; only fire them in one. Since both
+	 * are played on the server, it does not matter which one you choose.
+	 */
+	Instant,
+	/**
+	 * Begins targeting when the "MeleeAttack.Start" event is received, and stops targeting when "MeleeAttack.Stop" is
+	 * received.
+	 * 
+	 * Warning: Do not use; not currently supported. TODO: Implement.
+	 */
+	EventDuration,
+	/** A target actor is used to perform continuous collision testing while the ability is active. */
+	EntireDuration,
+};
+
 
 /**
  * A standard melee attack. When activated, a collision detector capsule will be drawn ahead of the user's camera to
@@ -27,16 +54,31 @@ class PROJECTCRASH_API UMeleeAttackAbility : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
+	// Construction.
+
 public:
 
 	/** Default constructor. */
 	UMeleeAttackAbility(const FObjectInitializer& ObjectInitializer);
+
+
+
+	// Ability logic.
+
+public:
+
+	/** Binds debug info to ability system debugger. */
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 	/** Plays the subsequent attack animation and waits for target data. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	/** Ends targeting if duration-based targeting is being used. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+
+
+	// Targeting.
 
 protected:
 
@@ -47,10 +89,11 @@ protected:
 
 private:
 
-	/** Checks line-of-sight and triggers an optional impact cue at the impact point. Used for both instant and
+	/** Performs ability logic with target data once it's received. Checks line-of-sight, triggers an optional impact
+	 * cue at the impact point, and executes blueprint logic for applying effects. Used for both instant and
 	 * duration-based targeting. */
 	UFUNCTION()
-	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& Data);
+	void OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData);
 
 
 
@@ -66,26 +109,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection", Meta = (ForceUnits = "cm"))
 	float AttackRadius;
 
-	/**
-	 * Whether to perform instantaneous targeting or duration-based targeting.
-	 *
-	 * * Instantaneous Targeting: A capsule collision test is performed at exactly one point during the attack: when the
-	 * Event.Ability.MeleeAttack event is received.
-	 *
-	 * When using instant targeting, ensure you're only using one set of events (usually just one) per animation pair.
-	 * I.e. do not fire events in both the first-person and third-person montages; only fire them in one. Since both
-	 * are played on the server, it does not matter which one you choose.
-	 *
-	 * * Duration-Based Targeting: A target actor is used to perform continuous collision testing while the ability is
-	 * active.
-	 */
+	/** Type of melee targeting to perform. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection")
-	bool bUseInstantTargeting;
-
-	/** TODO: Implement event-based durations that can be controlled by gameplay events—i.e. "MeleeAttack.Start" and
-	 * "MeleeAttack.Stop." */
-	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection", Meta = (EditCondition = "bUseInstantTargeting == false", EditConditionHides = "true", ToolTip = "WARNING: Not implemented; Do not use!"))
-	bool bUseEventBasedDuration;
+	EMeleeTargetingType TargetingType;
 
 	/** Any targets with any of these tags will be ignored. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Hit Detection")
@@ -132,6 +158,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<AGameplayAbilityTargetActor_CollisionDetector_Capsule> TargetActor;
 
+	UPROPERTY()
+	TObjectPtr<AGameplayAbilityTargetActor_SingleLineTrace> InstantTargetActor;
+
 	/** Tracks the last time this ability was used. When this ability is activated, the attack animation sequence will
 	 * be reset if a sufficiently long amount of time has passed since the ability was last activated. */
 	float LastUsed;
@@ -152,10 +181,6 @@ private:
 // Targeting logic.
 private:
 
-	/** Starts or ends targeting, when the Start or End events are received. */
-	UFUNCTION()
-	void OnPerformTargetingReceived(FGameplayEventData Payload);
-
 	/** Begins targeting with TargetActor. */
 	UFUNCTION()
 	void StartTargeting();
@@ -164,17 +189,40 @@ private:
 	UFUNCTION()
 	void EndTargeting();
 
-	/** Performs a forward trace to attempt to hit a surface. */
+	/** Performs a forward trace to attempt to hit a surface, triggered when an attack misses. */
 	UFUNCTION()
 	void TryHitSurface(FGameplayEventData Payload);
+
+// Instant targeting.
+private:
+
+	/** Performs predictive instant targeting for this ability. */
+	UFUNCTION()
+	void PerformInstantTargeting(FGameplayEventData Payload);
+
+	/** Performs a sphere trace from the owning player with AttackRadius radius. Only used for instant targeting. */
+	bool PerformTrace(TArray<FHitResult>& OutHitResults) const;
+
+	/** Callback triggered when this ability has performed its local targeting. Only used for instant targeting;
+	 * duration-based targeting uses a target actor. */
+	void OnTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+
+	/** Handle for callback to OnTargetDataReady. */
+	FDelegateHandle OnTargetDataReadyDelegateHandle;
 
 // Helpers.
 private:
 
-	/** Calculates the position of the trace capsule, with or without the end-point radius. */
-	void GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top);
+	/** Calculates the position of the trace capsule, with or without the end-point radius. This can be used to get
+	 * the target actor's position, or to generate data for a sphere trace that simulates the target actor's capsule. */
+	void GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const;
 
 	/** Wraps EndAbility so it can be called via delegate from PlayDualMontageAndWait. */
 	UFUNCTION()
 	void EndAbilityWrapper();
+
+// Debug.
+private:
+
+	bool bGASDebugEnabled;
 };

@@ -43,6 +43,37 @@ AChallengerBase* UCrashGameplayAbilityBase::GetChallengerFromActorInfo() const
 	return CurrentActorInfo && GetAvatarActorFromActorInfo() ? Cast<AChallengerBase>(GetAvatarActorFromActorInfo()) : nullptr;
 }
 
+AController* UCrashGameplayAbilityBase::GetControllerFromActorInfo() const
+{
+	if (CurrentActorInfo)
+	{
+		// Try to get the owning actor's player controller.
+		if (AController* PC = CurrentActorInfo->PlayerController.Get())
+		{
+			return PC;
+		}
+
+		// If the owning actor's player controller isn't found, look for a controller anywhere in the owner chain.
+		AActor* TestActor = CurrentActorInfo->OwnerActor.Get();
+		while (TestActor)
+		{
+			if (AController* C = Cast<AController>(TestActor))
+			{
+				return C;
+			}
+
+			if (APawn* Pawn = Cast<APawn>(TestActor))
+			{
+				return Pawn->GetController();
+			}
+
+			TestActor = TestActor->GetOwner();
+		}
+	}
+
+	return nullptr;
+}
+
 #if WITH_EDITOR
 
 bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const

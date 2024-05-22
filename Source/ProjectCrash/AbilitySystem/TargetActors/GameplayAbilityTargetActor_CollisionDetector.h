@@ -37,8 +37,9 @@ public:
 	/** Fires cancellation notifies and stops targeting. */
 	virtual void CancelTargeting() override;
 
-	/** Empties the array of targets. If bRepeatsTargets is false, targets that are detected by this actor can not be
-	 * detected again until this is called to reset cached targets. */
+	/** Empties the cached array of targets. If bRepeatsTargets is false, targets that are detected by this actor can
+	 * not be detected again until this is called to reset cached targets. If bInResetTargetsOnStart is true, this is
+	 * done automatically when StartTargeting is called. */
 	UFUNCTION(BlueprintCallable)
 	void ResetTargets() { Targets.Empty(); }
 
@@ -58,21 +59,24 @@ protected:
 protected:
 
 	/** Whether to ignore the owner of the gameplay ability utilizing this target actor when checking for targets. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	bool bIgnoreSelf;
-		
+
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
+	 UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	bool bRepeatTargets;
 
-	/** Optional class by which to filter targets. */
-	UPROPERTY()
-	TSubclassOf<AActor> ClassFilter;
+	/** If true, target data will be automatically reset each time targeting starts. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	bool bResetTargetsOnStart;
 
 	/** Whether to filter for targets with an ability system component. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	bool bFilterForGASActors;
 
 	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	FGameplayTagContainer IgnoredTargetTags;
 
 

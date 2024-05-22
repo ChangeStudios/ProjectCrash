@@ -6,7 +6,9 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
+#include "DisplayDebugHelpers.h"
 #include "GameplayCueFunctionLibrary.h"
+#include "KismetTraceUtils.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
@@ -16,22 +18,39 @@
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/HUD.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+
+#define USING_DURATION_TARGETING TargetingType == EMeleeTargetingType::EventDuration || TargetingType == EMeleeTargetingType::EntireDuration
 
 UMeleeAttackAbility::UMeleeAttackAbility(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer),
 	AttackRange(150.0f),
 	AttackRadius(25.0f),
-	bUseInstantTargeting(true),
+	TargetingType(EMeleeTargetingType::EntireDuration),
 	IgnoreTargetsWithTags(FGameplayTagContainer()),
 	TargetActor(nullptr),
 	LastUsed(0.0f),
 	TimeBeforeReset(0.0f),
 	CurrentAttackAnim_FPP(0),
 	CurrentAttackAnim_TPP(0),
-	bHitTargets(false)
+	bHitTargets(false),
+	bGASDebugEnabled(false)
 {
+}
+
+void UMeleeAttackAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+
+	// Track when the GAS debugger is enabled.
+#if WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
+	AHUD::OnShowDebugInfo.AddWeakLambda(this, [this] (AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos)
+	{
+		bGASDebugEnabled = DisplayInfo.IsDisplayOn(TEXT("AbilitySystem"));
+	});
+#endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
 }
 
 void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -53,7 +72,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		ABILITY_LOG(Warning, TEXT("UMeleeAttackAbility: %s: First- and Third-Person Attack Montages arrays are of different lengths; this may cause mismatched visuals!"), *GetName());
 	}
 
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
 	UWorld* const World = GetWorld();
 	check(ASC && World);
 
@@ -61,8 +80,13 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 
-	// Set up the target actor, if we're using on. We only use target actors for duration-based detection.
-	if (!bUseInstantTargeting)
+	// For instant targeting, set up target data generation.
+	if (TargetingType == EMeleeTargetingType::Instant)
+	{
+		OnTargetDataReadyDelegateHandle = ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReady);
+	}
+	// For duration-based targeting, set up the collision detector target actor.
+	else if (USING_DURATION_TARGETING)
 	{
 		// Determine where to attach the target actor.
 		USceneComponent* TargetActorAttach;
@@ -80,7 +104,6 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		// Create the target actor, if it has not been created yet.
 		if (!IsValid(TargetActor))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Creating new target actor..."));
 			TargetActor = World->SpawnActor<AGameplayAbilityTargetActor_CollisionDetector_Capsule>(AGameplayAbilityTargetActor_CollisionDetector_Capsule::StaticClass());
 
 			check(TargetActor);
@@ -92,7 +115,8 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 				AttackRange / 2.0f,
 				true,
 				false,
-				nullptr,
+				true,
+				FGameplayTargetDataFilterHandle(),
 				true,
 				IgnoreTargetsWithTags,
 				false
@@ -104,9 +128,6 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		// The target actor is attached at its root, which is its center. We need to shift it so it's attached at its base.
 		TargetActor->SetActorRelativeLocation(FVector(AttackRange / 2.0f, 0.0f, 0.0f));
 		TargetActor->SetActorRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
-		// Reset the hit targets with each activation.
-		TargetActor->ResetTargets();
-
 
 		// Start listening for when we should try to hit a surface.
 		UAbilityTask_WaitGameplayEvent* SurfaceImpactTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
@@ -148,15 +169,19 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 
 	// If instant targeting is being used, start waiting for the triggering event.
-	if (bUseInstantTargeting)
+	if (TargetingType == EMeleeTargetingType::Instant)
 	{
-		UAbilityTask_WaitGameplayEvent* PerformTargetingTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-			this, CrashGameplayTags::TAG_Event_Ability_PerformTargeting, nullptr, true, true);
-		PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::OnPerformTargetingReceived);
-		PerformTargetingTask->ReadyForActivation();
+		// Perform targeting on the client.
+		if (IsLocallyControlled())
+		{
+			UAbilityTask_WaitGameplayEvent* PerformTargetingTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+				this, CrashGameplayTags::TAG_Event_Ability_PerformTargeting, nullptr, true, true);
+			PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::PerformInstantTargeting);
+			PerformTargetingTask->ReadyForActivation();
+		}
 	}
 	// If duration-based targeting is being used, immediately start targeting.
-	else
+	else if (TargetingType == EMeleeTargetingType::EntireDuration)
 	{
 		StartTargeting();
 	}
@@ -170,8 +195,28 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// Consume target data and remove the delegate for instant targeting when this ability ends.
+	if (TargetingType == EMeleeTargetingType::Instant)
+	{
+		if (IsEndAbilityValid(Handle, ActorInfo))
+		{
+			/* We might be locked out of ending this ability while our other prediction scope is active. Wait until the
+			 * scope ends to properly end this ability. */
+			if (ScopeLockCount > 0)
+			{
+				WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+				return;
+			}
+
+			UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
+			check(ASC);
+
+			ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyDelegateHandle);
+			ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+		}
+	}
 	// End targeting if we're using duration-based targeting.
-	if (!bUseInstantTargeting)
+	else if (USING_DURATION_TARGETING)
 	{
 		EndTargeting();
 	}
@@ -179,26 +224,161 @@ void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& Data)
+void UMeleeAttackAbility::PerformInstantTargeting(FGameplayEventData Payload)
 {
-	for (TSharedPtr<FGameplayAbilityTargetData> TargetData : Data.Data)
+	check(CurrentActorInfo);
+
+	AActor* AvatarActor = CurrentActorInfo->AvatarActor.Get();
+	check(AvatarActor);
+
+	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(ASC);
+
+	AController* Controller = GetControllerFromActorInfo();
+	check(Controller);
+
+	// Create a new prediction window for generating target data.
+	FScopedPredictionWindow ScopedPrediction(ASC, CurrentActivationInfo.GetActivationPredictionKey());
+
+	// Perform the trace.
+	TArray<FHitResult> Hits;
+	PerformTrace(Hits);
+
+	// Generate target data from the hit result.
+	FGameplayAbilityTargetDataHandle TargetData = MakeTargetLocationInfoFromOwnerActor().MakeTargetDataHandleFromHitResults(this, Hits);
+
+	// Immediately process the target data.
+	OnTargetDataReady(TargetData, FGameplayTag());
+}
+
+bool UMeleeAttackAbility::PerformTrace(TArray<FHitResult>& OutHitResults) const
+{
+	/* There won't be a target actor if we're doing a trace, but we can calculate where the target actor's capsule
+	 * would be if we had one. This makes instant targeting and duration-based targeting behave identically, and
+	 * takes the capsule radius into account for our sphere trace. */
+	FVector TraceStart;
+	FVector TraceEnd;
+	GetCapsulePosition(false, TraceStart, TraceEnd);
+
+	// Perform the trace.
+	TArray<FHitResult> Hits;
+	UKismetSystemLibrary::SphereTraceMulti
+	(
+		this,
+		TraceStart,
+		TraceEnd,
+		AttackRadius,
+		UEngineTypes::ConvertToTraceType(ECC_Camera),
+		true,
+		TArray<AActor*>({GetAvatarActorFromActorInfo()}),
+		EDrawDebugTrace::None,
+		Hits,
+		true
+	);
+
+	// Draw debug line if GAS debugging is enabled.
+#if WITH_EDITOR
+	const EDrawDebugTrace::Type DebugTraceType = EDrawDebugTrace::ForDuration;
+	const float DebugTraceDuration = 2.0f;
+
+	if (bGASDebugEnabled)
 	{
-		for (TWeakObjectPtr<AActor> HitActor : TargetData->GetActors())
+		DrawDebugSphereTraceMulti
+		(
+			GetWorld(),
+			TraceStart,
+			TraceEnd,
+			AttackRadius,
+			DebugTraceType,
+			Hits.Num() > 0,
+			Hits,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			DebugTraceDuration
+		);
+	}
+#endif // WITH_EDITOR
+
+	// Perform filtering.
+	TArray<AActor*> HitActors;
+	for (FHitResult& Hit : Hits)
+	{
+		// Prevent the same actor from being hit multiple times.
+		if (AActor* HitActor = Hit.GetActor())
+		{
+			if (HitActors.Contains(HitActor))
+			{
+				continue;
+			}
+			else
+			{
+				HitActors.Add(HitActor);
+			}
+
+			// If the hit target has an ASC, check if it has any ignored tags.
+			if (const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Hit.GetActor()))
+			{
+				if (ASC->HasAnyMatchingGameplayTags(IgnoreTargetsWithTags))
+				{
+					continue;
+				}
+			}
+		}
+
+		OutHitResults.Add(Hit);
+	}
+
+	return OutHitResults.Num() > 0;
+}
+
+void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+{
+	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(ASC);
+
+	if (const FGameplayAbilitySpec* AbilitySpec = ASC->FindAbilitySpecFromHandle(CurrentSpecHandle))
+	{
+		// New prediction window while we wait for the server to receive the target data.
+		FScopedPredictionWindow ScopedPrediction(ASC);
+
+		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us.
+		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+
+		// Notify the server if necessary.
+		if (CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority())
+		{
+			ASC->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag, ASC->ScopedPredictionKey);
+		}
+
+		// Perform logic with the target data once confirmed.
+		OnTargetDataReceived(LocalTargetDataHandle);
+	}
+
+	// We've processed the data.
+	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+}
+
+void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData)
+{
+	// Perform ability logic on each hit target.
+	for (TSharedPtr<FGameplayAbilityTargetData> TargetData : InData.Data)
+	{
+		if (AActor* HitActor = TargetData->GetHitResult() ? TargetData->GetHitResult()->GetActor() : nullptr)
 		{
 			// Check for line-of-sight.
 			const bool bHasLOS = UAbilitySystemUtilitiesLibrary::Actor_HasLineOfSight
 			(
 				this,
 				GetAvatarActorFromActorInfo(),
-				HitActor.Get(),
-				UEngineTypes::ConvertToTraceType(ECC_Visibility), 
+				HitActor,
+				UEngineTypes::ConvertToTraceType(ECC_Camera),
 				true
 			);
 
 			if (bHasLOS)
 			{
-				/* Retrieve the hit actor's ASC. The target actor has already filtered for ASC actors for us. */
-				if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitActor.Get()))
+				/* Retrieve the hit actor's ASC. */
+				if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitActor))
 				{
 					bHitTargets = true;
 
@@ -251,7 +431,7 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 					{
 						ImpactHit = FHitResult
 						(
-							HitActor.Get(),
+							HitActor,
 							nullptr,
 							HitActor->GetActorLocation(),
 							FVector()
@@ -280,61 +460,10 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 			}
 		}
 	}
-}
 
-void UMeleeAttackAbility::OnPerformTargetingReceived(FGameplayEventData Payload)
-{
-	FVector Start;
-	FVector End;
-	GetCapsulePosition(false, Start, End);
-
-	TArray<FHitResult> Hits;
-
-	// When the PerformTargeting event is received, perform targeting via capsule collision trace.
-	UKismetSystemLibrary::SphereTraceMulti
-	(
-		this,
-		Start,
-		End,
-		AttackRadius,
-		UEngineTypes::ConvertToTraceType(ECC_Pawn),
-		true,
-		TArray<AActor*>({GetAvatarActorFromActorInfo()}),
-		EDrawDebugTrace::None,
-		Hits,
-		true
-	);
-
-	// Send targeting data for each hit.
-	TArray<AActor*> HitActors;
-	for (FHitResult Result : Hits)
-	{
-		if (AActor* ResultActor = Result.GetActor())
-		{
-			// Make sure actors aren't accidentally hit multiple times.
-			if (HitActors.Contains(ResultActor))
-			{
-				continue;
-			}
-
-			HitActors.Add(ResultActor);
-
-			// Filter for ability system actors.
-			const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ResultActor);
-			if (!ASC || ASC->HasAnyMatchingGameplayTags(IgnoreTargetsWithTags))
-			{
-				continue;
-			}
-
-			// Simulate target data being received to handle hit targets.
-			bHitTargets = true;
-			FGameplayAbilityTargetingLocationInfo StartLocation = FGameplayAbilityTargetingLocationInfo();
-			OnTargetDataReceived(StartLocation.MakeTargetDataHandleFromActors( TArray<TWeakObjectPtr<AActor>>({ResultActor}) ));
-		}
-	}
-
-	// If we didn't hit any valid targets, try hitting a surface instead.
-	if (!bHitTargets)
+	/* If we didn't hit any valid targets, try hitting a surface instead. Other targeting types trigger this from
+	 * events. */
+	if (!bHitTargets && TargetingType == EMeleeTargetingType::Instant)
 	{
 		TryHitSurface(FGameplayEventData());
 	}
@@ -351,14 +480,13 @@ void UMeleeAttackAbility::StartTargeting()
 		TargetActor
 	);
 	WaitTargetDataTask->ValidDataSentDelegate.AddDynamic(this, &UMeleeAttackAbility::OnTargetDataReceived);
-
 	WaitTargetDataTask->ReadyForActivation();
 }
 
 void UMeleeAttackAbility::EndTargeting()
 {
-	// Stop the target actor's targeting and end the waiting-for-data task.
-	if (TargetActor)
+	// Stop the target actor's targeting and end the waiting-for-data task, if the target actor is currently targeting.
+	if (TargetActor && TargetActor->TargetDataReadyDelegate.IsBound())
 	{
 		TargetActor->StopTargeting();
 		EndTaskByInstanceName(FName("WaitTargetDataTask"));
@@ -395,7 +523,7 @@ void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 	}
 }
 
-void UMeleeAttackAbility::GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top)
+void UMeleeAttackAbility::GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const
 {
 	const UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo();
 
