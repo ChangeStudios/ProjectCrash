@@ -162,9 +162,9 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		false
 	);
 
-	AnimTask->OnBlendOut.AddDynamic(this, &UMeleeAttackAbility::EndAbilityWrapper);
-	AnimTask->OnInterrupted.AddDynamic(this, &UMeleeAttackAbility::EndAbilityWrapper);
-	AnimTask->OnCancelled.AddDynamic(this, &UMeleeAttackAbility::EndAbilityWrapper);
+	AnimTask->OnBlendOut.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->OnInterrupted.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->OnCancelled.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
 	AnimTask->ReadyForActivation();
 
 
@@ -213,15 +213,17 @@ void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 			ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyDelegateHandle);
 			ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+	
+			Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 		}
 	}
 	// End targeting if we're using duration-based targeting.
 	else if (USING_DURATION_TARGETING)
 	{
 		EndTargeting();
-	}
 
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+		Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	}
 }
 
 void UMeleeAttackAbility::PerformInstantTargeting(FGameplayEventData Payload)
@@ -340,6 +342,7 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 	{
 		// New prediction window while we wait for the server to receive the target data.
 		FScopedPredictionWindow ScopedPrediction(ASC);
+		UE_LOG(LogTemp, Error, TEXT("Created prediction window: %s"), *ASC->ScopedPredictionKey.ToString());
 
 		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us.
 		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
@@ -351,7 +354,14 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 		}
 
 		// Perform logic with the target data once confirmed.
-		OnTargetDataReceived(LocalTargetDataHandle);
+		if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+		{
+			OnTargetDataReceived(LocalTargetDataHandle);
+		}
+		else
+		{
+			K2_EndAbility();
+		}
 	}
 
 	// We've processed the data.
@@ -361,6 +371,7 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData)
 {
 	// Perform ability logic on each hit target.
+	UE_LOG(LogTemp, Error, TEXT("Original key: %s. Current key: %s"), *CurrentActivationInfo.GetActivationPredictionKey().ToString(), *GetAbilitySystemComponentFromActorInfo_Checked()->ScopedPredictionKey.ToString());
 	for (TSharedPtr<FGameplayAbilityTargetData> TargetData : InData.Data)
 	{
 		if (AActor* HitActor = TargetData->GetHitResult() ? TargetData->GetHitResult()->GetActor() : nullptr)
@@ -438,7 +449,7 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 						);
 						ImpactHit.bBlockingHit = true;
 
-						ABILITY_LOG(Warning, TEXT("MeleeAttackAbility %s failed to generate a hit for triggering effects."), *GetName());
+						ABILITY_LOG(Verbose, TEXT("MeleeAttackAbility %s failed to generate a hit for triggering effects."), *GetName());
 					}
 
 					// Trigger the hit effects.
@@ -450,7 +461,7 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 						// Play an impact cue, if desired.
 						if (HitImpactCue.IsValid())
 						{
-							TargetASC->ExecuteGameplayCue(HitImpactCue, Context);
+							OwningASC->ExecuteGameplayCue(HitImpactCue, UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(ImpactHit));
 						}
 
 						// Call blueprint implementation for hitting a target, which will handle applying gameplay effects. 
@@ -515,9 +526,9 @@ void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 		// If we hit something, play the surface hit cue on it.
 		if (SurfaceHit.bBlockingHit)
 		{
-			FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
-			Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
-			Context.AddOrigin(SurfaceHit.ImpactPoint);
+			// FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
+			// Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
+			// Context.AddOrigin(SurfaceHit.ImpactPoint);
 			OwningASC->ExecuteGameplayCue(SurfaceImpactCue, UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(SurfaceHit));
 		}
 	}
@@ -545,10 +556,4 @@ void UMeleeAttackAbility::GetCapsulePosition(bool bIncludeRadius, FVector& Base,
 
 	Base = bIncludeRadius ? BaseWithRadius : BaseWithoutRadius;
 	Top = bIncludeRadius ? TopWithRadius : TopWithoutRadius;
-}
-
-void UMeleeAttackAbility::EndAbilityWrapper()
-{
-	// End this ability.
-	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true, false);
 }

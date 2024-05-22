@@ -142,6 +142,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
 	FGameplayTag HitImpactCue;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects")
+	TSubclassOf<UGameplayEffect> HitImpactEffect;
+
 	/** Optional gameplay cue fired at the end of an attack if the attack did not hit any ability system actors, but
 	 * hit a surface. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
@@ -216,10 +219,6 @@ private:
 	/** Calculates the position of the trace capsule, with or without the end-point radius. This can be used to get
 	 * the target actor's position, or to generate data for a sphere trace that simulates the target actor's capsule. */
 	void GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const;
-
-	/** Wraps EndAbility so it can be called via delegate from PlayDualMontageAndWait. */
-	UFUNCTION()
-	void EndAbilityWrapper();
 
 // Debug.
 private:

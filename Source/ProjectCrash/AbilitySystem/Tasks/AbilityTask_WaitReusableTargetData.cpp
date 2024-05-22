@@ -172,7 +172,7 @@ void UAbilityTask_WaitReusableTargetData::FinalizeTargetActorInitialization()
 			 * by the player at some later point. */
 			case EGameplayTargetingConfirmation::UserConfirmed:
 			{
-				TargetActor->ConfirmTargeting();
+				TargetActor->BindToConfirmCancelInputs();
 				break;
 			}
 			// Any other type of confirmation should implement its own logic for confirming target data.
