@@ -213,17 +213,15 @@ void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 			ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyDelegateHandle);
 			ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
-	
-			Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 		}
 	}
 	// End targeting if we're using duration-based targeting.
 	else if (USING_DURATION_TARGETING)
 	{
 		EndTargeting();
-
-		Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	}
+
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 void UMeleeAttackAbility::PerformInstantTargeting(FGameplayEventData Payload)
@@ -342,7 +340,6 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 	{
 		// New prediction window while we wait for the server to receive the target data.
 		FScopedPredictionWindow ScopedPrediction(ASC);
-		UE_LOG(LogTemp, Error, TEXT("Created prediction window: %s"), *ASC->ScopedPredictionKey.ToString());
 
 		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us.
 		FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
@@ -371,10 +368,26 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData)
 {
 	// Perform ability logic on each hit target.
-	UE_LOG(LogTemp, Error, TEXT("Original key: %s. Current key: %s"), *CurrentActivationInfo.GetActivationPredictionKey().ToString(), *GetAbilitySystemComponentFromActorInfo_Checked()->ScopedPredictionKey.ToString());
 	for (TSharedPtr<FGameplayAbilityTargetData> TargetData : InData.Data)
 	{
-		if (AActor* HitActor = TargetData->GetHitResult() ? TargetData->GetHitResult()->GetActor() : nullptr)
+		// Try to retrieve the hit actor from the target data hit result. Only valid with instant targeting.
+		TArray<AActor*> HitActors;
+		AActor* HitResultActor = TargetData->HasHitResult() ? TargetData->GetHitResult()->GetActor() : nullptr;
+		if (HitResultActor)
+		{
+			HitActors.Add(HitResultActor);
+		}
+		/* If there is no hit result (i.e. duration-based targeting is being used), collect hit actors directly from
+		 * the target data. */
+		else
+		{
+			for (TWeakObjectPtr<AActor> TargetDataActor : TargetData->GetActors())
+			{
+				HitActors.Add(TargetDataActor.Get());
+			}
+		}
+
+		for (AActor* HitActor : HitActors)
 		{
 			// Check for line-of-sight.
 			const bool bHasLOS = UAbilitySystemUtilitiesLibrary::Actor_HasLineOfSight
@@ -482,7 +495,14 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 
 void UMeleeAttackAbility::StartTargeting()
 {
-	// Wait for target data.
+	if (!TargetActor)
+	{
+		ABILITY_LOG(Error, TEXT("UMeleeAttackAbility: StartTargeting was called without a valid target actor! Avatar: %s"), *GetNameSafe(CurrentActorInfo->AvatarActor.Get()));
+		return;
+	}
+
+	/* Start waiting for target data. This is done predicatively, which can trigger a warning like "LogPredictionKey:
+	 * Warning: UnAck'd PredictionKey...". This warning is a bug that should be fixed in future UE versions. */
 	UAbilityTask_WaitReusableTargetData* WaitTargetDataTask = UAbilityTask_WaitReusableTargetData::WaitTargetDataWithReusableActor
 	(
 		this,
@@ -496,12 +516,15 @@ void UMeleeAttackAbility::StartTargeting()
 
 void UMeleeAttackAbility::EndTargeting()
 {
-	// Stop the target actor's targeting and end the waiting-for-data task, if the target actor is currently targeting.
-	if (TargetActor && TargetActor->TargetDataReadyDelegate.IsBound())
+	if (!TargetActor)
 	{
-		TargetActor->StopTargeting();
-		EndTaskByInstanceName(FName("WaitTargetDataTask"));
+		ABILITY_LOG(Error, TEXT("UMeleeAttackAbility: StartTargeting was called without a valid target actor! Avatar: %s"), *GetNameSafe(CurrentActorInfo->AvatarActor.Get()));
+		return;
 	}
+
+	// Stop the target actor's targeting and end the waiting-for-data task, if the target actor is currently targeting.
+	TargetActor->StopTargeting();
+	CancelTaskByInstanceName(FName("WaitTargetDataTask"));
 }
 
 void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
