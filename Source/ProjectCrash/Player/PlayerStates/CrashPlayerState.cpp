@@ -34,6 +34,12 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 
 	// Initialize other properties.
 	CurrentChallenger = nullptr;
+	CurrentSkin = nullptr;
+
+#if WITH_EDITOR
+	CurrentChallenger = DefaultChallenger;
+	CurrentSkin = DefaultSkin;
+#endif	
 }
 
 void ACrashPlayerState::PostInitializeComponents()

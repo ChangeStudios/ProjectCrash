@@ -66,9 +66,10 @@ protected:
 
 public:
 
-	/** Updates this animation instance's current animation data. */
+	/** Updates this animation instance's current animation data. Optionally overrides the base pose using the given
+	 * equipment set skin data. */
 	UFUNCTION(BlueprintCallable, Category = "Animation|Data")
-	void UpdateAnimData(UCharacterAnimData* NewAnimData);
+	void UpdateAnimData(UCharacterAnimData* NewAnimData, UEquipmentSetSkinData* EquipmentSetSkinData = nullptr);
 
 protected:
 

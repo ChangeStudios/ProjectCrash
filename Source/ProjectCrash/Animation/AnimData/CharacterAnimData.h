@@ -53,9 +53,9 @@ class PROJECTCRASH_API UCharacterAnimData : public UDataAsset
 // Base poses. Additive animations are applied on top of these.
 public:
 
-	/** First-person base pose when standing. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Base Poses", DisplayName = "Standing Pose")
-	TObjectPtr<UAnimSequenceBase> StandingPose_FPP = nullptr;
+	/** First-person base pose. Additives are applied on top of this. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "First-Person|Base Poses", DisplayName = "Base Pose (First-Person)")
+	TObjectPtr<UAnimSequenceBase> BasePose_FPP = nullptr;
 
 // Additive poses. These are applied onto base poses before animations.
 public:
@@ -124,9 +124,9 @@ public:
 // Base poses. Additive animations are applied on top of these.
 public:
 
-	/** Third-person base pose when standing. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Base Poses", DisplayName = "Standing Pose")
-	TObjectPtr<UAnimSequenceBase> StandingPose_TPP = nullptr;
+	/** Third-person base pose. Additives are applied on top of this. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Third-Person|Base Poses", DisplayName = "Base Pose (Third-Person)")
+	TObjectPtr<UAnimSequenceBase> BasePose_TPP = nullptr;
 
 // Additive poses. These are applied onto base poses before animations.
 public:

@@ -139,6 +139,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UChallengerData> DefaultChallenger;
 
+	// Used for debugging.
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UChallengerSkinData> DefaultSkin;
 

@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquipmentPieceDefinition.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "EquipmentActor.generated.h"
 
 class UAbilitySystemComponent;
 class UEquipmentComponent;
-class UEquipmentPieceDefinition;
+class ACrashCharacterBase;
 
 /**
  * Visually represents a single equipment piece. Can receive events for firing 
@@ -33,7 +33,7 @@ public:
 public:
 
 	/** Spawns this equipment actor's mesh. */
-	void InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective);
+	// void InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective);
 
 	/** Clears active effects */
 	void OnUnequip();
@@ -68,8 +68,8 @@ protected:
 	ACrashCharacterBase* OwningCharacter;
 
 	/** The equipment piece that this actor is representing. */
-	UPROPERTY()
-	TObjectPtr<const UEquipmentPieceDefinition> SourceEquipmentPiece;
+	// UPROPERTY()
+	// TObjectPtr<const UEquipmentPieceDefinition> SourceEquipmentPiece;
 
 	/** Whether this actor represents its equipment piece in first-person or third-person. */
 	FGameplayTag EquipmentPerspective;

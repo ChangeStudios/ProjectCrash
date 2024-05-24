@@ -501,7 +501,7 @@ void UMeleeAttackAbility::StartTargeting()
 		return;
 	}
 
-	/* Start waiting for target data. This is done predicatively, which can trigger a warning like "LogPredictionKey:
+	/* Start waiting for target data. This is done predictively, which can trigger a warning like "LogPredictionKey:
 	 * Warning: UnAck'd PredictionKey...". This warning is a bug that should be fixed in future UE versions. */
 	UAbilityTask_WaitReusableTargetData* WaitTargetDataTask = UAbilityTask_WaitReusableTargetData::WaitTargetDataWithReusableActor
 	(

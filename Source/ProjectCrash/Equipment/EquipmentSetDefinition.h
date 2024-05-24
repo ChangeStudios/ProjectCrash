@@ -8,11 +8,10 @@
 #include "Engine/DataAsset.h"
 #include "EquipmentSetDefinition.generated.h"
 
-class AEquipmentActor;
-class UCrashAbilitySystemComponent;
-class UEquipmentAnimationData;
+class AEquipmentPieceActor;
+class UCharacterAnimData;
 class UCrashAbilitySet;
-class UEquipmentPieceDefinition;
+class UCrashAbilitySystemComponent;
 
 /**
  * Represents an active instance of an equipment set: either a currently equipped set or a temporarily unequipped set.
@@ -31,7 +30,7 @@ public:
 	/** Spawned actors representing this equipment set's pieces. Each piece in an equipped set has a first-person and
 	 * third-person actor. */
 	UPROPERTY()
-	TArray<TObjectPtr<AEquipmentActor>> SpawnedEquipmentActors;
+	TArray<TObjectPtr<AEquipmentPieceActor>> SpawnedEquipmentActors;
 
 	/** The ASC to which this equipment set's ability set is granted. */
 	UPROPERTY()
@@ -52,7 +51,7 @@ UCLASS(BlueprintType, Const, Meta = (ShortToolTip = "A set of equipment that can
 class PROJECTCRASH_API UEquipmentSetDefinition : public UDataAsset
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	/** Identifying tag for this equipment set. Used to keep this equipment set skin-agnostic, allowing skins to use
@@ -73,16 +72,4 @@ public:
 	 * data. This should only be used if a character for whom this set is not designed for equips this set. */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UEquipmentSetSkinData> DefaultSkinData;
-
-
-
-
-	/**
-	 * The pieces of equipment that comprise this equipment set. These are purely cosmetic; they represent the
-	 * equipment in-game.
-	 *
-	 * TODO: DEPRECATE
-	 */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Pieces")
-	TArray<UEquipmentPieceDefinition*> EquipmentPieces;
 };

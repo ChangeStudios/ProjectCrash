@@ -54,12 +54,10 @@ void UAnimNotify_TriggerEquipmentEffect::Notify(USkeletalMeshComponent* MeshComp
 	// Send the effect to the equipment component.
 	if (!bEnd)
 	{
-		EquipmentComponent->SendEquipmentEffectEvent(EffectTag);
 	}
 	// End the effect through the equipment component.
 	else
 	{
-		EquipmentComponent->EndEquipmentEffectEvent(EffectTag);
 	}
 
 	Super::Notify(MeshComp, Animation, EventReference);

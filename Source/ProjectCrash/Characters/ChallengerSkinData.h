@@ -48,7 +48,7 @@ public:
  * Defines cosmetic data for an equipment set.
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Equipment Skin Data", ShortToolTip = "Data used to define a cosmetic skin's appearance on an equipment set."))
-class PROJECTCRASH_API UEquipmentSetSkinData : public UPrimaryDataAsset
+class PROJECTCRASH_API UEquipmentSetSkinData : public UDataAsset
 {
 	GENERATED_BODY()
 

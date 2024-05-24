@@ -6,14 +6,14 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Animation/ChallengerAnimInstanceBase.h"
-#include "Animation/AnimData/CharacterAnimData.h"
 #include "EquipmentActor.h"
-#include "EquipmentPieceDefinition.h"
+#include "EquipmentPieceActor.h"
 #include "AbilitySystem/CrashGameplayTags.h"
-#include "Equipment/EquipmentAnimationData.h"
+#include "Characters/CrashCharacterBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/PlayerStates/CrashPlayerState.h"
 
 UEquipmentComponent::UEquipmentComponent() :
 	EquippedSetHandle(FEquipmentSetHandle()),
@@ -37,39 +37,9 @@ void UEquipmentComponent::OnRegister()
 	ensureAlwaysMsgf((EquipmentComponents.Num() == 1), TEXT("%i instances of EquipmentComponent were found on %s. Only one EquipmentComponent may exist on any actor."), EquipmentComponents.Num(), *GetNameSafe(GetOwner()));
 }
 
-void UEquipmentComponent::SendEquipmentEffectEvent(FGameplayTag EffectEvent)
-{
-	// Send the event to every active equipment actor.
-	for (AEquipmentActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
-	{
-		EquipmentActor->HandleEquipmentEvent(EffectEvent);
-	}
-
-	// Send the event to every active temporary equipment actor.
-	for (AEquipmentActor* TemporaryEquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
-	{
-		TemporaryEquipmentActor->HandleEquipmentEvent(EffectEvent);
-	}
-}
-
-void UEquipmentComponent::EndEquipmentEffectEvent(FGameplayTag EffectEvent)
-{
-	// End the event on every active equipment actor.
-	for (AEquipmentActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
-	{
-		EquipmentActor->EndEquipmentEvent(EffectEvent);
-	}
-
-	// End the event on every active temporary equipment actor.
-	for (AEquipmentActor* TemporaryEquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
-	{
-		TemporaryEquipmentActor->EndEquipmentEvent(EffectEvent);
-	}
-}
-
 void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
 {
- 	check(GetOwner()->HasAuthority());
+ 	check(HasAuthority());
 	check(SetToEquip);
 
 	/* Update the currently equipped set. The previously equipped set will be unequipped by the OnRep, and the new set
@@ -97,13 +67,14 @@ void UEquipmentComponent::TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemp
 
 bool UEquipmentComponent::UnequipTemporarySet()
 {
-	check(GetOwner()->HasAuthority());
+	// check(HasAuthority());
 
 	// Unequip the current temporarily equipped set, if there is one.
 	if (UEquipmentSetDefinition* PreviousTemporarilyEquippedSet = TemporarilyEquippedSet)
 	{
 		TemporarilyEquippedSet = nullptr;
-		OnRep_TemporarilyEquippedSet(PreviousTemporarilyEquippedSet);
+		if (GetOwner()->HasAuthority())
+			OnRep_TemporarilyEquippedSet(PreviousTemporarilyEquippedSet);
 		return true;
 	}
 
@@ -115,18 +86,28 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 {
 	check(SetToEquip);
 
-	if (!GetOwner() || !GetWorld())
+	if (!SetToEquip->SetID.IsValid())
+	{
+		EQUIPMENT_LOG(Fatal, TEXT("Attempted to equip set without a valid set ID: %s"), *SetToEquip->GetName());
+		return;
+	}
+
+	// Cache for convenience.
+	AActor* Owner = GetOwner();
+	UWorld* World = GetWorld();
+
+	if (!Owner || !World)
 	{
 		return;
 	}
 
-	// Make sure we have a valid owning character.
-	ACharacter* EquippingChar = Cast<ACharacter>(GetOwner());
-	check(EquippingChar);
-	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(GetOwner());
+	// Try to get the equipping actor as characters for character-specific equipment logic (e.g. updating animations).
+	ACharacter* EquippingChar = Cast<ACharacter>(Owner);
+	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(Owner);
 
 	// Determine which equipment handle to store the equipped set into.
 	FEquipmentSetHandle& TargetHandle = bEquipAsTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
+
 
 
 	// Cache the set, if it hasn't been already. If the set is being re-equipped, it should already be cached.
@@ -136,10 +117,11 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	}
 
 
+
 	// Grant or re-enable the new equipment's ability set on the server.
-	if (GetOwner()->HasAuthority() && SetToEquip->GrantedAbilitySet)
+	if (HasAuthority() && SetToEquip->GrantedAbilitySet)
 	{
-		if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
+		if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Owner))
 		{
 			/* If this set was only unequipped temporarily, we still have our abilities granted and cached; we just
 			 * need to re-enable them. */
@@ -157,44 +139,83 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	}
 
 
+
+	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
+	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;
+
+	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
+	{
+		ACrashPlayerState* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState>();
+		UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+		if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
+		{
+			EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
+		}
+	}
+
+	/* We should always have skin data for an equipment set, either from a character skin or from the set's default
+	 * data. */
+	if (!ensure(EquippingSetSkinData))
+	{
+		return;
+	}
+
+
+
 	/* Visually equip the set (spawn its pieces and switch animations) if (A) we're equipping an overriding temporary
 	 * set or (B) we're equipping a primary equipment set and there is no overriding temporary set. */
 	if (bEquipAsTemporarySet || (!bEquipAsTemporarySet && TemporarilyEquippedSet == nullptr))
 	{
+		/* Before we spawn our equipment set pieces, choose where we'll attach our third-person pieces. By default, use
+		 * the equipping actor's root component. */
+		USceneComponent* AttachComponent = Owner->GetRootComponent();
+
+		// Try to retrieve the defined third-person mesh.
+		if (EquippingCrashChar && EquippingCrashChar->GetThirdPersonMesh())
+		{
+			AttachComponent = EquippingCrashChar->GetThirdPersonMesh();
+		}
+		// Try to retrieve any character mesh.
+		else if (EquippingChar && EquippingChar->GetMesh())
+		{
+			AttachComponent = EquippingChar->GetMesh();
+		}
+		// Try to retrieve ANY mesh.
+		else if (UMeshComponent* MeshComp = Owner->FindComponentByClass<UMeshComponent>())
+		{
+			AttachComponent = MeshComp;
+		}
+
+
 		// Spawn the new equipment set's pieces.
-		for (const UEquipmentPieceDefinition* EquipmentPiece : SetToEquip->EquipmentPieces)
+		for (FEquipmentPiece& EquipmentPiece : EquippingSetSkinData->Pieces)
 		{
 			// Spawn the equipment piece's first-person actor if the equipping character has one.
-			if (EquippingCrashChar && EquippingCrashChar->GetFirstPersonMesh())
+			if (USkeletalMeshComponent* Mesh_FPP = EquippingCrashChar ? EquippingCrashChar->GetFirstPersonMesh() : nullptr)
 			{
-				// Note: May need to use SpawnActorDeferred if there's any delay between spawning and initialization.
-				if (AEquipmentActor* EquipmentActor_FPP = GetWorld()->SpawnActor<AEquipmentActor>())
+				if (AEquipmentPieceActor* NewPieceActor = World->SpawnActor<AEquipmentPieceActor>())
 				{
-					EquipmentActor_FPP->InitEquipmentActor(this, EquipmentPiece, CrashGameplayTags::TAG_State_Perspective_FirstPerson);
-					EquipmentActor_FPP->AttachToComponent(EquippingCrashChar->GetFirstPersonMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
-					EquipmentActor_FPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_FPP);
+					NewPieceActor->InitEquipmentPieceActor(&EquipmentPiece, this, CrashGameplayTags::TAG_State_Perspective_FirstPerson);
+					NewPieceActor->AttachToComponent(Mesh_FPP, FAttachmentTransformRules::SnapToTargetIncludingScale, EquipmentPiece.AttachSocket);
+					NewPieceActor->SetActorRelativeTransform(EquipmentPiece.Offset_FPP);
 
-					TargetHandle.SpawnedEquipmentActors.Add(EquipmentActor_FPP);
+					TargetHandle.SpawnedEquipmentActors.Add(NewPieceActor);
 				}
 			}
 
-			/* Determine where to attach the equipment piece's third-person actor. If the equipping character has a
-			 * valid designated third-person mesh, use it. Otherwise, fall back to using any mesh it has. */
-			USceneComponent* AttachComponent = EquippingCrashChar && EquippingCrashChar->GetThirdPersonMesh() ?
-													EquippingCrashChar->GetThirdPersonMesh() :
-													EquippingChar->GetMesh();
-			check(AttachComponent);
 
-			// Spawn the equipment piece's third-person actor.
-			if (AEquipmentActor* EquipmentActor_TPP = GetWorld()->SpawnActor<AEquipmentActor>())
+			// Always spawn the third-person actor.
+			if (AEquipmentPieceActor* NewPieceActor = World->SpawnActor<AEquipmentPieceActor>())
 			{
-				EquipmentActor_TPP->InitEquipmentActor(this, EquipmentPiece, CrashGameplayTags::TAG_State_Perspective_ThirdPerson);
-				EquipmentActor_TPP->AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquipmentPiece->AttachSocket);
-				EquipmentActor_TPP->SetActorRelativeTransform(EquipmentPiece->AttachOffset_TPP);
+				NewPieceActor->InitEquipmentPieceActor(&EquipmentPiece, this, CrashGameplayTags::TAG_State_Perspective_ThirdPerson);
+				NewPieceActor->AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, EquipmentPiece.AttachSocket);
+				NewPieceActor->SetActorRelativeTransform(EquipmentPiece.Offset_TPP);
 
-				TargetHandle.SpawnedEquipmentActors.Add(EquipmentActor_TPP);
+				TargetHandle.SpawnedEquipmentActors.Add(NewPieceActor);
 			}
 		}
+
+
 
 		// Update the equipping character's animation to use the new set's animations.
 		if (SetToEquip->AnimationData)
@@ -204,27 +225,28 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 																	Cast<UChallengerAnimInstanceBase>(EquippingCrashChar->GetFirstPersonMesh()->GetAnimInstance()) :
 																	nullptr)
 			{
-				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
+				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
 
-				// // Play the first-person "equip" montage.
-				// if (SetToEquip->AnimationData->Equip_FPP)
-				// {
-				// 	FPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_FPP);
-				// }
+				// Play the first-person "equip" montage.
+				if (EquippingSetSkinData->EquipAnim_FPP)
+				{
+					FPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_FPP);
+				}
 			}
 
-			// Third-person mesh.
-			if (UChallengerAnimInstanceBase* TPPAnimInstance = (Cast<UChallengerAnimInstanceBase>(EquippingCrashChar && EquippingCrashChar->GetThirdPersonMesh() ?
-																	EquippingCrashChar->GetThirdPersonMesh()->GetAnimInstance() :
-																	EquippingChar->GetMesh()->GetAnimInstance())))
+			// Third-person mesh. AttachComponent has already done the work of searching for a mesh component for us.
+			if (const USkeletalMeshComponent* MeshComp = (Cast<USkeletalMeshComponent>(AttachComponent)))
 			{
-				TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData);
+				if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(MeshComp->GetAnimInstance()))
+				{
+					TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
 
-				// // Play the third-person "equip" montage.
-				// if (SetToEquip->AnimationData->Equip_TPP)
-				// {
-				// 	TPPAnimInstance->Montage_Play(SetToEquip->AnimationData->Equip_TPP);
-				// }
+					// Play the third-person "equip" montage.
+					if (EquippingSetSkinData->EquipAnim_TPP)
+					{
+						TPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_TPP);
+					}
+				}
 			}
 		}
 	}
@@ -232,17 +254,18 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 void UEquipmentComponent::UnequipSet_Internal(bool bUnequipTemporarySet, bool bUnequipTemporarily)
 {
-	if (!GetOwner() || !GetWorld())
+	if (!GetOwner())
 	{
 		return;
 	}
 
-	// Determine which equipment handle to use to unequip the desired set.
+	// Determine which equipment handle to use to unequip the set.
 	FEquipmentSetHandle& TargetHandle = bUnequipTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
 
 
+
 	// Remove or disable the unequipped set's ability set on the server.
-	if (GetOwner()->HasAuthority() && TargetHandle.GrantedASC)
+	if (HasAuthority() && TargetHandle.GrantedASC)
 	{
 		// If we're only temporarily unequipping this set, we disable the granted ability set instead of removing it.
 		if (bUnequipTemporarily)
@@ -258,10 +281,10 @@ void UEquipmentComponent::UnequipSet_Internal(bool bUnequipTemporarySet, bool bU
 	}
 
 
-	// Destroy the unequipped set's spawned actors (i.e. pieces).
-	for (AEquipmentActor* EquipmentActor : TargetHandle.SpawnedEquipmentActors)
+
+	// Destroy the unequipped set's spawned actors.
+	for (AEquipmentPieceActor* EquipmentActor : TargetHandle.SpawnedEquipmentActors)
 	{
-		EquipmentActor->OnUnequip();
 		EquipmentActor->Destroy();
 	}
 

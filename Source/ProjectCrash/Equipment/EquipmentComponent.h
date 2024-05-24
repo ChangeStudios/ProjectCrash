@@ -33,29 +33,16 @@ protected:
 
 
 
-	// Effects.
-
-public:
-
-	/** Sends the given equipment effect event to this component, which routes it to all active equipment actors. Note
-	 * that since equipment is not replicated, neither are equipment effects. */
-	UFUNCTION(BlueprintCallable, Category = "Equipment", Meta = (Categories = "Event.EquipmentEffect"))
-	void SendEquipmentEffectEvent(FGameplayTag EffectEvent);
-
-	/** Ends the given equipment effect event on all active equipment actors. This can be called to end persistent
-	 * effects early. Note that persistent effects are also ended automatically when their equipment actor is
-	 * destroyed. */
-	UFUNCTION(BlueprintCallable, Category = "Equipment", Meta = (Categories = "Event.EquipmentEffect"))
-	void EndEquipmentEffectEvent(FGameplayTag EffectEvent);
-
-
-
 	// Equipment management.
 
 public:
 
-	/** Equips the given equipment set on the server. If the equipping character already has a set equipped, that set
-	 * will be unequipped before the new set is equipped. */
+	/**
+	 * Equips the given equipment set on the server. If the equipping character already has a set equipped, that set
+	 * will be unequipped before the new set is equipped.
+	 *
+	 * TODO: We could pretty easily put this into an ability task and predict it.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
 	void EquipSet(UEquipmentSetDefinition* SetToEquip);
 
@@ -70,8 +57,8 @@ public:
 	void TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemporarilyEquip);
 
 	/**
-	 * Unequips the current temporarily equipped set and equips EquippedSet. This should NOT be called when switching
-	 * temporarily equipped sets.
+	 * Unequips the current temporarily equipped set and equips EquippedSet on the server. This should NOT be called
+	 * when switching temporarily equipped sets.
 	 *
 	 * @returns		Whether a set was unequipped. Is false if this function is called when there isn't a set
 	 *				temporarily equipped.
@@ -86,7 +73,9 @@ public:
 // Equipment management.
 private:
 
-	/** Internal logic for equipping a new equipment set. Granting abilities, spawning actors, etc.
+	/**
+	 * Internal logic for equipping a new equipment set. Called on both the server and clients. Only performs certain
+	 * actions on the server, such as granting abilities.
 	 *
 	 * @param SetToEquip					The new set to equip.
 	 * @param bEquipAsTemporarySet			Whether to equip this new set as the primary equipment set or as the
@@ -147,4 +136,7 @@ public:
 	/** Retrieves the given actor's EquipmentComponent, if it has one. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	static UEquipmentComponent* FindEquipmentComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UEquipmentComponent>() : nullptr); }
+
+	/** Checks if this component's owner has authority. */
+	bool HasAuthority() const { return GetOwner() && GetOwner()->HasAuthority(); }
 };

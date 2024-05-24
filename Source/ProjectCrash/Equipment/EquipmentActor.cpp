@@ -22,31 +22,31 @@ AEquipmentActor::AEquipmentActor()
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 	SetRootComponent(Root);
 }
-
-void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective)
-{
-	check(InEquipmentPieceDefinition);
-
-	// Make sure a perspective tag was given.
-	check(InEquipmentPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
-
-	// Cache this equipment actor's properties.
-	OwningEquipmentComponent = InOwningEquipmentComponent;
-	SetOwner(InOwningEquipmentComponent->GetOwner());
-	SourceEquipmentPiece = InEquipmentPieceDefinition;
-	EquipmentPerspective = InEquipmentPerspective;
-
-	/* If our owning character is an ACrashCharacterBase, we can use perspectives. Start listening for perspective
-	 * changes if we can. */
-	OwningCharacter = Cast<ACrashCharacterBase>(InOwningEquipmentComponent->GetOwner());
-	if (OwningCharacter)
-	{
-		OwningCharacter->PerspectiveChangedDelegate.AddDynamic(this, &AEquipmentActor::OnOuterPerspectiveChanged);
-	}
-
-	// Spawn the equipment actor's mesh.
-	SpawnMeshComponent(InEquipmentPieceDefinition->Mesh);
-}
+//
+// void AEquipmentActor::InitEquipmentActor(const UEquipmentComponent* InOwningEquipmentComponent, const UEquipmentPieceDefinition* InEquipmentPieceDefinition, FGameplayTag InEquipmentPerspective)
+// {
+// 	check(InEquipmentPieceDefinition);
+//
+// 	// Make sure a perspective tag was given.
+// 	check(InEquipmentPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
+//
+// 	// Cache this equipment actor's properties.
+// 	OwningEquipmentComponent = InOwningEquipmentComponent;
+// 	SetOwner(InOwningEquipmentComponent->GetOwner());
+// 	// SourceEquipmentPiece = InEquipmentPieceDefinition;
+// 	EquipmentPerspective = InEquipmentPerspective;
+//
+// 	/* If our owning character is an ACrashCharacterBase, we can use perspectives. Start listening for perspective
+// 	 * changes if we can. */
+// 	OwningCharacter = Cast<ACrashCharacterBase>(InOwningEquipmentComponent->GetOwner());
+// 	if (OwningCharacter)
+// 	{
+// 		OwningCharacter->PerspectiveChangedDelegate.AddDynamic(this, &AEquipmentActor::OnOuterPerspectiveChanged);
+// 	}
+//
+// 	// Spawn the equipment actor's mesh.
+// 	// SpawnMeshComponent(InEquipmentPieceDefinition->Mesh);
+// }
 
 void AEquipmentActor::OnUnequip()
 {
@@ -59,68 +59,68 @@ void AEquipmentActor::OnUnequip()
 
 void AEquipmentActor::HandleEquipmentEvent(FGameplayTag EventTag)
 {
-	// If the event is an equipment effect, trigger the effect, if it is defined by this equipment piece.
-	if (SourceEquipmentPiece->EffectMap.Contains(EventTag))
-	{
-		const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag);
-
-		// Throw out the effect if this actor is in the wrong perspective.
-		if (Effect->EffectPerspective != EquipmentPerspective)
-		{
-			return;
-		}
-
-		// If the effect has a cue, try to trigger the cue.
-		if (UCrashAbilitySystemComponent* CrashASC = Effect->GameplayCue.IsValid() ? Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)) : nullptr)
-		{
-			// Trigger the cue if all checks pass.
-			FGameplayCueParameters CueParams = FGameplayCueParameters();
-			CueParams.EffectContext = CrashASC->MakeEffectContext();
-			CueParams.Instigator = CrashASC->GetOwner();
-			CueParams.EffectCauser = CrashASC->GetAvatarActor();
-			CueParams.TargetAttachComponent = Effect->bAttachToSocket ? Mesh : nullptr;
-			CueParams.Location = Effect->bAttachToSocket ? Effect->Offset : Mesh->GetSocketLocation(Effect->Socket) + Effect->Offset;
-
-			if (Effect->bAddCue)
-			{
-				CrashASC->AddGameplayCueLocal(Effect->GameplayCue, CueParams);
-				ActiveEffectCues.AddUnique(Effect->GameplayCue);
-			}
-			else
-			{
-				CrashASC->ExecuteGameplayCueLocal(Effect->GameplayCue, CueParams);
-			}
-		}
-
-		// If the effect triggers an animation, play the animation.
-		if (USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(Mesh))
-		{
-			SkeletalMesh->PlayAnimation(Effect->MeshAnimation, false);
-		}
-	}
+	// // If the event is an equipment effect, trigger the effect, if it is defined by this equipment piece.
+	// if (SourceEquipmentPiece->EffectMap.Contains(EventTag))
+	// {
+	// 	const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag);
+	//
+	// 	// Throw out the effect if this actor is in the wrong perspective.
+	// 	if (Effect->EffectPerspective != EquipmentPerspective)
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	// If the effect has a cue, try to trigger the cue.
+	// 	if (UCrashAbilitySystemComponent* CrashASC = Effect->GameplayCue.IsValid() ? Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)) : nullptr)
+	// 	{
+	// 		// Trigger the cue if all checks pass.
+	// 		FGameplayCueParameters CueParams = FGameplayCueParameters();
+	// 		CueParams.EffectContext = CrashASC->MakeEffectContext();
+	// 		CueParams.Instigator = CrashASC->GetOwner();
+	// 		CueParams.EffectCauser = CrashASC->GetAvatarActor();
+	// 		CueParams.TargetAttachComponent = Effect->bAttachToSocket ? Mesh : nullptr;
+	// 		CueParams.Location = Effect->bAttachToSocket ? Effect->Offset : Mesh->GetSocketLocation(Effect->Socket) + Effect->Offset;
+	//
+	// 		if (Effect->bAddCue)
+	// 		{
+	// 			CrashASC->AddGameplayCueLocal(Effect->GameplayCue, CueParams);
+	// 			ActiveEffectCues.AddUnique(Effect->GameplayCue);
+	// 		}
+	// 		else
+	// 		{
+	// 			CrashASC->ExecuteGameplayCueLocal(Effect->GameplayCue, CueParams);
+	// 		}
+	// 	}
+	//
+	// 	// If the effect triggers an animation, play the animation.
+	// 	if (USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(Mesh))
+	// 	{
+	// 		SkeletalMesh->PlayAnimation(Effect->MeshAnimation, false);
+	// 	}
+	// }
 }
 
 void AEquipmentActor::EndEquipmentEvent(FGameplayTag EventTag)
 {
-	if (const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag))
-	{
-		const FGameplayTag EventCue = Effect->GameplayCue;
-
-		// Remove the event's active cues, if it has any.
-		if (Effect->bAddCue && ActiveEffectCues.Contains(EventCue))
-		{
-			if (UCrashAbilitySystemComponent* CrashASC = Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)))
-			{
-				FGameplayCueParameters CueParams = FGameplayCueParameters();
-				CueParams.EffectContext = CrashASC->MakeEffectContext();
-				CueParams.Instigator = CrashASC->GetOwner();
-				CueParams.EffectCauser = CrashASC->GetAvatarActor();
-
-				CrashASC->RemoveGameplayCueLocal(EventCue, CueParams);
-				ActiveEffectCues.Remove(EventCue);
-			}
-		}
-	}
+	// if (const FEquipmentEffect* Effect = SourceEquipmentPiece->EffectMap.Find(EventTag))
+	// {
+	// 	const FGameplayTag EventCue = Effect->GameplayCue;
+	//
+	// 	// Remove the event's active cues, if it has any.
+	// 	if (Effect->bAddCue && ActiveEffectCues.Contains(EventCue))
+	// 	{
+	// 		if (UCrashAbilitySystemComponent* CrashASC = Cast<UCrashAbilitySystemComponent>(GetASCFromEquipmentComponent(OwningEquipmentComponent)))
+	// 		{
+	// 			FGameplayCueParameters CueParams = FGameplayCueParameters();
+	// 			CueParams.EffectContext = CrashASC->MakeEffectContext();
+	// 			CueParams.Instigator = CrashASC->GetOwner();
+	// 			CueParams.EffectCauser = CrashASC->GetAvatarActor();
+	//
+	// 			CrashASC->RemoveGameplayCueLocal(EventCue, CueParams);
+	// 			ActiveEffectCues.Remove(EventCue);
+	// 		}
+	// 	}
+	// }
 }
 
 void AEquipmentActor::SpawnMeshComponent(UStreamableRenderAsset* InMesh)

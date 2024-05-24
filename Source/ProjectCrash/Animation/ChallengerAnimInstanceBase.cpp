@@ -5,8 +5,10 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "AnimData/CharacterAnimData.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
+#include "Characters/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 
 void UChallengerAnimInstanceBase::NativeInitializeAnimation()
@@ -82,11 +84,24 @@ void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent*
 	OwningChallenger->ASCInitializedDelegate.RemoveDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
 }
 
-void UChallengerAnimInstanceBase::UpdateAnimData(UCharacterAnimData* NewAnimData)
+void UChallengerAnimInstanceBase::UpdateAnimData(UCharacterAnimData* NewAnimData, UEquipmentSetSkinData* EquipmentSetSkinData)
 {
 	if (NewAnimData)
 	{
 		CurrentAnimationData = NewAnimData;
+
+		if (EquipmentSetSkinData)
+		{
+			if (EquipmentSetSkinData->BasePose_FPP)
+			{
+				CurrentAnimationData->BasePose_FPP = EquipmentSetSkinData->BasePose_FPP;
+			}
+
+			if (EquipmentSetSkinData->BasePose_TPP)
+			{
+				CurrentAnimationData->BasePose_TPP = EquipmentSetSkinData->BasePose_TPP;
+			}
+		}
 	}
 }
 
