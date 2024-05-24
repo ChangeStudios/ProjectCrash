@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpec.h"
-#include "UI/Widgets/Utils/AbilitySystemWidget.h"
+#include "UI/Foundation/AbilitySystemWidget.h"
 #include "AbilityBarWidget.generated.h"
 
 class UAbilitySlotWidget;
