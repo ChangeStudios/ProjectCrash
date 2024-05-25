@@ -3,7 +3,6 @@
 
 #include "Equipment/EquipmentPieceActor.h"
 
-#include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "Characters/CrashCharacterBase.h"
@@ -53,9 +52,9 @@ void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEqui
 	}
 }
 
-void AEquipmentPieceActor::MakePhysicsActor()
+void AEquipmentPieceActor::DetachEquipmentActor()
 {
-	MeshComponent->SetCollisionProfileName(FName("PhysicsActor"));
+	MeshComponent->SetCollisionProfileName(FName("Ragdoll"));
 	MeshComponent->SetSimulatePhysics(true);
 
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);

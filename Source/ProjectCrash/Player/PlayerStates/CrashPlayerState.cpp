@@ -199,4 +199,5 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, TeamID, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, CurrentLives, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME(ACrashPlayerState, CurrentChallenger);
+	DOREPLIFETIME(ACrashPlayerState, CurrentSkin);
 }

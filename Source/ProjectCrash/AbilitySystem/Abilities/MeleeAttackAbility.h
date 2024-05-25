@@ -138,14 +138,15 @@ protected:
 protected:
 
 	/** Optional gameplay cue fired when an ability system actor is hit. This cue is triggered at the location of the
-	 * hit. */
+	 * hit. This will be overridden by any matching cue in the ability owner's current skin's AbilityCues array. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
-	FGameplayTag HitImpactCue;
+	FGameplayTag DefaultHitImpactCue;
 
 	/** Optional gameplay cue fired at the end of an attack if the attack did not hit any ability system actors, but
-	 * hit a surface. */
+	 * hit a surface. This will be overridden by any matching cue in the ability owner's current skin's AbilityCues
+	 * array. */
 	UPROPERTY(EditDefaultsOnly, Category = "Melee Attack|Effects", Meta = (Categories = "GameplayCue"))
-	FGameplayTag SurfaceImpactCue;
+	FGameplayTag DefaultSurfaceImpactCue;
 
 
 

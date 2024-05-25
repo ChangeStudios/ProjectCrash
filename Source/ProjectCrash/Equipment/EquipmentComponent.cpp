@@ -6,7 +6,6 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Animation/ChallengerAnimInstanceBase.h"
-#include "EquipmentActor.h"
 #include "EquipmentPieceActor.h"
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "Characters/CrashCharacterBase.h"
@@ -97,13 +96,13 @@ void UEquipmentComponent::DetachEquipment()
 	// Detach all temporary equipment actors.
 	for (AEquipmentPieceActor* EquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
 	{
-		EquipmentActor->MakePhysicsActor();
+		EquipmentActor->DetachEquipmentActor();
 	}
 
 	// Detach all equipment actors.
 	for (AEquipmentPieceActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
 	{
-		EquipmentActor->MakePhysicsActor();
+		EquipmentActor->DetachEquipmentActor();
 	}
 }
 

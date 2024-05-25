@@ -188,6 +188,25 @@ protected:
 
 public:
 
+	/**
+	 * Retrieves the ability owner's current skin's version of the given gameplay cue. The retrieves the first cue
+	 * in the skin's AbilityCues array with the given DefaultCue as a parent.
+	 *
+	 * @param DefaultCue		The default gameplay cue for the cue to be retrieved.
+	 * @return					The first gameplay cue in the ability's owner's current skin's AbilityCues array that is
+	 *							a sub-tag of DefaultCue. Returns DefaultCue if the skin does not define a sub-tag of
+	 *							the given cue.
+	 *
+	 *							E.g. to retrieve the "Joust" ability's impact cue for the current skin, call this with
+	 *							GameplayCue.Knight.Joust.Impact.Default. This function will return any sub-tag cue in
+	 *							AbilityCues (e.g. GameplayCue.Knight.Joust.Impact.MySkin), if one exists.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Ability System|Utilities", Meta = (Categories = "GameplayCue"))
+	FGameplayTag GetAbilityCueFromSkin(FGameplayTag DefaultCue);
+
+// Casting.
+public:
+
 	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
 	 * not found or is of the wrong class. */
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
@@ -197,6 +216,9 @@ public:
 	 * if the avatar could not be found or is of the wrong class. */
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
 	AChallengerBase* GetChallengerFromActorInfo() const;
+
+// Helpers.
+public:
 
 	/** Attempts to retrieve any controller responsible for this ability: the owning actor's PC, the avatar's
 	 * controller, etc. */

@@ -10,11 +10,13 @@
 #include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
+#include "Characters/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/PlayerStates/CrashPlayerState.h"
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -29,6 +31,31 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 	{
 		ABILITY_LOG(Warning, TEXT("Ability [%s] is not instanced-per-actor. Certain activation style features may not work properly."), *GetName());
 	}
+}
+
+FGameplayTag UCrashGameplayAbilityBase::GetAbilityCueFromSkin(FGameplayTag DefaultCue)
+{
+	check(DefaultCue.IsValid());
+	const FGameplayTag Parent = DefaultCue.RequestDirectParent();
+
+	// Retrieve the current skin from this ability's owner.
+	const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(CurrentActorInfo->OwnerActor);
+	const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+
+	// Find a matching ability cue.
+	if (SkinData)
+	{
+		for (FGameplayTag AbilityCue : SkinData->AbilityCues)
+		{
+			if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
+			{
+				return AbilityCue;
+			}
+		}
+	}
+
+	// If a matching cue can't be found, return the default cue, which was given.
+	return DefaultCue;
 }
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const

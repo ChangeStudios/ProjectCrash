@@ -472,9 +472,9 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 						Context.AddHitResult(ImpactHit);
 
 						// Play an impact cue, if desired.
-						if (HitImpactCue.IsValid())
+						if (DefaultHitImpactCue.IsValid())
 						{
-							OwningASC->ExecuteGameplayCue(HitImpactCue, UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(ImpactHit));
+							OwningASC->ExecuteGameplayCue(GetAbilityCueFromSkin(DefaultHitImpactCue), UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(ImpactHit));
 						}
 
 						// Call blueprint implementation for hitting a target, which will handle applying gameplay effects. 
@@ -529,7 +529,7 @@ void UMeleeAttackAbility::EndTargeting()
 
 void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 {
-	if (SurfaceImpactCue.IsValid())
+	if (DefaultSurfaceImpactCue.IsValid())
 	{
 		UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo();
 		if (!OwningASC || !OwningASC->GetAvatarActor())
@@ -552,7 +552,7 @@ void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 			// FGameplayEffectContextHandle Context = OwningASC->MakeEffectContext();
 			// Context.AddInstigator(GetOwningActorFromActorInfo(), GetAvatarActorFromActorInfo());
 			// Context.AddOrigin(SurfaceHit.ImpactPoint);
-			OwningASC->ExecuteGameplayCue(SurfaceImpactCue, UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(SurfaceHit));
+			OwningASC->ExecuteGameplayCue(GetAbilityCueFromSkin(DefaultSurfaceImpactCue), UGameplayCueFunctionLibrary::MakeGameplayCueParametersFromHitResult(SurfaceHit));
 		}
 	}
 }

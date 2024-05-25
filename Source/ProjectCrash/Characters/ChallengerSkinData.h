@@ -107,7 +107,7 @@ public:
 	 * GameplayCue.Knight.Sword.Impact.MySkin, the latter will be triggered instead.
 	 */
 	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "GameplayCue"))
-	TArray<FGameplayTag> AbilityEffects;
+	TArray<FGameplayTag> AbilityCues;
 
 	/** Profile image used in the Player Info widget in the player HUD. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

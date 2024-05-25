@@ -71,8 +71,8 @@ private:
 
 public:
 
-	/** Turns this actor into a physics actor, detaching it from its parent and enabling collision, gravity, etc. */
-	void MakePhysicsActor();
+	/** Detaches this equipment actor from its parent and ragdolls it, enabling collision, gravity, etc. */
+	void DetachEquipmentActor();
 
 private:
 
