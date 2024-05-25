@@ -146,7 +146,11 @@ public:
 	/** Checks if this component's owner has authority. */
 	bool HasAuthority() const { return GetOwner() && GetOwner()->HasAuthority(); }
 
-	/** Returns an immutable version of the equipped set or temporary set, if there is one. Used debugging. */
+	/** Returns the currently equipped set. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
-	const UEquipmentSetDefinition* GetEquippedSet() const { return TemporarilyEquippedSet ? TemporarilyEquippedSet : EquippedSet; }
+	UEquipmentSetDefinition* GetEquippedSet() const { return EquippedSet; }
+
+	/** Returns the temporarily equipped set, if there is one. Otherwise, returns nullptr. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	UEquipmentSetDefinition* GetTemporarilyEquippedSet() const { return TemporarilyEquippedSet ? TemporarilyEquippedSet : nullptr; }
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "Equipment/EquipmentSetDefinition.h"
 #include "AbilityTask_EquipSet.generated.h"
 
 /**
@@ -30,8 +31,43 @@ UCLASS()
 class PROJECTCRASH_API UAbilityTask_EquipSet : public UAbilityTask
 {
 	GENERATED_BODY()
+
+public:
+
+	/** Equips the given set. Equips the set predictively on the owning client. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", Meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
+	static UAbilityTask_EquipSet* EquipSet
+	(
+		UGameplayAbility* OwningAbility,
+		FName TaskInstanceName,
+		UEquipmentSetDefinition* SetToEquip
+	);
+
+protected:
+
+	virtual void Activate() override;
+
+
+
+	// Task parameters.
+
+protected:
+
+	UPROPERTY()
+	UEquipmentSetDefinition* SetToEquip;
+
+
+
+	// Internals.
 	
-	
-	
-	
+protected:
+
+	/** The set that was equipped before this task was called. If the prediction misses, the client will revert back to
+	 * this set. */
+	UPROPERTY()
+	UEquipmentSetDefinition* PreviousSet;
+
+	/** Handle for the predictively equipped set. Will be used to unequip the set when the server catches up, or if the
+	 * prediction misses. */
+	FEquipmentSetHandle PredictedEquipmentSet;
 };

@@ -38,8 +38,12 @@ void UEquipmentComponent::OnRegister()
 
 void UEquipmentComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	// Unequip the temporary set, if one exists.
-	UnequipTemporarySet();
+	if (HasAuthority())
+	{
+		// Unequip the temporary set, if one exists.
+		UnequipTemporarySet();
+	}
+
 	// Forcefully unequip any backing set.
 	UnequipSet_Internal(false, false);
 
@@ -48,7 +52,7 @@ void UEquipmentComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 
 void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
 {
- 	check(HasAuthority());
+	check(HasAuthority());
 	check(SetToEquip);
 
 	/* Update the currently equipped set. The previously equipped set will be unequipped by the OnRep, and the new set
@@ -62,7 +66,7 @@ void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
 
 void UEquipmentComponent::TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemporarilyEquip)
 {
-	check(GetOwner()->HasAuthority());
+	check(HasAuthority());
 	check(SetToTemporarilyEquip);
 
 	/* Update the currently equipped set. If there was a temporarily equipped set, it will be unequipped by the OnRep;
@@ -76,14 +80,13 @@ void UEquipmentComponent::TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemp
 
 bool UEquipmentComponent::UnequipTemporarySet()
 {
-	// check(HasAuthority());
+	check(HasAuthority());
 
 	// Unequip the current temporarily equipped set, if there is one.
 	if (UEquipmentSetDefinition* PreviousTemporarilyEquippedSet = TemporarilyEquippedSet)
 	{
 		TemporarilyEquippedSet = nullptr;
-		if (GetOwner()->HasAuthority())
-			OnRep_TemporarilyEquippedSet(PreviousTemporarilyEquippedSet);
+		OnRep_TemporarilyEquippedSet(PreviousTemporarilyEquippedSet);
 		return true;
 	}
 
@@ -129,6 +132,26 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	ACharacter* EquippingChar = Cast<ACharacter>(Owner);
 	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(Owner);
 
+	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
+	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;
+
+	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
+	{
+		ACrashPlayerState* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState>();
+		UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+		if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
+		{
+			EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
+		}
+	}
+
+	/* We should always have skin data for an equipment set, either from a character skin or from the set's default
+	 * data. */
+	if (!ensure(EquippingSetSkinData))
+	{
+		return;
+	}
+
 	// Determine which equipment handle to store the equipped set into.
 	FEquipmentSetHandle& TargetHandle = bEquipAsTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
 
@@ -160,28 +183,6 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				TargetHandle.GrantedASC = CrashASC;
 			}
 		}
-	}
-
-
-
-	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
-	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;
-
-	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
-	{
-		ACrashPlayerState* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState>();
-		UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-		if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
-		{
-			EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
-		}
-	}
-
-	/* We should always have skin data for an equipment set, either from a character skin or from the set's default
-	 * data. */
-	if (!ensure(EquippingSetSkinData))
-	{
-		return;
 	}
 
 
@@ -332,7 +333,6 @@ void UEquipmentComponent::OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyE
 
 void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* PreviouslyTemporarilyEquippedSet)
 {
-
 	// If a new set was just temporarily equipped, equip it.
 	if (TemporarilyEquippedSet)
 	{
@@ -343,6 +343,7 @@ void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* 
 	{
 		EquipSet_Internal(EquippedSet, false, true);
 	}
+
 	// If a temporary set was previously equipped, unequip it.
 	if (PreviouslyTemporarilyEquippedSet)
 	{

@@ -116,6 +116,9 @@ void AChallengerBase::OnRep_Controller()
 
 	// Update this character's fresnel when a new controller possesses it on clients.
 	UpdateTeamFresnel();
+
+	// Re-initialize the perspective, if needed. Helps with initialization races.
+	InitializePerspective();
 }
 
 void AChallengerBase::PossessedBy(AController* NewController)
