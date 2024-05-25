@@ -37,6 +37,16 @@ void UEquipmentComponent::OnRegister()
 	ensureAlwaysMsgf((EquipmentComponents.Num() == 1), TEXT("%i instances of EquipmentComponent were found on %s. Only one EquipmentComponent may exist on any actor."), EquipmentComponents.Num(), *GetNameSafe(GetOwner()));
 }
 
+void UEquipmentComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	// Unequip the temporary set, if one exists.
+	UnequipTemporarySet();
+	// Forcefully unequip any backing set.
+	UnequipSet_Internal(false, false);
+
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+}
+
 void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
 {
  	check(HasAuthority());
@@ -80,6 +90,21 @@ bool UEquipmentComponent::UnequipTemporarySet()
 
 	// If there isn't a temporarily equipped set, do nothing.
 	return false;
+}
+
+void UEquipmentComponent::DetachEquipment()
+{
+	// Detach all temporary equipment actors.
+	for (AEquipmentPieceActor* EquipmentActor : TemporarilyEquippedSetHandle.SpawnedEquipmentActors)
+	{
+		EquipmentActor->MakePhysicsActor();
+	}
+
+	// Detach all equipment actors.
+	for (AEquipmentPieceActor* EquipmentActor : EquippedSetHandle.SpawnedEquipmentActors)
+	{
+		EquipmentActor->MakePhysicsActor();
+	}
 }
 
 void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, bool bEquipAsTemporarySet, bool bWasTemporarilyUnequipped)

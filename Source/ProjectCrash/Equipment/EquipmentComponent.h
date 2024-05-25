@@ -31,6 +31,9 @@ protected:
 	/** Ensures this component is attached to a character class. */
 	virtual void OnRegister() override;
 
+	/** Unequips everything before destroying this component. */
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
 
 
 	// Equipment management.
@@ -65,6 +68,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
 	bool UnequipTemporarySet();
+
+	/** Detaches all spawned equipment actors from their attached actor, turning them into physics actors. */
+	void DetachEquipment();
 
 
 
@@ -139,4 +145,8 @@ public:
 
 	/** Checks if this component's owner has authority. */
 	bool HasAuthority() const { return GetOwner() && GetOwner()->HasAuthority(); }
+
+	/** Returns an immutable version of the equipped set or temporary set, if there is one. Used debugging. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	const UEquipmentSetDefinition* GetEquippedSet() const { return TemporarilyEquippedSet ? TemporarilyEquippedSet : EquippedSet; }
 };

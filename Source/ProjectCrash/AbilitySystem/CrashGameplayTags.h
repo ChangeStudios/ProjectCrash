@@ -4,6 +4,9 @@
 
 #include "NativeGameplayTags.h"
 
+#define FIRST_PERSON CrashGameplayTags::TAG_State_Perspective_FirstPerson
+#define THIRD_PERSON CrashGameplayTags::TAG_State_Perspective_ThirdPerson
+
 /**
  * Defines the native gameplay tags that need to be exposed to C++. All tags that are exposed to C++ should be defined
  * here.

@@ -198,9 +198,6 @@ void AChallengerBase::UninitAndDestroy()
 	// Set a timer to safely destroy this actor on the server.
 	if (GetLocalRole() == ROLE_Authority)
 	{
-		// Unregister the equipment component early so it has time to destroy the equipment actors.
-		EquipmentComponent->UnregisterComponent();
-
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(0.1f);
 	}
@@ -262,6 +259,9 @@ void AChallengerBase::RagdollCharacter_Implementation(FVector Direction)
 	ThirdPersonMesh->SetCollisionProfileName(TEXT("Ragdoll"));
 	ThirdPersonMesh->SetSimulatePhysics(true);
 	ThirdPersonMesh->WakeAllRigidBodies();
+
+	// Detach equipment actors from this character, turning them into physics actors.
+	EquipmentComponent->DetachEquipment();
 
 	// Launch the ragdoll in the given direction.
 	ThirdPersonMesh->SetAllPhysicsLinearVelocity(ClampVector(Direction, FVector(-1500.0f), FVector(1500.0f)));

@@ -89,7 +89,7 @@ protected:
 	UFUNCTION()
 	void OnDeathFinished();
 
-	/** Ragdolls this character and launches them in the given direction. */
+	/** Ragdolls this character (and its equipment) and launches them in the given direction. */
 	UFUNCTION(NetMulticast, Reliable)
 	void RagdollCharacter(FVector Direction);
 

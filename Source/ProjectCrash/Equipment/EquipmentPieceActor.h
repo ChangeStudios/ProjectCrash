@@ -33,7 +33,7 @@ public:
 private:
 
 	/* Initializes this equipment piece actor to represent the given equipment piece in the given perspective. */
-	void InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, const UEquipmentComponent* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective);
+	void InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective);
 
 	// Equipment component is the only thing that should ever call InitEquipmentPieceActor.
 	friend UEquipmentComponent;
@@ -64,4 +64,20 @@ private:
 	/** The perspective in which this actor represents its equipment piece. Each piece spawns both a first- and a
 	 * third-person actor. */
 	FGameplayTag Perspective;
+
+
+
+	// Utils.
+
+public:
+
+	/** Turns this actor into a physics actor, detaching it from its parent and enabling collision, gravity, etc. */
+	void MakePhysicsActor();
+
+private:
+
+	/** Called when the local perspective of this equipment actor's owner changes. Updates this actor's visibility to
+	 * match its owner's. */
+	UFUNCTION()
+	void OnPerspectiveChanged(FGameplayTag NewPerspective);
 };
