@@ -22,9 +22,7 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	MinNetUpdateFrequency = 2.0f;
-	NetUpdateFrequency = 100.0f; // The ASC Needs to be updated at a high frequency.
-	const auto UseAdaptiveNetUpdateFrequency = IConsoleManager::Get().FindConsoleVariable(TEXT("net.UseAdaptiveNetUpdateFrequency"));
-	UseAdaptiveNetUpdateFrequency->Set(1); // Allow update frequency to be dynamically calculated to save cycles.
+	NetUpdateFrequency = 100.0f; // The ASC Needs to be updated at a high frequency. This is an upper limit since we enable net.UseAdaptiveNetUpdateFrequency in DefaultEngine.ini.
 
 	// Create this player's attribute sets. These must be created in the same class as their ASC.
 	HealthSet = CreateDefaultSubobject<UHealthAttributeSet>(TEXT("HealthSet"));

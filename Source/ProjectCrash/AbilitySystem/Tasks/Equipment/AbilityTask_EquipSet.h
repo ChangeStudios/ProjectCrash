@@ -44,7 +44,7 @@ public:
 public:
 
 	/** Predictively unequips the set equipped by this task, if the set was temporarily equipped. Non-temporary equipped
-	 * sets cannot be directly unequipped. */
+	 * sets cannot be directly unequipped. Note that this will end this task. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks")
 	void UnequipTemporarySet();
 

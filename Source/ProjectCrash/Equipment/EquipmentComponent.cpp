@@ -359,8 +359,6 @@ void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* 
 			// Null the predicted set handle so we know we aren't predicting with it anymore.
 			PredictedEquipmentSetHandle.EquipmentSetDefinition = nullptr;
 
-			UE_LOG(LogTemp, Error, TEXT("Unequip confirmed!"));
-
 			return;
 		}
 		// Confirm temporary set equip prediction.
