@@ -400,8 +400,6 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	// Initialize this character's equipment component and grant them their default equipment set.
 	if (EquipmentComponent && ChallengerData->DefaultEquipmentSet)
 	{
-		EquipmentComponent->InitializeComponent();
-
 		// Equip this character's default equipment set on the server. Equipment is server-authoritative and replicated.
 		if (HasAuthority())
 		{

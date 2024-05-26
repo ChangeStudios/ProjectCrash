@@ -45,43 +45,45 @@ void UEquipmentComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 	}
 
 	// Forcefully unequip any backing set.
-	UnequipSet_Internal(false, false);
+	UnequipSet_Internal(EquippedSetHandle, false);
 
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 }
 
 void UEquipmentComponent::EquipSet(UEquipmentSetDefinition* SetToEquip)
 {
-	check(HasAuthority());
-	check(SetToEquip);
+	if (!ensure(SetToEquip))
+	{
+		return;
+	}
 
 	/* Update the currently equipped set. The previously equipped set will be unequipped by the OnRep, and the new set
 	 * will be equipped. */
 	UEquipmentSetDefinition* PreviouslyEquippedSet = EquippedSet;
 	EquippedSet = SetToEquip;
 
-	// Manually call the OnRep on the server.
+	// Manually call the OnRep on the server (or predicting client).
 	OnRep_EquippedSet(PreviouslyEquippedSet);
 }
 
 void UEquipmentComponent::TemporarilyEquipSet(UEquipmentSetDefinition* SetToTemporarilyEquip)
 {
-	check(HasAuthority());
-	check(SetToTemporarilyEquip);
+	if (!ensure(SetToTemporarilyEquip))
+	{
+		return;
+	}
 
 	/* Update the currently equipped set. If there was a temporarily equipped set, it will be unequipped by the OnRep;
 	 * otherwise, EquippedSet will be unequipped instead, before the new temporary set is equipped. */
 	UEquipmentSetDefinition* PreviousTemporarilyEquippedSet = TemporarilyEquippedSet;
 	TemporarilyEquippedSet = SetToTemporarilyEquip;
 
-	// Manually call the OnRep on the server.
+	// Manually call the OnRep on the server (or predicting client).
 	OnRep_TemporarilyEquippedSet(PreviousTemporarilyEquippedSet);
 }
 
 bool UEquipmentComponent::UnequipTemporarySet()
 {
-	check(HasAuthority());
-
 	// Unequip the current temporarily equipped set, if there is one.
 	if (UEquipmentSetDefinition* PreviousTemporarilyEquippedSet = TemporarilyEquippedSet)
 	{
@@ -109,7 +111,7 @@ void UEquipmentComponent::DetachEquipment()
 	}
 }
 
-void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, bool bEquipAsTemporarySet, bool bWasTemporarilyUnequipped)
+void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, FEquipmentSetHandle& OutEquippedSet)
 {
 	check(SetToEquip);
 
@@ -152,16 +154,14 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 		return;
 	}
 
-	// Determine which equipment handle to store the equipped set into.
-	FEquipmentSetHandle& TargetHandle = bEquipAsTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
+	/* If the equipping set is still cached by its handle, then the set was only temporarily unequipped, so we know
+	 * we're re-equipping it. */
+	const bool bWasTemporarilyUnequipped = SetToEquip == OutEquippedSet.EquipmentSetDefinition;
 
 
 
-	// Cache the set, if it hasn't been already. If the set is being re-equipped, it should already be cached.
-	if (!bWasTemporarilyUnequipped)
-	{
-		TargetHandle.EquipmentSetDefinition = SetToEquip;
-	}
+	// Cache the set. The set may already be cached if we're re-equipping it.
+	OutEquippedSet.EquipmentSetDefinition = SetToEquip;
 
 
 
@@ -179,17 +179,19 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 			// If we're equipping this set from scratch, grant and cache its ability set.
 			else
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &TargetHandle.GrantedAbilitySetHandle, this);
-				TargetHandle.GrantedASC = CrashASC;
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, &OutEquippedSet.GrantedAbilitySetHandle, this);
+				OutEquippedSet.GrantedASC = CrashASC;
 			}
 		}
 	}
 
 
 
-	/* Visually equip the set (spawn its pieces and switch animations) if (A) we're equipping an overriding temporary
-	 * set or (B) we're equipping a primary equipment set and there is no overriding temporary set. */
-	if (bEquipAsTemporarySet || (!bEquipAsTemporarySet && TemporarilyEquippedSet == nullptr))
+	/* We don't want to visually equip the set if there is an existing temporary set overriding the set we're
+	 * equipping. */
+	const bool bVisuallyEquipSet = ! ( EquippedSetHandle.EquipmentSetDefinition == SetToEquip && TemporarilyEquippedSet );
+
+	if (bVisuallyEquipSet)
 	{
 		/* Before we spawn our equipment set pieces, choose where we'll attach our third-person pieces. By default, use
 		 * the equipping actor's root component. */
@@ -212,6 +214,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 		}
 
 
+
 		// Spawn the new equipment set's pieces.
 		for (FEquipmentPiece& EquipmentPiece : EquippingSetSkinData->Pieces)
 		{
@@ -224,7 +227,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 					NewPieceActor->AttachToComponent(Mesh_FPP, FAttachmentTransformRules::SnapToTargetIncludingScale, EquipmentPiece.AttachSocket);
 					NewPieceActor->SetActorRelativeTransform(EquipmentPiece.Offset_FPP);
 
-					TargetHandle.SpawnedEquipmentActors.Add(NewPieceActor);
+					OutEquippedSet.SpawnedEquipmentActors.Add(NewPieceActor);
 				}
 			}
 
@@ -236,7 +239,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 				NewPieceActor->AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, EquipmentPiece.AttachSocket);
 				NewPieceActor->SetActorRelativeTransform(EquipmentPiece.Offset_TPP);
 
-				TargetHandle.SpawnedEquipmentActors.Add(NewPieceActor);
+				OutEquippedSet.SpawnedEquipmentActors.Add(NewPieceActor);
 			}
 		}
 
@@ -277,83 +280,159 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	}
 }
 
-void UEquipmentComponent::UnequipSet_Internal(bool bUnequipTemporarySet, bool bUnequipTemporarily)
+void UEquipmentComponent::UnequipSet_Internal(FEquipmentSetHandle& SetToUnequip, bool bUnequipTemporarily)
 {
 	if (!GetOwner())
 	{
 		return;
 	}
 
-	// Determine which equipment handle to use to unequip the set.
-	FEquipmentSetHandle& TargetHandle = bUnequipTemporarySet ? TemporarilyEquippedSetHandle : EquippedSetHandle;
-
 
 
 	// Remove or disable the unequipped set's ability set on the server.
-	if (HasAuthority() && TargetHandle.GrantedASC)
+	if (HasAuthority() && SetToUnequip.GrantedASC)
 	{
 		// If we're only temporarily unequipping this set, we disable the granted ability set instead of removing it.
 		if (bUnequipTemporarily)
 		{
-			TargetHandle.GrantedAbilitySetHandle.RemoveFromAbilitySystem(TargetHandle.GrantedASC, true);
+			SetToUnequip.GrantedAbilitySetHandle.RemoveFromAbilitySystem(SetToUnequip.GrantedASC, true);
 		}
 		// If we're completely unequipping this set, remove its ability set and null its granted ASC.
 		else
 		{
-			TargetHandle.GrantedAbilitySetHandle.RemoveFromAbilitySystem(TargetHandle.GrantedASC);
-			TargetHandle.GrantedASC = nullptr;
+			SetToUnequip.GrantedAbilitySetHandle.RemoveFromAbilitySystem(SetToUnequip.GrantedASC);
+			SetToUnequip.GrantedASC = nullptr;
 		}
 	}
 
 
 
 	// Destroy the unequipped set's spawned actors.
-	for (AEquipmentPieceActor* EquipmentActor : TargetHandle.SpawnedEquipmentActors)
+	for (AEquipmentPieceActor* EquipmentActor : SetToUnequip.SpawnedEquipmentActors)
 	{
 		EquipmentActor->Destroy();
 	}
 
-	TargetHandle.SpawnedEquipmentActors.Reset();
+	SetToUnequip.SpawnedEquipmentActors.Reset();
 }
 
 void UEquipmentComponent::OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyEquippedSet)
 {
+	// Check on the client if we predicted this change. If we did, we can now confirm the prediction as successful.
+	if (!HasAuthority() && GetOwner()->HasLocalNetOwner())
+	{
+		// Confirm set equip prediction.
+		if (EquippedSet && PredictedEquippedSet == EquippedSet)
+		{
+			PredictedEquippedSet = nullptr;
+
+			// Null the predicted set handle so we know we aren't predicting with it anymore.
+			PredictedEquipmentSetHandle.EquipmentSetDefinition = nullptr;
+
+			return;
+		}
+	}
+
 	// Unequip the previously equipped set, if there was one.
 	if (PreviouslyEquippedSet)
 	{
-		UnequipSet_Internal(false, false);
+		UnequipSet_Internal(EquippedSetHandle, false);
 	}
 
 	// Equip the new set.
 	if (EquippedSet)
 	{
-		EquipSet_Internal(EquippedSet, false, false);
+		EquipSet_Internal(EquippedSet, EquippedSetHandle);
 	}
 }
 
 void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* PreviouslyTemporarilyEquippedSet)
 {
-	// If a new set was just temporarily equipped, equip it.
-	if (TemporarilyEquippedSet)
+	// Check on the client if we predicted this change. If we did, we can now confirm the prediction as successful.
+	if (!HasAuthority() && GetOwner()->HasLocalNetOwner())
 	{
-		EquipSet_Internal(TemporarilyEquippedSet, true, false);
-	}
-	// If the temporarily equipped set was just unequipped, re-equip EquippedSet.
-	else
-	{
-		EquipSet_Internal(EquippedSet, false, true);
+		// Confirm temporary set unequip prediction.
+		if (TemporarilyEquippedSet == nullptr && bPredictedUnequip)
+		{
+			bPredictedUnequip = false;
+
+			// Null the predicted set handle so we know we aren't predicting with it anymore.
+			PredictedEquipmentSetHandle.EquipmentSetDefinition = nullptr;
+
+			return;
+		}
+		// Confirm temporary set equip prediction.
+		else if (TemporarilyEquippedSet && PredictedTemporarySet == TemporarilyEquippedSet)
+		{
+			PredictedTemporarySet = nullptr;
+
+			// Null the predicted set handle so we know we aren't predicting with it anymore.
+			PredictedEquipmentSetHandle.EquipmentSetDefinition = nullptr;
+
+			return;
+		}
 	}
 
 	// If a temporary set was previously equipped, unequip it.
 	if (PreviouslyTemporarilyEquippedSet)
 	{
-		UnequipSet_Internal(true, false);
+		UnequipSet_Internal(TemporarilyEquippedSetHandle, false);
 	}
 	/* If a persistent equipment set was previously equipped, and a new temporary set is overriding it, temporarily
 	 * unequip the persistent set. */
 	else if (TemporarilyEquippedSet)
 	{
-		UnequipSet_Internal(false, true);
+		UnequipSet_Internal(EquippedSetHandle, true);
+	}
+
+	// If a new set was just temporarily equipped, equip it.
+	if (TemporarilyEquippedSet)
+	{
+		EquipSet_Internal(TemporarilyEquippedSet, TemporarilyEquippedSetHandle);
+	}
+	// If the temporarily equipped set was just unequipped, re-equip EquippedSet.
+	else
+	{
+		EquipSet_Internal(EquippedSet, EquippedSetHandle);
+	}
+}
+
+void UEquipmentComponent::Client_EquipPredictionFailed_Implementation(bool bTemporarySet)
+{
+	if (HasAuthority())
+	{
+		return;
+	}
+
+	// If we fail our prediction, destroy the predicted set.
+	if (PredictedEquipmentSetHandle.EquipmentSetDefinition)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Pred handle not cleared"));
+		UnequipSet_Internal(PredictedEquipmentSetHandle, bTemporarySet);
+		PredictedEquipmentSetHandle = FEquipmentSetHandle();
+	}
+
+	// Reset our prediction data.
+	PredictedEquippedSet = nullptr;
+	PredictedTemporarySet = nullptr;
+	bPredictedUnequip = false;
+
+	/** Make sure we've synced with the server. Re-equip the necessary set if not. */
+	if (TemporarilyEquippedSet)
+	{
+		if (TemporarilyEquippedSet != TemporarilyEquippedSetHandle.EquipmentSetDefinition)
+		{
+			EQUIPMENT_LOG(Verbose, TEXT("Temporary equipment set re-synced to: [%s]"), *GetNameSafe(TemporarilyEquippedSet));
+			OnRep_TemporarilyEquippedSet(nullptr);
+		}
+	}
+	else if (EquippedSet)
+	{
+		if (EquippedSet != EquippedSetHandle.EquipmentSetDefinition)
+		{
+			EQUIPMENT_LOG(Verbose, TEXT("Equipment set re-synced to: [%s]"), *GetNameSafe(EquippedSet));
+			OnRep_EquippedSet(nullptr);
+		}
 	}
 }
 

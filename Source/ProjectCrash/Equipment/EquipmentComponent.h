@@ -8,6 +8,7 @@
 #include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
+class UAbilityTask_EquipSet;
 class UEquipmentSetDefinition;
 
 /**
@@ -40,12 +41,8 @@ protected:
 
 public:
 
-	/**
-	 * Equips the given equipment set on the server. If the equipping character already has a set equipped, that set
-	 * will be unequipped before the new set is equipped.
-	 *
-	 * TODO: We could pretty easily put this into an ability task and predict it.
-	 */
+	/** Equips the given equipment set. If the equipping character already has a set equipped, that set will be
+	 * unequipped before the new set is equipped. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
 	void EquipSet(UEquipmentSetDefinition* SetToEquip);
 
@@ -80,34 +77,28 @@ public:
 private:
 
 	/**
-	 * Internal logic for equipping a new equipment set. Called on both the server and clients. Only performs certain
-	 * actions on the server, such as granting abilities.
+	 * Internal logic for equipping a new equipment set.
 	 *
 	 * @param SetToEquip					The new set to equip.
-	 * @param bEquipAsTemporarySet			Whether to equip this new set as the primary equipment set or as the
-	 *										temporarily equipped set. Determines which handle to use.
-	 * @param bWasTemporarilyUnequipped		Whether the given set is being re-equipped after having only been
-	 *										overridden by a temporary set. Sets that are unequipped this way are not
-	 *										completely destroyed, so they don't need to do everything a brand new
-	 *										equipment set needs to do.
+	 * @param OutEquippedSet				Returned handle for the equipped set.
 	 */
-	void EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, bool bEquipAsTemporarySet, bool bWasTemporarilyUnequipped);
+	void EquipSet_Internal(UEquipmentSetDefinition* SetToEquip, FEquipmentSetHandle& OutEquippedSet);
 
 	/**
 	 * Internal logic for unequipping an equipment set. Equipment sets cannot be unequipped directly, so this is only
 	 * called as a result of new sets being equipped, replacing old ones.
 	 *
-	 * @param bUnequipTemporarySet		Whether to unequip TemporarilyEquippedSet or EquippedSet.
 	 * @param bUnequipTemporarily		Whether to fully unequip the set, or only unequip it temporarily. If true,
 	 *									the set will only be visually unequipped, allowing its granted abilities and
 	 *									effects to remain active.
 	 */
-	void UnequipSet_Internal(bool bUnequipTemporarySet, bool bUnequipTemporarily);
+	void UnequipSet_Internal(FEquipmentSetHandle& SetToUnequip, bool bUnequipTemporarily);
 
 // Current equipment set.
 private:
 
-	/** Unequips the previously equipped set and equips the new set. */
+	/** Unequips the previously equipped set and equips the new set. This is also where we confirm equipment set
+	 * predictions. */
 	UFUNCTION()
 	void OnRep_EquippedSet(UEquipmentSetDefinition* PreviouslyEquippedSet);
 
@@ -122,7 +113,8 @@ private:
 private:
 
 	/** Unequips the previous temporary set and equips the new temporary set. If no temporary set was previously
-	 * equipped, the current EquippedSet is unequipped, to override it with the new temporary set. */
+	 * equipped, the current EquippedSet is unequipped, to override it with the new temporary set. This is also where
+	 * we can confirm temporary set predictions. */
 	UFUNCTION()
 	void OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* PreviouslyTemporarilyEquippedSet);
 
@@ -132,6 +124,38 @@ private:
 
 	/** Handle for the current temporary equipment set. */
 	FEquipmentSetHandle TemporarilyEquippedSetHandle;
+
+
+
+	// Prediction. Should only be used by equipment ability tasks.
+
+private:
+
+	/** Called if a prediction misses to destroy the predicted set, reset prediction data, and equip the correct
+	 * equipment. Can be called even if prediction succeeds to ensure the client and server are synced. */
+	UFUNCTION(Client, Reliable)
+	void Client_EquipPredictionFailed(bool bTemporarySet);
+
+	/** Handle for the set that is predictively equipped. Used to destroy the predicted set if the prediction fails. */
+	FEquipmentSetHandle PredictedEquipmentSetHandle;
+
+/* Predicted data. These act like prediction keys for predicting a set equips. When the server updates the equipped set,
+ * if these match the updated set, then our prediction was successful. If they don't match, our prediction failed. */
+private:
+
+	/** When we predictively equip a set, this gets set to the predicted set. This gets reset to nullptr when the
+	 * server catches up and the client re-syncs, since we aren't predicting at that point. */
+	UPROPERTY()
+	TObjectPtr<UEquipmentSetDefinition> PredictedEquippedSet = nullptr;
+
+	/** When we predictively equip a temporary set, this gets set to the predicted set. This gets reset to nullptr when
+	 * the server catches up and the client re-syncs, since we aren't predicting at that point. */
+	UPROPERTY()
+	TObjectPtr<UEquipmentSetDefinition> PredictedTemporarySet = nullptr;
+
+	/** Since we unequip temporary sets by setting them to null, we don't know if PredictedTemporarySet is null because
+	 * it predicted an unequip, or if it's null because there's not prediction. */
+	bool bPredictedUnequip = false;
 
 
 
@@ -153,4 +177,6 @@ public:
 	/** Returns the temporarily equipped set, if there is one. Otherwise, returns nullptr. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	UEquipmentSetDefinition* GetTemporarilyEquippedSet() const { return TemporarilyEquippedSet ? TemporarilyEquippedSet : nullptr; }
+
+	friend UAbilityTask_EquipSet;
 };
