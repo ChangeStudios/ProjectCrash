@@ -403,8 +403,12 @@ void AChallengerBase::OnAbilitySystemInitialized()
 		// Equip this character's default equipment set on the server. Equipment is server-authoritative and replicated.
 		if (HasAuthority())
 		{
-			EquipmentComponent->EquipSet(ChallengerData->DefaultEquipmentSet);
-			EQUIPMENT_LOG(Verbose, TEXT("Equipping default set for [%s]..."), *GetName());
+			// Only initialize equipment once.
+			if (EquipmentComponent->GetEquippedSet() == nullptr)
+			{
+				EquipmentComponent->EquipSet(ChallengerData->DefaultEquipmentSet);
+				EQUIPMENT_LOG(Verbose, TEXT("Equipping default set for [%s]..."), *GetName());
+			}
 		}
 	}
 	else

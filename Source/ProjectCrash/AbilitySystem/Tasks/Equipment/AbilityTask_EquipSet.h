@@ -87,4 +87,7 @@ private:
 	 */
 	UFUNCTION()
 	void OnAbilityFailed(const UGameplayAbility* FailedAbility, const FGameplayTagContainer& Reason);
+
+	/** Returns whether this is the instance of this task being run on the server or the locally predicted client. */
+	FORCEINLINE bool IsServerTask() const;
 };

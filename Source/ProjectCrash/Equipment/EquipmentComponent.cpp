@@ -359,6 +359,8 @@ void UEquipmentComponent::OnRep_TemporarilyEquippedSet(UEquipmentSetDefinition* 
 			// Null the predicted set handle so we know we aren't predicting with it anymore.
 			PredictedEquipmentSetHandle.EquipmentSetDefinition = nullptr;
 
+			UE_LOG(LogTemp, Error, TEXT("Unequip confirmed!"));
+
 			return;
 		}
 		// Confirm temporary set equip prediction.
@@ -407,22 +409,35 @@ void UEquipmentComponent::Client_EquipPredictionFailed_Implementation(bool bTemp
 	// If we fail our prediction, destroy the predicted set.
 	if (PredictedEquipmentSetHandle.EquipmentSetDefinition)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Pred handle not cleared"));
+		// Debugging.
+#if WITH_EDITOR
+		FString PredictedAction = "Unknown";
+		if (PredictedEquippedSet)
+		{
+			PredictedAction = "Equip";
+		}
+		else if (PredictedTemporarySet)
+		{
+			PredictedAction = "Temporary Equip";
+		}
+		else if (bPredictedUnequip)
+		{
+			PredictedAction = "Unequip";
+		}
+		EQUIPMENT_LOG(Warning, TEXT("Missed equipment prediction: Predicted Action: %s. Predicted Set: %s"), *PredictedAction, *GetNameSafe(PredictedEquippedSet));
+#endif // WITH_EDITOR
+
 		UnequipSet_Internal(PredictedEquipmentSetHandle, bTemporarySet);
 		PredictedEquipmentSetHandle = FEquipmentSetHandle();
 	}
-
-	// Reset our prediction data.
-	PredictedEquippedSet = nullptr;
-	PredictedTemporarySet = nullptr;
-	bPredictedUnequip = false;
 
 	/** Make sure we've synced with the server. Re-equip the necessary set if not. */
 	if (TemporarilyEquippedSet)
 	{
 		if (TemporarilyEquippedSet != TemporarilyEquippedSetHandle.EquipmentSetDefinition)
 		{
-			EQUIPMENT_LOG(Verbose, TEXT("Temporary equipment set re-synced to: [%s]"), *GetNameSafe(TemporarilyEquippedSet));
+			EQUIPMENT_LOG(Warning, TEXT("Client equipment desynced from server! Temporary equipment set re-synced to: [%s]"), *GetNameSafe(TemporarilyEquippedSet));
+			PredictedTemporarySet = nullptr;
 			OnRep_TemporarilyEquippedSet(nullptr);
 		}
 	}
@@ -430,7 +445,8 @@ void UEquipmentComponent::Client_EquipPredictionFailed_Implementation(bool bTemp
 	{
 		if (EquippedSet != EquippedSetHandle.EquipmentSetDefinition)
 		{
-			EQUIPMENT_LOG(Verbose, TEXT("Equipment set re-synced to: [%s]"), *GetNameSafe(EquippedSet));
+			EQUIPMENT_LOG(Warning, TEXT("Client equipment desynced from server! Equipment set re-synced to: [%s]"), *GetNameSafe(EquippedSet));
+			PredictedEquippedSet = nullptr;
 			OnRep_EquippedSet(nullptr);
 		}
 	}

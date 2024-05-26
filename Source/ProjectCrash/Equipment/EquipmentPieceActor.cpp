@@ -17,6 +17,8 @@ AEquipmentPieceActor::AEquipmentPieceActor() :
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(FName("MeshComp"));
 	SetRootComponent(MeshComponent);
 	MeshComponent->SetCollisionProfileName("NoCollision");
+	MeshComponent->bCastHiddenShadow = true;
+	MeshComponent->CastShadow = false;
 }
 
 void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective)

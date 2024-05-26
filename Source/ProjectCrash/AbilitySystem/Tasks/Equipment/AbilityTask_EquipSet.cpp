@@ -28,15 +28,16 @@ void UAbilityTask_EquipSet::UnequipTemporarySet()
 		if (EquipmentComponent->UnequipTemporarySet())
 		{
 			// Cache the prediction on the client.
-			if (!Ability->GetCurrentActorInfo()->IsNetAuthority())
+			if (!IsServerTask())
 			{
 				EquipmentComponent->bPredictedUnequip = true;
 
-				// The equipped set, which will be equipped when the temporary set is unequipped, is now the predicted set.
+				/* The equipped set, which will be equipped when the temporary set is unequipped, is now the predicted
+				 * set. */
+				EquipmentComponent->PredictedEquippedSet = SetToEquip;
 				EquipmentComponent->PredictedEquipmentSetHandle = FEquipmentSetHandle(EquipmentComponent->EquippedSetHandle);
 			}
 		}
-
 	}
 }
 
@@ -44,7 +45,7 @@ void UAbilityTask_EquipSet::Activate()
 {
 	Super::Activate();
 
-	const bool bAuthority = Ability->GetCurrentActorInfo()->IsNetAuthority();
+	const bool bAuthority = IsServerTask();
 	EquipmentComponent = UEquipmentComponent::FindEquipmentComponent(Ability->GetAvatarActorFromActorInfo());
 	if (!EquipmentComponent)
 	{
@@ -56,6 +57,14 @@ void UAbilityTask_EquipSet::Activate()
 	if (!bAuthority && AbilitySystemComponent.Get())
 	{
 		AbilitySystemComponent->AbilityFailedCallbacks.AddUObject(this, &UAbilityTask_EquipSet::OnAbilityFailed);
+	}
+
+	// Cleanse prediction data.
+	if (!bAuthority)
+	{
+		EquipmentComponent->PredictedEquippedSet = nullptr;
+		EquipmentComponent->PredictedTemporarySet = nullptr;
+		EquipmentComponent->bPredictedUnequip = false;
 	}
 
 	// Equip the set, locally (predictively) or authoritatively.
@@ -86,7 +95,7 @@ void UAbilityTask_EquipSet::Activate()
 
 void UAbilityTask_EquipSet::OnDestroy(bool bInOwnerFinished)
 {
-	if (Ability && Ability->GetCurrentActorInfo()->IsNetAuthority())
+	if (IsServerTask())
 	{
 		/* Make one last check to ensure our client and server are synced. Does nothing if they're out of sync, so this
 		 * is harmless. */
@@ -108,8 +117,13 @@ void UAbilityTask_EquipSet::OnDestroy(bool bInOwnerFinished)
 void UAbilityTask_EquipSet::OnAbilityFailed(const UGameplayAbility* FailedAbility, const FGameplayTagContainer& Reason)
 {
 	// If this task's outer ability fails, we have to revert our predicted equip.
-	if (FailedAbility == Ability && Ability->GetCurrentActorInfo()->IsNetAuthority() && EquipmentComponent)
+	if (FailedAbility == Ability && IsServerTask() && EquipmentComponent)
 	{
 		EquipmentComponent->Client_EquipPredictionFailed(bEquipTemporarily);
 	}
+}
+
+bool UAbilityTask_EquipSet::IsServerTask() const
+{
+	return Ability && Ability->GetCurrentActorInfo()->IsNetAuthority();
 }
