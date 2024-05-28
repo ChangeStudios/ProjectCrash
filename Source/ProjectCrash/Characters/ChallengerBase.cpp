@@ -23,6 +23,7 @@
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -145,6 +146,9 @@ void AChallengerBase::PossessedBy(AController* NewController)
 		ASCExtensionComponent->HandleControllerChanged();
 	}
 
+	// Update this character with the new player's current skin.
+	InitCharacterSkin(CrashPS->GetCurrentSkin());
+
 	// Update this character's fresnel when a new controller possesses it on the server.
 	UpdateTeamFresnel();
 }
@@ -173,6 +177,9 @@ void AChallengerBase::OnRep_PlayerState()
 		ASCExtensionComponent->HandleControllerChanged();
 	}
 
+	// Update this character with the new player's current skin.
+	InitCharacterSkin(CrashPS->GetCurrentSkin());
+
 	// Update this character's fresnel when a new PS possesses it.
 	UpdateTeamFresnel();
 }
@@ -193,6 +200,23 @@ void AChallengerBase::InitializeGameplayTags()
 				CrashASC->SetReplicatedLooseGameplayTagCount(Tag, 0);
 			}
 		}
+	}
+}
+
+void AChallengerBase::InitCharacterSkin(UChallengerSkinData* Skin)
+{
+	ensure(Skin);
+
+	// Update the character's skeletal mesh.
+	FirstPersonMesh->SetSkeletalMesh(Skin->CharacterMesh);
+	ThirdPersonMesh->SetSkeletalMesh(Skin->CharacterMesh);
+
+	// Enable first-person rendering on the new first-person mesh.
+	for (int MatIndex = 0; MatIndex < FirstPersonMesh->GetNumMaterials(); MatIndex++)
+	{
+		UMaterialInstanceDynamic* DynamicMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, FirstPersonMesh->GetMaterial(MatIndex));
+		DynamicMat->SetScalarParameterValue("FirstPerson", 1.0f);
+		FirstPersonMesh->SetMaterial(MatIndex, DynamicMat);
 	}
 }
 
@@ -406,6 +430,7 @@ void AChallengerBase::OnAbilitySystemInitialized()
 			// Only initialize equipment once.
 			if (EquipmentComponent->GetEquippedSet() == nullptr)
 			{
+				// This should be moved to whenever we receive the initial value of CurrentSkin.
 				EquipmentComponent->EquipSet(ChallengerData->DefaultEquipmentSet);
 				EQUIPMENT_LOG(Verbose, TEXT("Equipping default set for [%s]..."), *GetName());
 			}

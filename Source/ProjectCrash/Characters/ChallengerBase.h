@@ -11,6 +11,7 @@
 #include "Input/CrashInputComponent.h"
 #include "ChallengerBase.generated.h"
 
+class UChallengerSkinData;
 class USpringArmComponent;
 class UEquipmentComponent;
 class UHealthComponent;
@@ -62,6 +63,9 @@ public:
 
 	/** Clears any unwanted gameplay tags that may be leftover from this character's ASC's previous pawn. */
 	virtual void InitializeGameplayTags();
+
+	/** Initializes this character with a given character skin. */
+	virtual void InitCharacterSkin(UChallengerSkinData* Skin);
 
 
 

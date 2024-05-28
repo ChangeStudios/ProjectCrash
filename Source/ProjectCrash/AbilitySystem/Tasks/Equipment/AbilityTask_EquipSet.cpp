@@ -39,9 +39,6 @@ void UAbilityTask_EquipSet::UnequipTemporarySet()
 			}
 		}
 	}
-
-	// Note: May want to remove this if it messes with prediction.
-	EndTask();
 }
 
 void UAbilityTask_EquipSet::Activate()
