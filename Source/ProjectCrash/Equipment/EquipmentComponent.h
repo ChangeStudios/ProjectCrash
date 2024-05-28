@@ -66,8 +66,23 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
 	bool UnequipTemporarySet();
 
+
+
+	// Equipment effects.
+
+public:
+
+	/**
+	 * Plays an animation montage specified by a gameplay tag on any active equipment pieces with a matching tag in
+	 * their Animations map.
+	 *
+	 * @return		(Debugging) If a montage was successfully played on any equipment pieces.
+	 */
+	bool PlayEquipmentMontage(FGameplayTag EquipmentAnimTag);
+
 	/** Detaches all spawned equipment actors from their attached actor, turning them into physics actors. */
 	void DetachEquipment();
+	
 
 
 

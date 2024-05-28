@@ -96,6 +96,45 @@ bool UEquipmentComponent::UnequipTemporarySet()
 	return false;
 }
 
+bool UEquipmentComponent::PlayEquipmentMontage(FGameplayTag EquipmentAnimTag)
+{
+	ensure(EquipmentAnimTag.IsValid());
+
+	// Collect all active equipment piece actors.
+	TArray<AEquipmentPieceActor*> EquipmentPieceActors;
+
+	if (TemporarilyEquippedSet)
+	{
+		EquipmentPieceActors.Append(TemporarilyEquippedSetHandle.SpawnedEquipmentActors);
+	}
+
+	if (EquippedSet)
+	{
+		EquipmentPieceActors.Append(EquippedSetHandle.SpawnedEquipmentActors);
+	}
+
+	// Iterate through each equipment piece for any with a matching tag in their Animations map.
+	uint32 PlayedCount = 0;
+	for (const AEquipmentPieceActor* EquipmentPieceActor : EquipmentPieceActors)
+	{
+		// If this equipment piece has the given tag in their Animations map, play the animation mapped to it.
+		if (IsValid(EquipmentPieceActor) && EquipmentPieceActor->EquipmentPiece->Animations.Contains(EquipmentAnimTag))
+		{
+			UAnimMontage* MontageToPlay = EquipmentPieceActor->EquipmentPiece->Animations[EquipmentAnimTag];
+
+			// Only play animations on equipment pieces that are currently visible.
+			if (EquipmentPieceActor->MeshComponent->IsVisible())
+			{
+				EquipmentPieceActor->MeshComponent->PlayAnimation(MontageToPlay, false);
+			}
+
+			PlayedCount++;
+		}
+	}
+
+	return PlayedCount > 0;
+}
+
 void UEquipmentComponent::DetachEquipment()
 {
 	// Detach all temporary equipment actors.

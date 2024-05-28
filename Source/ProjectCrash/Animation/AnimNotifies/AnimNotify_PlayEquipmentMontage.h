@@ -14,7 +14,7 @@
  * This is used to play different equipment animations (and any effects nested within them) depending on the skin,
  * while still triggering animations in a skin-agnostic manner.
  */
-UCLASS()
+UCLASS(Const, HideCategories = Object, CollapseCategories, DisplayName = "Play Equipment Montage")
 class PROJECTCRASH_API UAnimNotify_PlayEquipmentMontage : public UAnimNotify
 {
 	GENERATED_BODY()
