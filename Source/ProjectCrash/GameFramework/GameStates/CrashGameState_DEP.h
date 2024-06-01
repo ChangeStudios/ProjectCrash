@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "GameFramework/GameModes/Data/CrashGameModeData.h"
+#include "GameFramework/Data/CrashGameModeData.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
-#include "CrashGameState.generated.h"
+#include "CrashGameState_DEP.generated.h"
 
 struct FCrashAbilityMessage;
 class UCrashGameModeData;
@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, uint32, 
 * and game-wide information.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameState : public AGameState
+class PROJECTCRASH_API ACrashGameState_DEP : public AGameState
 {
 	GENERATED_BODY()
 

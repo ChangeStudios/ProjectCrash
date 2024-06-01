@@ -4,7 +4,7 @@
 #include "ChallengerBase.h"
 
 #include "AbilitySystemLog.h"
-#include "ChallengerData.h"
+#include "Data/ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "CrashGameplayTags.h"
@@ -20,7 +20,7 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GlobalGameData.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
@@ -299,7 +299,7 @@ void AChallengerBase::UpdateTeamFresnel()
 	// Global game data and gamemode data determine which materials to use.
 	const UGlobalGameData* GlobalGameData = &UCrashAssetManager::Get().GetGlobalGameData();
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
-	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
+	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
 	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 
 	// Get this character's player state.

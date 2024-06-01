@@ -16,15 +16,6 @@ class PROJECTCRASH_API UNPCData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	// Construction.
-
-public:
-
-	/** Default constructor. */
-	UNPCData(const FObjectInitializer& ObjectInitializer);
-
-
-
 	// Attributes.
 
 public:
