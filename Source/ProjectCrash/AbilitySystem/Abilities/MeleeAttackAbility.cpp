@@ -10,7 +10,7 @@
 #include "GameplayCueFunctionLibrary.h"
 #include "KismetTraceUtils.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
 #include "AbilitySystem/Tasks/AbilityTask_PlayDualMontageAndWait.h"
 #include "AbilitySystem/Tasks/AbilityTask_WaitReusableTargetData.h"

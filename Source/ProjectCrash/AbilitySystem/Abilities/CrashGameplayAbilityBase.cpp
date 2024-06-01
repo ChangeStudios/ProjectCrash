@@ -7,7 +7,7 @@
 #include "AbilitySystemLog.h"
 #include "NativeGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
 #include "Characters/ChallengerSkinData.h"
