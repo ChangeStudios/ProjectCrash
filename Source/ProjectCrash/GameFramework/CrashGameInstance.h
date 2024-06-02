@@ -16,13 +16,17 @@ class PROJECTCRASH_API UCrashGameInstance : public UCommonGameInstance
 
 	// Initialization.
 
+public:
+
+	/** Default constructor. */
+	UCrashGameInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	/** Loads the local user's settings when they log in. */
+	virtual void HandlerUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext) override;
+
 protected:
 
 	/** Registers initialization states. */
 	virtual void Init() override;
 
-public:
-
-	/** Loads the local user's settings when they log in. */
-	virtual void HandlerUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext) override;
 };

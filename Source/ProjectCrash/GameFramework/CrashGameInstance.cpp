@@ -7,6 +7,11 @@
 
 #include "Components/GameFrameworkComponentManager.h"
 
+UCrashGameInstance::UCrashGameInstance(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
 void UCrashGameInstance::Init()
 {
 	Super::Init();
