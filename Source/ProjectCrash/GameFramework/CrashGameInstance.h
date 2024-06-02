@@ -3,18 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/GameInstance.h"
+#include "CommonGameInstance.h"
 #include "CrashGameInstance.generated.h"
 
 /**
- * 
+ * Default game instance for this project. Sets up initialization states.
  */
 UCLASS()
-class PROJECTCRASH_API UCrashGameInstance : public UGameInstance
+class PROJECTCRASH_API UCrashGameInstance : public UCommonGameInstance
 {
 	GENERATED_BODY()
-	
-	
-	
-	
+
+	// Initialization.
+
+protected:
+
+	/** Registers initialization states. */
+	virtual void Init() override;
+
+public:
+
+	/** Loads the local user's settings when they log in. */
+	virtual void HandlerUserInitialized(const UCommonUserInfo* UserInfo, bool bSuccess, FText Error, ECommonUserPrivilege RequestedPrivilege, ECommonUserOnlineContext OnlineContext) override;
 };

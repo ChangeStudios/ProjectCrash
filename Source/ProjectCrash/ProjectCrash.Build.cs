@@ -24,14 +24,18 @@ public class ProjectCrash : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
 			"InputCore",
+			"ModularGameplay",
+			"ModularGameplayActors",
 			"Niagara",
 			"PhysicsCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
+			"CommonGame",
 			"CommonInput",
 			"CommonUI",
+			"CommonUser",
 			"DeveloperSettings",
 			"EnhancedInput",
 			"LevelSequence",
