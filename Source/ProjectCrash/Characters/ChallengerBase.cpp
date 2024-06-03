@@ -300,7 +300,7 @@ void AChallengerBase::UpdateTeamFresnel()
 	const UGlobalGameData* GlobalGameData = &UCrashAssetManager::Get().GetGlobalGameData();
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
-	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
+	const UCrashGameModeData_DEP* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 
 	// Get this character's player state.
 	const ACrashPlayerState* CharacterPS = GetPlayerState<ACrashPlayerState>();

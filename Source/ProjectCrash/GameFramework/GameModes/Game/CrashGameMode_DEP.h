@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/Data/CrashGameModeData_DEP.h"
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
@@ -161,13 +161,13 @@ public:
 
 	/** Getter for GameModeData. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game|Data", Meta = (ToolTip = "Data defining various properties of this game mode."))
-	UCrashGameModeData* GetGameModeData() const { return GameModeData.Get(); }
+	UCrashGameModeData_DEP* GetGameModeData() const { return GameModeData.Get(); }
 
 protected:
 
 	/** Data defining various properties of this game mode, such as players' default starting lives. */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Game Mode Data", Meta = (ToolTip = "Data defining various properties of this game mode, such as players' default starting lives."))
-	TObjectPtr<UCrashGameModeData> GameModeData;
+	TObjectPtr<UCrashGameModeData_DEP> GameModeData;
 
 
 

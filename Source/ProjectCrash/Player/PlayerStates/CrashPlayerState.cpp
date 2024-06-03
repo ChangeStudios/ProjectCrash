@@ -6,7 +6,7 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/Data/CrashGameModeData_DEP.h"
 #include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,7 +62,7 @@ void ACrashPlayerState::PostInitializeComponents()
 		const ACrashGameMode_DEP* CrashGM = GM ? Cast<ACrashGameMode_DEP>(GM) : nullptr;
 		if (CrashGM && CrashGM->GetGameModeData())
 		{
-			const UCrashGameModeData* GameModeData = CrashGM->GetGameModeData();
+			const UCrashGameModeData_DEP* GameModeData = CrashGM->GetGameModeData();
 			CurrentLives = GameModeData->StartingLives;
 		}
 		else
@@ -85,7 +85,7 @@ void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
 {
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
-	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
+	const UCrashGameModeData_DEP* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 	const UUserInterfaceData* UIData = GMData ? GMData->UIData : nullptr;
 	const UMatchUserInterfaceData* MatchUIData = UIData ? Cast<UMatchUserInterfaceData>(UIData) : nullptr;
 

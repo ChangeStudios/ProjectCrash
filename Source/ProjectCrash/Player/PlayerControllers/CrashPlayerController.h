@@ -6,7 +6,7 @@
 #include "CrashPlayerControllerBase.h"
 #include "CrashPlayerController.generated.h"
 
-class UCrashGameModeData;
+class UCrashGameModeData_DEP;
 class APlayerState;
 class USlottedEntryBox;
 class UGlobalLayeredWidget;
@@ -30,5 +30,5 @@ public:
 
 	/** Callback for when the game mode data is first replicated. Wraps InitializeUserInterface. */
 	UFUNCTION()
-	void OnGameModeDataReplicated(const UCrashGameModeData* GameModeData);
+	void OnGameModeDataReplicated(const UCrashGameModeData_DEP* GameModeData);
 };

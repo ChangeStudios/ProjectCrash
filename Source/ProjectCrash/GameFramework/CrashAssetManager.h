@@ -9,7 +9,7 @@
 #include "CrashAssetManager.generated.h"
 
 class UGlobalGameData;
-class UCrashGameModeData;
+class UCrashGameModeData_DEP;
 class UUserInterfaceData;
 
 /**

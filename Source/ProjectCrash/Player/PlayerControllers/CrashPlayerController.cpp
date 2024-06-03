@@ -3,7 +3,7 @@
 
 #include "Player/PlayerControllers/CrashPlayerController.h"
 
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/Data/CrashGameModeData_DEP.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -35,7 +35,7 @@ void ACrashPlayerController::BeginPlay()
 	bShowMouseCursor = false;
 }
 
-void ACrashPlayerController::OnGameModeDataReplicated(const UCrashGameModeData* GameModeData)
+void ACrashPlayerController::OnGameModeDataReplicated(const UCrashGameModeData_DEP* GameModeData)
 {
 	if (GameModeData->UIData)
 	{

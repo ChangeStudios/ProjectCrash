@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/Data/CrashGameModeData_DEP.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "CrashGameState_DEP.generated.h"
 
 struct FCrashAbilityMessage;
-class UCrashGameModeData;
+class UCrashGameModeData_DEP;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData*, GameModeData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameModeDataReplicatedSignature, const UCrashGameModeData_DEP*, GameModeData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMatchStateChangedSignature, FName, NewMatchState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhaseTimeChangedSignature, uint32, NewTime);
 
@@ -42,7 +42,7 @@ public:
 
 	/** Retrieves the static data for the current game mode. */
 	UFUNCTION(BlueprintPure, Category = "Game Mode Data")
-	const UCrashGameModeData* GetGameModeData() const { return GameModeData.Get(); }
+	const UCrashGameModeData_DEP* GetGameModeData() const { return GameModeData.Get(); }
 
 	/** Delegate that fires when the game state receives the game mode data from the server. Allows clients to wait
 	 * for the game mode data to be valid before using it. */
@@ -54,7 +54,7 @@ protected:
 	/** The static data for the current game mode. Replicated to the game state from the server so it can be accessed
 	 * by clients. This data is static, so it exposing it to clients doesn't pose any risk. */
 	UPROPERTY(ReplicatedUsing = OnRep_GameModeData)
-	TObjectPtr<UCrashGameModeData> GameModeData;
+	TObjectPtr<UCrashGameModeData_DEP> GameModeData;
 
 	/** Broadcasts GameModeDataReplicatedDelegate. */
 	UFUNCTION()
