@@ -90,7 +90,7 @@ public:
  * TODO: Define a way to override variables using custom game rules. E.g. defining a list of structs that define custom
  * settings (e.g. sliders, maximum values, etc.) mapped to the variables they override.
  */
-UCLASS(BlueprintType, Const, Meta = (DisplayName = "Game Mode Data"))
+UCLASS(BlueprintType, Const, Meta = (DisplayName = "Game Mode Data (Deprecated)"))
 class PROJECTCRASH_API UCrashGameModeData_DEP : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
