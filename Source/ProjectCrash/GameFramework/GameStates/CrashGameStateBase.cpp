@@ -6,6 +6,8 @@
 #include "CrashGameplayTags.h"
 #include "Components/GameFrameworkComponentDelegates.h"
 #include "Components/GameFrameworkComponentManager.h"
+#include "Development/CrashDeveloperSettings.h"
+#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/Data/CrashGameModeData.h"
 #include "GameFramework/GameModes/Game/CrashGameModeBase.h"
@@ -57,8 +59,9 @@ bool ACrashGameStateBase::CanChangeInitState(UGameFrameworkComponentManager* Man
 	}
 	else if (CurrentState == CrashGameplayTags::TAG_InitState_WaitingForData && DesiredState == CrashGameplayTags::TAG_InitState_Initializing)
 	{
-		// TODO: Game data must be loaded and ALL players in the session must have the current map loaded. Check for any session disconnects.
-		return true;
+		// Game mode data must be loaded.
+		// TODO: ALL players in the session must have the current map loaded. Check for any session disconnects
+		return IsValid(GameModeData);
 	}
 	else if (CurrentState == CrashGameplayTags::TAG_InitState_Initializing && DesiredState == CrashGameplayTags::TAG_InitState_GameplayReady)
 	{
@@ -71,6 +74,45 @@ bool ACrashGameStateBase::CanChangeInitState(UGameFrameworkComponentManager* Man
 
 void ACrashGameStateBase::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
+	// WaitingForData loads and replicates the game mode data.
+	if (!CurrentState.IsValid() && DesiredState == CrashGameplayTags::TAG_InitState_WaitingForData)
+	{
+		// Only set game mode data on the server.
+		if (HasAuthority())
+		{
+			// If game mode data has already been set and loaded, do nothing.
+			if (GameModeData)
+			{
+				UE_LOG(LogTemp, Error, TEXT("Game mode data has already been loaded: [%s]."), *GameModeData->GetName());
+				return;
+			}
+
+#if WITH_EDITOR
+			// In the editor, override the game mode data using developer settings.
+			if (const UCrashDeveloperSettings* DeveloperSettings = GetDefault<UCrashDeveloperSettings>())
+			{
+				// Only override the game mode data if an overriding game mode data asset has been set.
+				if (DeveloperSettings->GameModeDataOverride.ToSoftObjectPath().IsValid())
+				{
+					SetGameModeDataPath(DeveloperSettings->GameModeDataOverride);
+				}
+			}
+#endif // WITH_EDITOR
+
+			// Try to retrieve the game mode data path from the 
+			if (GameModeDataPath.ToSoftObjectPath().IsNull())
+			{
+				// TODO: Retrieve game mode data path from game options.
+			}
+
+			/* We MUST have the game mode data by this point (even if it isn't loaded yet). The game cannot properly
+			 * initialize without the game mode data. */
+			if (GameModeDataPath.ToSoftObjectPath().IsNull())
+			{
+				UE_LOG(LogCrash, Fatal, TEXT("Could not retrieve game mode data! This is non-recoverable; the game will not be able to initialize. Ensure the game mode data is set in game options, or overridden in developer settings."));
+			}
+		}
+	}
 }
 
 void ACrashGameStateBase::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
@@ -94,16 +136,16 @@ void ACrashGameStateBase::CheckDefaultInitialization()
 
 void ACrashGameStateBase::SetGameModeDataPath(TSoftObjectPtr<const UCrashGameModeData> InGameModeDataPath)
 {
-	check(InGameModeDataPath.IsValid());
+	check(InGameModeDataPath.ToSoftObjectPath().IsValid());
 
 	// Game mode data can only be set from the server. It is replicated to clients.
-	if (GetLocalRole() != ROLE_Authority)
+	if (!HasAuthority())
 	{
 		return;
 	}
 
 	// We should only ever be setting game mode data once.
-	if (GameModeDataPath.IsValid())
+	if (GameModeDataPath.ToSoftObjectPath().IsValid())
 	{
 		UE_LOG(LogCrash, Error, TEXT("Trying to set game mode data [%s] on game state, when game mode data has already been set to [%s]. If you want to load data from game options, make sure there is no overriding game data selected in the developer settings."), *InGameModeDataPath.GetAssetName(), *GameModeDataPath.GetAssetName());
 		return;
@@ -113,8 +155,8 @@ void ACrashGameStateBase::SetGameModeDataPath(TSoftObjectPtr<const UCrashGameMod
 	GameModeDataPath = InGameModeDataPath;
 	ForceNetUpdate();
 
-	// Load the new game mode data on the server.
-	// TODO: Load game mode data via asset manager with OnGameModeDataLoaded as a callback.
+	// Manually call the OnRep to load the game mode data on the server.
+	OnRep_GameModeDataPath();
 }
 
 const UCrashGameModeData* ACrashGameStateBase::GetGameModeData() const
@@ -123,7 +165,7 @@ const UCrashGameModeData* ACrashGameStateBase::GetGameModeData() const
 	{
 		return GameModeData;
 	}
-	else if (!GameModeDataPath.IsValid())
+	else if (GameModeDataPath.ToSoftObjectPath().IsNull())
 	{
 		UE_LOG(LogGameState, Error, TEXT("Attempted to retrieve game mode data before data has been set and replicated."));
 		return nullptr;
@@ -137,12 +179,27 @@ const UCrashGameModeData* ACrashGameStateBase::GetGameModeData() const
 
 void ACrashGameStateBase::OnRep_GameModeDataPath()
 {
-	// TODO: Async load data with OnGameModeDataLoaded as a callback.
+	// Ensure a valid path.
+	const FSoftObjectPath& AssetPath = GameModeDataPath.ToSoftObjectPath();
+	check(AssetPath.IsValid());
+
+	DECLARE_SCOPE_CYCLE_COUNTER(TEXT("Loading GameModeData Object"), STAT_GameModeData, STATGROUP_LoadTime);
+
+	UE_LOG(LogCrash, Log, TEXT("Loading GameModeData: [%s] ..."), *GameModeDataPath.ToString());
+
+	// Load the new game mode data.
+	FStreamableManager& Streamable = UCrashAssetManager::Get().GetStreamableManager();
+	Streamable.RequestAsyncLoad(TArray<FSoftObjectPath>( {AssetPath} ), FStreamableDelegate::CreateUObject(this, &ACrashGameStateBase::OnGameModeDataLoaded));
 }
 
 void ACrashGameStateBase::OnGameModeDataLoaded()
 {
-	/* Game mode data being valid is a requisite for the initialization chain. Once loaded, check if we are ready to
+	// Cache the loaded game mode data.
+	GameModeData = GameModeDataPath.Get();
+
+	SCOPE_LOG_TIME_IN_SECONDS(TEXT("		... GameModeData loaded!"), nullptr);
+
+	/* Game mode data being loaded is a requisite for the initialization chain. Once loaded, check if we are ready to
 	 * continue initialization. */
 	CheckDefaultInitialization();
 }

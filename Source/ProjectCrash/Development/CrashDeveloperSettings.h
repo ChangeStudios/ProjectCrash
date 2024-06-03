@@ -35,12 +35,12 @@ public:
 
 	/** The game mode data is determined by the game options. If set, this data will be used instead. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<UCrashGameModeData> GameModeDataOverride;
+	TSoftObjectPtr<const UCrashGameModeData> GameModeDataOverride;
 
 	/** Each player's Challenger data is determined by the Challenger they select in the character selection screen.
 	 * If set, this data will be used for all players instead. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<UChallengerData> ChallengerDataOverride;
+	TSoftObjectPtr<const UChallengerData> ChallengerDataOverride;
 
 	/**
 	 * Each player's skin data retrieved through their cloud settings when they join the game. If set, this data will
@@ -49,7 +49,7 @@ public:
 	 * Because players' skins must match their Challengers, a Challenger override must also be set to use this.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<UChallengerSkinData> SkinDataOverride;
+	TSoftObjectPtr<const UChallengerSkinData> SkinDataOverride;
 
 
 
