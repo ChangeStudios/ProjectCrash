@@ -33,11 +33,6 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	// Initialize other properties.
 	CurrentChallenger = nullptr;
 	CurrentSkin = nullptr;
-
-#if WITH_EDITOR
-	CurrentChallenger = DefaultChallenger;
-	CurrentSkin = DefaultSkin;
-#endif	
 }
 
 void ACrashPlayerState::PostInitializeComponents()
@@ -72,12 +67,6 @@ void ACrashPlayerState::PostInitializeComponents()
 
 			UE_LOG(LogGameMode, Warning, TEXT("ACrashPlayerState: CrashPlayerState [%s] tried to initialize its current lives, but could not find a game mode with valid GameModeData. ACrashPlayerState must be used with ACrashGameMode, and the game mode must have valid game mode data. Falling back to default starting lives: %i."), *GetName(), StartingLivesFallback);
 		}
-
-// Initialize Challenger and Skin from editor instead of game mode.
-#if WITH_EDITOR
-		UpdateCurrentChallenger(DefaultChallenger);
-		UpdateCurrentSkin(DefaultSkin);
-#endif // WITH_EDITOR
 	}
 }
 

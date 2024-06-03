@@ -84,7 +84,7 @@ protected:
 	 * load the global game data. */
 	UPrimaryDataAsset* LoadGlobalGameData(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath, FPrimaryAssetType PrimaryAssetType);	
 
-// Generic asset loading.
+// Synchronous asset loading.
 public:
 
 	/** Retrieves the given asset. Synchronously loads the asset if it's not loaded. */

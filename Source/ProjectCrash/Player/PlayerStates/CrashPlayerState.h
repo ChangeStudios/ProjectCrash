@@ -134,15 +134,6 @@ public:
 	/** Server-only setter for CurrentSkin. */
 	void UpdateCurrentSkin(UChallengerSkinData* InSkinData);
 
-
-	// Used for debugging.
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UChallengerData> DefaultChallenger;
-
-	// Used for debugging.
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UChallengerSkinData> DefaultSkin;
-
 protected:
 
 	/** The challenger currently selected by this player. */
