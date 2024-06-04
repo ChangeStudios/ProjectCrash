@@ -6,7 +6,7 @@
 #include "CrashLogging.h"
 #include "UnrealEngine.h"
 #include "Engine/Engine.h"
-#include "GameFramework/GlobalGameData.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UI/Data/UserInterfaceData.h"
 

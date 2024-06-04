@@ -18,7 +18,7 @@
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/GlobalGameData.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Input/CrashInputComponent.h"

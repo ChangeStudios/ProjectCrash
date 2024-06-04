@@ -13,7 +13,7 @@
 #include "Engine/PlayerStartPIE.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/GlobalGameData.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PriorityPlayerStart.h"

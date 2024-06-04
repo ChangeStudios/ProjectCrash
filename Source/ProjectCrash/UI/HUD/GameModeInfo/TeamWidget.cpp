@@ -5,7 +5,7 @@
 
 #include "Components/Border.h"
 #include "GameFramework/CrashAssetManager.h"
-#include "GameFramework/GlobalGameData.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/Teams/CrashTeams.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
