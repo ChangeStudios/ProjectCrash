@@ -10,6 +10,7 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/Data/GlobalMapData.h"
 #include "GameFramework/GameModes/Game/CrashGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"

@@ -35,7 +35,7 @@ public:
 	FName UserFacingName;
 
 	/** The image used to represent this map in the options of the custom game menu. */
-	UPROPERTY(EditDefaultsOnly, Meta = (AssetBundles = "UI"))
+	UPROPERTY(EditDefaultsOnly, Meta = (AssetBundles = "MainMenu"))
 	TSoftObjectPtr<UTexture2D> CustomGameImage;
 };
 

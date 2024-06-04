@@ -8,6 +8,7 @@
 #include "UI/Data/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
+class UGlobalMapData;
 class UGlobalGameData;
 class UCrashGameModeData_DEP;
 class UUserInterfaceData;
@@ -51,7 +52,11 @@ public:
 	const UGlobalGameData& GetGlobalGameData();
 
 	/** Returns the main menu UI data. Sync loads the data if it isn't loaded already. */
-	const UUserInterfaceData& GetMainMenuUIData();
+	const UUserInterfaceData* GetMainMenuUIData();
+
+	/** Returns the global map data. Sync loads the data if it isn't loaded already. This loads the asset's default
+	 * bundles. Additional bundles must be loaded separately, usually with a ChangeBundleStateForPrimaryAssets call. */
+	const UGlobalMapData* GetGlobalMapData();
 
 // Data.
 protected:
@@ -69,27 +74,28 @@ protected:
 	UPROPERTY(Config)
 	TSoftObjectPtr<UUserInterfaceData> MainMenuUIDataPath;
 
-	/** Global main menu UI data asset to use. */
-	UPROPERTY(Transient)
-	TObjectPtr<UUserInterfaceData> MainMenuUIData;
+
+	/** Global map data asset to use. Primary assets are always loaded; UI assets are only loaded in the main menu. */
+	UPROPERTY(Config)
+	TSoftObjectPtr<UGlobalMapData> GlobalMapDataPath;
 
 
 
 	// Asset loading.
 
-// Global game data loading.
+// Specific game data loading.
 protected:
 
 	/** Synchronously loads the global game data at the given path. Throws a fatal exception if we cannot successfully
 	 * load the global game data. */
-	UPrimaryDataAsset* LoadGlobalGameData(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath, FPrimaryAssetType PrimaryAssetType);	
+	UPrimaryDataAsset* LoadGlobalGameData(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath, FPrimaryAssetType PrimaryAssetType);
 
 // Synchronous asset loading.
 public:
 
 	/** Retrieves the given asset. Synchronously loads the asset if it's not loaded. */
 	template <typename AssetType>
-	static AssetType& GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer);
+	static AssetType* GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer);
 
 protected:
 
@@ -109,7 +115,7 @@ public:
 };
 
 template <typename AssetType>
-AssetType& UCrashAssetManager::GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer)
+AssetType* UCrashAssetManager::GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer)
 {
 	AssetType* LoadedAsset = nullptr;
 

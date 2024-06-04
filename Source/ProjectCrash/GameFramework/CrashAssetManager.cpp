@@ -4,11 +4,12 @@
 #include "GameFramework/CrashAssetManager.h"
 
 #include "CrashLogging.h"
-#include "UnrealEngine.h"
+#include "Data/GlobalMapData.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Data/GlobalGameData.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UI/Data/UserInterfaceData.h"
+#include "UnrealEngine.h"
 
 static FAutoConsoleCommand CVarDumpLoadedAssets
 (
@@ -34,7 +35,6 @@ namespace Crash
 UCrashAssetManager::UCrashAssetManager()
 {
 	GlobalGameData = nullptr;
-	MainMenuUIData = nullptr;
 }
 
 UCrashAssetManager& UCrashAssetManager::Get()
@@ -61,6 +61,9 @@ void UCrashAssetManager::StartInitialLoading()
 
 	// Load global game data.
 	GetGlobalGameData();
+
+	// Load global map data without any bundles.
+	GetGlobalMapData();
 }
 
 const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
@@ -75,11 +78,16 @@ const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
 	return *CastChecked<const UGlobalGameData>(LoadGlobalGameData(UGlobalGameData::StaticClass(), GlobalGameDataPath, UGlobalGameData::StaticClass()->GetFName()));
 }
 
-const UUserInterfaceData& UCrashAssetManager::GetMainMenuUIData()
+const UUserInterfaceData* UCrashAssetManager::GetMainMenuUIData()
 {
 	// Retrieve the loaded main menu UI data. If it's not loaded, perform a blocking load.
-	// return GetOrSyncLoadGameDataFromPath<UUserInterfaceData>(EGlobalGameDataType::MainMenuUIData, MainMenuUIDataPath);
-	return *MainMenuUIData;
+	return GetOrLoadAsset(MainMenuUIDataPath);
+}
+
+const UGlobalMapData* UCrashAssetManager::GetGlobalMapData()
+{
+	// Retrieve the loaded global map data. If it's not loaded, perform a blocking load with default bundles.
+	return GetOrLoadAsset(GlobalMapDataPath);
 }
 
 UPrimaryDataAsset* UCrashAssetManager::LoadGlobalGameData(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath, FPrimaryAssetType PrimaryAssetType)
