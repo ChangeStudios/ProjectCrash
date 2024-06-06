@@ -16,7 +16,7 @@
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -39,7 +39,7 @@ FGameplayTag UCrashGameplayAbilityBase::GetAbilityCueFromSkin(FGameplayTag Defau
 	const FGameplayTag Parent = DefaultCue.RequestDirectParent();
 
 	// Retrieve the current skin from this ability's owner.
-	const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(CurrentActorInfo->OwnerActor);
+	const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(CurrentActorInfo->OwnerActor);
 	const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
 
 	// Find a matching ability cue.

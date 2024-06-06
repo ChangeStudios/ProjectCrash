@@ -14,6 +14,7 @@
 #include "GameFramework/GameModes/Game/CrashGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 const FName ACrashGameStateBase::NAME_ActorFeatureName("CrashGameState");
 
@@ -26,6 +27,13 @@ void ACrashGameStateBase::PreInitializeComponents()
 
 	// Start listening for initialization state changes to this actor.
 	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
+
+	/* Define a lambda that wraps this actor's OnActorInitStateChanged. Used for listening to other actors' init state
+	 * changes, such as the player states. */
+	ActorInitStateChangedDelegate = FActorInitStateChangedDelegate::CreateWeakLambda(this, [this](const FActorInitStateChangedParams& Params)
+	{
+		this->OnActorInitStateChanged(Params);
+	});
 }
 
 void ACrashGameStateBase::BeginPlay()
@@ -35,14 +43,21 @@ void ACrashGameStateBase::BeginPlay()
 	// Initialize the initialization state.
 	ensure(TryToChangeInitState(CrashGameplayTags::TAG_InitState_WaitingForData));
 	CheckDefaultInitialization();
-
-#if WITH_EDITOR
-	// TODO: Check developer settings for overriding game mode data.
-#endif // WITH_EDITOR
 }
 
 void ACrashGameStateBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	// Stop listening to any other actors' initialization state changes.
+	UGameFrameworkComponentManager* Manager = GetComponentManager();
+	for (auto ActorHandlePair : ActorInitStateChangedHandles)
+	{
+		if (ActorHandlePair.Value.IsValid())
+		{
+			Manager->UnregisterActorInitStateDelegate(ActorHandlePair.Key, ActorHandlePair.Value);
+		}
+	}
+	ActorInitStateChangedHandles.Reset();
+
 	// Unregister from initialization states.
 	UnregisterInitStateFeature();
 
@@ -95,7 +110,7 @@ void ACrashGameStateBase::HandleChangeInitState(UGameFrameworkComponentManager* 
 				// Only override the game mode data if an overriding game mode data asset has been set.
 				if (DeveloperSettings->GameModeDataOverride.ToSoftObjectPath().IsValid())
 				{
-					SetGameModeDataPath(DeveloperSettings->GameModeDataOverride);
+					SetGameModeData(DeveloperSettings->GameModeDataOverride->GetPrimaryAssetId());
 				}
 			}
 #endif // WITH_EDITOR
@@ -121,6 +136,8 @@ void ACrashGameStateBase::OnActorInitStateChanged(const FActorInitStateChangedPa
 	// If another feature has changed init states (e.g. one of our components), check if we should too.
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Received change from [%s]: changed to [%s]"), *Params.FeatureName.ToString(), *Params.FeatureState.ToString());
+
 		CheckDefaultInitialization();
 	}
 }
@@ -129,35 +146,44 @@ void ACrashGameStateBase::CheckDefaultInitialization()
 {
 	// Before checking our progress, try progressing any other features we might depend on.
 	CheckDefaultInitializationForImplementers();
-
-	/* Attempts to progress through the state chain if requirements for the next state are met, determined by
-	 * CanChangeInitState. */
 	ContinueInitStateChain(CrashGameplayTags::StateChain);
 }
 
-void ACrashGameStateBase::SetGameModeDataPath(TSoftObjectPtr<const UCrashGameModeData> InGameModeDataPath)
+void ACrashGameStateBase::AddPlayerState(APlayerState* PlayerState)
 {
-	check(InGameModeDataPath.ToSoftObjectPath().IsValid());
+	Super::AddPlayerState(PlayerState);
 
-	// Game mode data can only be set from the server. It is replicated to clients.
-	if (!HasAuthority())
+	/* Start listening for init state changes from the new player state. Calls this actor's OnActorInitStateChanged a
+	 * change is received. */
+	if (ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(PlayerState))
 	{
-		return;
+		ActorInitStateChangedHandles.Add(CrashPS, GetComponentManager()->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
 	}
+}
 
-	// We should only ever be setting game mode data once.
-	if (GameModeDataPath.ToSoftObjectPath().IsValid())
-	{
-		UE_LOG(LogCrash, Error, TEXT("Trying to set game mode data [%s] on game state, when game mode data has already been set to [%s]. If you want to load data from game options, make sure there is no overriding game data selected in the developer settings."), *InGameModeDataPath.GetAssetName(), *GameModeDataPath.GetAssetName());
-		return;
-	}
-
-	// Update the game mode data path.
-	GameModeDataPath = InGameModeDataPath;
-	ForceNetUpdate();
-
-	// Manually call the OnRep to load the game mode data on the server.
-	OnRep_GameModeDataPath();
+void ACrashGameStateBase::SetGameModeData(FPrimaryAssetId GameModeDataId)
+{
+	// check(InGameModeDataPath.ToSoftObjectPath().IsValid());
+	//
+	// // Game mode data can only be set from the server. It is replicated to clients.
+	// if (!HasAuthority())
+	// {
+	// 	return;
+	// }
+	//
+	// // We should only ever be setting game mode data once.
+	// if (GameModeDataPath.ToSoftObjectPath().IsValid())
+	// {
+	// 	UE_LOG(LogCrash, Error, TEXT("Trying to set game mode data [%s] on game state, when game mode data has already been set to [%s]. If you want to load data from game options, make sure there is no overriding game data selected in the developer settings."), *InGameModeDataPath.GetAssetName(), *GameModeDataPath.GetAssetName());
+	// 	return;
+	// }
+	//
+	// // Update the game mode data path.
+	// GameModeDataPath = InGameModeDataPath;
+	// ForceNetUpdate();
+	//
+	// // Manually call the OnRep to load the game mode data on the server.
+	// OnRep_GameModeDataPath();
 }
 
 const UCrashGameModeData* ACrashGameStateBase::GetGameModeData() const
@@ -178,6 +204,10 @@ const UCrashGameModeData* ACrashGameStateBase::GetGameModeData() const
 	}
 }
 
+void ACrashGameStateBase::CallOrRegister_OnGameModeDataLoaded(FGameModeDataLoadedSignature::FDelegate&& InGameModeDataLoadedDelegate)
+{
+}
+
 void ACrashGameStateBase::OnRep_GameModeDataPath()
 {
 	// Ensure a valid path.
@@ -195,8 +225,9 @@ void ACrashGameStateBase::OnRep_GameModeDataPath()
 
 void ACrashGameStateBase::OnGameModeDataLoaded()
 {
-	// Cache the loaded game mode data.
+	// Cache and broadcast the loaded game mode data.
 	GameModeData = GameModeDataPath.Get();
+	GameModeDataLoadedDelegate.Broadcast(GameModeData);
 
 	SCOPE_LOG_TIME_IN_SECONDS(TEXT("		... GameModeData loaded!"), nullptr);
 

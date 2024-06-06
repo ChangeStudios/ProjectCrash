@@ -3,30 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ModularGameMode.h"
+#include "ModularPlayerState.h"
 #include "Components/GameFrameworkInitStateInterface.h"
-#include "CrashGameModeBase.generated.h"
+#include "CrashPlayerStateBase.generated.h"
+
+class UChallengerData;
+class UChallengerSkinData;
 
 /**
- * Base game mode for this project. Handles initialization and transitioning between high-level game phases.
+ * Base player state for this project. Handles generic initialization.
+ *
+ * This is only used as a base for gameplay player states. Other player states (e.g. main menu, character selection,
+ * etc.) don't require initialization logic this complex, nor do they need Challenger or skin data.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameModeBase : public AModularGameModeBase, public IGameFrameworkInitStateInterface
+class PROJECTCRASH_API ACrashPlayerStateBase : public AModularPlayerState, public IGameFrameworkInitStateInterface
 {
 	GENERATED_BODY()
-
-	// Construction.
-
-public:
-
-	/** Default constructor. */
-	ACrashGameModeBase();
-
-
-
+	
 	// Initialization.
 
-// Pre-initialization.
 public:
 
 	/** Registers this actor as a feature with the initialization state framework. */
@@ -50,17 +46,33 @@ public:
 	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	virtual void CheckDefaultInitialization() override;
 
-protected:
-
-	/** Handles bound to other actor initialization state changes, e.g. the game state, and the corresponding
-	 * actors. */
-	TMap<TObjectPtr<AActor>, FDelegateHandle> ActorInitStateChangedHandles;
 
 
-
-	// Players.
+	// Challenger data.
 
 public:
-	
-	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+
+	/** Accessor for CurrentChallenger. */
+	FORCEINLINE const UChallengerData* GetCurrentChallenger() const;
+
+protected:
+
+	/** The challenger currently selected by this player. */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
+	TSoftObjectPtr<UChallengerData> CurrentChallenger;
+
+
+
+	// Skin data.
+
+public:
+
+	/** Accessor for CurrentSkin. */
+	FORCEINLINE const UChallengerSkinData* GetCurrentSkin() const;
+
+protected:
+
+	/** The current skin being used for the current Challenger. */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
+	TSoftObjectPtr<UChallengerSkinData> CurrentSkin;
 };

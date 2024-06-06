@@ -1,20 +1,21 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/Data/CrashGameModeData_DEP.h"
 #include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
+#include "GameFramework/GameStates/CrashGameStateBase.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
 #include "UI/Data/MatchUserInterfaceData.h"
 
-ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
+ACrashPlayerState_DEP::ACrashPlayerState_DEP(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	// Create the ability system component.
@@ -35,42 +36,7 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	CurrentSkin = nullptr;
 }
 
-void ACrashPlayerState::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	// Initialize the ASC's actor info with this player state as its owner.
-	check(AbilitySystemComponent);
-	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
-
-	// Bind the OnInputBlockingChanged callback to when this player's ASC gains or loses the InputBlocking tag.
-	InputBlockingDelegate = AbilitySystemComponent->RegisterGameplayTagEvent(CrashGameplayTags::TAG_Ability_Behavior_InputBlocking, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ACrashPlayerState::OnInputBlockingChanged);
-
-
-	/* Initialize this player's lives using the game mode's data. This is only done on the server (the game mode only
-	 * exists on the server) and then replicated to clients. */
-	if (HasAuthority())
-	{
-		/* We may want to change this to use the game state for consistency; the game mode data will be valid on both
-		 * the game mode and the game state on the server. */
-		const AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-		const ACrashGameMode_DEP* CrashGM = GM ? Cast<ACrashGameMode_DEP>(GM) : nullptr;
-		if (CrashGM && CrashGM->GetGameModeData())
-		{
-			const UCrashGameModeData_DEP* GameModeData = CrashGM->GetGameModeData();
-			CurrentLives = GameModeData->StartingLives;
-		}
-		else
-		{
-			const uint8 StartingLivesFallback = 1;
-			CurrentLives = StartingLivesFallback;
-
-			UE_LOG(LogGameMode, Warning, TEXT("ACrashPlayerState: CrashPlayerState [%s] tried to initialize its current lives, but could not find a game mode with valid GameModeData. ACrashPlayerState must be used with ACrashGameMode, and the game mode must have valid game mode data. Falling back to default starting lives: %i."), *GetName(), StartingLivesFallback);
-		}
-	}
-}
-
-void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
+void ACrashPlayerState_DEP::Client_HandleMatchEnded_Implementation(bool bWon)
 {
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
@@ -88,14 +54,14 @@ void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
 	}
 }
 
-void ACrashPlayerState::Client_HandleLeavingMap_Implementation()
+void ACrashPlayerState_DEP::Client_HandleLeavingMap_Implementation()
 {
 	// Return to the main menu when the post-match phase ends.
 	// TODO: Use data to find the main menu map.
 	UGameplayStatics::OpenLevel(this, FName("L_MenuBackground_Fighters"));
 }
 
-void ACrashPlayerState::SetTeamID(FCrashTeamID InTeamID)
+void ACrashPlayerState_DEP::SetTeamID(FCrashTeamID InTeamID)
 {
 	// Only the server can change a player's team.
 	if (HasAuthority())
@@ -108,11 +74,11 @@ void ACrashPlayerState::SetTeamID(FCrashTeamID InTeamID)
 	}
 }
 
-void ACrashPlayerState::OnRep_TeamID(FCrashTeamID OldTeamID)
+void ACrashPlayerState_DEP::OnRep_TeamID(FCrashTeamID OldTeamID)
 {
 }
 
-void ACrashPlayerState::DecrementLives_Implementation()
+void ACrashPlayerState_DEP::DecrementLives_Implementation()
 {
 	if (CurrentLives == 0)
 	{
@@ -132,39 +98,19 @@ void ACrashPlayerState::DecrementLives_Implementation()
 	}
 }
 
-void ACrashPlayerState::OnRep_CurrentLives(uint8 OldValue)
+void ACrashPlayerState_DEP::OnRep_CurrentLives(uint8 OldValue)
 {
 	// Broadcast the change in current lives.
 	LivesChangedDelegate.Broadcast(this, OldValue, CurrentLives);
 }
 
-void ACrashPlayerState::UpdateCurrentChallenger(UChallengerData* InChallengerData)
-{
-	// Only update the challenger on the server.
-	if (HasAuthority() && InChallengerData != nullptr)
-	{
-		CurrentChallenger = InChallengerData;
-	}
-}
-
-void ACrashPlayerState::UpdateCurrentSkin(UChallengerSkinData* InSkinData)
-{
-	// Only update the character skin on the server.
-	if (HasAuthority() && InSkinData)
-	{
-		// TODO: Perform additional API validation with player cloud data.
-
-		CurrentSkin = InSkinData;
-	}
-}
-
-UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ACrashPlayerState_DEP::GetAbilitySystemComponent() const
 {
 	// The interfaced accessor will always return the typed ASC.
 	return GetCrashAbilitySystemComponent();
 }
 
-void ACrashPlayerState::OnInputBlockingChanged(const FGameplayTag Tag, int32 NewCount)
+void ACrashPlayerState_DEP::OnInputBlockingChanged(const FGameplayTag Tag, int32 NewCount)
 {
 	if (GetPawn() && GetPawn()->IsLocallyControlled())
 	{
@@ -179,12 +125,10 @@ void ACrashPlayerState::OnInputBlockingChanged(const FGameplayTag Tag, int32 New
 	}
 }
 
-void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ACrashPlayerState_DEP::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, TeamID, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState, CurrentLives, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME(ACrashPlayerState, CurrentChallenger);
-	DOREPLIFETIME(ACrashPlayerState, CurrentSkin);
+	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState_DEP, TeamID, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ACrashPlayerState_DEP, CurrentLives, COND_None, REPNOTIFY_Always);
 }

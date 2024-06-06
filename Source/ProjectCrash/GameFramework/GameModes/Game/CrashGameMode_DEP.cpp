@@ -17,7 +17,7 @@
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PriorityPlayerStart.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 namespace CrashMatchState
 {
@@ -96,7 +96,7 @@ void ACrashGameMode_DEP::PostLogin(APlayerController* NewPlayer)
 		 */
 	}
 
-	if (ACrashPlayerState* CrashPS = NewPlayer ? NewPlayer->GetPlayerState<ACrashPlayerState>() : nullptr)
+	if (ACrashPlayerState_DEP* CrashPS = NewPlayer ? NewPlayer->GetPlayerState<ACrashPlayerState_DEP>() : nullptr)
 	{
 		// TODO: Override this for custom games, where teams are decided before the game begins.
 		const FCrashTeamID NewTeam = ChooseTeam(CrashPS);
@@ -113,7 +113,7 @@ void ACrashGameMode_DEP::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
-FCrashTeamID ACrashGameMode_DEP::ChooseTeam(ACrashPlayerState* CrashPS)
+FCrashTeamID ACrashGameMode_DEP::ChooseTeam(ACrashPlayerState_DEP* CrashPS)
 {
 	check(GameModeData);
 
@@ -180,7 +180,7 @@ AActor* ACrashGameMode_DEP::ChoosePlayerStart_Implementation(AController* Player
 
 bool ACrashGameMode_DEP::IsPlayerStartAllowed(APlayerStart* PlayerStart, AController* Player)
 {
-	const ACrashPlayerState* CrashPS = Player->GetPlayerState<ACrashPlayerState>();
+	const ACrashPlayerState_DEP* CrashPS = Player->GetPlayerState<ACrashPlayerState_DEP>();
 
 	// By default, players are only allowed to spawn at player starts intended for their team.
 	if (const APriorityPlayerStart* PriorityPlayerStart = Cast<APriorityPlayerStart>(PlayerStart))
@@ -331,7 +331,7 @@ void ACrashGameMode_DEP::EndMatch()
 	// Notify players that the game ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		if (ACrashPlayerState* CrashPS = (*It)->GetPlayerState<ACrashPlayerState>())
+		if (ACrashPlayerState_DEP* CrashPS = (*It)->GetPlayerState<ACrashPlayerState_DEP>())
 		{
 			const bool bWon = DetermineMatchWinner() == CrashPS->GetTeamID();
 			CrashPS->Client_HandleMatchEnded(bWon);
@@ -344,7 +344,7 @@ void ACrashGameMode_DEP::HandleLeavingMap()
 	// Notify players that the post-match phase has ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
-		if (ACrashPlayerState* CrashPS = (*It)->GetPlayerState<ACrashPlayerState>())
+		if (ACrashPlayerState_DEP* CrashPS = (*It)->GetPlayerState<ACrashPlayerState_DEP>())
 		{
 			CrashPS->Client_HandleLeavingMap();
 		}
@@ -420,7 +420,7 @@ void ACrashGameMode_DEP::StartDeath(const FDeathData& DeathData)
 	 * now out of lives. */
 	if (bPlayerDeath)
 	{
-		if (ACrashPlayerState* CrashPS = PC->GetPlayerState<ACrashPlayerState>())
+		if (ACrashPlayerState_DEP* CrashPS = PC->GetPlayerState<ACrashPlayerState_DEP>())
 		{
 			CrashPS->DecrementLives();
 		}

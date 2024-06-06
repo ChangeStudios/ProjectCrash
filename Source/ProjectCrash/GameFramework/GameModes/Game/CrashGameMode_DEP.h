@@ -10,7 +10,7 @@
 #include "GameFramework/Teams/CrashTeams.h"
 #include "CrashGameMode_DEP.generated.h"
 
-class ACrashPlayerState;
+class ACrashPlayerState_DEP;
 class APlayerStart;
 class APriorityPlayerStart;
 class UCrashAbilitySystemComponent;
@@ -71,7 +71,7 @@ public:
 
 	/** Returns which team the given player should be assigned to, according to the game mode rules and current
 	 * state. */
-	virtual FCrashTeamID ChooseTeam(ACrashPlayerState* CrashPS);
+	virtual FCrashTeamID ChooseTeam(ACrashPlayerState_DEP* CrashPS);
 
 	/** Spawns and initializes new players (enables input, draws the game HUD, etc.). */
 	virtual void RestartPlayer(AController* NewPlayer) override;

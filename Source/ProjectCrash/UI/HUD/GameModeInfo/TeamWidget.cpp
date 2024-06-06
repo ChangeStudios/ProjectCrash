@@ -7,13 +7,13 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/Teams/CrashTeams.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 
 void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 {
 	check(InPlayer);
-	ACrashPlayerState* BoundCrashPS = Cast<ACrashPlayerState>(InPlayer);
+	ACrashPlayerState_DEP* BoundCrashPS = Cast<ACrashPlayerState_DEP>(InPlayer);
 	check(BoundCrashPS);
 
 	// Make sure the same player is not bound to this widget multiple times.
@@ -42,7 +42,7 @@ void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 
 	const APlayerController* LocalPC = GetOwningLocalPlayer()->PlayerController;
 	const APlayerState* LocalPS = LocalPC ? LocalPC->PlayerState : nullptr;
-	const ACrashPlayerState* LocalCrashPS = LocalPS ? Cast<ACrashPlayerState>(LocalPS) : nullptr;
+	const ACrashPlayerState_DEP* LocalCrashPS = LocalPS ? Cast<ACrashPlayerState_DEP>(LocalPS) : nullptr;
 	ensure(LocalCrashPS);
 
 	const UGlobalGameData& GlobalData = UCrashAssetManager::Get().GetGlobalGameData();

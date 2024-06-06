@@ -26,7 +26,7 @@
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
@@ -127,7 +127,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	// Initialize the ASC on the server.
-	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+	ACrashPlayerState_DEP* CrashPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	if (!ensure(CrashPS))
 	{
@@ -158,7 +158,7 @@ void AChallengerBase::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	// If this character gets a new player state, initialize its ASC on the client.
-	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+	ACrashPlayerState_DEP* CrashPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	if (!CrashPS)
 	{
@@ -203,7 +203,7 @@ void AChallengerBase::InitializeGameplayTags()
 	}
 }
 
-void AChallengerBase::InitCharacterSkin(UChallengerSkinData* Skin)
+void AChallengerBase::InitCharacterSkin(const UChallengerSkinData* Skin)
 {
 	ensure(Skin);
 
@@ -303,7 +303,7 @@ void AChallengerBase::UpdateTeamFresnel()
 	const UCrashGameModeData_DEP* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 
 	// Get this character's player state.
-	const ACrashPlayerState* CharacterPS = GetPlayerState<ACrashPlayerState>();
+	const ACrashPlayerState_DEP* CharacterPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	// Get the local player's player state to check attitude with this character.
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
@@ -327,7 +327,7 @@ void AChallengerBase::UpdateTeamFresnel()
 		LocalCrashPC->PlayerStateChangedDelegate.RemoveAll(this);
 
 		// If the local player is on a team (i.e. not spectating), use their team to determine this character's fresnel.
-		if (const ACrashPlayerState* LocalCrashPS = Cast<ACrashPlayerState>(LocalPS))
+		if (const ACrashPlayerState_DEP* LocalCrashPS = Cast<ACrashPlayerState_DEP>(LocalPS))
 		{
 			
 			switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))

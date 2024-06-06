@@ -42,6 +42,7 @@ public class ProjectCrash : ModuleRules
 			"NetCore",
 			"Slate",
 			"SlateCore",
+			"UIExtension",
 			"UMG"
 		});
 	}

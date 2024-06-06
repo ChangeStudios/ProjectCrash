@@ -10,7 +10,7 @@
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 void UGameModeInfoBase::NativeConstruct()
 {

@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{7BD46130-4D0A-A3B2-6B51-F4BD6D6EC2DE}",
+	"EngineAssociation": "5.4",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -91,6 +91,14 @@
 		},
 		{
 			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "RiderLink",
+			"Enabled": false
+		},
+		{
+			"Name": "UIExtension",
 			"Enabled": true
 		}
 	],

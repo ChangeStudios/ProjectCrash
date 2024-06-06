@@ -6,12 +6,14 @@
 #include "CrashGameplayTags.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/GameStates/CrashGameStateBase.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 const FName ACrashGameModeBase::NAME_ActorFeatureName("CrashGameMode");
 
 ACrashGameModeBase::ACrashGameModeBase()
 {
 	GameStateClass = ACrashGameStateBase::StaticClass();
+	PlayerStateClass = ACrashPlayerState_DEP::StaticClass();
 }
 
 void ACrashGameModeBase::PreInitializeComponents()
@@ -105,4 +107,9 @@ void ACrashGameModeBase::CheckDefaultInitialization()
 	/* Attempts to progress through the state chain if requirements for the next state are met, determined by
 	 * CanChangeInitState. */
 	ContinueInitStateChain(CrashGameplayTags::StateChain);
+}
+
+UClass* ACrashGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }

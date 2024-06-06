@@ -4,23 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "GameFramework/PlayerState.h"
+#include "CrashPlayerStateBase.h"
 #include "GameFramework/Teams/CrashTeams.h"
-#include "CrashPlayerState.generated.h"
+#include "CrashPlayerState_DEP.generated.h"
 
 class UChallengerSkinData;
 class UChallengerData;
 class UHealthAttributeSet;
 
 /** Broadcast when a player's current lives changes. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FLivesChangedSignature, ACrashPlayerState*, Player, uint8, OldLives, uint8, NewLives);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FLivesChangedSignature, ACrashPlayerState_DEP*, Player, uint8, OldLives, uint8, NewLives);
 
 /**
- * The player state used during gameplay (as opposed to menus, lobbies, etc.). Contains the player's ability system
- * component.
+ * The primary player state used during gameplay. Contains the player's ability system component.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilitySystemInterface, public ICrashTeamMemberInterface
+class PROJECTCRASH_API ACrashPlayerState_DEP : public ACrashPlayerStateBase, public IAbilitySystemInterface, public ICrashTeamMemberInterface
 {
 	GENERATED_BODY()
 
@@ -29,16 +28,7 @@ class PROJECTCRASH_API ACrashPlayerState : public APlayerState, public IAbilityS
 public:
 
 	/** Default constructor. */
-	ACrashPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-
-
-	// Initialization.
-
-public:
-
-	/** Initializes the ASC with this player state as the owner after all other components have been initialized. */
-	virtual void PostInitializeComponents() override;
+	ACrashPlayerState_DEP(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 
 
@@ -115,34 +105,6 @@ protected:
 	/** OnRep for CurrentLives. Updates client-side information (primarily the user interface). */
 	UFUNCTION()
 	void OnRep_CurrentLives(uint8 OldValue);
-
-
-
-	// Challenger data.
-
-public:
-
-	/** Accessor for CurrentChallenger. */
-	UChallengerData* GetCurrentChallenger() const { return CurrentChallenger; }
-
-	/** Server-only setter for CurrentChallenger. */
-	void UpdateCurrentChallenger(UChallengerData* InChallengerData);
-
-	/** Accessor for CurrentSkin. */
-	UChallengerSkinData* GetCurrentSkin() const { return CurrentSkin; }
-
-	/** Server-only setter for CurrentSkin. */
-	void UpdateCurrentSkin(UChallengerSkinData* InSkinData);
-
-protected:
-
-	/** The challenger currently selected by this player. */
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
-	TObjectPtr<UChallengerData> CurrentChallenger;
-
-	/** The current skin being used for the current Challenger. */
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Challenger Data")
-	TObjectPtr<UChallengerSkinData> CurrentSkin;
 
 
 

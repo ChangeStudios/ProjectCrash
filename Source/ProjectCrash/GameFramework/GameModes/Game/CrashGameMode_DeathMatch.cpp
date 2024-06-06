@@ -4,7 +4,7 @@
 #include "GameFramework/GameModes/Game/CrashGameMode_DeathMatch.h"
 
 #include "GameFramework/GameStateBase.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 bool ACrashGameMode_DeathMatch::IsVictoryConditionMet()
 {
@@ -12,7 +12,7 @@ bool ACrashGameMode_DeathMatch::IsVictoryConditionMet()
 	TMap<uint8, uint8> TotalTeamLives;
 	for (const APlayerState* PS : GameState->PlayerArray)
 	{
-		if (const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(PS))
+		if (const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(PS))
 		{
 			TotalTeamLives.FindOrAdd(CrashPS->GetTeamID());
 			TotalTeamLives[CrashPS->GetTeamID()] += CrashPS->GetCurrentLives();
@@ -46,7 +46,7 @@ FCrashTeamID ACrashGameMode_DeathMatch::DetermineMatchWinner()
 
 	for (const APlayerState* PS : GameState->PlayerArray)
 	{
-		if (const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(PS))
+		if (const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(PS))
 		{
 			if (CrashPS->GetCurrentLives())
 			{

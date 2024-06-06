@@ -65,7 +65,7 @@ public:
 	virtual void InitializeGameplayTags();
 
 	/** Initializes this character with a given character skin. */
-	virtual void InitCharacterSkin(UChallengerSkinData* Skin);
+	virtual void InitCharacterSkin(const UChallengerSkinData* Skin);
 
 
 
