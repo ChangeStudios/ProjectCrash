@@ -3,7 +3,7 @@
 
 #include "CharacterSelectionPlayerController.h"
 
-#include "GameFramework/CrashGameInstance_DEP.h"
+#include "GameFramework/CrashGameInstance.h"
 #include "GameFramework/GameStates/CrashGameState_CharacterSelection.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,7 +26,7 @@ void ACharacterSelectionPlayerController::Server_LockInChallenger_Implementation
 {
 	check(SelectedChallenger);
 
-	if (UCrashGameInstance_DEP* CrashGI = Cast<UCrashGameInstance_DEP>(GetGameInstance()))
+	if (UCrashGameInstance* CrashGI = Cast<UCrashGameInstance>(GetGameInstance()))
 	{
 		// Assign this player's Challenger, checking if they are the final player to do so.
 		if (CrashGI->AssignPlayerChallenger(this, SelectedChallenger))

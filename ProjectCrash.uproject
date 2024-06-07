@@ -17,8 +17,7 @@
 				"CoreUObject",
 				"OnlineSubsystemUtils",
 				"GameplayTags",
-				"PhysicsCore",
-				"CommonGame"
+				"PhysicsCore"
 			]
 		}
 	],
