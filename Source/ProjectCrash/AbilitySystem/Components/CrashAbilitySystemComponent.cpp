@@ -6,7 +6,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "GameplayCueManager.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "Characters/CrashCharacterBase.h"
 #include "GameFramework/CrashLogging.h"

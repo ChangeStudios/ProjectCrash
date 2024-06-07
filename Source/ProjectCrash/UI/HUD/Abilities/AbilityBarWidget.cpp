@@ -6,7 +6,7 @@
 #include "AbilitySlotWidget.h"
 #include "CommonInputSubsystem.h"
 #include "WeaponSlotWidget.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "Components/DynamicEntryBox.h"

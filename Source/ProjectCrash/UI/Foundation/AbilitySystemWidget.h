@@ -13,7 +13,7 @@ class UCrashAbilitySystemComponent;
 DECLARE_MULTICAST_DELEGATE(FASCReadySignature);
 
 /**
- * A widget that binds to its owning player's ability system component via the owning controller's player state.
+ * A widget that binds to its owning player's ability system component.
  */
 UCLASS(Abstract, Blueprintable)
 class PROJECTCRASH_API UAbilitySystemWidget : public UCrashActivatableWidget

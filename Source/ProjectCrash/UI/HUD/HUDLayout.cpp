@@ -3,7 +3,7 @@
 
 #include "UI/HUD/HUDLayout.h"
 
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Input/CommonUIInputTypes.h"
 #include "NativeGameplayTags.h"
 #include "Player/PlayerControllers/CrashPlayerControllerBase.h"

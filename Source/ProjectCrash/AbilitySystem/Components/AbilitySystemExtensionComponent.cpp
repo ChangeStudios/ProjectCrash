@@ -4,7 +4,7 @@
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 
 #include "CrashAbilitySystemComponent.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 
 UAbilitySystemExtensionComponent::UAbilitySystemExtensionComponent(const FObjectInitializer& ObjectInitializer)
 {

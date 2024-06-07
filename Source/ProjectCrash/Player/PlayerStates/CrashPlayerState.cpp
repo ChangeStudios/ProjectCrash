@@ -3,7 +3,7 @@
 
 #include "Player/PlayerStates/CrashPlayerState.h"
 
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"

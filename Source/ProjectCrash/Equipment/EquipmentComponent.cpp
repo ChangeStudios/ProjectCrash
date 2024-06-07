@@ -7,7 +7,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Animation/ChallengerAnimInstanceBase.h"
 #include "EquipmentPieceActor.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Characters/CrashCharacterBase.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"

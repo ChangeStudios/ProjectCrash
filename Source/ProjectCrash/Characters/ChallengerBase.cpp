@@ -7,7 +7,7 @@
 #include "ChallengerData.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"

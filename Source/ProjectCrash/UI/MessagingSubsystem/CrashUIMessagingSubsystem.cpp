@@ -4,7 +4,7 @@
 #include "UI/MessagingSubsystem/CrashUIMessagingSubsystem.h"
 
 #include "DialogWidget.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Player/PlayerControllers/CrashPlayerControllerBase.h"
 
 bool UCrashUIMessagingSubsystem::ShouldCreateSubsystem(UObject* Outer) const

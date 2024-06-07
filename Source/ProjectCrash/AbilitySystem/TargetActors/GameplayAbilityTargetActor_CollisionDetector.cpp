@@ -7,7 +7,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "Abilities/GameplayAbility.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "Components/ShapeComponent.h"
 
 AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_CollisionDetector(const FObjectInitializer& ObjectInitializer)

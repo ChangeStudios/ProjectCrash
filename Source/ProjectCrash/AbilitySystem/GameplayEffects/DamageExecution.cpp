@@ -4,7 +4,7 @@
 #include "AbilitySystem/GameplayEffects/DamageExecution.h"
 
 #include "AbilitySystemLog.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
