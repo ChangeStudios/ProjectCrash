@@ -25,7 +25,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 #include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
@@ -308,7 +308,7 @@ void AChallengerBase::UpdateTeamFresnel()
 	// Get the local player's player state to check attitude with this character.
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	APlayerController* LocalPC = LocalPlayer ? LocalPlayer->PlayerController.Get() : Cast<APlayerController>(GetController());
-	ACrashPlayerController* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController>(LocalPC) : nullptr;
+	ACrashPlayerController_DEP* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController_DEP>(LocalPC) : nullptr;
 	const APlayerState* LocalPS = LocalPC ? LocalPC->GetPlayerState<APlayerState>() : nullptr;
 
 	if (CharacterPS && LocalPS && GlobalGameData && GMData)

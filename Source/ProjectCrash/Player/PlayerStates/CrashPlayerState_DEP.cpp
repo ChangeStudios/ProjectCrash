@@ -12,7 +12,7 @@
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 #include "UI/Data/MatchUserInterfaceData.h"
 
 ACrashPlayerState_DEP::ACrashPlayerState_DEP(const FObjectInitializer& ObjectInitializer)
@@ -45,7 +45,7 @@ void ACrashPlayerState_DEP::Client_HandleMatchEnded_Implementation(bool bWon)
 	const UMatchUserInterfaceData* MatchUIData = UIData ? Cast<UMatchUserInterfaceData>(UIData) : nullptr;
 
 	APlayerController* PC = GetPlayerController();
-	ACrashPlayerController* CrashPC = PC ? Cast<ACrashPlayerController>(PC) : nullptr;
+	ACrashPlayerController_DEP* CrashPC = PC ? Cast<ACrashPlayerController_DEP>(PC) : nullptr;
 
 	// Push the "victory"/"defeat" pop-up to the player.
 	if (MatchUIData && CrashPC)

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 #include "CharacterSelectionPlayerController.generated.h"
 
 /**
  * The player controller used in the character selection pre-game menu.
  */
 UCLASS()
-class PROJECTCRASH_API ACharacterSelectionPlayerController : public ACrashPlayerController
+class PROJECTCRASH_API ACharacterSelectionPlayerController : public ACrashPlayerController_DEP
 {
 	GENERATED_BODY()
 

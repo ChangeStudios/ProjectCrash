@@ -10,7 +10,9 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"DeveloperSettings",
-				"Engine"
+				"Engine",
+				"ModularGameplayActors",
+				"CommonGame"
 			]
 		}
 	],
@@ -109,6 +111,10 @@
 		},
 		{
 			"Name": "AssetReferenceRestrictions",
+			"Enabled": true
+		},
+		{
+			"Name": "AbilitySystemGameFeatureActions",
 			"Enabled": true
 		}
 	],

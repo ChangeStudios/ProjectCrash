@@ -7,7 +7,7 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 
 void UAbilitySystemWidget::NativeConstruct()
 {
