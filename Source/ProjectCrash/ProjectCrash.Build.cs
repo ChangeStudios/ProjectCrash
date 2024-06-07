@@ -20,20 +20,22 @@ public class ProjectCrash : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"GameplayAbilities",
-			"GameplayMessageRuntime",
 			"GameplayTags",
 			"GameplayTasks",
 			"InputCore",
-			"Niagara",
-			"PhysicsCore"
+			"ModularGameplay",
+			"ModularGameplayActors",
+			"Niagara"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"CommonInput",
+			"CommonGame",
 			"CommonUI",
-			"DeveloperSettings",
+			"CommonUser",
 			"EnhancedInput",
+			"GameplayMessageRuntime",
 			"LevelSequence",
 			"NetCore",
 			"Slate",

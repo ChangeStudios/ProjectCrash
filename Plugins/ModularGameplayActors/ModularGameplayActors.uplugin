@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "Gameplay Message Subsystem",
-	"Description": "A subsystem that provides a broadcaster-listener message system for quickly broadcasting events, with payloads, to any active listeners.",
+	"FriendlyName": "Modular Gameplay Actors",
+	"Description": "Base classes designed to be used with the Modular Gameplay plugin.",
 	"Category": "Gameplay",
 	"CreatedBy": "Epic Games, Inc.",
 	"CreatedByURL": "http://epicgames.com",
@@ -12,23 +12,18 @@
 	"SupportURL": "",
 	"EnabledByDefault": true,
 	"CanContainContent": false,
-	"IsBetaVersion": true,
+	"IsBetaVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "GameplayMessageRuntime",
+			"Name": "ModularGameplayActors",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "GameplayMessageNodes",
-			"Type": "UncookedOnly",
 			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
 		{
-			"Name": "GameplayTagsEditor",
+			"Name": "ModularGameplay",
 			"Enabled": true
 		}
 	]

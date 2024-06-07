@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/GameInstance.h"
+#include "CommonGameInstance.h"
 #include "CrashGameInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTCRASH_API UCrashGameInstance : public UGameInstance
+class PROJECTCRASH_API UCrashGameInstance : public UCommonGameInstance
 {
 	GENERATED_BODY()
 	
