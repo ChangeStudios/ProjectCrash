@@ -8,7 +8,7 @@
 #include "AnimData/CharacterAnimData.h"
 #include "Camera/CameraComponent.h"
 #include "Characters/ChallengerBase.h"
-#include "Characters/Data/ChallengerSkinData.h"
+#include "Characters/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 
 void UChallengerAnimInstanceBase::NativeInitializeAnimation()

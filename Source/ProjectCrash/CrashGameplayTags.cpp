@@ -36,12 +36,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_PerformTargeting, "Event.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
 
 
-	// Game framework.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_WaitingForData, "InitState.WaitingForData", "We are entering the map and waiting to load and replicate all of the data we need for initialization: game data, Challenger data, skin data, etc.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_Initializing, "InitState.Initializing", "Actors and their components are being initialized for game play.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
-
-
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Jump, "InputTag.Jump", "Input tag to activate the jump ability.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Look_Mouse, "InputTag.Look.Mouse", "Input tag to activate the look action with a mouse.");

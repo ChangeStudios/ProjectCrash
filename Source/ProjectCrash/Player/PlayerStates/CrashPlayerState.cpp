@@ -6,9 +6,9 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/Data/CrashGameModeData.h"
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameModes/Data/CrashGameModeData.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
@@ -59,7 +59,7 @@ void ACrashPlayerState::PostInitializeComponents()
 		/* We may want to change this to use the game state for consistency; the game mode data will be valid on both
 		 * the game mode and the game state on the server. */
 		const AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-		const ACrashGameMode_DEP* CrashGM = GM ? Cast<ACrashGameMode_DEP>(GM) : nullptr;
+		const ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
 		if (CrashGM && CrashGM->GetGameModeData())
 		{
 			const UCrashGameModeData* GameModeData = CrashGM->GetGameModeData();
@@ -84,7 +84,7 @@ void ACrashPlayerState::PostInitializeComponents()
 void ACrashPlayerState::Client_HandleMatchEnded_Implementation(bool bWon)
 {
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
-	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
+	const ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
 	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 	const UUserInterfaceData* UIData = GMData ? GMData->UIData : nullptr;
 	const UMatchUserInterfaceData* MatchUIData = UIData ? Cast<UMatchUserInterfaceData>(UIData) : nullptr;

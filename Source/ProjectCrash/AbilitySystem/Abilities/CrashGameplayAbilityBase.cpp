@@ -10,10 +10,10 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
-#include "Characters/Data/ChallengerSkinData.h"
+#include "Characters/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -269,7 +269,7 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 				MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
 
 				// Broadcast the message to clients, since ApplyCooldown is only called on the server.
-				if (ACrashGameState_DEP* GS = Cast<ACrashGameState_DEP>(UGameplayStatics::GetGameState(GetWorld())))
+				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 				{
 					GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
 				}

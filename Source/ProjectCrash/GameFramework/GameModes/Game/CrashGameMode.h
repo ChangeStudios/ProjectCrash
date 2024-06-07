@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "GameFramework/Data/CrashGameModeData.h"
+#include <GameFramework/GameModes/Data/CrashGameModeData.h>
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "GameFramework/GameMode.h"
 #include "GameFramework/Teams/CrashTeams.h"
-#include "CrashGameMode_DEP.generated.h"
+#include "CrashGameMode.generated.h"
 
 class ACrashPlayerState;
 class APlayerStart;
@@ -27,7 +27,7 @@ namespace CrashMatchState
  * victory conditions.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameMode_DEP : public AGameMode
+class PROJECTCRASH_API ACrashGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
@@ -36,7 +36,7 @@ class PROJECTCRASH_API ACrashGameMode_DEP : public AGameMode
 public:
 
 	/** Default constructor. */
-	ACrashGameMode_DEP();
+	ACrashGameMode();
 
 
 

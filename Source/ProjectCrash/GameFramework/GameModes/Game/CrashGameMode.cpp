@@ -1,9 +1,10 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
 
 #include "AbilitySystemLog.h"
+#include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "CrashGameplayTags.h"
@@ -14,7 +15,7 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GlobalGameData.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PriorityPlayerStart.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -24,27 +25,27 @@ namespace CrashMatchState
 	const FName InProgress_OT = FName(TEXT("In Progress (Overtime)"));
 }
 
-ACrashGameMode_DEP::ACrashGameMode_DEP()
+ACrashGameMode::ACrashGameMode()
 {
 	NumTeams = 0;
 	bDelayedStart = true;
 	GameModeData = nullptr;
 }
 
-void ACrashGameMode_DEP::PreInitializeComponents()
+void ACrashGameMode::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 
 	// Start the match timer.
-	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode_DEP::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
+	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
 }
 
-void ACrashGameMode_DEP::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 }
 
-void ACrashGameMode_DEP::BeginPlay()
+void ACrashGameMode::BeginPlay()
 {
 	// Add the Death ability to the global ability system, which will grant it to each ASC as they are created.
 	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
@@ -62,12 +63,12 @@ void ACrashGameMode_DEP::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ACrashGameMode_DEP::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 }
 
-void ACrashGameMode_DEP::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+void ACrashGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 
@@ -82,7 +83,7 @@ void ACrashGameMode_DEP::PreLogin(const FString& Options, const FString& Address
 	}
 }
 
-void ACrashGameMode_DEP::PostLogin(APlayerController* NewPlayer)
+void ACrashGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	/* Handle players joining matches that are already in-progress. This will usually result in the new player becoming
 	 * a spectator. */
@@ -113,7 +114,7 @@ void ACrashGameMode_DEP::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
-FCrashTeamID ACrashGameMode_DEP::ChooseTeam(ACrashPlayerState* CrashPS)
+FCrashTeamID ACrashGameMode::ChooseTeam(ACrashPlayerState* CrashPS)
 {
 	check(GameModeData);
 
@@ -128,7 +129,7 @@ FCrashTeamID ACrashGameMode_DEP::ChooseTeam(ACrashPlayerState* CrashPS)
 	return ReturnTeamID;
 }
 
-void ACrashGameMode_DEP::RestartPlayer(AController* NewPlayer)
+void ACrashGameMode::RestartPlayer(AController* NewPlayer)
 {
 	Super::RestartPlayer(NewPlayer);
 
@@ -140,7 +141,7 @@ void ACrashGameMode_DEP::RestartPlayer(AController* NewPlayer)
 	 */
 }
 
-AActor* ACrashGameMode_DEP::ChoosePlayerStart_Implementation(AController* Player)
+AActor* ACrashGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
 	APlayerStart* DesiredStart = nullptr;
 
@@ -178,7 +179,7 @@ AActor* ACrashGameMode_DEP::ChoosePlayerStart_Implementation(AController* Player
 	return DesiredStart ? DesiredStart : Super::ChoosePlayerStart_Implementation(Player);
 }
 
-bool ACrashGameMode_DEP::IsPlayerStartAllowed(APlayerStart* PlayerStart, AController* Player)
+bool ACrashGameMode::IsPlayerStartAllowed(APlayerStart* PlayerStart, AController* Player)
 {
 	const ACrashPlayerState* CrashPS = Player->GetPlayerState<ACrashPlayerState>();
 
@@ -194,7 +195,7 @@ bool ACrashGameMode_DEP::IsPlayerStartAllowed(APlayerStart* PlayerStart, AContro
 	return false;
 }
 
-APlayerStart* ACrashGameMode_DEP::GetPreferredStart(TArray<APlayerStart*> PlayerStarts, AController* Player)
+APlayerStart* ACrashGameMode::GetPreferredStart(TArray<APlayerStart*> PlayerStarts, AController* Player)
 {
 	// PlayerStarts cannot be empty.
 	check(PlayerStarts.Num() > 0);
@@ -253,17 +254,17 @@ APlayerStart* ACrashGameMode_DEP::GetPreferredStart(TArray<APlayerStart*> Player
 	return PreferredStart;
 }
 
-bool ACrashGameMode_DEP::ShouldSpawnAtStartSpot(AController* Player)
+bool ACrashGameMode::ShouldSpawnAtStartSpot(AController* Player)
 {
 	return false;
 }
 
-void ACrashGameMode_DEP::OnMatchStateSet()
+void ACrashGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
 
 	// Set the current match time.
-	if (ACrashGameState_DEP* const CrashGS = Cast<ACrashGameState_DEP>(GameState))
+	if (ACrashGameState* const CrashGS = Cast<ACrashGameState>(GameState))
 	{
 		// Standard match time.
 		if (MatchState == MatchState::InProgress)
@@ -283,10 +284,10 @@ void ACrashGameMode_DEP::OnMatchStateSet()
 	}
 
 	// Refresh the timer. This is required to update the timer when the global time dilation changes.
-	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode_DEP::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
+	GetWorldTimerManager().SetTimer(TimerHandle_DefaultTimer, this, &ACrashGameMode::UpdateMatchTime, GetWorldSettings()->GetEffectiveTimeDilation(), true);
 }
 
-bool ACrashGameMode_DEP::IsMatchInProgress() const
+bool ACrashGameMode::IsMatchInProgress() const
 {
 	// Add "InProgress_OT" as an in-progress match state.
 	if (GetMatchState() == MatchState::InProgress || GetMatchState() == CrashMatchState::InProgress_OT)
@@ -297,17 +298,17 @@ bool ACrashGameMode_DEP::IsMatchInProgress() const
 	return false;
 }
 
-void ACrashGameMode_DEP::StartMatch()
+void ACrashGameMode::StartMatch()
 {
 	Super::StartMatch();
 }
 
-void ACrashGameMode_DEP::HandleMatchHasStarted()
+void ACrashGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 }
 
-void ACrashGameMode_DEP::CheckVictoryCondition()
+void ACrashGameMode::CheckVictoryCondition()
 {
 	if (IsVictoryConditionMet())
 	{
@@ -315,7 +316,7 @@ void ACrashGameMode_DEP::CheckVictoryCondition()
 	}
 }
 
-void ACrashGameMode_DEP::EndMatch()
+void ACrashGameMode::EndMatch()
 {
 	if (!IsMatchInProgress())
 	{
@@ -339,7 +340,7 @@ void ACrashGameMode_DEP::EndMatch()
 	}
 }
 
-void ACrashGameMode_DEP::HandleLeavingMap()
+void ACrashGameMode::HandleLeavingMap()
 {
 	// Notify players that the post-match phase has ended.
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
@@ -353,9 +354,9 @@ void ACrashGameMode_DEP::HandleLeavingMap()
 	Super::HandleLeavingMap();
 }
 
-void ACrashGameMode_DEP::UpdateMatchTime()
+void ACrashGameMode::UpdateMatchTime()
 {
-	ACrashGameState_DEP* const CrashGS = Cast<ACrashGameState_DEP>(GameState);
+	ACrashGameState* const CrashGS = Cast<ACrashGameState>(GameState);
 	if (CrashGS && CrashGS->PhaseTimeRemaining > 0)
 	{
 		// Update the current match time.
@@ -396,17 +397,17 @@ void ACrashGameMode_DEP::UpdateMatchTime()
 	}
 }
 
-FCrashTeamID ACrashGameMode_DEP::DetermineMatchWinner()
+FCrashTeamID ACrashGameMode::DetermineMatchWinner()
 {
 	return FCrashTeamID::NO_TEAM;
 }
 
-bool ACrashGameMode_DEP::IsVictoryConditionMet()
+bool ACrashGameMode::IsVictoryConditionMet()
 {
 	return false;
 }
 
-void ACrashGameMode_DEP::StartDeath(const FDeathData& DeathData)
+void ACrashGameMode::StartDeath(const FDeathData& DeathData)
 {
 	/* Cache the player controlling the dying actor, if it's a player-controlled pawn. We do this first because we'll
 	 * lose our reference to the dying player once they unpossess their pawn. */
@@ -455,7 +456,7 @@ void ACrashGameMode_DEP::StartDeath(const FDeathData& DeathData)
 	}), GameModeData->DeathDuration, false);
 }
 
-void ACrashGameMode_DEP::FinishDeath(FTimerHandle& DeathTimer, const FDeathData& DeathData)
+void ACrashGameMode::FinishDeath(FTimerHandle& DeathTimer, const FDeathData& DeathData)
 {
 	// Destroy the timer used for this death.
 	DeathTimer.Invalidate();

@@ -1,15 +1,15 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
-void ACrashGameState_DEP::BeginPlay()
+void ACrashGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -17,23 +17,23 @@ void ACrashGameState_DEP::BeginPlay()
 	if (HasAuthority())
 	{
 		const AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-		const ACrashGameMode_DEP* CrashGM = GM ? Cast<ACrashGameMode_DEP>(GM) : nullptr;
+		const ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
 		GameModeData = CrashGM ? CrashGM->GetGameModeData() : nullptr;
 	}
 }
 
-void ACrashGameState_DEP::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 }
 
-void ACrashGameState_DEP::OnRep_GameModeData()
+void ACrashGameState::OnRep_GameModeData()
 {
 	// Broadcast that the game mode data has been replicated.
 	GameModeDataReplicatedDelegate.Broadcast(GameModeData.Get());
 }
 
-void ACrashGameState_DEP::MulticastReliableAbilityMessageToClients_Implementation(const FCrashAbilityMessage Message)
+void ACrashGameState::MulticastReliableAbilityMessageToClients_Implementation(const FCrashAbilityMessage Message)
 {
 	// Broadcast the given message if this is a client.
 	if (GetNetMode() == NM_Client)
@@ -42,7 +42,7 @@ void ACrashGameState_DEP::MulticastReliableAbilityMessageToClients_Implementatio
 	}
 }
 
-void ACrashGameState_DEP::MulticastReliableMessageToClients_Implementation(const FCrashVerbMessage Message)
+void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCrashVerbMessage Message)
 {
 	// Broadcast the given message if this is a client.
 	if (GetNetMode() == NM_Client)
@@ -51,7 +51,7 @@ void ACrashGameState_DEP::MulticastReliableMessageToClients_Implementation(const
 	}
 }
 
-void ACrashGameState_DEP::OnRep_MatchState()
+void ACrashGameState::OnRep_MatchState()
 {
 	Super::OnRep_MatchState();
 
@@ -59,12 +59,12 @@ void ACrashGameState_DEP::OnRep_MatchState()
 	MatchStateChangedDelegate.Broadcast(MatchState);
 }
 
-void ACrashGameState_DEP::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Since the game mode data is static, we only need to replicate its initial value.
-	DOREPLIFETIME_CONDITION_NOTIFY(ACrashGameState_DEP, GameModeData, COND_InitialOnly, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(ACrashGameState, GameModeData, COND_InitialOnly, REPNOTIFY_Always);
 
-	DOREPLIFETIME(ACrashGameState_DEP, PhaseTimeRemaining);
+	DOREPLIFETIME(ACrashGameState, PhaseTimeRemaining);
 }

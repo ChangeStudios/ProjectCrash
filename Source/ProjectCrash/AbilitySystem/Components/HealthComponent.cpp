@@ -11,8 +11,8 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/PlayerState.h"
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/GameStates/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "GameFramework/Messages/CrashVerbMessageHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -141,7 +141,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 	if (AbilitySystemComponent)
 	{
 		// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
-		if (ACrashGameMode_DEP* CrashGM = Cast<ACrashGameMode_DEP>(UGameplayStatics::GetGameMode(GetWorld())))
+		if (ACrashGameMode* CrashGM = Cast<ACrashGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
 			const FDeathData DeathData = FDeathData
 			(
@@ -173,7 +173,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
 
 			// Broadcast the message to clients.
-			if (ACrashGameState_DEP* GS = Cast<ACrashGameState_DEP>(UGameplayStatics::GetGameState(GetWorld())))
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
 				GS->MulticastReliableMessageToClients(DeathMessage);
 			}
