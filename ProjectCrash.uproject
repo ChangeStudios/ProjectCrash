@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.4",
+	"EngineAssociation": "{7BD46130-4D0A-A3B2-6B51-F4BD6D6EC2DE}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -10,9 +10,7 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"DeveloperSettings",
-				"Engine",
-				"ModularGameplayActors",
-				"CommonGame"
+				"Engine"
 			]
 		}
 	],
@@ -94,11 +92,23 @@
 			"Enabled": true
 		},
 		{
+			"Name": "ModularGameplayActors",
+			"Enabled": true
+		},
+		{
 			"Name": "RiderLink",
 			"Enabled": false
 		},
 		{
 			"Name": "UIExtension",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
+		},
+		{
+			"Name": "AssetReferenceRestrictions",
 			"Enabled": true
 		}
 	],

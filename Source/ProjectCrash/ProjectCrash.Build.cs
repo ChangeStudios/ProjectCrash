@@ -13,12 +13,17 @@ public class ProjectCrash : ModuleRules
 			"ProjectCrash"
 		});
 
-		PublicDependencyModuleNames.AddRange(new string[]
+        PrivateIncludePaths.AddRange(new string[] 
+		{
+		});
+
+        PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core",
 			"CoreOnline",
 			"CoreUObject",
 			"Engine",
+			"GameFeatures",
 			"GameplayAbilities",
 			"GameplayMessageRuntime",
 			"GameplayTags",
@@ -45,5 +50,14 @@ public class ProjectCrash : ModuleRules
 			"UIExtension",
 			"UMG"
 		});
-	}
+
+        DynamicallyLoadedModuleNames.AddRange(new string[] 
+		{
+		});
+
+        // Generate compile errors if using DrawDebug functions in test/shipping builds.
+        PublicDefinitions.Add("SHIPPING_DRAW_DEBUG_ERROR=1");
+
+        SetupGameplayDebuggerSupport(Target);
+    }
 }
