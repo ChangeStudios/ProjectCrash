@@ -67,7 +67,7 @@ class PROJECTCRASH_API UUserFacingGameModeData : public UPrimaryDataAsset
 public:
 
 	/** The actual game mode associated with this user facing game mode. */
-	UPROPERTY(EditDefaultsOnly, Category = "Game Mode", Meta = (AllowedClasses = "CrashGameModeData"))
+	UPROPERTY(EditDefaultsOnly, Category = "Game Mode", Meta = (AllowedTypes = "CrashGameModeData"))
 	FPrimaryAssetId GameModeData;
 
 	/** The maps that can be played in this game mode. */

@@ -4,5 +4,10 @@
 #include "GameFramework/GameStates/CrashGameState.h"
 
 
+ACrashGameState::ACrashGameState()
+{
+}
 
-
+void ACrashGameState::SetGameModeData(FPrimaryAssetId GameModeDataId)
+{
+}

@@ -16,10 +16,10 @@ void AMainMenuPlayerController::BeginPlay()
 	UCrashAssetManager::Get().ChangeBundleStateForPrimaryAssets(PrimaryAssetIds, {"MainMenu"}, {})->WaitUntilComplete(0);
 
 	// Initialize the player's user interface using the global main menu UI data.
-	if (const UUserInterfaceData* MainMenuUIData = UCrashAssetManager::Get().GetMainMenuUIData())
-	{
-		InitializeUserInterface(MainMenuUIData);
-	}
+	// if (const UUserInterfaceData* MainMenuUIData = UCrashAssetManager::Get().GetMainMenuUIData())
+	// {
+	// 	InitializeUserInterface(MainMenuUIData);
+	// }
 
 	// TODO: Platform-specific initialization, e.g. hiding the "exit game" button.
 	bShowMouseCursor = true;

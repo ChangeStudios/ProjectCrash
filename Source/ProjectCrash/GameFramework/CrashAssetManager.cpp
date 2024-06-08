@@ -78,12 +78,6 @@ const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
 	return *CastChecked<const UGlobalGameData>(LoadGlobalGameData(UGlobalGameData::StaticClass(), GlobalGameDataPath, UGlobalGameData::StaticClass()->GetFName()));
 }
 
-const UUserInterfaceData* UCrashAssetManager::GetMainMenuUIData()
-{
-	// Retrieve the loaded main menu UI data. If it's not loaded, perform a blocking load.
-	return GetOrLoadAsset(MainMenuUIDataPath);
-}
-
 const UGlobalMapData* UCrashAssetManager::GetGlobalMapData()
 {
 	// Retrieve the loaded global map data. If it's not loaded, perform a blocking load with default bundles.

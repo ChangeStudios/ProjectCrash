@@ -108,9 +108,9 @@ void ACrashGameStateBase::HandleChangeInitState(UGameFrameworkComponentManager* 
 			if (const UCrashDeveloperSettings* DeveloperSettings = GetDefault<UCrashDeveloperSettings>())
 			{
 				// Only override the game mode data if an overriding game mode data asset has been set.
-				if (DeveloperSettings->GameModeDataOverride.ToSoftObjectPath().IsValid())
+				if (DeveloperSettings->GameModeDataOverride.IsValid())
 				{
-					SetGameModeData(DeveloperSettings->GameModeDataOverride->GetPrimaryAssetId());
+					SetGameModeData(DeveloperSettings->GameModeDataOverride);
 				}
 			}
 #endif // WITH_EDITOR

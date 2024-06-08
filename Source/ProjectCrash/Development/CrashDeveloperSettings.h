@@ -34,8 +34,8 @@ public:
 public:
 
 	/** The game mode data is determined by the game options. If set, this data will be used instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<const UCrashGameModeData> GameModeDataOverride;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash, Meta = (AllowedTypes = "CrashGameModeData"))
+	FPrimaryAssetId GameModeDataOverride;
 
 	/** Each player's Challenger data is determined by the Challenger they select in the character selection screen.
 	 * If set, this data will be used for all players instead. */

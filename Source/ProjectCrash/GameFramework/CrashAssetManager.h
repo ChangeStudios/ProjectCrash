@@ -51,9 +51,6 @@ public:
 	/** Returns the global game data. Sync loads the data if it isn't loaded already. */
 	const UGlobalGameData& GetGlobalGameData();
 
-	/** Returns the main menu UI data. Sync loads the data if it isn't loaded already. */
-	const UUserInterfaceData* GetMainMenuUIData();
-
 	/** Returns the global map data. Sync loads the data if it isn't loaded already. This loads the asset's default
 	 * bundles. Additional bundles must be loaded separately, usually with a ChangeBundleStateForPrimaryAssets call. */
 	const UGlobalMapData* GetGlobalMapData();
@@ -68,12 +65,6 @@ protected:
 	/** Loaded version of global game data. */
 	UPROPERTY(Transient)
 	TObjectPtr<UGlobalGameData> GlobalGameData;
-
-
-	/** Global main menu UI data asset to use. Only loaded in the main menu. */
-	UPROPERTY(Config)
-	TSoftObjectPtr<UUserInterfaceData> MainMenuUIDataPath;
-
 
 	/** Global map data asset to use. Primary assets are always loaded; UI assets are only loaded in the main menu. */
 	UPROPERTY(Config)

@@ -13,8 +13,22 @@ UCLASS()
 class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase
 {
 	GENERATED_BODY()
-	
-	
-	
-	
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	ACrashGameState();
+
+
+
+	// Initialization.
+
+// Initializing game mode data.
+public:
+
+	/** Sets the game's current game mode data. Required to begin the game's initialization. Should not be called more
+	 * than once, and should not be called after the game begins. */
+	void SetGameModeData(FPrimaryAssetId GameModeDataId);
 };
