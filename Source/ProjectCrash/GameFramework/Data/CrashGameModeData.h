@@ -6,8 +6,8 @@
 #include "Engine/DataAsset.h"
 #include "CrashGameModeData.generated.h"
 
-class UGameFeatureActionSet;
 class UGameFeatureAction;
+class UGameFeatureActionSet;
 
 /**
  * Static data defining a specific game mode (FFA TDM, team TDM, CTF, etc.). The data contained here is only relevant
@@ -15,7 +15,7 @@ class UGameFeatureAction;
  *
  * The game state is responsible for retrieving this object from the game options, replicating it, and loading it.
  */
-UCLASS(BlueprintType, Const, DisplayName = "Game Mode Data")
+UCLASS(BlueprintType, NotBlueprintable, Const, DisplayName = "Game Mode Data")
 class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
@@ -48,12 +48,28 @@ public:
 	/** The title of this game mode; e.g. "Deathmatch." Used when telling players what game mode they are currently
 	 * playing. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Title")
-	FName UserFacingTitle;
+	FText UserFacingTitle;
 
 	/** An optional subtitle describing this game mode; e.g. "Free-For-All." Paired with the user-facing title to
 	 * describe this exact game mode. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Subtitle")
-	FName UserFacingSubTitle = NAME_None;
+	FText UserFacingSubTitle;
+
+
+
+	// Teams.
+
+public:
+
+	/** The desired number of teams created in this game mode. In matchmaking, this is the required number of teams to
+	 * start. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Teams")
+	uint8 NumTeams = 0;
+
+	/** The desired number of players on each teamm in this game mode. In matchmaking, this is the number of players
+	 * required on each team to start. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Players Per Team")
+	uint8 PlayersPerTeam = 0;
 
 
 
@@ -61,16 +77,32 @@ public:
 
 public:
 
-	// /** Game feature plugins that need to be loaded for this game mode. */
-	// UPROPERTY(EditDefaultsOnly, Category = "Game Features")
-	// TArray<FString> GameFeaturesToEnable;
-	//
-	// /** Actions to perform as this game mode is loaded, activated, deactivated, and unloaded. */
-	// UPROPERTY(EditDefaultsOnly, Instanced, Category = "Game Features")
-	// TArray<TObjectPtr<UGameFeatureAction>> Actions;
-	//
-	// /** A collection of game features that will be used in addition to Actions. Helpful for reusing common collections
-	//  * of game actions. */
-	// UPROPERTY(EditDefaultsOnly, Category = "Game Features")
-	// TArray<TObjectPtr<UGameFeatureActionSet>> ActionSets;
+	/** Actions to perform as this game mode is loaded, activated, deactivated, and unloaded. */
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Game Features")
+	TArray<TObjectPtr<UGameFeatureAction>> Actions;
+
+	/** A collection of game features that will be used in addition to Actions. Helpful for reusing common collections
+	 * of game actions. */
+	UPROPERTY(EditDefaultsOnly, Category = "Game Features")
+	TArray<TObjectPtr<UGameFeatureActionSet>> ActionSets;
+
+	/** Game feature plugins that need to be loaded for this game mode. */
+	UPROPERTY(EditDefaultsOnly, Category = "Game Features")
+	TArray<FString> GameFeaturesToEnable;
+
+
+
+	// Utils.
+
+public:
+
+#if WITH_EDITOR
+	/** Validates the data in this game mode's game feature actions. */
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) override;
+#endif // WITH_EDITOR
+
+#if WITH_EDITORONLY_DATA
+	/** Adds any extra asset bundle data needed by this game mode's game feature actions. */
+	virtual void UpdateAssetBundleData() override;
+#endif // WITH_EDITORONLY_DATA
 };

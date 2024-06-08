@@ -98,10 +98,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "RiderLink",
-			"Enabled": false
-		},
-		{
 			"Name": "UIExtension",
 			"Enabled": true
 		},
@@ -111,10 +107,6 @@
 		},
 		{
 			"Name": "AssetReferenceRestrictions",
-			"Enabled": true
-		},
-		{
-			"Name": "AbilitySystemGameFeatureActions",
 			"Enabled": true
 		}
 	],
