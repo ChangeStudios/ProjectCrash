@@ -11,7 +11,7 @@
 #define LOCTEXT_NAMESPACE "CrashSystem"
 
 #if WITH_EDITOR
-EDataValidationResult UGameFeatureActionSet::IsDataValid(FDataValidationContext& Context)
+EDataValidationResult UGameFeatureActionSet::IsDataValid(FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 

@@ -92,7 +92,7 @@ public:
 
 
 
-	// Utils.
+	// Validation.
 
 public:
 
@@ -100,6 +100,12 @@ public:
 	/** Validates the data in this game mode's game feature actions. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) override;
 #endif // WITH_EDITOR
+
+
+
+	// Asset management.
+
+public:
 
 #if WITH_EDITORONLY_DATA
 	/** Adds any extra asset bundle data needed by this game mode's game feature actions. */

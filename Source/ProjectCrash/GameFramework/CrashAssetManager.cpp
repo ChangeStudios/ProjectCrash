@@ -4,7 +4,7 @@
 #include "GameFramework/CrashAssetManager.h"
 
 #include "CrashLogging.h"
-#include "Data/GlobalMapData.h"
+#include "Data/UserFacingMapData.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Data/GlobalGameData.h"
 #include "Misc/ScopedSlowTask.h"
@@ -61,9 +61,6 @@ void UCrashAssetManager::StartInitialLoading()
 
 	// Load global game data.
 	GetGlobalGameData();
-
-	// Load global map data without any bundles.
-	GetGlobalMapData();
 }
 
 const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
@@ -76,12 +73,6 @@ const UGlobalGameData& UCrashAssetManager::GetGlobalGameData()
 
 	// Synchronously load the global game data if it's not loaded.
 	return *CastChecked<const UGlobalGameData>(LoadGlobalGameData(UGlobalGameData::StaticClass(), GlobalGameDataPath, UGlobalGameData::StaticClass()->GetFName()));
-}
-
-const UGlobalMapData* UCrashAssetManager::GetGlobalMapData()
-{
-	// Retrieve the loaded global map data. If it's not loaded, perform a blocking load with default bundles.
-	return GetOrLoadAsset(GlobalMapDataPath);
 }
 
 UPrimaryDataAsset* UCrashAssetManager::LoadGlobalGameData(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataPath, FPrimaryAssetType PrimaryAssetType)

@@ -8,7 +8,7 @@
 #include "UI/Data/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
-class UGlobalMapData;
+class UUserFacingMapData;
 class UGlobalGameData;
 class UCrashGameModeData_DEP;
 class UUserInterfaceData;
@@ -51,10 +51,6 @@ public:
 	/** Returns the global game data. Sync loads the data if it isn't loaded already. */
 	const UGlobalGameData& GetGlobalGameData();
 
-	/** Returns the global map data. Sync loads the data if it isn't loaded already. This loads the asset's default
-	 * bundles. Additional bundles must be loaded separately, usually with a ChangeBundleStateForPrimaryAssets call. */
-	const UGlobalMapData* GetGlobalMapData();
-
 // Data.
 protected:
 
@@ -65,10 +61,6 @@ protected:
 	/** Loaded version of global game data. */
 	UPROPERTY(Transient)
 	TObjectPtr<UGlobalGameData> GlobalGameData;
-
-	/** Global map data asset to use. Primary assets are always loaded; UI assets are only loaded in the main menu. */
-	UPROPERTY(Config)
-	TSoftObjectPtr<UGlobalMapData> GlobalMapDataPath;
 
 
 

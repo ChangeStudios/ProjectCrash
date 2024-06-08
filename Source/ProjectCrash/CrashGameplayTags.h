@@ -4,8 +4,13 @@
 
 #include "NativeGameplayTags.h"
 
+// Shorthand aliases for long gameplay tags that are typed out frequently.
 #define FIRST_PERSON CrashGameplayTags::TAG_State_Perspective_FirstPerson
 #define THIRD_PERSON CrashGameplayTags::TAG_State_Perspective_ThirdPerson
+
+#define STATE_WAITING_FOR_DATA CrashGameplayTags::TAG_InitState_WaitingForData
+#define STATE_INITIALIZING CrashGameplayTags::TAG_InitState_Initializing
+#define STATE_GAMEPLAY_READY CrashGameplayTags::TAG_InitState_GameplayReady
 
 /**
  * Defines the native gameplay tags that need to be exposed to C++. All tags that are exposed to C++ should be defined

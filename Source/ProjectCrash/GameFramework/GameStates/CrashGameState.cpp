@@ -3,6 +3,7 @@
 
 #include "GameFramework/GameStates/CrashGameState.h"
 
+const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
 ACrashGameState::ACrashGameState()
 {

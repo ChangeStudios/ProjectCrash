@@ -29,7 +29,7 @@ struct FUserFacingGameModeSetting
 
 	/** The type of value users may enter for this setting. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	EGameSettingValueType ValueType;
+	EGameSettingValueType ValueType = EGameSettingValueType::WholeNumber;
 
 	/** User-facing name of this setting. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -40,15 +40,15 @@ struct FUserFacingGameModeSetting
 	float DefaultValue = 0.0f;
 
 	/** Minimum value allowed for this setting. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == WholeNumber || ValueType == Decimal", EditConditionHides = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == EGameSettingValueType::WholeNumber || ValueType == EGameSettingValueType::Decimal", EditConditionHides = "true"))
 	float ValueMin = 0.0f;
 
 	/** Maximum value allowed for this setting. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == WholeNumber || ValueType == Decimal", EditConditionHides = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == EGameSettingValueType::WholeNumber || ValueType == EGameSettingValueType::Decimal", EditConditionHides = "true"))
 	float ValueMax = 1.0f;
 
 	/** The units with which this setting is displayed. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == WholeNumber || ValueType == Decimal", EditConditionHides = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (EditCondition = "ValueType == EGameSettingValueType::WholeNumber || ValueType == EGameSettingValueType::Decimal", EditConditionHides = "true"))
 	FText Units;
 };
 

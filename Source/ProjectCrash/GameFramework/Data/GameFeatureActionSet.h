@@ -31,14 +31,20 @@ public:
 
 
 
-	// Utils.
+	// Validation.
 
 public:
 
 #if WITH_EDITOR
 	/** Validates the data in this set's game feature actions. */
-	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) override;
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 #endif // WITH_EDITOR
+
+
+
+	// Asset management.
+
+public:
 
 #if WITH_EDITORONLY_DATA
 	/** Adds any extra asset bundle data needed by this set's game feature actions. */
