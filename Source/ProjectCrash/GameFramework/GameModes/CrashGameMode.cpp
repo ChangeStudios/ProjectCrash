@@ -87,7 +87,7 @@ void ACrashGameMode::FindGameModeData()
 	 * here. */
 	if (GameModeDataId.IsValid())
 	{
-		UE_LOG(LogCrash, Log, TEXT("Successfully found game mode data [%s] (Source: %s)."), *GameModeDataId.ToString(), *GameModeDataSource);
+		UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found game mode data [%s] (Source: %s)."), *GameModeDataId.ToString(), *GameModeDataSource);
 
 		ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 		check(CrashGS);
@@ -97,11 +97,11 @@ void ACrashGameMode::FindGameModeData()
 	else
 	{
 #if WITH_EDITOR
-		UE_LOG(LogCrash, Error, TEXT("Unable to find game mode data. Game cannot continue."));
+		UE_LOG(LogCrashGameMode, Error, TEXT("Unable to find game mode data. Game cannot continue."));
 #endif // WITH_EDITOR
 
 		// TODO: Cancel game and return to front-end instead of crashing.
-		UE_LOG(LogCrash, Fatal, TEXT("Unable to find game mode data."));
+		UE_LOG(LogCrashGameMode, Fatal, TEXT("Unable to find game mode data."));
 	}
 }
 

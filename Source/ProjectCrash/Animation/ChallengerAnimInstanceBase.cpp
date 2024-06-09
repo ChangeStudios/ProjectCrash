@@ -67,7 +67,7 @@ int UChallengerAnimInstanceBase::ThreadSafeTagCount(UAbilitySystemComponent* ASC
 
 void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent* CrashASC)
 {
-	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *AUTHORITY_STRING(OwningChallenger), *GetName(), *GetNameSafe(GetOwningActor()));
+	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *GetClientServerContextString(OwningChallenger), *GetName(), *GetNameSafe(GetOwningActor()));
 
 	if (!CrashASC)
 	{

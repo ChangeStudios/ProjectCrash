@@ -143,7 +143,7 @@ public:
 
 	/** This Challenger's user-facing name. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	FString ChallengerDisplayName;
+	FText ChallengerDisplayName;
 
 	/** This Challenger's user-facing class. Serves to categorize the play-style of this Challenger for players. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")

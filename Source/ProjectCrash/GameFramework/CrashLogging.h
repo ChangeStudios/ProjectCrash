@@ -9,8 +9,8 @@
 /** Converts the given condition into a "True" or "False" FString. */
 #define CONDITIONAL_STRING(bCondition) FString(bCondition ? "True" : "False")
 
-/** Returns an FString indicating whether the given object is server-authoritative. */
-#define AUTHORITY_STRING(ContextObject) FString(ContextObject->HasAuthority() ? "SERVER" : "CLIENT")
+/** Returns "Client" or "Server" depending on the given context object's authority. */
+PROJECTCRASH_API FString GetClientServerContextString(UObject* ContextObject = nullptr);
 
 
 
@@ -28,6 +28,13 @@
 
 /** Generic log channel used for this project. */
 PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogCrash, Log, All);
+
+
+
+	// Crash log.
+
+/** Log channel for modular game mode updates. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogCrashGameMode, Log, All);
 
 
 

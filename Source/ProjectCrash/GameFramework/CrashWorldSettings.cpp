@@ -23,7 +23,7 @@ FPrimaryAssetId ACrashWorldSettings::GetDefaultGameModeData() const
 
 		if (!ReturnId.IsValid())
 		{
-			UE_LOG(LogCrash, Error, TEXT("%s.DefaultGameplayExperience is [%s] but that failed to resolve into an asset ID. You may need to add a path to the asset rules in your game feature plugin or project settings."),
+			UE_LOG(LogCrashGameMode, Error, TEXT("%s.DefaultGameplayExperience is [%s] but that failed to resolve into an asset ID. You may need to add a path to the asset rules in your game feature plugin or project settings."),
 				*GetPathNameSafe(this), *DefaultGameModeData.ToString());
 		}
 	}

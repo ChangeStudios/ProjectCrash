@@ -39,8 +39,8 @@ public:
 
 	/** Each player's Challenger data is determined by the Challenger they select in the character selection screen.
 	 * If set, this data will be used for all players instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<const UChallengerData> ChallengerDataOverride;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash, Meta = (AllowedTypes = "ChallengerData"))
+	FPrimaryAssetId ChallengerDataOverride;
 
 	/**
 	 * Each player's skin data retrieved through their cloud settings when they join the game. If set, this data will
@@ -48,8 +48,8 @@ public:
 	 *
 	 * Because players' skins must match their Challengers, a Challenger override must also be set to use this.
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash)
-	TSoftObjectPtr<const UChallengerSkinData> SkinDataOverride;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash, Meta = (AllowedTypes = "ChallengerSkinData"))
+	FPrimaryAssetId SkinDataOverride;
 
 
 

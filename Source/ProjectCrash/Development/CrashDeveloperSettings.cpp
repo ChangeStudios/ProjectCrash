@@ -3,6 +3,8 @@
 
 #include "Development/CrashDeveloperSettings.h"
 
+#include "Engine/AssetManager.h"
+
 
 UCrashDeveloperSettings::UCrashDeveloperSettings()
 {
@@ -14,6 +16,7 @@ FName UCrashDeveloperSettings::GetCategoryName() const
 	return FApp::GetProjectName();
 }
 
+#if WITH_EDITOR
 bool UCrashDeveloperSettings::CanEditChange(const FProperty* InProperty) const
 {
 	bool bIsMutable = Super::CanEditChange(InProperty);
@@ -26,9 +29,10 @@ bool UCrashDeveloperSettings::CanEditChange(const FProperty* InProperty) const
 		 * each player will match their Challenger. */
 		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashDeveloperSettings, SkinDataOverride))
 		{
-			bIsMutable = !ChallengerDataOverride.IsNull();
+			bIsMutable = !UAssetManager::Get().GetPrimaryAssetPath(ChallengerDataOverride).IsNull();
 		}
 	}
 
 	return bIsMutable;
 }
+#endif // WITH_EDITOR

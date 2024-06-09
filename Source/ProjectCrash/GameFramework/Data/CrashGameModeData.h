@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "CrashGameModeData.generated.h"
 
+class UChallengerData;
 class UGameFeatureAction;
 class UGameFeatureActionSet;
 
@@ -37,7 +38,7 @@ public:
 
 	/** The Challengers available for players to use in this game mode, if RestrictChallengers is true. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", Meta = (EditCondition = "bRestrictChallengers"))
-	TArray<FPrimaryAssetId> AvailableChallengers;
+	TSoftObjectPtr<const UChallengerData> AvailableChallengers;
 
 
 
@@ -98,7 +99,7 @@ public:
 
 #if WITH_EDITOR
 	/** Validates the data in this game mode's game feature actions. */
-	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) override;
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 #endif // WITH_EDITOR
 
 

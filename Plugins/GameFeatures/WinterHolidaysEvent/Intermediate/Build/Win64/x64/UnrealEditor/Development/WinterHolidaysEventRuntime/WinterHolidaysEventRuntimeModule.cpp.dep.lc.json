@@ -1,0 +1,14 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\game development\\projects\\change studios\\crash\\projectcrash\\plugins\\gamefeatures\\winterholidaysevent\\source\\winterholidayseventruntime\\private\\winterholidayseventruntimemodule.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\game development\\ue source\\unrealengine\\engine\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\game development\\projects\\change studios\\crash\\projectcrash\\plugins\\gamefeatures\\winterholidaysevent\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\winterholidayseventruntime\\definitions.winterholidayseventruntime.h",
+            "c:\\game development\\projects\\change studios\\crash\\projectcrash\\plugins\\gamefeatures\\winterholidaysevent\\source\\winterholidayseventruntime\\public\\winterholidayseventruntimemodule.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

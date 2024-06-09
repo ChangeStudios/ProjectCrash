@@ -11,13 +11,22 @@
 #include "UI/Data/UserInterfaceData.h"
 #include "UnrealEngine.h"
 
-static FAutoConsoleCommand CVarDumpLoadedAssets
+static FAutoConsoleCommandWithWorldAndArgs CVarDumpLoadedAssets
 (
 	TEXT("Crash.DumpLoadedAssets"),
-	TEXT("Shows all data assets that were loaded via the asset manager and are currently in memory."),
-	FConsoleCommandDelegate::CreateLambda([]()
+	TEXT("Shows all assets that were loaded via the asset manager and are currently in memory. May be slow when unfiltered." \
+		"\nArguments:" \
+		"\nFilterForDataAssets (Optional, Default: 1) - Whether or not to filter for just data assets, instead of logging EVERY asset in memory."),
+	FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& InParams, UWorld* InWorld)
 	{
-		UCrashAssetManager::DumpLoadedAssets(UDataAsset::StaticClass());
+		bool bFilterForDataAssets = 1;
+
+		if (InParams.Num() > 0)
+		{
+			bFilterForDataAssets = InParams[0].ToBool();
+		}
+
+		UCrashAssetManager::DumpLoadedAssets(bFilterForDataAssets ? UDataAsset::StaticClass() : nullptr);
 	})
 );
 
@@ -160,18 +169,33 @@ void UCrashAssetManager::DumpLoadedAssets(UClass* ClassToFilter)
 	uint32 DumpedAssetsCount = 0;
 
 	// Get all loaded assets in the asset registry and filter for ClassToFilter, if it was given.
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	TArray<FAssetData> OutAssets;
-	Get().GetAssetRegistry().GetAllAssets(OutAssets);
-	OutAssets = ClassToFilter ? OutAssets.FilterByPredicate([ClassToFilter](const FAssetData Asset)
+
+	// Use a class filter if one was provided.
+	if (ClassToFilter)
 	{
-		return Asset.GetAsset()->IsA(ClassToFilter);
-	}) : OutAssets;
+		FARFilter Filter;
+		Filter.ClassPaths.Add(ClassToFilter->GetClassPathName());
+		Filter.bRecursiveClasses = true;
+
+		AssetRegistryModule.Get().GetAssets(Filter, OutAssets);
+	}
+	else
+	{
+		AssetRegistryModule.Get().GetAllAssets(OutAssets);
+	}
+
+	OutAssets = OutAssets.FilterByPredicate([](const FAssetData& Asset)
+	{
+		return Asset.IsAssetLoaded();
+	});
 
 	// Log the filtered assets.
 	UE_LOG(LogCrash, Log, TEXT("Size: %llu"), Get().GetAssetRegistry().GetAllocatedSize());
-	for (auto OutAsset : OutAssets)
+	for (auto Asset : OutAssets)
 	{
-		UE_LOG(LogCrash, Log, TEXT("	* Asset Registry: [%s]"), *OutAsset.AssetName.ToString());
+		UE_LOG(LogCrash, Log, TEXT("	* Asset Registry: [%s]"), *Asset.AssetName.ToString());
 
 		DumpedAssetsCount++;
 	}

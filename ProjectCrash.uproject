@@ -108,6 +108,10 @@
 		{
 			"Name": "AssetReferenceRestrictions",
 			"Enabled": true
+		},
+		{
+			"Name": "WinterHolidaysEvent",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
