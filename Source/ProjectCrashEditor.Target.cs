@@ -8,7 +8,7 @@ public class ProjectCrashEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 
-		ExtraModuleNames.Add("ProjectCrash");
+		ExtraModuleNames.AddRange(new string[] { "ProjectCrash", "ProjectCrashEditor" });
 
 		if (!bBuildAllModules)
 		{

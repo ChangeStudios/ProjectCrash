@@ -95,7 +95,7 @@ UPrimaryDataAsset* UCrashAssetManager::LoadGlobalGameData(TSubclassOf<UPrimaryDa
 
 #if WITH_EDITOR
 		// Profiling.
-		FScopedSlowTask SlowTask(0, FText::Format(NSLOCTEXT("CrashEditor", "BeginLoadingGlobalGameDataTask", "LoadingGameData {0}"), FText::FromName(DataClass->GetFName())));
+		FScopedSlowTask SlowTask(0, FText::Format(NSLOCTEXT("ProjectCrashEditor", "BeginLoadingGlobalGameDataTask", "LoadingGameData {0}"), FText::FromName(DataClass->GetFName())));
 		const bool bShowCancelButton = false;
 		const bool bAllowInPIE = true;
 		SlowTask.MakeDialog(bShowCancelButton, bAllowInPIE);
