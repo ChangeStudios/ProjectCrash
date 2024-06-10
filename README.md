@@ -13,4 +13,4 @@ The codebase of "Project Crash" contains detailed doc comments. But given the co
 
 <h6>Copyright Notice:
 <br></br>
-All contents of this repository are copyright 2024, Change Studios, LLC. "Project Crash" and related media are a protected IP.</h6>
+All contents of this repository are copyright Samuel Reitich. "Project Crash" and related media are a protected IP.</h6>

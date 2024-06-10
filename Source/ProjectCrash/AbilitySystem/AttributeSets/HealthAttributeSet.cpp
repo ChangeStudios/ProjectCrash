@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"

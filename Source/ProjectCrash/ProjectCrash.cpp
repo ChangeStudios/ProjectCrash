@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Samuel Reitich. All rights reserved.
 
 #include "ProjectCrash.h"
 #include "Modules/ModuleManager.h"

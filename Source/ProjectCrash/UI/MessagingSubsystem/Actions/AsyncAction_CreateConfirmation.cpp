@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "UI/MessagingSubsystem/Actions/AsyncAction_CreateConfirmation.h"
