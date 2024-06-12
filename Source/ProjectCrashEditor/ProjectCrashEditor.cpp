@@ -2,6 +2,7 @@
 
 #include "ProjectCrashEditor.h"
 
+#include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h" 
 
 DEFINE_LOG_CATEGORY(LogProjectCrashEditor);
@@ -24,7 +25,10 @@ class FProjectCrashEditorModule : public FDefaultGameModuleImpl
 
 	void OnBeginPIE(bool bIsSimulating)
 	{
-		UE_LOG(LogTemp, Error, TEXT("PIE STARTED"));
+		// Notify the game feature manager subsystem when a PIE session starts.
+		UGameFeatureManager* GameFeatureManager = GEngine->GetEngineSubsystem<UGameFeatureManager>();
+		check(GameFeatureManager);
+		GameFeatureManager->OnPlayInEditorBegin();
 	}
 
 	virtual void ShutdownModule() override

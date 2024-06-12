@@ -10,12 +10,21 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/Data/CrashGameModeData.h"
 #include "GameFramework/Data/GameFeatureActionSet.h"
+#include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Net/UnrealNetwork.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
 ACrashGameState::ACrashGameState()
 {
+}
+
+void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	// Start unloading the current game mode.
+	StartGameModeUnload();
 }
 
 void ACrashGameState::SetGameModeData(FPrimaryAssetId GameModeDataId)
@@ -153,8 +162,12 @@ void ACrashGameState::OnGameModeLoadComplete()
 		LoadState = ECrashGameModeLoadState::LoadingGameFeatures;
 		for (const FString& PluginURL : GameFeaturePluginURLs)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Loading game feature at %s"), *PluginURL);
-			// TODO: Notify GameFeatureManager of plugin activation
+			UE_LOG(LogCrashGameMode, Log, TEXT("Loading game feature plugin at [%s]..."), *PluginURL);
+
+			// Notify the game feature manager that a new plugin was activated.
+			UGameFeatureManager::NotifyOfPluginActivation(PluginURL);
+
+			// Load and activate the plugin.
 			UGameFeaturesSubsystem::Get().LoadAndActivateGameFeaturePlugin(PluginURL, FGameFeaturePluginLoadComplete::CreateUObject(this, &ThisClass::OnGameFeaturePluginLoadComplete));
 		}
 	}
@@ -167,10 +180,10 @@ void ACrashGameState::OnGameModeLoadComplete()
 
 void ACrashGameState::OnGameFeaturePluginLoadComplete(const UE::GameFeatures::FResult& Result)
 {
+	UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished loading game feature plugin at [%s]."), *GameFeaturePluginURLs[NumGameFeaturePluginsLoading - 1]);
+
 	// Update the number of game features loading.
 	NumGameFeaturePluginsLoading--;
-
-	UE_LOG(LogTemp, Error, TEXT("Finished loading plugin"));
 
 	// Wait until ALL game features have finished loading to finish loading the game mode.
 	if (NumGameFeaturePluginsLoading == 0)
@@ -238,6 +251,141 @@ void ACrashGameState::OnGameModeFullLoadComplete()
 	CrashGameModeLoadedDelegate.Clear();
 
 	// Continue initialization.
+}
+
+void ACrashGameState::StartGameModeUnload()
+{
+	// Deactivate active game feature plugins in FILO.
+	NumGameFeaturePluginsUnloading = GameFeaturePluginURLs.Num();
+	UE_LOG(LogTemp, Error, TEXT("StartGameModeUnload NumGameFeaturePluginsUnloading: %i"), NumGameFeaturePluginsUnloading);
+	if (NumGameFeaturePluginsUnloading > 0)
+	{
+		for (int32 i = NumGameFeaturePluginsUnloading; i > 0; i--)
+		{
+			const FString& PluginURL = GameFeaturePluginURLs[i - 1];
+			if (UGameFeatureManager::RequestToDeactivatePlugin(PluginURL))
+			{
+				UE_LOG(LogCrashGameMode, Log, TEXT("Deactivating game feature plugin at [%s]..."), *PluginURL);
+
+				// TODO: This nested lambda sucks, but FGameFeaturePluginDeactivateComplete isn't triggering callback functions for some reason.
+
+				// Deactivate the plugin.
+				UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL, FGameFeaturePluginDeactivateComplete::CreateLambda([this, PluginURL](const UE::GameFeatures::FResult& Result)
+				{
+					UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished deactivating game feature plugin at [%s]..."), *PluginURL);
+
+					UE_LOG(LogCrashGameMode, Log, TEXT("Unloading game feature plugin at [%s]..."), *PluginURL);
+
+					// When the plugin is deactivated, unload it.
+					UGameFeaturesSubsystem::Get().UnloadGameFeaturePlugin(PluginURL, FGameFeaturePluginUnloadComplete::CreateLambda([this, PluginURL](const UE::GameFeatures::FResult& Result)
+					{
+						UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished unloading game feature plugin at [%s]..."), *PluginURL);
+
+						OnGameFeaturePluginUnloadComplete(Result);
+					}));
+				}));
+			}
+		}
+	}
+
+	// Deactivate and unload active game feature actions.
+	if (LoadState == ECrashGameModeLoadState::Loaded)
+	{
+		LoadState = ECrashGameModeLoadState::Deactivating;
+
+		// Track any asynchronous action deactivations we may have to wait for.
+		NumExpectedPausers = INDEX_NONE;
+		NumObservedPausers = 0;
+
+		// Deactivate and unload actions.
+		FGameFeatureDeactivatingContext Context(TEXT(""), [this](FStringView) { this->OnActionDeactivationCompleted(); });
+
+		const FWorldContext* ExistingWorldContext = GEngine->GetWorldContextFromWorld(GetWorld());
+		if (ExistingWorldContext)
+		{
+			Context.SetRequiredWorldContextHandle(ExistingWorldContext->ContextHandle);
+		}
+
+		// Helper lambda for deactivating lists of actions.
+		auto DeactivateActionsFromList = [&Context](const TArray<UGameFeatureAction*>& Actions)
+		{
+			for (UGameFeatureAction* Action : Actions)
+			{
+				if (Action != nullptr)
+				{
+					Action->OnGameFeatureDeactivating(Context);
+					Action->OnGameFeatureUnloading();
+					Action->OnGameFeatureUnregistering();
+				}
+			}
+		};
+
+		// Deactivate the current game mode data's actions.
+		DeactivateActionsFromList(CurrentGameModeData->Actions);
+
+		// Deactivate the current game mode's action sets' actions.
+		for (const TObjectPtr<UGameFeatureActionSet>& ActionSet : CurrentGameModeData->ActionSets)
+		{
+			if (ActionSet != nullptr)
+			{
+				DeactivateActionsFromList(ActionSet->Actions);
+			}
+		}
+
+		// Check for any actions that deactivate asynchronously.
+		NumExpectedPausers = Context.GetNumPausers();
+
+		if (NumExpectedPausers > 0)
+		{
+			UE_LOG(LogCrashGameMode, Error, TEXT("Actions that have asynchronous deactivation aren't fully supported."));
+		}
+
+		/* Attempt to immediately invoke final game mode unload. This specific call will only succeed if there are no
+		 * asynchronous deactivations or plugins to unload, which are checked here. */
+		OnGameModeUnloadComplete();
+	}
+}
+
+void ACrashGameState::OnActionDeactivationCompleted()
+{
+	check(IsInGameThread());
+	++NumObservedPausers;
+
+	// Attempt final game mode unload, which will also check if all plugins are deactivated and unloaded.
+	OnGameModeUnloadComplete();
+}
+
+void ACrashGameState::OnGameFeaturePluginUnloadComplete(const UE::GameFeatures::FResult& Result)
+{
+	UE_LOG(LogTemp, Error, TEXT("OnGameFeaturePluginUnloadComplete NumGameFeaturePluginsUnloading: %i"), NumGameFeaturePluginsUnloading);
+
+	// Update the number of plugins unloading.
+	NumGameFeaturePluginsUnloading--;
+
+	// Invoke the final game mode unload, which will check if all plugins have been unloaded.
+	OnGameModeUnloadComplete();
+}
+
+void ACrashGameState::OnGameModeUnloadComplete()
+{
+	// All actions must be fully deactivated and unloaded.
+	if (NumObservedPausers != NumExpectedPausers)
+	{
+		return;
+	}
+
+	// All plugins must be fully deactivated and unloaded.
+	if (NumGameFeaturePluginsUnloading > 0)
+	{
+		return;
+	}
+
+	UE_LOG(LogCrashGameMode, Log, TEXT("Game mode [%s] unloaded."), *CurrentGameModeData->GetName());
+
+	// Final game mode unload.
+	LoadState = ECrashGameModeLoadState::Unloaded;
+	CurrentGameModeData = nullptr;
+	GEngine->ForceGarbageCollection(true);
 }
 
 void ACrashGameState::OnRep_CurrentGameModeData()

@@ -55,7 +55,26 @@ public:
 
 
 
-	// Game mode.
+	// Initialization.
+
+public:
+
+	/** Starts unloading the current game mode. */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+
+	// Initialization states.
+
+public:
+
+	/** The name used to identify this feature (the actor) during initialization. */
+	static const FName NAME_ActorFeatureName;
+	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
+
+
+
+	// Game mode initialization.
 
 public:
 
@@ -87,6 +106,21 @@ public:
 	/** Broadcast when the current game mode has been fully loaded. */
 	FCrashGameModeLoadedSignature CrashGameModeLoadedDelegate;
 
+// Unloading.
+private:
+
+	/** Begins unloading the game mode by deactivating active plugins and actions. */
+	void StartGameModeUnload();
+
+	/** Attempts to invoke the final game mode unload when all actions are deactivated and unloaded. */
+	void OnActionDeactivationCompleted();
+
+	/** Attempts to invoke the final game mode unload when all plugins are deactivated and unloaded. */
+	void OnGameFeaturePluginUnloadComplete(const UE::GameFeatures::FResult& Result);
+
+	/** Performs final unload of the current game mode if all plugins and actions are deactivated and unloaded. */
+	void OnGameModeUnloadComplete();
+
 // Internals.
 private:
 
@@ -103,18 +137,16 @@ private:
 
 	/** Tracks game features that are currently loading. All game features must be loaded before game mode load can
 	 * continue. */
-	uint32 NumGameFeaturePluginsLoading = 0;
+	int32 NumGameFeaturePluginsLoading = 0;
+
+	/** Tracks game features that are currently unloading. All game features must be unloaded before game mode unload
+	 * can continue. */
+	int32 NumGameFeaturePluginsUnloading = 0;
 
 	/** Holds the URLs for game features that need to be loaded (or have already been loaded) for the game mode. */
 	TArray<FString> GameFeaturePluginURLs;
 
-
-
-	// Initialization states.
-
-public:
-
-	/** The name used to identify this feature (the actor) during initialization. */
-	static const FName NAME_ActorFeatureName;
-	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
+	// Tracks asynchronous action deactivation.
+	int32 NumObservedPausers = 0;
+	int32 NumExpectedPausers = 0;
 };
