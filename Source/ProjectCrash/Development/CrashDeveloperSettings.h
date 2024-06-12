@@ -29,6 +29,19 @@ public:
 
 
 
+	// Initialization.
+
+#if WITH_EDITOR
+
+public:
+
+	/** Notifies the user of any active developer overrides. */
+	PROJECTCRASH_API void OnPlayInEditorBegin() const;
+
+#endif // WITH_EDITOR
+
+
+
 	// Settings.
 
 public:
@@ -50,15 +63,4 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash, Meta = (AllowedTypes = "ChallengerSkinData"))
 	FPrimaryAssetId SkinDataOverride;
-
-
-
-	// Editing settings.
-
-public:
-
-#if WITH_EDITOR
-	/** Determines when certain properties can be changed. */
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-#endif // WITH_EDITOR
 };

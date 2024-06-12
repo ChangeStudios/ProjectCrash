@@ -3,8 +3,10 @@
 
 #include "Development/CrashDeveloperSettings.h"
 
-#include "Engine/AssetManager.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
+#define LOCTEXT_NAMESPACE "CrashDeveloperSettings"
 
 UCrashDeveloperSettings::UCrashDeveloperSettings()
 {
@@ -17,22 +19,43 @@ FName UCrashDeveloperSettings::GetCategoryName() const
 }
 
 #if WITH_EDITOR
-bool UCrashDeveloperSettings::CanEditChange(const FProperty* InProperty) const
+
+void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 {
-	bool bIsMutable = Super::CanEditChange(InProperty);
-
-	if (bIsMutable && InProperty != NULL)
+	// Notify user of an active game mode override.
+	if (GameModeDataOverride.IsValid())
 	{
-		const FName PropName = InProperty->GetFName();
-
-		/* Only allow skin data to be edited if there is an active Challenger override, so the skin data being used by
-		 * each player will match their Challenger. */
-		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashDeveloperSettings, SkinDataOverride))
-		{
-			bIsMutable = !UAssetManager::Get().GetPrimaryAssetPath(ChallengerDataOverride).IsNull();
-		}
+		FNotificationInfo Info(FText::Format(
+			LOCTEXT("GameModeDataOverrideActive", "Developer Settings Override\nGame Mode Data: {0}"),
+			FText::FromName(GameModeDataOverride.PrimaryAssetName)
+		));
+		Info.ExpireDuration = 5.0f;
+		FSlateNotificationManager::Get().AddNotification(Info);
+	}
+	
+	// Notify user of an active Challenger override.
+	if (ChallengerDataOverride.IsValid())
+	{
+		FNotificationInfo Info(FText::Format(
+			LOCTEXT("ChallengerDataOverrideActive", "Developer Settings Override\nChallenger Data: {0}"),
+			FText::FromName(ChallengerDataOverride.PrimaryAssetName)
+		));
+		Info.ExpireDuration = 5.0f;
+		FSlateNotificationManager::Get().AddNotification(Info);
 	}
 
-	return bIsMutable;
+	// Notify user of an active skin override.
+	if (SkinDataOverride.IsValid())
+	{
+		FNotificationInfo Info(FText::Format(
+			LOCTEXT("SkinDataOverrideActive", "Developer Settings Override\nSkin Data: {0}"),
+			FText::FromName(SkinDataOverride.PrimaryAssetName)
+		));
+		Info.ExpireDuration = 5.0f;
+		FSlateNotificationManager::Get().AddNotification(Info);
+	}
 }
+
 #endif // WITH_EDITOR
+
+#undef LOCTEXT_NAMESPACE

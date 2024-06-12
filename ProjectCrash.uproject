@@ -18,7 +18,10 @@
 		{
 			"Name": "ProjectCrashEditor",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"UnrealEd"
+			]
 		}
 	],
 	"Plugins": [

@@ -32,6 +32,8 @@ public class ProjectCrashEditor : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
+				"Slate",
+				"SlateCore"
 			}
 		);
 

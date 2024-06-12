@@ -257,7 +257,6 @@ void ACrashGameState::StartGameModeUnload()
 {
 	// Deactivate active game feature plugins in FILO.
 	NumGameFeaturePluginsUnloading = GameFeaturePluginURLs.Num();
-	UE_LOG(LogTemp, Error, TEXT("StartGameModeUnload NumGameFeaturePluginsUnloading: %i"), NumGameFeaturePluginsUnloading);
 	if (NumGameFeaturePluginsUnloading > 0)
 	{
 		for (int32 i = NumGameFeaturePluginsUnloading; i > 0; i--)
@@ -357,8 +356,6 @@ void ACrashGameState::OnActionDeactivationCompleted()
 
 void ACrashGameState::OnGameFeaturePluginUnloadComplete(const UE::GameFeatures::FResult& Result)
 {
-	UE_LOG(LogTemp, Error, TEXT("OnGameFeaturePluginUnloadComplete NumGameFeaturePluginsUnloading: %i"), NumGameFeaturePluginsUnloading);
-
 	// Update the number of plugins unloading.
 	NumGameFeaturePluginsUnloading--;
 
