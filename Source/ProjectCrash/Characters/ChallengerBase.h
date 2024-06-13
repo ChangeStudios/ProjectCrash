@@ -17,7 +17,7 @@ class UEquipmentComponent;
 class UHealthComponent;
 class UAbilitySystemExtensionComponent;
 class UCameraComponent;
-class UChallengerData;
+class UChallengerData_DEP;
 class UCrashAbilitySystemComponent;
 class UCrashInputActionMapping;
 class UCrashInputComponent;
@@ -109,14 +109,14 @@ public:
 
 	/** Getter for ChallengerData. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Character|Challenger|Data", Meta = (ToolTip = "Data used to define the default properties of a challenger."))
-	UChallengerData* GetChallengerData() const { return ChallengerData; }
+	UChallengerData_DEP* GetChallengerData() const { return ChallengerData; }
 
 protected:
 
 	/** Data used to define the default properties of this challenger, such as its default abilities and input
 	 * mappings. */
 	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data")
-	TObjectPtr<UChallengerData> ChallengerData;
+	TObjectPtr<UChallengerData_DEP> ChallengerData;
 
 
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Engine/DataAsset.h"
-#include "ChallengerData.generated.h"
+#include "ChallengerData_DEP.generated.h"
 
 class AChallengerBase;
 class UCharacterAnimData;
@@ -57,7 +57,7 @@ enum class EChallengerClass : uint8
  * asset. Otherwise, we would need to go through each challenger's properties to find and set necessary data.
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Challenger Data", ShortToolTip = "Data used to define the default properties of a playable character."))
-class PROJECTCRASH_API UChallengerData : public UPrimaryDataAsset
+class PROJECTCRASH_API UChallengerData_DEP : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 

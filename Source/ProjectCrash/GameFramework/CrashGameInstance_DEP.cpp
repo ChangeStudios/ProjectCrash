@@ -7,7 +7,7 @@
 #include "GameStates/CrashGameState_CharacterSelection.h"
 #include "Kismet/GameplayStatics.h"
 
-bool UCrashGameInstance_DEP::AssignPlayerChallenger(APlayerController* Player, const UChallengerData* SelectedChallenger)
+bool UCrashGameInstance_DEP::AssignPlayerChallenger(APlayerController* Player, const UChallengerData_DEP* SelectedChallenger)
 {
 	// Only update the players' Challengers on the server during the character selection phase.
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(Player);

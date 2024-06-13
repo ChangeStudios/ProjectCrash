@@ -4,7 +4,7 @@
 #include "ChallengerBase.h"
 
 #include "AbilitySystemLog.h"
-#include "Data/ChallengerData.h"
+#include "Data/ChallengerData_DEP.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "CrashGameplayTags.h"

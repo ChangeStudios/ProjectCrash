@@ -6,7 +6,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "CrashGameState_CharacterSelection.generated.h"
 
-class UChallengerData;
+class UChallengerData_DEP;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterSelectionCompleteSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSelectionTimeChangedSignature, int32, NewTime);

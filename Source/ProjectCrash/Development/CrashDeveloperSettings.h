@@ -5,7 +5,7 @@
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "CrashDeveloperSettings.generated.h"
 
-class UChallengerData;
+class UChallengerData_DEP;
 class UChallengerSkinData;
 class UCrashGameModeData;
 

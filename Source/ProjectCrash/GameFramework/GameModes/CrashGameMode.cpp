@@ -5,7 +5,7 @@
 
 #include "CrashGameplayTags.h"
 #include "Characters/ChallengerBase.h"
-#include "Characters/Data/ChallengerData.h"
+#include "Characters/Data/ChallengerData_DEP.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CrashLogging.h"
@@ -105,7 +105,7 @@ void ACrashGameMode::FindGameModeData()
 	}
 }
 
-const UChallengerData* ACrashGameMode::GetChallengerDataForController(const AController* InController) const
+const UChallengerData_DEP* ACrashGameMode::GetChallengerDataForController(const AController* InController) const
 {
 	// If the Challenger data has been set and loaded on the player state, use it for this controller.
 	if (InController)
@@ -133,7 +133,7 @@ UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AControl
 	 * initialized). */
 	if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
 	{
-		if (const UChallengerData* ChallengerData = GetChallengerDataForController(InController))
+		if (const UChallengerData_DEP* ChallengerData = GetChallengerDataForController(InController))
 		{
 			if (ChallengerData->PawnClass)
 			{

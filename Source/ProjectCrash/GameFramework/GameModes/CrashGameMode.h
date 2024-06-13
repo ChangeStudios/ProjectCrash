@@ -7,7 +7,7 @@
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "CrashGameMode.generated.h"
 
-class UChallengerData;
+class UChallengerData_DEP;
 
 /**
  * Base modular game mode for this project. This game mode uses a "game mode data" asset to define its behavior.
@@ -49,7 +49,7 @@ public:
 public:
 
 	/** Retrieves the given controller's Challenger from their player state, if it has been set. */
-	const UChallengerData* GetChallengerDataForController(const AController* InController) const;
+	const UChallengerData_DEP* GetChallengerDataForController(const AController* InController) const;
 
 	/** Spawns the given controller's selected Challenger. If the game is still waiting for data for initialization or
 	 * is only a front end, does not spawn a pawn for any controller. */

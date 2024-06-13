@@ -3,6 +3,9 @@
 
 #include "Characters/Data/PawnData.h"
 
-
-
-
+UPawnData::UPawnData()
+{
+	PawnClass = nullptr;
+	DefaultActionMapping = nullptr;
+	DefaultMappingContext = nullptr;
+}

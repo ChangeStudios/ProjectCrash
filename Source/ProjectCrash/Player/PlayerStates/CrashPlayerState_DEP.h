@@ -9,7 +9,7 @@
 #include "CrashPlayerState_DEP.generated.h"
 
 class UChallengerSkinData;
-class UChallengerData;
+class UChallengerData_DEP;
 class UHealthAttributeSet;
 
 /** Broadcast when a player's current lives changes. */
