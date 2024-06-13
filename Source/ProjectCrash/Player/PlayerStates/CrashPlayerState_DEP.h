@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CrashPlayerStateBase.h"
+#include "GameFramework/PlayerState.h"
 #include "GameFramework/Teams/CrashTeams.h"
 #include "CrashPlayerState_DEP.generated.h"
 
@@ -19,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FLivesChangedSignature, ACrashPla
  * The primary player state used during gameplay. Contains the player's ability system component.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState_DEP : public ACrashPlayerStateBase, public IAbilitySystemInterface, public ICrashTeamMemberInterface
+class PROJECTCRASH_API ACrashPlayerState_DEP : public APlayerState, public IAbilitySystemInterface, public ICrashTeamMemberInterface
 {
 	GENERATED_BODY()
 

@@ -9,7 +9,7 @@
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/Data/UserFacingMapData.h"
 #include "GameFramework/GameModes/Game/CrashGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
@@ -157,7 +157,7 @@ void ACrashGameStateBase::AddPlayerState(APlayerState* PlayerState)
 	 * change is received. */
 	if (ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(PlayerState))
 	{
-		ActorInitStateChangedHandles.Add(CrashPS, GetComponentManager()->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
+		// ActorInitStateChangedHandles.Add(CrashPS, GetComponentManager()->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
 	}
 }
 

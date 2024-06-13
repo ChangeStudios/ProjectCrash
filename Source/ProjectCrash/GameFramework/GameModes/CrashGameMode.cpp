@@ -10,7 +10,7 @@
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/CrashWorldSettings.h"
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameStates/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
@@ -129,19 +129,15 @@ UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AControl
 	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 	check(CrashGS);
 
-	// Only ever spawn pawns for players if this game mode is NOT a front end.
-	if (CrashGS->GetCurrentGameModeData() && !CrashGS->GetCurrentGameModeData()->bIsFrontEnd)
+	/* Spawn players' selected Challengers if the game is past WaitingForData (i.e. Challenger data has been
+	 * initialized). */
+	if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
 	{
-		/* Spawn players' selected Challengers if the game is past WaitingForData (i.e. Challenger data has been
-		 * initialized). */
-		if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
+		if (const UChallengerData* ChallengerData = GetChallengerDataForController(InController))
 		{
-			if (const UChallengerData* ChallengerData = GetChallengerDataForController(InController))
+			if (ChallengerData->PawnClass)
 			{
-				if (ChallengerData->PawnClass)
-				{
-					return ChallengerData->PawnClass;
-				}
+				return ChallengerData->PawnClass;
 			}
 		}
 	}

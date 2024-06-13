@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "GameFramework/Data/CrashGameModeData_DEP.h"
+#include "GameFramework/GameModes/CrashGameModeData_DEP.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "CrashGameState_DEP.generated.h"
 

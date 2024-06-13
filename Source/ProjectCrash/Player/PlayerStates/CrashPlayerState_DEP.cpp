@@ -6,7 +6,7 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "GameFramework/Data/CrashGameModeData_DEP.h"
+#include "GameFramework/GameModes/CrashGameModeData_DEP.h"
 #include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
 #include "GameFramework/GameStates/CrashGameStateBase.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
@@ -30,10 +30,6 @@ ACrashPlayerState_DEP::ACrashPlayerState_DEP(const FObjectInitializer& ObjectIni
 
 	// Initialize this player's team to No Team.
 	TeamID = FCrashTeamID::NO_TEAM;
-
-	// Initialize other properties.
-	CurrentChallenger = nullptr;
-	CurrentSkin = nullptr;
 }
 
 void ACrashPlayerState_DEP::Client_HandleMatchEnded_Implementation(bool bWon)

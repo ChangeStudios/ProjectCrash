@@ -6,7 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "CrashActivatableWidget.generated.h"
 
-class ACrashPlayerControllerBase;
+class ACrashPlayerController_DEP;
 struct FUIInputConfig;
 
 /**
@@ -53,7 +53,7 @@ public:
 	/** Returns this widget's owning player controller cast to ACrashPlayerController. Returns null if the player is
 	 * invalid OR is not of the correct class. */
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Widget")
-	ACrashPlayerControllerBase* GetOwningCrashPlayer() const;
+	ACrashPlayerController_DEP* GetOwningCrashPlayer() const;
 
 
 

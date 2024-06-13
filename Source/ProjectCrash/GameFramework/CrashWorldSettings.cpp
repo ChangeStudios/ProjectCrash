@@ -5,7 +5,7 @@
 
 #include "CrashLogging.h"
 #include "EngineUtils.h"
-#include "Data/CrashGameModeData.h"
+#include "GameModes/CrashGameModeData.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/PlayerStart.h"
 #include "Misc/UObjectToken.h"

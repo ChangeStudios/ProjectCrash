@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/GameFeatures/GameFeatureActionSet.h"
 #include "GameFeatureAction.h"
 
 #if WITH_EDITOR
@@ -11,11 +11,11 @@
 #define LOCTEXT_NAMESPACE "CrashSystem"
 
 #if WITH_EDITOR
-EDataValidationResult UCrashGameModeData::IsDataValid(FDataValidationContext& Context) const
+EDataValidationResult UGameFeatureActionSet::IsDataValid(FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 
-	// Validate this game mode's game feature actions.
+	// Validate this set's game feature actions.
 	int32 EntryIndex = 0;
 	for (const UGameFeatureAction* Action : Actions)
 	{
@@ -37,11 +37,12 @@ EDataValidationResult UCrashGameModeData::IsDataValid(FDataValidationContext& Co
 }
 #endif // WITH_EDITOR
 
-void UCrashGameModeData::UpdateAssetBundleData()
+#if WITH_EDITORONLY_DATA
+void UGameFeatureActionSet::UpdateAssetBundleData()
 {
 	Super::UpdateAssetBundleData();
 
-	// Update this game mode's actions' bundles when the game mode asset itself is updated.
+	// Update this set's actions' bundles when the set itself is updated.
 	for (UGameFeatureAction* Action : Actions)
 	{
 		if (Action)
@@ -50,5 +51,6 @@ void UCrashGameModeData::UpdateAssetBundleData()
 		}
 	}
 }
+#endif // WITH_EDITORONLY_DATA
 
 #undef LOCTEXT_NAMESPACE

@@ -13,7 +13,7 @@ void UAbilitySystemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (ACrashPlayerControllerBase* CrashPC = GetOwningCrashPlayer())
+	if (ACrashPlayerController_DEP* CrashPC = GetOwningCrashPlayer())
 	{
 		// If this widget was created for a player with a valid player state, register with it immediately.
 		if (CrashPC && CrashPC->GetPlayerState<APlayerState>())

@@ -179,11 +179,11 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
 	{
 		ACrashPlayerState_DEP* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState_DEP>();
-		const UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-		if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
-		{
-			EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
-		}
+		// const UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+		// if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
+		// {
+		// 	EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
+		// }
 	}
 
 	/* We should always have skin data for an equipment set, either from a character skin or from the set's default

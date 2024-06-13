@@ -8,8 +8,8 @@
 #include "GameFeaturesSubsystemSettings.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/Data/CrashGameModeData.h"
-#include "GameFramework/Data/GameFeatureActionSet.h"
+#include "GameFramework/GameModes/CrashGameModeData.h"
+#include "GameFramework/GameFeatures/GameFeatureActionSet.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Net/UnrealNetwork.h"
 

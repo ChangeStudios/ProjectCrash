@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "GameFramework/Data/CrashGameModeData_DEP.h"
+#include "GameFramework/GameModes/CrashGameModeData_DEP.h"
 
 UCrashGameModeData_DEP::UCrashGameModeData_DEP(const FObjectInitializer& ObjectInitializer) :
 	MaximumMatchTime(300.0f),

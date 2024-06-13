@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GameFramework/Data/CrashGameModeData_DEP.h"
+#include "GameFramework/GameModes/CrashGameModeData_DEP.h"
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"

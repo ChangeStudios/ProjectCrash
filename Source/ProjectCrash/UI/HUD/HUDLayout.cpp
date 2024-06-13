@@ -6,7 +6,7 @@
 #include "CrashGameplayTags.h"
 #include "Input/CommonUIInputTypes.h"
 #include "NativeGameplayTags.h"
-#include "Player/PlayerControllers/CrashPlayerControllerBase.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 #include "UI/Foundation/CrashBoundActionButton.h"
 
 void UHUDLayout::NativeOnInitialized()

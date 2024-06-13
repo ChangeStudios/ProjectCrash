@@ -40,19 +40,19 @@ FGameplayTag UCrashGameplayAbilityBase::GetAbilityCueFromSkin(FGameplayTag Defau
 
 	// Retrieve the current skin from this ability's owner.
 	const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(CurrentActorInfo->OwnerActor);
-	const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-
-	// Find a matching ability cue.
-	if (SkinData)
-	{
-		for (FGameplayTag AbilityCue : SkinData->AbilityCues)
-		{
-			if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
-			{
-				return AbilityCue;
-			}
-		}
-	}
+	// const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+	//
+	// // Find a matching ability cue.
+	// if (SkinData)
+	// {
+	// 	for (FGameplayTag AbilityCue : SkinData->AbilityCues)
+	// 	{
+	// 		if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
+	// 		{
+	// 			return AbilityCue;
+	// 		}
+	// 	}
+	// }
 
 	// If a matching cue can't be found, return the default cue, which was given.
 	return DefaultCue;

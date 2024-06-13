@@ -5,7 +5,7 @@
 
 #include "DialogWidget.h"
 #include "CrashGameplayTags.h"
-#include "Player/PlayerControllers/CrashPlayerControllerBase.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 
 bool UCrashUIMessagingSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
@@ -33,7 +33,7 @@ void UCrashUIMessagingSubsystem::Initialize(FSubsystemCollectionBase& Collection
 void UCrashUIMessagingSubsystem::CreateConfirmationDialog(UDialogDefinition* DialogDefinition, FUIMessagingResultSignature ResultCallback)
 {
 	APlayerController* PC = GetLocalPlayerChecked()->GetPlayerController(GetWorld());
-	ACrashPlayerControllerBase* CrashPC = PC ? Cast<ACrashPlayerControllerBase>(PC) : nullptr;
+	ACrashPlayerController_DEP* CrashPC = PC ? Cast<ACrashPlayerController_DEP>(PC) : nullptr;
 
 	if (CrashPC)
 	{
@@ -49,7 +49,7 @@ void UCrashUIMessagingSubsystem::CreateConfirmationDialog(UDialogDefinition* Dia
 void UCrashUIMessagingSubsystem::CreateErrorDialog(UDialogDefinition* DialogDefinition, FUIMessagingResultSignature ResultCallback)
 {
 	APlayerController* PC = GetLocalPlayerChecked()->GetPlayerController(GetWorld());
-	ACrashPlayerControllerBase* CrashPC = PC ? Cast<ACrashPlayerControllerBase>(PC) : nullptr;
+	ACrashPlayerController_DEP* CrashPC = PC ? Cast<ACrashPlayerController_DEP>(PC) : nullptr;
 
 	if (CrashPC)
 	{

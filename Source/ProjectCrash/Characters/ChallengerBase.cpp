@@ -147,7 +147,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	}
 
 	// Update this character with the new player's current skin.
-	InitCharacterSkin(CrashPS->GetCurrentSkin());
+	// InitCharacterSkin(CrashPS->GetCurrentSkin());
 
 	// Update this character's fresnel when a new controller possesses it on the server.
 	UpdateTeamFresnel();
@@ -178,7 +178,7 @@ void AChallengerBase::OnRep_PlayerState()
 	}
 
 	// Update this character with the new player's current skin.
-	InitCharacterSkin(CrashPS->GetCurrentSkin());
+	// InitCharacterSkin(CrashPS->GetCurrentSkin());
 
 	// Update this character's fresnel when a new PS possesses it.
 	UpdateTeamFresnel();
