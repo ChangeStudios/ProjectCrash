@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "ModularGameState.h"
 #include "Components/GameFrameworkInitStateInterface.h"
+#include "GameFramework/GameStates/CrashGameStateBase.h"
 #include "CrashGameState.generated.h"
 
 namespace UE::GameFeatures { struct FResult; }
+class ACrashPlayerState;
 class UCrashGameModeData;
 
 /** Delegate for broadcasting the game mode is fully loaded. */
@@ -60,7 +62,13 @@ public:
 
 public:
 
-	/** Starts unloading the current game mode. */
+	/** Registers this actor as a feature with the initialization state framework. */
+	virtual void PreInitializeComponents() override;
+
+	/** Initializes this actor's initialization state. */
+	virtual void BeginPlay() override;
+
+	/** Starts unloading the current game mode and unregisters initialization states. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
@@ -72,6 +80,20 @@ public:
 	/** The name used to identify this feature (the actor) during initialization. */
 	static const FName NAME_ActorFeatureName;
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
+
+	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
+	virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) override;
+	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
+	virtual void CheckDefaultInitialization() override;
+
+private:
+
+	/** Delegate used to call OnActorInitStateChanged when another actor's init state changes (e.g. a player state). */
+	FActorInitStateChangedDelegate ActorInitStateChangedDelegate;
+
+	/** Handles bound to each player state's initialization state changes. The game state's initialization state is
+	 * dependent on the initialization states of each player state, so it listens for their changes. */
+	TMap<ACrashPlayerState*, FDelegateHandle> PlayerStateInitStateChangedHandles;
 
 
 
@@ -153,7 +175,17 @@ private:
 	/** Holds the URLs for game features that need to be loaded (or have already been loaded) for the game mode. */
 	TArray<FString> GameFeaturePluginURLs;
 
-	// Tracks asynchronous action deactivation.
+	/** Tracks asynchronous action deactivation. */
 	int32 NumObservedPausers = 0;
 	int32 NumExpectedPausers = 0;
+
+
+
+	// Players.
+
+public:
+
+	/** Starts listening for changes to the new player state's initialization state. The game state's initialization
+	 * state depends on that of the player states. */
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
 };

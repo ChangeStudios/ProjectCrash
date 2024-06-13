@@ -3,15 +3,18 @@
 
 #include "GameFramework/GameModes/CrashGameState.h"
 
+#include "CrashGameplayTags.h"
 #include "GameFeatureAction.h"
 #include "GameFeaturesSubsystem.h"
 #include "GameFeaturesSubsystemSettings.h"
+#include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameFeatures/GameFeatureActionSet.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/PlayerStates/CrashPlayerState.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
@@ -19,12 +22,115 @@ ACrashGameState::ACrashGameState()
 {
 }
 
+void ACrashGameState::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+
+	// Register this actor as a feature with the initialization state framework.
+	RegisterInitStateFeature();
+
+	/* Initialize the actor init state callback to call OnActorInitStateChanged on this actor. This is used to trigger
+	 * this actor's OnActorInitStateChanged function when other actors' init states change. */
+	ActorInitStateChangedDelegate = FActorInitStateChangedDelegate::CreateWeakLambda(this, [this](const FActorInitStateChangedParams& Params)
+	{
+		this->OnActorInitStateChanged(Params);
+	});
+}
+
+void ACrashGameState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Start listening for initialization state changes on this actor (e.g. its components).
+	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
+
+	// Initialize this actor's initialization state.
+	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
+	CheckDefaultInitialization();
+}
+
 void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
+	// Stop listening for changes to players' initialization states.
+	UGameFrameworkComponentManager* ComponentManager = GetComponentManager();
+	check(ComponentManager);
+	for (auto PlayerHandlePair : PlayerStateInitStateChangedHandles)
+	{
+		if (PlayerHandlePair.Value.IsValid())
+		{
+			ComponentManager->UnregisterActorInitStateDelegate(PlayerHandlePair.Key, PlayerHandlePair.Value);
+			PlayerHandlePair.Value.Reset();
+		}
+	}
+	PlayerStateInitStateChangedHandles.Empty();
+	ActorInitStateChangedDelegate.Unbind();
+
 	// Start unloading the current game mode.
 	StartGameModeUnload();
+}
+
+bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
+{
+	check(Manager);
+
+	// We can also transition to our initial state, WaitingForData, when our current state hasn't been initialized yet.
+	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
+	{
+		return true;
+	}
+	// Transition to Initializing when (1) the game mode data is loaded and (2) all player states are in Initializing.
+	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
+	{
+		// The game mode must be loaded (game features are activated, actions have been executed, etc.).
+		const bool bGameModeLoaded = (LoadState == ECrashGameModeLoadState::Loaded);
+
+		// TODO: The number of player states in Initializing must be the number of players in the session.
+		bool bAllPlayersReadyToInitialize = true;
+		// TODO: Check for disconnects.
+
+		return bGameModeLoaded && bAllPlayersReadyToInitialize;
+	}
+	// Transition to GameplayReady when all components AND player states are in GameplayReady.
+	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
+	{
+		// All game state components must be GameplayReady.
+		bool bAllComponentsReady = Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName());
+
+		// TODO: players must be GameplayReady.
+		bool bAllPlayersGameplayReady = true;
+		// TODO: Check for disconnects.
+
+		return bAllComponentsReady && bAllPlayersGameplayReady;
+	}
+
+	return false;
+}
+
+void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
+{
+	if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
+	{
+		// TODO: Start the game.
+		UE_LOG(LogCrashGameMode, Log, TEXT("Game started!"));
+	}
+}
+
+void ACrashGameState::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
+{
+	// If another feature has changed init states (e.g. one of our components), check if we should too.
+	if (Params.FeatureName != NAME_ActorFeatureName)
+	{
+		CheckDefaultInitialization();
+	}
+}
+
+void ACrashGameState::CheckDefaultInitialization()
+{
+	// Before checking our progress, try progressing any other features we might depend on.
+	CheckDefaultInitializationForImplementers();
+	ContinueInitStateChain(CrashGameplayTags::StateChain);
 }
 
 void ACrashGameState::SetGameModeData(const FPrimaryAssetId& GameModeDataId)
@@ -254,45 +360,27 @@ void ACrashGameState::OnGameModeFullLoadComplete()
 	CrashGameModeLoadedDelegate.Broadcast(CurrentGameModeData);
 	CrashGameModeLoadedDelegate.Clear();
 
-	// Continue initialization.
+	// Continue initialization, now that the game mode is loaded.
+	CheckDefaultInitialization();
 }
 
 void ACrashGameState::StartGameModeUnload()
 {
 	// Deactivate active game feature plugins in FILO.
-	NumGameFeaturePluginsUnloading = GameFeaturePluginURLs.Num();
-	if (NumGameFeaturePluginsUnloading > 0)
+	for (int32 i = GameFeaturePluginURLs.Num(); i > 0; i--)
 	{
-		for (int32 i = NumGameFeaturePluginsUnloading; i > 0; i--)
+		const FString& PluginURL = GameFeaturePluginURLs[i - 1];
+		FString PluginName;
+		UGameFeaturesSubsystem::Get().GetPluginNameByURL(PluginURL, PluginName);
+
+		if (UGameFeatureManager::RequestToDeactivatePlugin(PluginURL))
 		{
-			const FString& PluginURL = GameFeaturePluginURLs[i - 1];
-			FString PluginName;
-			UGameFeaturesSubsystem::Get().GetPluginNameByURL(PluginURL, PluginName);
-
-			if (UGameFeatureManager::RequestToDeactivatePlugin(PluginURL))
-			{
-				TArray<FString> OutSplit;
-				
-				UE_LOG(LogCrashGameMode, Log, TEXT("Deactivating game feature plugin [%s]..."), *PluginName);
-
-				// TODO: This nested lambda sucks, but FGameFeaturePluginDeactivateComplete isn't triggering callback functions for some reason.
-
-				// Deactivate the plugin.
-				UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL, FGameFeaturePluginDeactivateComplete::CreateLambda([this, PluginURL, PluginName](const UE::GameFeatures::FResult& Result)
-				{
-					UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished deactivating game feature plugin [%s]..."), *PluginName);
-
-					UE_LOG(LogCrashGameMode, Log, TEXT("Unloading game feature plugin [%s]..."), *PluginName);
-
-					// When the plugin is deactivated, unload it.
-					UGameFeaturesSubsystem::Get().UnloadGameFeaturePlugin(PluginURL, FGameFeaturePluginUnloadComplete::CreateLambda([this, PluginName](const UE::GameFeatures::FResult& Result)
-					{
-						UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished unloading game feature plugin [%s]..."), *PluginName);
-
-						OnGameFeaturePluginUnloadComplete(Result);
-					}));
-				}));
-			}
+			/* Deactivate and unload the plugin. It would be best to do this asynchronously and to wait for
+			 * deactivation to finish before unloading, but this is called in the game state's EndPlay, so the game
+			 * state won't be around to unload the plugin. */
+			UE_LOG(LogCrashGameMode, Log, TEXT("Unloading game feature plugin [%s]."), *PluginName);
+			UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL);
+			UGameFeaturesSubsystem::Get().UnloadGameFeaturePlugin(PluginURL);
 		}
 	}
 
@@ -322,8 +410,8 @@ void ACrashGameState::StartGameModeUnload()
 				if (Action != nullptr)
 				{
 					Action->OnGameFeatureDeactivating(Context);
-					Action->OnGameFeatureUnloading();
 					Action->OnGameFeatureUnregistering();
+					Action->OnGameFeatureUnloading();
 				}
 			}
 		};
@@ -380,24 +468,36 @@ void ACrashGameState::OnGameModeUnloadComplete()
 		return;
 	}
 
-	// All plugins must be fully deactivated and unloaded.
-	if (NumGameFeaturePluginsUnloading > 0)
-	{
-		return;
-	}
-
-	UE_LOG(LogCrashGameMode, Log, TEXT("Game mode [%s] unloaded."), *CurrentGameModeData->GetName());
+	UE_LOG(LogCrashGameMode, Log, TEXT("Game mode unloaded."));
 
 	// Final game mode unload.
 	LoadState = ECrashGameModeLoadState::Unloaded;
 	CurrentGameModeData = nullptr;
-	GEngine->ForceGarbageCollection(true);
 }
 
 void ACrashGameState::OnRep_CurrentGameModeData()
 {
 	// Start loading the game mode data when it's received by clients.
 	StartGameModeLoad();
+}
+
+void ACrashGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+
+	// Listen for changes to players' initialization states, which drive the game state's initialization.
+	if (ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(PlayerState))
+	{
+		if (!CrashPS->IsOnlyASpectator() && !PlayerStateInitStateChangedHandles.Contains(CrashPS))
+		{
+			UGameFrameworkComponentManager* ComponentManager = GetComponentManager();
+			check(ComponentManager);
+
+			/* This will call this actor's OnActorInitStateChanged function when a player state's init state changes,
+			 * which will attempt to progress our initialization chain if possible (e.g. if players are now ready). */
+			PlayerStateInitStateChangedHandles.Add(CrashPS, ComponentManager->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
+		}
+	}
 }
 
 void ACrashGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

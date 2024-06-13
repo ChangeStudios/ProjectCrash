@@ -18,7 +18,7 @@
 ACrashGameMode::ACrashGameMode()
 {
 	GameStateClass = ACrashGameState::StaticClass();
-	// PlayerStateClass = ACrashPlayerState::StaticClass();
+	PlayerStateClass = ACrashPlayerState::StaticClass();
 	// PlayerControllerClass = ACrashPlayerController::StaticClass();
 }
 
