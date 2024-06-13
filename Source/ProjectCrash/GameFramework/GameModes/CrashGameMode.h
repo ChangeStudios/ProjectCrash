@@ -36,13 +36,16 @@ public:
 	/** Queues FindGameModeData for the next tick. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
-	/** Attempts to retrieve the game mode data that should be used for the current game. If no data can be found, the
-	 * game cannot start, so the game is canceled everyone is returned to the main menu. */
+	/** Attempts to retrieve the game mode data that should be used for the current game. */
 	void FindGameModeData();
 
 	/** Sends the game mode data to the game state, if it's found. The game state takes over initialization upon
 	 * receiving the data. */
 	void OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, const FString& GameModeDataSource);
+
+	/** If game mode data cannot be found, the game cannot continue. Cancels the game and returns all players to the
+	 * main menu. */
+	void OnFindGameModeDataFailed();
 
 
 

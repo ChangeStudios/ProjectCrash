@@ -27,7 +27,7 @@ void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	StartGameModeUnload();
 }
 
-void ACrashGameState::SetGameModeData(FPrimaryAssetId GameModeDataId)
+void ACrashGameState::SetGameModeData(const FPrimaryAssetId& GameModeDataId)
 {
 	// Load the appropriate game mode data.
 	UCrashAssetManager& AssetManager = UCrashAssetManager::Get();
@@ -162,7 +162,9 @@ void ACrashGameState::OnGameModeLoadComplete()
 		LoadState = ECrashGameModeLoadState::LoadingGameFeatures;
 		for (const FString& PluginURL : GameFeaturePluginURLs)
 		{
-			UE_LOG(LogCrashGameMode, Log, TEXT("Loading game feature plugin at [%s]..."), *PluginURL);
+			FString PluginName;
+			UGameFeaturesSubsystem::Get().GetPluginNameByURL(PluginURL, PluginName);
+			UE_LOG(LogCrashGameMode, Log, TEXT("Loading game feature plugin [%s]..."), *PluginName);
 
 			// Notify the game feature manager that a new plugin was activated.
 			UGameFeatureManager::NotifyOfPluginActivation(PluginURL);
@@ -180,7 +182,9 @@ void ACrashGameState::OnGameModeLoadComplete()
 
 void ACrashGameState::OnGameFeaturePluginLoadComplete(const UE::GameFeatures::FResult& Result)
 {
-	UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished loading game feature plugin at [%s]."), *GameFeaturePluginURLs[NumGameFeaturePluginsLoading - 1]);
+	FString PluginName;
+	UGameFeaturesSubsystem::Get().GetPluginNameByURL(GameFeaturePluginURLs[NumGameFeaturePluginsLoading - 1], PluginName);
+	UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished loading game feature plugin [%s]."), *PluginName);
 
 	// Update the number of game features loading.
 	NumGameFeaturePluginsLoading--;
@@ -262,23 +266,28 @@ void ACrashGameState::StartGameModeUnload()
 		for (int32 i = NumGameFeaturePluginsUnloading; i > 0; i--)
 		{
 			const FString& PluginURL = GameFeaturePluginURLs[i - 1];
+			FString PluginName;
+			UGameFeaturesSubsystem::Get().GetPluginNameByURL(PluginURL, PluginName);
+
 			if (UGameFeatureManager::RequestToDeactivatePlugin(PluginURL))
 			{
-				UE_LOG(LogCrashGameMode, Log, TEXT("Deactivating game feature plugin at [%s]..."), *PluginURL);
+				TArray<FString> OutSplit;
+				
+				UE_LOG(LogCrashGameMode, Log, TEXT("Deactivating game feature plugin [%s]..."), *PluginName);
 
 				// TODO: This nested lambda sucks, but FGameFeaturePluginDeactivateComplete isn't triggering callback functions for some reason.
 
 				// Deactivate the plugin.
-				UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL, FGameFeaturePluginDeactivateComplete::CreateLambda([this, PluginURL](const UE::GameFeatures::FResult& Result)
+				UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL, FGameFeaturePluginDeactivateComplete::CreateLambda([this, PluginURL, PluginName](const UE::GameFeatures::FResult& Result)
 				{
-					UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished deactivating game feature plugin at [%s]..."), *PluginURL);
+					UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished deactivating game feature plugin [%s]..."), *PluginName);
 
-					UE_LOG(LogCrashGameMode, Log, TEXT("Unloading game feature plugin at [%s]..."), *PluginURL);
+					UE_LOG(LogCrashGameMode, Log, TEXT("Unloading game feature plugin [%s]..."), *PluginName);
 
 					// When the plugin is deactivated, unload it.
-					UGameFeaturesSubsystem::Get().UnloadGameFeaturePlugin(PluginURL, FGameFeaturePluginUnloadComplete::CreateLambda([this, PluginURL](const UE::GameFeatures::FResult& Result)
+					UGameFeaturesSubsystem::Get().UnloadGameFeaturePlugin(PluginURL, FGameFeaturePluginUnloadComplete::CreateLambda([this, PluginName](const UE::GameFeatures::FResult& Result)
 					{
-						UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished unloading game feature plugin at [%s]..."), *PluginURL);
+						UE_LOG(LogCrashGameMode, Log, TEXT("		... Finished unloading game feature plugin [%s]..."), *PluginName);
 
 						OnGameFeaturePluginUnloadComplete(Result);
 					}));

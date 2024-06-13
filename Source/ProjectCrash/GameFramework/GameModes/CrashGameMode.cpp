@@ -18,8 +18,8 @@
 ACrashGameMode::ACrashGameMode()
 {
 	GameStateClass = ACrashGameState::StaticClass();
-	PlayerStateClass = ACrashPlayerState::StaticClass();
-	PlayerControllerClass = ACrashPlayerController::StaticClass();
+	// PlayerStateClass = ACrashPlayerState::StaticClass();
+	// PlayerControllerClass = ACrashPlayerController::StaticClass();
 }
 
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -92,12 +92,7 @@ void ACrashGameMode::FindGameModeData()
 	// If the game mode data cannot be found, something has gone wrong. Return to the main menu with an error message.
 	else
 	{
-#if WITH_EDITOR
-		UE_LOG(LogCrashGameMode, Error, TEXT("Unable to find game mode data. Game cannot continue."));
-#endif // WITH_EDITOR
-
-		// TODO: Cancel game and return to front-end instead of crashing.
-		UE_LOG(LogCrashGameMode, Fatal, TEXT("Unable to find game mode data."));
+		OnFindGameModeDataFailed();
 	}
 }
 
@@ -109,6 +104,15 @@ void ACrashGameMode::OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, 
 	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 	check(CrashGS);
 	CrashGS->SetGameModeData(GameModeDataId);
+}
+
+void ACrashGameMode::OnFindGameModeDataFailed()
+{
+#if WITH_EDITOR
+	UE_LOG(LogCrashGameMode, Error, TEXT("Unable to find game mode data. Game cannot continue."));
+#endif // WITH_EDITOR
+
+	// TODO: Cancel game and return to front-end.
 }
 
 UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)

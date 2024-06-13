@@ -36,10 +36,11 @@ enum class ECrashGameModeLoadState
  * Base modular game state for this project. This is the primary handler for game initialization, responsible for
  * loading the modular game mode data, and executing its startup routines (executing actions, loading assets, etc.)
  *
- * @note In this framework "loading the game mode data" refers to loading the game mode data asset into memory. "Loading
+ * @note In this framework "loading game mode data" refers to loading the game mode data asset into memory. "Loading
  * the game mode" refers to loading the data and features that comprise the current game mode (actions, game features,
  * etc.), as defined in the game mode data asset, as opposed to loading the actual AGameMode actor. In Lyra, they would
- * call this the "Experience."
+ * call the game mode the "Experience," but I want to make sure it's clear that the game mode itself is being defined
+ * by the game mode data—i.e. "experiences" are just modular game modes. o
  */
 UCLASS()
 class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase, public IGameFrameworkInitStateInterface
@@ -84,7 +85,7 @@ public:
 	 *
 	 * Should not be called more than once, and should not be called after the game begins.
 	 */
-	void SetGameModeData(FPrimaryAssetId GameModeDataId);
+	void SetGameModeData(const FPrimaryAssetId& GameModeDataId);
 
 // Loading process.
 private:
