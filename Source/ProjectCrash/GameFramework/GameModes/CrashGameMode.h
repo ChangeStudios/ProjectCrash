@@ -7,10 +7,12 @@
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "CrashGameMode.generated.h"
 
+class UPawnData;
 class UChallengerData_DEP;
 
 /**
- * Base modular game mode for this project. This game mode uses a "game mode data" asset to define its behavior.
+ * Base modular game mode for this project. Responsible for finding the "game mode data" asset to use for the current
+ * game, and sending it to the game state for initialization.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashGameMode : public AModularGameModeBase, public IGameFrameworkInitStateInterface
@@ -34,13 +36,13 @@ public:
 	/** Queues FindGameModeData for the next tick. */
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
-	/**
-	 * Attempts to retrieve the game mode data that should be used for the current game and sends it to the game state,
-	 * which takes over initialization.
-	 *
-	 * If no data can be found, the game cannot start, so we cancel the game and return everyone to the main menu.
-	 */
+	/** Attempts to retrieve the game mode data that should be used for the current game. If no data can be found, the
+	 * game cannot start, so the game is canceled everyone is returned to the main menu. */
 	void FindGameModeData();
+
+	/** Sends the game mode data to the game state, if it's found. The game state takes over initialization upon
+	 * receiving the data. */
+	void OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, const FString& GameModeDataSource);
 
 
 
@@ -48,11 +50,8 @@ public:
 
 public:
 
-	/** Retrieves the given controller's Challenger from their player state, if it has been set. */
-	const UChallengerData_DEP* GetChallengerDataForController(const AController* InController) const;
-
-	/** Spawns the given controller's selected Challenger. If the game is still waiting for data for initialization or
-	 * is only a front end, does not spawn a pawn for any controller. */
+	/** Spawns the given player's selected pawn, if it's been set. Otherwise, if the game mode has been set, spawns its
+	 * default pawn, if there is one. */
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 

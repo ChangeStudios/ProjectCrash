@@ -5,13 +5,12 @@
 
 #include "CrashGameplayTags.h"
 #include "Characters/ChallengerBase.h"
-#include "Characters/Data/ChallengerData_DEP.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/CrashWorldSettings.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
-#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PlayerControllers/CrashPlayerController.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -87,11 +86,8 @@ void ACrashGameMode::FindGameModeData()
 	 * here. */
 	if (GameModeDataId.IsValid())
 	{
-		UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found game mode data [%s] (Source: %s)."), *GameModeDataId.ToString(), *GameModeDataSource);
-
-		ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
-		check(CrashGS);
-		CrashGS->SetGameModeData(GameModeDataId);
+		// Send the game mode data to the game state, which will take over initialization.
+		OnGameModeDataFound(GameModeDataId, GameModeDataSource);
 	}
 	// If the game mode data cannot be found, something has gone wrong. Return to the main menu with an error message.
 	else
@@ -105,45 +101,22 @@ void ACrashGameMode::FindGameModeData()
 	}
 }
 
-const UChallengerData_DEP* ACrashGameMode::GetChallengerDataForController(const AController* InController) const
+void ACrashGameMode::OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, const FString& GameModeDataSource)
 {
-	// If the Challenger data has been set and loaded on the player state, use it for this controller.
-	if (InController)
-	{
-		if (const ACrashPlayerState* CrashPS = InController->GetPlayerState<ACrashPlayerState>())
-		{
-			// if (const UChallengerData* ChallengerData = CrashPS->GetChallengerData())
-			// {
-			// 	return ChallengerData;
-			// }
-		}
-	}
+	UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found game mode data [%s] (Source: %s)."), *GameModeDataId.ToString(), *GameModeDataSource);
 
-	/* If Challenger data has not been set, then the game is still waiting for data for initialization, and should not
-	 * spawn a Challenger for any players. */
-	return nullptr;
+	// Send the game mode data to the game state to continue initialization.
+	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
+	check(CrashGS);
+	CrashGS->SetGameModeData(GameModeDataId);
 }
 
 UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
-	check(CrashGS);
+	// TODO: Try to retrieve pawn data from the given controller's player state.
 
-	/* Spawn players' selected Challengers if the game is past WaitingForData (i.e. Challenger data has been
-	 * initialized). */
-	if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
-	{
-		if (const UChallengerData_DEP* ChallengerData = GetChallengerDataForController(InController))
-		{
-			if (ChallengerData->PawnClass)
-			{
-				return ChallengerData->PawnClass;
-			}
-		}
-	}
+	// TODO: Try to get the default pawn from the game mode data, if it's set.
 
-	/* If this is a front-end game mode, or the Challenger data has not been initialized we don't spawn a pawn for any
-	 * players. */
 	return nullptr;
 }
 
@@ -162,7 +135,7 @@ void ACrashGameMode::PreInitializeComponents()
 	// Start listening for changes to the game state's initialization state.
 	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 	check(CrashGS);
-	ActorInitStateChangedHandle = GetComponentManager()->RegisterAndCallForActorInitState(CrashGS, CrashGS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false);
+	GameStateInitStateChangedHandle = GetComponentManager()->RegisterAndCallForActorInitState(CrashGS, CrashGS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false);
 }
 
 void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -170,15 +143,16 @@ void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	// Stop listening for changes to the game state's initialization state.
 	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 	check(CrashGS);
-	GetComponentManager()->UnregisterActorInitStateDelegate(CrashGS, ActorInitStateChangedHandle);
+	GetComponentManager()->UnregisterActorInitStateDelegate(CrashGS, GameStateInitStateChangedHandle);
 
 	Super::EndPlay(EndPlayReason);
 }
 
 void ACrashGameMode::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
-	/* When transitioning to Initializing, restart all players. At this point, the game mode data, Challenger data, and
-	 * skin data are all loaded, so players can be properly initialized when restarted. */
+	/* When transitioning to Initializing, restart all players. At this point, the game mode data and pawn data
+	 * (including Challenger data and skin data, if needed) are loaded, so players can be properly initialized when
+	 * restarted. */
 	if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
 	{
 		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)

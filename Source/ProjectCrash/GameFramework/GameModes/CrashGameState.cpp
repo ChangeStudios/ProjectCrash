@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 
 #include "GameFeatureAction.h"
 #include "GameFeaturesSubsystem.h"
