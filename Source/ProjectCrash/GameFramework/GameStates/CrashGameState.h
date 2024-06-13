@@ -74,7 +74,7 @@ public:
 
 
 
-	// Game mode initialization.
+	// Game mode.
 
 public:
 
@@ -120,6 +120,12 @@ private:
 
 	/** Performs final unload of the current game mode if all plugins and actions are deactivated and unloaded. */
 	void OnGameModeUnloadComplete();
+
+// Utils.
+public:
+
+	/** Returns the current game mode data, if it's been set and loaded. */
+	TObjectPtr<const UCrashGameModeData> GetCurrentGameModeData() const { return CurrentGameModeData ? CurrentGameModeData : nullptr; }
 
 // Internals.
 private:

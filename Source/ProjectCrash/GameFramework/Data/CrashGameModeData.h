@@ -25,20 +25,24 @@ class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset
 
 public:
 
+	/** If true, Challengers will NEVER be spawned for players. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", DisplayName = "Is Front End?")
+	bool bIsFrontEnd = false;
+
 	/** If enabled, players will be restricted to using the Challengers defined by this game mode when selecting their
 	 * Challenger. If false, all core Challengers will be listed (Challengers with CoreChallenger enabled in their
 	 * defining data). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", DisplayName = "Restrict Challengers?")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", DisplayName = "Restrict Challengers?", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	bool bRestrictChallengers = false;
 
 	/** If true, Challengers will be categorized in the character selection screen by their class. Useful for game
 	 * modes where the available Challengers are restricted to generic playable characters. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", DisplayName = "Categorize Challengers?")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", DisplayName = "Categorize Challengers?", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	bool bCategorizeChallengers = true;
 
 	/** The Challengers available for players to use in this game mode, if RestrictChallengers is true. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", Meta = (EditCondition = "bRestrictChallengers"))
-	TSoftObjectPtr<const UChallengerData> AvailableChallengers;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Selection", Meta = (AllowedTypes = "ChallengerData", EditCondition = "bRestrictChallengers && !bIsFrontEnd", EditConditionHides = "true"))
+	TArray<FPrimaryAssetId> AvailableChallengers;
 
 
 
@@ -48,12 +52,12 @@ public:
 
 	/** The title of this game mode; e.g. "Deathmatch." Used when telling players what game mode they are currently
 	 * playing. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Title")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Title", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	FText UserFacingTitle;
 
 	/** An optional subtitle describing this game mode; e.g. "Free-For-All." Paired with the user-facing title to
 	 * describe this exact game mode. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Subtitle")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Metadata", DisplayName = "User-Facing Subtitle", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	FText UserFacingSubTitle;
 
 
@@ -64,12 +68,12 @@ public:
 
 	/** The desired number of teams created in this game mode. In matchmaking, this is the required number of teams to
 	 * start. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Teams")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Teams", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	uint8 NumTeams = 0;
 
 	/** The desired number of players on each teamm in this game mode. In matchmaking, this is the number of players
 	 * required on each team to start. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Players Per Team")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Number of Players Per Team", Meta = (EditCondition = "!bIsFrontEnd", EditConditionHides = "true"))
 	uint8 PlayersPerTeam = 0;
 
 

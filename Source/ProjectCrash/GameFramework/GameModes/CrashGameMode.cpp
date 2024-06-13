@@ -126,23 +126,28 @@ const UChallengerData* ACrashGameMode::GetChallengerDataForController(const ACon
 
 UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	/* Spawn players' selected Challengers if the game is past WaitingForData (i.e. Challenger data has been
-	 * initialized). */
 	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
 	check(CrashGS);
-	if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
+
+	// Only ever spawn pawns for players if this game mode is NOT a front end.
+	if (CrashGS->GetCurrentGameModeData() && !CrashGS->GetCurrentGameModeData()->bIsFrontEnd)
 	{
-		if (const UChallengerData* ChallengerData = GetChallengerDataForController(InController))
+		/* Spawn players' selected Challengers if the game is past WaitingForData (i.e. Challenger data has been
+		 * initialized). */
+		if (GetComponentManager()->HasFeatureReachedInitState(CrashGS, CrashGS->GetFeatureName(), STATE_INITIALIZING))
 		{
-			if (ChallengerData->PawnClass)
+			if (const UChallengerData* ChallengerData = GetChallengerDataForController(InController))
 			{
-				return ChallengerData->PawnClass;
+				if (ChallengerData->PawnClass)
+				{
+					return ChallengerData->PawnClass;
+				}
 			}
 		}
 	}
 
-	// If Challenger data has not been initialized, we don't spawn a pawn for any player.
-	// NOTE: Might have to change this to Super::GetDefaultPawnClassForController_Implementation to avoid errors.
+	/* If this is a front-end game mode, or the Challenger data has not been initialized we don't spawn a pawn for any
+	 * players. */
 	return nullptr;
 }
 

@@ -51,8 +51,8 @@ public:
 	/** Retrieves the given controller's Challenger from their player state, if it has been set. */
 	const UChallengerData* GetChallengerDataForController(const AController* InController) const;
 
-	/** Spawns the given controller's selected Challenger. If the game is still waiting for data for initialization,
-	 * does not spawn a pawn for any controller. */
+	/** Spawns the given controller's selected Challenger. If the game is still waiting for data for initialization or
+	 * is only a front end, does not spawn a pawn for any controller. */
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 
