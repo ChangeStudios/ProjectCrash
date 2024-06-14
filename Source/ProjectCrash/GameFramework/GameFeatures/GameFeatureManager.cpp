@@ -5,6 +5,18 @@
 
 #if WITH_EDITOR
 
+void UGameFeatureManager::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	UE_LOG(LogTemp, Error, TEXT("Feature manager being destroyed..."));
+}
+
+void UGameFeatureManager::DeactivateAndUnloadGameFeaturePlugin(const FString PluginURL)
+{
+	
+}
+
 void UGameFeatureManager::OnPlayInEditorBegin()
 {
 	// Clear the game feature request map.

@@ -12,7 +12,8 @@
 				"DeveloperSettings",
 				"Engine",
 				"ModularGameplayActors",
-				"CommonGame"
+				"CommonGame",
+				"ModularGameplay"
 			]
 		},
 		{

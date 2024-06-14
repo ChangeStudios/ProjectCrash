@@ -4,6 +4,7 @@
 #include "GameFramework/GameModes/CrashGameMode.h"
 
 #include "CrashGameplayTags.h"
+#include "GameModeManagerComponent.h"
 #include "Characters/ChallengerBase.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Development/CrashDeveloperSettings.h"
@@ -100,10 +101,10 @@ void ACrashGameMode::OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, 
 {
 	UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found game mode data [%s] (Source: %s)."), *GameModeDataId.ToString(), *GameModeDataSource);
 
-	// Send the game mode data to the game state to continue initialization.
-	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
-	check(CrashGS);
-	CrashGS->SetGameModeData(GameModeDataId);
+	// Send the game mode data to the game state's game mode manager component to continue initialization.
+	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
+	check(GameModeManagerComponent);
+	GameModeManagerComponent->SetGameModeData(GameModeDataId);
 }
 
 void ACrashGameMode::OnFindGameModeDataFailed()
