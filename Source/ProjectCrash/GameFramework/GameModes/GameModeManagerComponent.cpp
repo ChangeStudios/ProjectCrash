@@ -298,7 +298,7 @@ void UGameModeManagerComponent::StartGameModeUnload()
 	UE_LOG(LogCrashGameMode, Log, TEXT("Crash Game Mode: Started game mode unload. (%s)"),
 		*GetClientServerContextString(this));
 
-	// Deactivate active game feature plugins in FILO.
+	// Deactivate any game feature plugins loaded by this game mode in FILO.
 	for (int32 i = GameFeaturePluginURLs.Num(); i > 0; i--)
 	{
 		const FString& PluginURL = GameFeaturePluginURLs[i - 1];
@@ -308,10 +308,6 @@ void UGameModeManagerComponent::StartGameModeUnload()
 		if (UGameFeatureManager::RequestToDeactivatePlugin(PluginURL))
 		{
 			// Deactivate the plugin.
-
-			/* TODO: The plugin should also be unloaded asynchronously after it finishes being deactivated. This can't
-			 * be done here because StartGameModeUnload is called in EndPlay, so the game state will be destroyed
-			 * before it can receive any deactivation/unload callbacks. */
 			UE_LOG(LogCrashGameMode, Log, TEXT("Deactivating game feature plugin [%s]. (%s)"),
 				*PluginName,
 				*GetClientServerContextString(this));
@@ -319,16 +315,15 @@ void UGameModeManagerComponent::StartGameModeUnload()
 		}
 	}
 
-	// Deactivate and unload active game feature actions.
+	// Deactivate and unregister game feature actions loaded by this game mode.
 	if (LoadState == ECrashGameModeLoadState::Loaded)
 	{
 		LoadState = ECrashGameModeLoadState::Deactivating;
 
-		// Track any asynchronous action deactivations we may have to wait for.
+		// Track any pausing action deactivations we may have to wait for.
 		NumExpectedPausers = INDEX_NONE;
 		NumObservedPausers = 0;
 
-		// Deactivate and unload actions.
 		FGameFeatureDeactivatingContext Context(TEXT(""), [this](FStringView) { this->OnActionDeactivationCompleted(); });
 
 		const FWorldContext* ExistingWorldContext = GEngine->GetWorldContextFromWorld(GetWorld());
@@ -346,7 +341,6 @@ void UGameModeManagerComponent::StartGameModeUnload()
 				{
 					Action->OnGameFeatureDeactivating(Context);
 					Action->OnGameFeatureUnregistering();
-					// TODO: Unload the action.
 				}
 			}
 		};
@@ -363,7 +357,6 @@ void UGameModeManagerComponent::StartGameModeUnload()
 			}
 		}
 
-		// Check for any actions that deactivate asynchronously.
 		NumExpectedPausers = Context.GetNumPausers();
 
 		if (NumExpectedPausers > 0)
@@ -371,8 +364,7 @@ void UGameModeManagerComponent::StartGameModeUnload()
 			UE_LOG(LogCrashGameMode, Error, TEXT("Actions that have asynchronous deactivation aren't fully supported."));
 		}
 
-		/* Attempt to immediately invoke final game mode unload. This specific call will only succeed if there are no
-		 * asynchronous deactivations or plugins to unload, which are checked here. */
+		/* Attempt to immediately invoke final game mode unload if there are no pausers to wait for. */
 		OnGameModeUnloadComplete();
 	}
 }
@@ -382,13 +374,13 @@ void UGameModeManagerComponent::OnActionDeactivationCompleted()
 	check(IsInGameThread());
 	NumObservedPausers++;
 
-	// Attempt final game mode unload, which will also check if all plugins are deactivated and unloaded.
+	// Attempt final game mode unload, which will check for any remaining pausers.
 	OnGameModeUnloadComplete();
 }
 
 void UGameModeManagerComponent::OnGameModeUnloadComplete()
 {
-	// All actions must be fully deactivated and unloaded.
+	// All pausing actions must be fully deactivated.
 	if (NumObservedPausers != NumExpectedPausers)
 	{
 		return;

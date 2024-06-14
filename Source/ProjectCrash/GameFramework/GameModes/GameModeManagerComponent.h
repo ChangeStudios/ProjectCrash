@@ -111,13 +111,13 @@ public:
 
 private:
 
-	/** Begins unloading the game mode by deactivating and unloading active plugins and actions. */
+	/** Begins unloading the game mode by deactivating the plugins and actions loaded by the game mode. */
 	void StartGameModeUnload();
 
-	/** Attempts to invoke the final game mode unload when all actions are deactivated and unloaded. */
+	/** Attempts to invoke the final game mode unload when a pausing action finishes deactivating. */
 	void OnActionDeactivationCompleted();
 
-	/** Performs final unload of the current game mode if all plugins and actions are deactivated and unloaded. */
+	/** Performs final unload of the current game mode if all pausing actions are deactivated. */
 	void OnGameModeUnloadComplete();
 
 

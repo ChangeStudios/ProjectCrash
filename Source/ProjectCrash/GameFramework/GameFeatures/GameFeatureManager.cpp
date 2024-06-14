@@ -3,11 +3,6 @@
 
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 
-void UGameFeatureManager::DeactivateAndUnloadGameFeaturePlugin(const FString PluginURL)
-{
-	
-}
-
 #if WITH_EDITOR
 
 void UGameFeatureManager::OnPlayInEditorBegin()
