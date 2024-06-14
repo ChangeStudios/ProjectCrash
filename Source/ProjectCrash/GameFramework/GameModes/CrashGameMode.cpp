@@ -153,21 +153,24 @@ void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void ACrashGameMode::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
+void ACrashGameMode::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
-	/* When transitioning to Initializing, restart all players. At this point, the game mode data and pawn data
-	 * (including Challenger data and skin data, if needed) are loaded, so players can be properly initialized when
+	/* When the game state transitions to Initializing, restart all players. At this point, the game mode data and pawn
+	 * data (including Challenger data and skin data, if needed) are loaded, so players can be properly initialized when
 	 * restarted. */
-	if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
+	if (Params.FeatureName == ACrashGameState::NAME_ActorFeatureName)
 	{
-		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		if (Params.FeatureState == STATE_INITIALIZING)
 		{
-			APlayerController* PC = Cast<APlayerController>(*Iterator);
-			if ((PC != nullptr) && (PC->GetPawn() == nullptr))
+			for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 			{
-				if (PlayerCanRestart(PC))
+				APlayerController* PC = Cast<APlayerController>(*Iterator);
+				if ((PC != nullptr) && (PC->GetPawn() == nullptr))
 				{
-					RestartPlayer(PC);
+					if (PlayerCanRestart(PC))
+					{
+						RestartPlayer(PC);
+					}
 				}
 			}
 		}

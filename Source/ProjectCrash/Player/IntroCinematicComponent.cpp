@@ -1,0 +1,95 @@
+// Copyright Samuel Reitich. All rights reserved.
+
+
+#include "Player/IntroCinematicComponent.h"
+
+#include "CrashGameplayTags.h"
+#include "LevelSequenceActor.h"
+#include "LevelSequencePlayer.h"
+#include "MovieSceneSequencePlaybackSettings.h"
+#include "GameFramework/CrashWorldSettings.h"
+
+const FName UIntroCinematicComponent::NAME_ActorFeatureName("IntroCinematic");
+
+void UIntroCinematicComponent::OnRegister()
+{
+	Super::OnRegister();
+
+	// Register this actor as a feature with the initialization state framework.
+	RegisterInitStateFeature();
+}
+
+void UIntroCinematicComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Initialize this actor's initialization state.
+	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
+	CheckDefaultInitialization();
+
+	// Retrieve the intro cinematic from the current world settings.
+	if (ACrashWorldSettings* CrashWorldSettings = Cast<ACrashWorldSettings>(GetOwner()->GetWorldSettings()))
+	{
+		if (CrashWorldSettings->IntroCinematic)
+		{
+			// Play the intro cinematic for this player, if the world has one.
+			FMovieSceneSequencePlaybackSettings IntroCinematicSettings = FMovieSceneSequencePlaybackSettings();
+			IntroCinematicSettings.bAutoPlay = true;
+			IntroCinematicSettings.bHidePlayer = true;
+			IntroCinematicSettings.bDisableMovementInput = true;
+
+			ULevelSequencePlayer::CreateLevelSequencePlayer(GetOwner(), CrashWorldSettings->IntroCinematic, IntroCinematicSettings, IntroCinematicSequenceActor);
+
+			// Listen for when the first sequence finishes.
+			IntroCinematicSequenceActor->GetSequencePlayer()->OnFinished.AddDynamic(this, &UIntroCinematicComponent::OnFirstLoopFinished);
+		}
+	}
+}
+
+void UIntroCinematicComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// Unregister this actor as an initialization state feature.
+	UnregisterInitStateFeature();
+
+	Super::EndPlay(EndPlayReason);
+}
+
+void UIntroCinematicComponent::OnFirstLoopFinished()
+{
+	check(IntroCinematicSequenceActor);
+	IntroCinematicSequenceActor->GetSequencePlayer()->OnFinished.Clear();
+
+	// Progress initialization.
+	bFinishedFirstLoop = true;
+	CheckDefaultInitialization();
+
+	// Reset the sequence and start playing it on an infinite loop.
+	IntroCinematicSequenceActor->PlaybackSettings.LoopCount.Value = -1;
+	IntroCinematicSequenceActor->GetSequencePlayer()->PlayLooping();
+}
+
+bool UIntroCinematicComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
+{
+	check(Manager);
+
+	// We can always transition to our initial state when our current state hasn't been initialized yet.
+	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
+	{
+		return true;
+	}
+	// Transition to GameplayReady when the first cinematic loop finishes playing. This actor skips over Initializing.
+	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_GAMEPLAY_READY)
+	{
+		return bFinishedFirstLoop;
+	}
+
+	return false;
+}
+
+void UIntroCinematicComponent::CheckDefaultInitialization()
+{
+	/* This actor skips the Initializing state and goes straight to GameplayReady when it's ready, so it doesn't block
+	 * initialization after it's finished its job. */
+	static const TArray<FGameplayTag> StateChain = { STATE_WAITING_FOR_DATA, STATE_GAMEPLAY_READY };
+	ContinueInitStateChain(StateChain);
+}

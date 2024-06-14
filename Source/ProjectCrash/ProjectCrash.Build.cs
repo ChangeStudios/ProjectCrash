@@ -44,6 +44,7 @@ public class ProjectCrash : ModuleRules
 			"DeveloperSettings",
 			"EnhancedInput",
 			"LevelSequence",
+			"MovieScene",
 			"NetCore",
 			"Slate",
 			"SlateCore",

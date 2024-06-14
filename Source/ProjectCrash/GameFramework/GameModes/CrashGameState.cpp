@@ -4,17 +4,10 @@
 #include "GameFramework/GameModes/CrashGameState.h"
 
 #include "CrashGameplayTags.h"
-#include "GameFeatureAction.h"
-#include "GameFeaturesSubsystem.h"
-#include "GameFeaturesSubsystemSettings.h"
 #include "GameModeManagerComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
-#include "GameFramework/GameFeatures/GameFeatureActionSet.h"
-#include "GameFramework/GameFeatures/GameFeatureManager.h"
-#include "Net/UnrealNetwork.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
@@ -54,7 +47,8 @@ void ACrashGameState::BeginPlay()
 
 void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
+	// Unregister this actor as an initialization state feature.
+	UnregisterInitStateFeature();
 
 	// Stop listening for changes to players' initialization states.
 	UGameFrameworkComponentManager* ComponentManager = GetComponentManager();
@@ -69,13 +63,15 @@ void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 	PlayerStateInitStateChangedHandles.Empty();
 	ActorInitStateChangedDelegate.Unbind();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
 	check(Manager);
 
-	// We can also transition to our initial state, WaitingForData, when our current state hasn't been initialized yet.
+	// We can always transition to our initial state when our current state hasn't been initialized yet.
 	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
 	{
 		return true;

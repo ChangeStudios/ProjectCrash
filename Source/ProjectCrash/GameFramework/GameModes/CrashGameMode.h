@@ -72,7 +72,7 @@ public:
 public:
 
 	/** When the game state transitions to Initializing, the game mode restarts all players. */
-	virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) override;
+	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 
 	/** Delegate bound to when the game state's initialization state changes. The game mode's listens for changes to
 	 * the game state's initialization to determine its own initialization state. */
