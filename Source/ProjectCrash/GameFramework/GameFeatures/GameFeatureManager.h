@@ -18,11 +18,9 @@ class UGameFeatureManager : public UEngineSubsystem
 {
 	GENERATED_BODY()
 
-virtual void BeginDestroy() override;
-	
 public:
 
-	// TODO: Implement to safely deactivate and unload game features when the game ends, since this class persists after game state.
+	/** TODO: Implement to safely deactivate and unload game features when the game ends, since this class persists after game state. */
 	static void DeactivateAndUnloadGameFeaturePlugin(const FString PluginURL);
 
 #if WITH_EDITOR

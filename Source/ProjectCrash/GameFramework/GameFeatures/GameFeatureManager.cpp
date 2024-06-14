@@ -3,19 +3,12 @@
 
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 
-#if WITH_EDITOR
-
-void UGameFeatureManager::BeginDestroy()
-{
-	Super::BeginDestroy();
-
-	UE_LOG(LogTemp, Error, TEXT("Feature manager being destroyed..."));
-}
-
 void UGameFeatureManager::DeactivateAndUnloadGameFeaturePlugin(const FString PluginURL)
 {
 	
 }
+
+#if WITH_EDITOR
 
 void UGameFeatureManager::OnPlayInEditorBegin()
 {

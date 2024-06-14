@@ -48,7 +48,7 @@ public:
 	/** Initializes this actor's initialization state. */
 	virtual void BeginPlay() override;
 
-	/** Starts unloading the current game mode and unregisters initialization states. */
+	/** Unregisters initialization states. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 

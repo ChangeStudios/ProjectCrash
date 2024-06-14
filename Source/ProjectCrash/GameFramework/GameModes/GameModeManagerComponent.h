@@ -78,6 +78,10 @@ public:
 	/** Returns if the game mode data is fully loaded. */
 	bool IsGameModeLoaded() const;
 
+	/** Binds a delegate to when the game mode finishes fully loading. If the game mode is already fully loaded,
+	 * immediately invokes the delegate. */
+	void CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate);
+
 
 
 	// Loading.

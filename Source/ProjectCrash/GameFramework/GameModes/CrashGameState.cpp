@@ -38,8 +38,6 @@ void ACrashGameState::PreInitializeComponents()
 	{
 		this->OnActorInitStateChanged(Params);
 	});
-
-	// TODO: CallOrRegister_OnGameModeLoaded();
 }
 
 void ACrashGameState::BeginPlay()
@@ -112,7 +110,19 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 
 void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
-	if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
+	/* When transitioning to our initial state, start listening for the game mode to be loaded. The game mode must be
+	 * fully loaded for initialization to progress. */
+	if (!CurrentState.IsValid() && DesiredState == STATE_INITIALIZING)
+	{
+		check(GameModeManagerComponent);
+		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateWeakLambda(this, [this](const UCrashGameModeData* GameModeData)
+		{
+			// Try to progress our init state when the game mode is loaded.
+			CheckDefaultInitialization();
+		}));
+	}
+	// When transitioning to GameplayReady, start the game.
+	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
 		// TODO: Start the game.
 		UE_LOG(LogCrashGameMode, Log, TEXT("Game started!"));

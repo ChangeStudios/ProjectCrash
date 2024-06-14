@@ -63,6 +63,20 @@ bool UGameModeManagerComponent::IsGameModeLoaded() const
 	return (CurrentGameModeData != nullptr) && (LoadState == ECrashGameModeLoadState::Loaded);
 }
 
+void UGameModeManagerComponent::CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate)
+{
+	// If the game mode is already fully loaded, invoke the given delegate.
+	if (IsGameModeLoaded())
+	{
+		Delegate.Execute(CurrentGameModeData);
+	}
+	// If the game mode is not loaded yet, bind the delegate to when it finishes loading.
+	else
+	{
+		CrashGameModeLoadedDelegate.Add(MoveTemp(Delegate));
+	}
+}
+
 void UGameModeManagerComponent::StartGameModeLoad()
 {
 	check(CurrentGameModeData != nullptr);
