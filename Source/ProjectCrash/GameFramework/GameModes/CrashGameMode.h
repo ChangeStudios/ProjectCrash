@@ -53,8 +53,12 @@ public:
 
 public:
 
-	/** Spawns the given player's selected pawn, if it's been set. Otherwise, if the game mode has been set, spawns its
-	 * default pawn, if there is one. */
+	/** Attempts to retrieve the pawn data that should be used for the given controller. Searches for pawn data that's
+	 * been assigned to the controller (e.g. in a character selection screen). If it can't be found, uses the game
+	 * mode's default pawn. */
+	const UPawnData* FindPawnDataForController(AController* Controller);
+
+	/** Spawns the given player's selected pawn, if it's been set. Otherwise, no pawn will be spawned for them. */
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 
 

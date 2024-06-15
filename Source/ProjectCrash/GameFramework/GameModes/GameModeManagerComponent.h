@@ -67,13 +67,13 @@ public:
 	 *
 	 * Should not be called more than once, and should not be called after the game begins.
 	 */
-	void SetGameModeData(const FPrimaryAssetId& GameModeDataId);
+	void SetCurrentGameModeData(const FPrimaryAssetId& GameModeDataId);
 
 	/** Retrieves the current game mode data if it is fully loaded. Returns nullptr otherwise. */
-	const UCrashGameModeData* GetGameModeData() const;
+	const UCrashGameModeData* GetCurrentGameModeData() const;
 
 	/** Retrieves the current game mode data if it is fully loaded. Asserts otherwise (i.e. called too soon). */
-	const UCrashGameModeData* GetGameModeDataChecked() const;
+	const UCrashGameModeData* GetCurrentGameModeDataChecked() const;
 
 	/** Returns if the game mode data is fully loaded. */
 	bool IsGameModeLoaded() const;

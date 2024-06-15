@@ -3,6 +3,8 @@
 
 #include "Development/CrashDeveloperSettings.h"
 
+#include "Characters/Data/ChallengerSkinData.h"
+#include "Characters/Data/PawnData.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
@@ -33,23 +35,23 @@ void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 		FSlateNotificationManager::Get().AddNotification(Info);
 	}
 	
-	// Notify user of an active Challenger override.
-	if (ChallengerDataOverride.IsValid())
+	// Notify user of an active pawn override.
+	if (PawnDataOverride)
 	{
 		FNotificationInfo Info(FText::Format(
-			LOCTEXT("ChallengerDataOverrideActive", "Developer Settings Override\nChallenger Data: {0}"),
-			FText::FromName(ChallengerDataOverride.PrimaryAssetName)
+			LOCTEXT("PawnDataOverrideActive", "Developer Settings Override\nPawn Data: {0}"),
+			FText::FromString(GetNameSafe(PawnDataOverride))
 		));
 		Info.ExpireDuration = 5.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);
 	}
 
 	// Notify user of an active skin override.
-	if (SkinDataOverride.IsValid())
+	if (SkinDataOverride)
 	{
 		FNotificationInfo Info(FText::Format(
 			LOCTEXT("SkinDataOverrideActive", "Developer Settings Override\nSkin Data: {0}"),
-			FText::FromName(SkinDataOverride.PrimaryAssetName)
+			FText::FromString(GetNameSafe(SkinDataOverride))
 		));
 		Info.ExpireDuration = 5.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);

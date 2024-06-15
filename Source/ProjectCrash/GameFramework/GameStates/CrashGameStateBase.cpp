@@ -220,7 +220,7 @@ void ACrashGameStateBase::OnRep_GameModeDataPath()
 
 	// Load the new game mode data.
 	FStreamableManager& Streamable = UCrashAssetManager::Get().GetStreamableManager();
-	Streamable.RequestAsyncLoad(TArray<FSoftObjectPath>( {AssetPath} ), FStreamableDelegate::CreateUObject(this, &ACrashGameStateBase::OnGameModeDataLoaded));
+	Streamable.RequestAsyncLoad({AssetPath}, FStreamableDelegate::CreateUObject(this, &ACrashGameStateBase::OnGameModeDataLoaded));
 }
 
 void ACrashGameStateBase::OnGameModeDataLoaded()

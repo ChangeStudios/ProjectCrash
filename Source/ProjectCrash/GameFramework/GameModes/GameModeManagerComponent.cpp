@@ -29,7 +29,7 @@ void UGameModeManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 	StartGameModeUnload();
 }
 
-void UGameModeManagerComponent::SetGameModeData(const FPrimaryAssetId& GameModeDataId)
+void UGameModeManagerComponent::SetCurrentGameModeData(const FPrimaryAssetId& GameModeDataId)
 {
 	// Load the appropriate game mode data.
 	UCrashAssetManager& AssetManager = UCrashAssetManager::Get();
@@ -44,13 +44,13 @@ void UGameModeManagerComponent::SetGameModeData(const FPrimaryAssetId& GameModeD
 	StartGameModeLoad();
 }
 
-const UCrashGameModeData* UGameModeManagerComponent::GetGameModeData() const
+const UCrashGameModeData* UGameModeManagerComponent::GetCurrentGameModeData() const
 {
 	// Return nullptr if the game mode is not loaded.
 	return IsGameModeLoaded() ? CurrentGameModeData : nullptr;
 }
 
-const UCrashGameModeData* UGameModeManagerComponent::GetGameModeDataChecked() const
+const UCrashGameModeData* UGameModeManagerComponent::GetCurrentGameModeDataChecked() const
 {
 	// Assert that the game mode is loaded.
 	check(IsGameModeLoaded());
