@@ -80,25 +80,31 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
 	{
 		// The game mode must be loaded (game features are activated, actions have been executed, etc.).
-		const bool bGameModeLoaded = GameModeManagerComponent->IsGameModeLoaded();
+		if (!GameModeManagerComponent->IsGameModeLoaded())
+		{
+			return false;
+		}
 
 		// TODO: The number of player states in Initializing must be the number of players in the session.
 		bool bAllPlayersReadyToInitialize = true;
 		// TODO: Check for disconnects.
 
-		return bGameModeLoaded && bAllPlayersReadyToInitialize;
+		return bAllPlayersReadyToInitialize;
 	}
 	// Transition to GameplayReady when all components AND player states are in GameplayReady.
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
 		// All game state components must be GameplayReady.
-		bool bAllComponentsReady = Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName());
+		if (!Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName()))
+		{
+			return false;
+		}
 
 		// TODO: players must be GameplayReady.
 		bool bAllPlayersGameplayReady = true;
 		// TODO: Check for disconnects.
 
-		return bAllComponentsReady && bAllPlayersGameplayReady;
+		return bAllPlayersGameplayReady;
 	}
 
 	return false;
@@ -131,6 +137,25 @@ void ACrashGameState::OnActorInitStateChanged(const FActorInitStateChangedParams
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
 		CheckDefaultInitialization();
+	}
+
+	if (Params.FeatureName == ACrashPlayerState::NAME_ActorFeatureName)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PS Progressed"));
+		if (Params.FeatureState == STATE_GAMEPLAY_READY)
+		{
+			for (APlayerState* PS : PlayerArray)
+			{
+				if (APlayerController* PC = PS->GetPlayerController())
+				{
+					if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
+					{
+						GM->RestartPlayer(PC);
+						UE_LOG(LogTemp, Error, TEXT("Restarted"));
+					}
+				}
+			}
+		}
 	}
 }
 

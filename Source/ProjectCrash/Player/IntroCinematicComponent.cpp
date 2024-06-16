@@ -8,6 +8,8 @@
 #include "LevelSequencePlayer.h"
 #include "MovieSceneSequencePlaybackSettings.h"
 #include "GameFramework/CrashWorldSettings.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "PlayerStates/CrashPlayerState.h"
 
 const FName UIntroCinematicComponent::NAME_ActorFeatureName("IntroCinematic");
 
@@ -22,6 +24,9 @@ void UIntroCinematicComponent::OnRegister()
 void UIntroCinematicComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Start listening for changes to the owning player state's initialization state.
+	BindOnActorInitStateChanged(ACrashPlayerState::NAME_ActorFeatureName, FGameplayTag(), false);
 
 	// Initialize this actor's initialization state.
 	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
@@ -57,15 +62,16 @@ void UIntroCinematicComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UIntroCinematicComponent::OnFirstLoopFinished()
 {
 	check(IntroCinematicSequenceActor);
+	check(IntroCinematicSequenceActor->GetSequencePlayer());
 	IntroCinematicSequenceActor->GetSequencePlayer()->OnFinished.Clear();
-
-	// Progress initialization.
-	bFinishedFirstLoop = true;
-	CheckDefaultInitialization();
 
 	// Reset the sequence and start playing it on an infinite loop.
 	IntroCinematicSequenceActor->PlaybackSettings.LoopCount.Value = -1;
 	IntroCinematicSequenceActor->GetSequencePlayer()->PlayLooping();
+
+	// Progress initialization.
+	bFinishedFirstLoop = true;
+	CheckDefaultInitialization();
 }
 
 bool UIntroCinematicComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
@@ -84,6 +90,29 @@ bool UIntroCinematicComponent::CanChangeInitState(UGameFrameworkComponentManager
 	}
 
 	return false;
+}
+
+void UIntroCinematicComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
+{
+	// When this component's owning player state transitions to Initializing, stop the cinematic. 
+	if (Params.OwningActor == GetPlayerStateChecked<APlayerState>())
+	{
+		if (Params.FeatureState == STATE_INITIALIZING)
+		{
+			if (IntroCinematicSequenceActor)
+			{
+				ULevelSequencePlayer* SequencePlayer = IntroCinematicSequenceActor->GetSequencePlayer();
+				if (SequencePlayer && SequencePlayer->IsPlaying())
+				{
+					SequencePlayer->Stop();
+
+					// Destroy the cinematic actor.
+					IntroCinematicSequenceActor->SetLifeSpan(0.1f);
+					IntroCinematicSequenceActor = nullptr;
+				}
+			}
+		}
+	}
 }
 
 void UIntroCinematicComponent::CheckDefaultInitialization()

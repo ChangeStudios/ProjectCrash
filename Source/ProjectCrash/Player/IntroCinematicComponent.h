@@ -10,8 +10,8 @@
 class ALevelSequenceActor;
 
 /**
- * Plays the current level's intro cinematic on a loop. Prevents the initialization state from progressing until the
- * first loop finishes.
+ * Plays the current level's intro cinematic on a loop until the player state is ready to transition to the
+ * Initializing state. Prevents the initialization state from progressing until the first loop finishes.
  */
 UCLASS(NotBlueprintable)
 class PROJECTCRASH_API UIntroCinematicComponent : public UPlayerStateComponent, public IGameFrameworkInitStateInterface
@@ -63,5 +63,6 @@ public:
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
 
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
+	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	virtual void CheckDefaultInitialization() override;
 };
