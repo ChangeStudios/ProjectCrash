@@ -24,6 +24,18 @@ ACrashGameMode::ACrashGameMode()
 	// PlayerControllerClass = ACrashPlayerController::StaticClass();
 }
 
+void ACrashGameMode::InitGameState()
+{
+	Super::InitGameState();
+
+	// Start listening for the game mode to be fully loaded.
+	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
+	check(GameModeManagerComponent);
+	GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(
+		FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this,&ThisClass::OnGameModeLoaded),
+		ECrashGameModeLoadedResponsePriority::Final);
+}
+
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -118,6 +130,43 @@ void ACrashGameMode::OnFindGameModeDataFailed()
 	// TODO: Cancel game and return to front-end.
 }
 
+void ACrashGameMode::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
+{
+	/* Restart all players, so they can be re-initialized using the new game mode data. This usually only affects the
+	 * listen server player, since everyone else typically won't even be in the game when the game mode finishes
+	 * loading on the server. */
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Cast<APlayerController>(*Iterator);
+		if ((PC != nullptr) && (PC->GetPawn() == nullptr))
+		{
+			if (PlayerCanRestart(PC))
+			{
+				RestartPlayer(PC);
+			}
+		}
+	}
+}
+
+bool ACrashGameMode::IsGameModeLoaded() const
+{
+	// Check if the game mode manager component has finished fully loading the current game mode.
+	check(GameState);
+	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
+	check(GameModeManagerComponent);
+
+	return GameModeManagerComponent->IsGameModeLoaded();
+}
+
+void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	/**  */
+	if (IsGameModeLoaded())
+	{
+		Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	}
+}
+
 const UPawnData* ACrashGameMode::FindPawnDataForController(AController* Controller)
 {
 	check(GameState);
@@ -199,56 +248,4 @@ UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AControl
 
 	// If the player's pawn data has not been set yet, do not spawn a pawn for them.
 	return nullptr;
-}
-
-void ACrashGameMode::PreInitializeComponents()
-{
-	Super::PreInitializeComponents();
-
-	/* Declare a delegate that wraps this actor's InitStateChanged function, so that it can be triggered by other
-	 * features' initialization state changes. */
-	FActorInitStateChangedDelegate ActorInitStateChangedDelegate = FActorInitStateChangedDelegate::CreateWeakLambda(this,
-	[this](const FActorInitStateChangedParams& Params)
-	{
-		this->OnActorInitStateChanged(Params);
-	});
-
-	// Start listening for changes to the game state's initialization state.
-	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
-	check(CrashGS);
-	GameStateInitStateChangedHandle = GetComponentManager()->RegisterAndCallForActorInitState(CrashGS, CrashGS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false);
-}
-
-void ACrashGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	// Stop listening for changes to the game state's initialization state.
-	ACrashGameState* CrashGS = GetGameState<ACrashGameState>();
-	check(CrashGS);
-	GetComponentManager()->UnregisterActorInitStateDelegate(CrashGS, GameStateInitStateChangedHandle);
-
-	Super::EndPlay(EndPlayReason);
-}
-
-void ACrashGameMode::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
-{
-	/* When the game state transitions to Initializing, restart all players. At this point, the game mode data and pawn
-	 * data (including Challenger data and skin data, if needed) are loaded, so players can be properly initialized when
-	 * restarted. */
-	if (Params.FeatureName == ACrashGameState::NAME_ActorFeatureName)
-	{
-		if (Params.FeatureState == STATE_INITIALIZING)
-		{
-			for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-			{
-				APlayerController* PC = Cast<APlayerController>(*Iterator);
-				if ((PC != nullptr) && (PC->GetPawn() == nullptr))
-				{
-					if (PlayerCanRestart(PC))
-					{
-						RestartPlayer(PC);
-					}
-				}
-			}
-		}
-	}
 }

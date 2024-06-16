@@ -28,11 +28,34 @@ enum class ECrashGameModeLoadState
 	Deactivating
 };
 
+/**
+ * The priority of delegates broadcast when the game mode finishes fully loading.
+ *
+ * Used to control the order in which game mode loading responses execute. E.g. player states should set their pawn
+ * data with a loaded game mode BEFORE the game mode restarts all players.
+ */
+enum class ECrashGameModeLoadedResponsePriority
+{
+	// Broadcast first when the game mode finishes fully loading.
+	First,
+	// Broadcast after delegates with "First" priority when the game mode finishes fully loading.
+	None,
+	// Broadcast last, after all other delegates, when the game mode finishes loading.
+	Final
+};
+
 
 
 /**
  * Game state component responsible for managing the active game mode: loading the game mode data, loading and
  * activating its plugins, and executing its actions.
+ *
+ * @note In this framework "loading game mode data" refers to loading the game mode data asset into memory. "Loading
+ * the game mode" refers to loading the data and features that comprise the current game mode (actions, game features,
+ * etc.), as defined in the game mode data asset, as opposed to loading an actual AGameMode actor.
+ *
+ * In Lyra, they would call the game mode the "Experience," but I want to make sure it's clear that the game mode
+ * itself is being defined by the game mode data—i.e. "experiences" are just modular game modes.
  */
 UCLASS()
 class PROJECTCRASH_API UGameModeManagerComponent : public UGameStateComponent
@@ -78,10 +101,6 @@ public:
 	/** Returns if the game mode data is fully loaded. */
 	bool IsGameModeLoaded() const;
 
-	/** Binds a delegate to when the game mode finishes fully loading. If the game mode is already fully loaded,
-	 * immediately invokes the delegate. */
-	void CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate);
-
 
 
 	// Loading.
@@ -100,10 +119,24 @@ private:
 	/** Executes startup game feature actions before broadcasting that loading finished. */
 	void OnGameModeFullLoadComplete();
 
+
+
+	// Loading callbacks.
+
 public:
 
-	/** Broadcast when the current game mode has been fully loaded. */
-	FCrashGameModeLoadedSignature CrashGameModeLoadedDelegate;
+	/** Binds a delegate with the given priority to when the game mode finishes fully loading. If the game mode is
+	 * already fully loaded, immediately invokes the delegate. */
+	void CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate, ECrashGameModeLoadedResponsePriority Priority = ECrashGameModeLoadedResponsePriority::None);
+
+private:
+
+	/** Broadcast first when the current game mode has been fully loaded. */
+	FCrashGameModeLoadedSignature CrashGameModeLoadedDelegate_FirstPriority;
+	/** Broadcast second, after FirstPriority, when the current game mode has been fully loaded. */
+	FCrashGameModeLoadedSignature CrashGameModeLoadedDelegate_NoPriority;
+	/** Broadcast last when the current game mode has been fully loaded. */
+	FCrashGameModeLoadedSignature CrashGameModeLoadedDelegate_FinalPriority;
 
 
 

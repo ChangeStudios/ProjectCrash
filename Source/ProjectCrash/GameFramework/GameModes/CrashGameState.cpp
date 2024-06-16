@@ -25,13 +25,17 @@ void ACrashGameState::PreInitializeComponents()
 
 	// Register this actor as a feature with the initialization state framework.
 	RegisterInitStateFeature();
+}
 
-	/* Initialize the actor init state callback to call OnActorInitStateChanged on this actor. This is used to trigger
-	 * this actor's OnActorInitStateChanged function when other actors' init states change. */
-	ActorInitStateChangedDelegate = FActorInitStateChangedDelegate::CreateWeakLambda(this, [this](const FActorInitStateChangedParams& Params)
+void ACrashGameState::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Attempt to progress initialization when the game mode data finishes loading.
+	GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateWeakLambda(this, [this](const UCrashGameModeData* CrashGameModeData)
 	{
-		this->OnActorInitStateChanged(Params);
-	});
+		CheckDefaultInitialization();
+	}));
 }
 
 void ACrashGameState::BeginPlay()
@@ -51,20 +55,6 @@ void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	// Unregister this actor as an initialization state feature.
 	UnregisterInitStateFeature();
 
-	// Stop listening for changes to players' initialization states.
-	UGameFrameworkComponentManager* ComponentManager = GetComponentManager();
-	check(ComponentManager);
-	for (auto PlayerHandlePair : PlayerStateInitStateChangedHandles)
-	{
-		if (PlayerHandlePair.Value.IsValid())
-		{
-			ComponentManager->UnregisterActorInitStateDelegate(PlayerHandlePair.Key, PlayerHandlePair.Value);
-			PlayerHandlePair.Value.Reset();
-		}
-	}
-	PlayerStateInitStateChangedHandles.Empty();
-	ActorInitStateChangedDelegate.Unbind();
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -77,7 +67,8 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 	{
 		return true;
 	}
-	// Transition to Initializing when (1) the game mode data is loaded and (2) all player states are in Initializing.
+	/* Transition to Initializing when (1) the game mode data is loaded, (2) all components are in Initializing, and
+	 * (3) the expected number of players have joined the game. */
 	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
 	{
 		// The game mode must be loaded (game features are activated, actions have been executed, etc.).
@@ -86,20 +77,22 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 			return false;
 		}
 
-		// All players must be connected and in the Initializing state.
-		return GetNumExpectedPlayers() == GetNumPlayersInState(STATE_INITIALIZING);
-	}
-	// Transition to GameplayReady when all components AND player states are in GameplayReady.
-	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
-	{
-		// All game state components must be GameplayReady.
+		// All game state components must have reached Initializing.
 		if (!Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName()))
 		{
 			return false;
 		}
 
-		// All players must be connected and in the GameplayReady state. Ensures their pawns are also in GameplayReady.
-		return GetNumExpectedPlayers() == GetNumPlayersInState(STATE_GAMEPLAY_READY);
+		// All players must be connected.
+		return GetNumExpectedPlayers() == PlayerArray.Num();
+	}
+	// Transition to GameplayReady when all components are in GameplayReady.
+	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
+	{
+		// All game state components must have reached GameplayReady.
+		return Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName());
+
+		// @Note: We may want to check the player array again to make sure no one has disconnected or gone inactive.
 	}
 
 	return false;
@@ -109,7 +102,7 @@ void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Mana
 {
 	/* When transitioning to our initial state, start listening for the game mode to be loaded. The game mode must be
 	 * fully loaded for initialization to progress. */
-	if (!CurrentState.IsValid() && DesiredState == STATE_INITIALIZING)
+	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
 	{
 		check(GameModeManagerComponent);
 		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateWeakLambda(this, [this](const UCrashGameModeData* GameModeData)
@@ -118,12 +111,17 @@ void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Mana
 			CheckDefaultInitialization();
 		}));
 	}
+	// When transitioning to Initializing, take players out of the loading screen.
+	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
+	{
+		// TODO: Take players out of the loading screen.
+	}
 	// When transitioning to GameplayReady, start the game.
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
-		// TODO: Start the game.
 		if (HasAuthority())
 		{
+			// TODO: Start the game.
 			UE_LOG(LogCrashGameMode, Log, TEXT("Game started!"));
 		}
 	}
@@ -131,7 +129,7 @@ void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Mana
 
 void ACrashGameState::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
-	// If another feature has changed init states (e.g. a player state), check if we should too.
+	// If another feature has changed init states (i.e. a game state component), check if we should too.
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
 		CheckDefaultInitialization();
@@ -149,19 +147,8 @@ void ACrashGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	Super::AddPlayerState(PlayerState);
 
-	// Listen for changes to players' initialization states, which drive the game state's initialization.
-	if (ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(PlayerState))
-	{
-		if (!CrashPS->IsOnlyASpectator() && !PlayerStateInitStateChangedHandles.Contains(CrashPS))
-		{
-			UGameFrameworkComponentManager* ComponentManager = GetComponentManager();
-			check(ComponentManager);
-
-			/* This will call this actor's OnActorInitStateChanged function when a player state's init state changes,
-			 * which will attempt to progress our initialization chain if possible (e.g. if players are now ready). */
-			PlayerStateInitStateChangedHandles.Add(CrashPS, ComponentManager->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
-		}
-	}
+	// Try to progress initialization when a new player joins (potentially the last player we're waiting for).
+	CheckDefaultInitialization();
 }
 
 int32 ACrashGameState::GetNumExpectedPlayers() const
@@ -182,9 +169,9 @@ int32 ACrashGameState::GetNumExpectedPlayers() const
 	return 0;
 }
 
-int32 ACrashGameState::GetNumPlayersInState(FGameplayTag StateToCheck, bool bMatchStateExact) const
+int32 ACrashGameState::GetNumActivePlayers() const
 {
-	int PlayersInState = 0;
+	int32 ActivePlayerCount = 0;
 
 	for (APlayerState* PS : PlayerArray)
 	{
@@ -194,27 +181,15 @@ int32 ACrashGameState::GetNumPlayersInState(FGameplayTag StateToCheck, bool bMat
 			continue;
 		}
 
-		if (IGameFrameworkInitStateInterface* InitStateInterface = Cast<IGameFrameworkInitStateInterface>(PS))
+		// Don't count inactive players.
+		if (PS->IsInactive())
 		{
-			/* If we only care about reaching the given state and not the exact state of the player, check if the
-			 * player has reached the desired state. */
-			if (!bMatchStateExact)
-			{
-				if (InitStateInterface->HasReachedInitState(StateToCheck))
-				{
-					PlayersInState++;
-				}
-			}
-			// If the player needs to be in the EXACT given state, check if they are.
-			else
-			{
-				if (InitStateInterface->GetInitState().MatchesTagExact(StateToCheck))
-				{
-					PlayersInState++;
-				}
-			}
+			continue;
 		}
+
+		// Count all other players.
+		ActivePlayerCount++;
 	}
 
-	return PlayersInState;
+	return ActivePlayerCount;
 }

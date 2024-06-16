@@ -15,35 +15,6 @@
 #include "Net/UnrealNetwork.h"
 
 const FName ACrashPlayerState::NAME_AbilitiesReady("AbilitiesReady");
-const FName ACrashPlayerState::NAME_ActorFeatureName("CrashPlayerState");
-
-void ACrashPlayerState::PreInitializeComponents()
-{
-	Super::PreInitializeComponents();
-
-	// Register this actor as a feature with the initialization state framework.
-	RegisterInitStateFeature();
-}
-
-void ACrashPlayerState::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// Start listening for initialization state changes on this actor.
-	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
-
-	// Initialize this actor's initialization state.
-	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
-	CheckDefaultInitialization();
-}
-
-void ACrashPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	// Unregister this actor as an initialization state feature.
-	UnregisterInitStateFeature();
-	
-	Super::EndPlay(EndPlayReason);
-}
 
 void ACrashPlayerState::PostInitializeComponents()
 {
@@ -57,7 +28,9 @@ void ACrashPlayerState::PostInitializeComponents()
 		check(GS);
 		UGameModeManagerComponent* GameModeManagerComponent = GS->FindComponentByClass<UGameModeManagerComponent>();
 		check(GameModeManagerComponent);
-		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this, &ThisClass::OnGameModeLoaded));
+		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(
+			FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this, &ThisClass::OnGameModeLoaded),
+			ECrashGameModeLoadedResponsePriority::First);
 	}
 }
 
@@ -75,70 +48,6 @@ void ACrashPlayerState::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 			UE_LOG(LogCrashGameMode, Error, TEXT("ACrashPlayerState::OnGameModeLoaded unable to find pawn data to initialize player state [%s]."), *GetNameSafe(this));
 		}
 	}
-
-	// Try to progress our initialization state.
-	CheckDefaultInitialization();
-}
-
-bool ACrashPlayerState::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
-{
-	check(Manager);
-
-	// We can always transition to our initial state when our current state hasn't been initialized yet.
-	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
-	{
-		return true;
-	}
-	// Transition to Initializing when (1) our pawn data has been initialized and (2) all of our components are ready.
-	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
-	{
-		// Pawn data must be set before we can initialize this player.
-		if (!GetWorld()->GetGameState()->FindComponentByClass<UGameModeManagerComponent>()->IsGameModeLoaded() || !PawnData)
-		{
-			return false;
-		}
-
-		// All of this actor's components must be Initializing. 
-		return Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashPlayerState*>(this), STATE_INITIALIZING, GetFeatureName());
-	}
-	/* Transition to GameplayReady when (1) we possess a pawn, (2) all of our components are ready, and (3) all of our
-	 * pawn's components are ready, via the pawn extension component. */
-	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
-	{
-		// We must possess a pawn for gameplay to begin.
-		if (!GetPawn())
-		{
-			return false;
-		}
-
-		// All of this actor's components must be GameplayReady.
-		if (!Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashPlayerState*>(this), STATE_GAMEPLAY_READY, GetFeatureName()))
-		{
-			return false;
-		}
-
-		// TODO: Find PawnExtensionComponent on pawn and check its progress.
-
-		return true;
-	}
-
-	return false;
-}
-
-void ACrashPlayerState::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
-{
-	// If another feature has changed init states (e.g. one of our components), check if we should too.
-	if (Params.FeatureName != NAME_ActorFeatureName)
-	{
-		CheckDefaultInitialization();
-	}
-}
-
-void ACrashPlayerState::CheckDefaultInitialization()
-{
-	// Before checking our progress, try progressing any other features we might depend on.
-	CheckDefaultInitializationForImplementers();
-	ContinueInitStateChain(CrashGameplayTags::StateChain);
 }
 
 void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)

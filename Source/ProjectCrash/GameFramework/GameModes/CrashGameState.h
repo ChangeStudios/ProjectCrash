@@ -15,14 +15,8 @@ class UGameModeManagerComponent;
 
 /**
  * Base modular game state for this project. This is the primary handler for game initialization, responsible for
- * loading the modular game mode data (via the UGameModeManagerComponent), and executing its startup routines
- * (executing actions, loading assets, etc.).
- *
- * @note In this framework "loading game mode data" refers to loading the game mode data asset into memory. "Loading
- * the game mode" refers to loading the data and features that comprise the current game mode (actions, game features,
- * etc.), as defined in the game mode data asset, as opposed to loading the actual AGameMode actor. In Lyra, they would
- * call the game mode the "Experience," but I want to make sure it's clear that the game mode itself is being defined
- * by the game mode data—i.e. "experiences" are just modular game modes.
+ * loading the modular game mode data and executing its startup routines (executing actions, loading assets, etc.) via
+ * the GameModeManagerComponent.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase, public IGameFrameworkInitStateInterface
@@ -45,6 +39,9 @@ public:
 	/** Registers this actor as a feature with the initialization state framework. */
 	virtual void PreInitializeComponents() override;
 
+	/** Starts listening for the game mode to be loaded via the game mode manager component. */
+	virtual void PostInitializeComponents() override;
+
 	/** Initializes this actor's initialization state. */
 	virtual void BeginPlay() override;
 
@@ -66,15 +63,6 @@ public:
 	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	virtual void CheckDefaultInitialization() override;
 
-private:
-
-	/** Delegate used to call OnActorInitStateChanged when another actor's init state changes (e.g. a player state). */
-	FActorInitStateChangedDelegate ActorInitStateChangedDelegate;
-
-	/** Handles bound to each player state's initialization state changes. The game state's initialization state is
-	 * dependent on the initialization states of each player state, so it listens for their changes. */
-	TMap<ACrashPlayerState*, FDelegateHandle> PlayerStateInitStateChangedHandles;
-
 
 
 	// Game mode.
@@ -91,8 +79,7 @@ private:
 
 public:
 
-	/** Starts listening for changes to the new player state's initialization state. The game state's initialization
-	 * state depends on that of the player states. */
+	/** Checks if all expected players have joined the game before the game can begin. */
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 
 
@@ -109,12 +96,6 @@ private:
 	 */
 	int32 GetNumExpectedPlayers() const;
 
-	/**
-	 * Iterates through the PlayerArray and returns the number of connected players in the given initialization
-	 * state. Does not count spectators.
-	 *
-	 * @param bMatchStateExact		If true, will only count players in the exact given state. If false, any players in
-	 *								OR PAST the given state will be counted.
-	 */
-	int32 GetNumPlayersInState(FGameplayTag StateToCheck, bool bMatchStateExact = false) const;
+	/** Gets the number of active players (all players excluding inactive players and spectators). */
+	int32 GetNumActivePlayers() const;
 };

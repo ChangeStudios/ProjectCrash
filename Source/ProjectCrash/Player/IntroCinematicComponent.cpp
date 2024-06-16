@@ -26,7 +26,7 @@ void UIntroCinematicComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Start listening for changes to the owning player state's initialization state.
-	BindOnActorInitStateChanged(ACrashPlayerState::NAME_ActorFeatureName, FGameplayTag(), false);
+	// BindOnActorInitStateChanged(ACrashPlayerState::NAME_ActorFeatureName, FGameplayTag(), false);
 
 	// Initialize this actor's initialization state, which starts the cinematic.
 	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));

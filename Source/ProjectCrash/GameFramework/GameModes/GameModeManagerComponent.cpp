@@ -63,20 +63,6 @@ bool UGameModeManagerComponent::IsGameModeLoaded() const
 	return (CurrentGameModeData != nullptr) && (LoadState == ECrashGameModeLoadState::Loaded);
 }
 
-void UGameModeManagerComponent::CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate)
-{
-	// If the game mode is already fully loaded, invoke the given delegate.
-	if (IsGameModeLoaded())
-	{
-		Delegate.Execute(CurrentGameModeData);
-	}
-	// If the game mode is not loaded yet, bind the delegate to when it finishes loading.
-	else
-	{
-		CrashGameModeLoadedDelegate.Add(MoveTemp(Delegate));
-	}
-}
-
 void UGameModeManagerComponent::StartGameModeLoad()
 {
 	check(CurrentGameModeData != nullptr);
@@ -285,12 +271,39 @@ void UGameModeManagerComponent::OnGameModeFullLoadComplete()
 	// Update the load state.
 	LoadState = ECrashGameModeLoadState::Loaded;
 
-	// Broadcast that the game mode finished loading.
-	CrashGameModeLoadedDelegate.Broadcast(CurrentGameModeData);
-	CrashGameModeLoadedDelegate.Clear();
+	// Broadcast that the game mode finished loading. The order in which these delegates are invoked MATTERS.
+	CrashGameModeLoadedDelegate_FirstPriority.Broadcast(CurrentGameModeData);
+	CrashGameModeLoadedDelegate_FirstPriority.Clear();
 
-	// TODO: Switch to using the CrashGameModeLoaded delegate.
-	GetGameState<ACrashGameState>()->CheckDefaultInitialization();
+	CrashGameModeLoadedDelegate_NoPriority.Broadcast(CurrentGameModeData);
+	CrashGameModeLoadedDelegate_NoPriority.Clear();
+
+	CrashGameModeLoadedDelegate_FinalPriority.Broadcast(CurrentGameModeData);
+	CrashGameModeLoadedDelegate_FinalPriority.Clear();
+}
+
+void UGameModeManagerComponent::CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate&& Delegate, ECrashGameModeLoadedResponsePriority Priority)
+{
+	// If the game mode is already fully loaded, invoke the given delegate.
+	if (IsGameModeLoaded())
+	{
+		Delegate.Execute(CurrentGameModeData);
+	}
+	// If the game mode is not loaded yet, bind to the corresponding delegate for when it finishes loading.
+	else
+	{
+		switch (Priority)
+		{
+			case ECrashGameModeLoadedResponsePriority::First:
+				CrashGameModeLoadedDelegate_FirstPriority.Add(MoveTemp(Delegate));
+				break;
+			case ECrashGameModeLoadedResponsePriority::Final:
+				CrashGameModeLoadedDelegate_FinalPriority.Add(MoveTemp(Delegate));
+				break;
+			default:
+				CrashGameModeLoadedDelegate_NoPriority.Add(MoveTemp(Delegate));
+		}
+	}
 }
 
 void UGameModeManagerComponent::StartGameModeUnload()
