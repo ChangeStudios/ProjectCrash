@@ -10,7 +10,13 @@
 
 #define LOCTEXT_NAMESPACE "CrashSystem"
 
+UCrashGameModeData::UCrashGameModeData()
+{
+	bDestroyDeactivatedPlayers = true;
+}
+
 #if WITH_EDITOR
+
 EDataValidationResult UCrashGameModeData::IsDataValid(FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);

@@ -9,6 +9,7 @@
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
+#include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -58,6 +59,63 @@ void ACrashPlayerState::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 			UE_LOG(LogCrashGameMode, Error, TEXT("ACrashPlayerState::OnGameModeLoaded unable to find pawn data to initialize player state [%s]."), *GetNameSafe(this));
 		}
 	}
+}
+
+void ACrashPlayerState::OnDeactivated()
+{
+	UWorld* World = GetWorld();
+
+	// By default, always destroy deactivated players.
+	bool bDestroyDeactivatedPlayers = true;
+
+	// Determine if deactivated players should be immediately destroyed.
+	switch (GetPlayerConnectionType())
+	{
+		case EPlayerConnectionType::Player:
+		case EPlayerConnectionType::InactivePlayer:
+			// Check if the game mode wants to keep deactivated players alive instead of immediately destroying them.
+			if (World && World->IsGameWorld())
+			{
+				AGameStateBase* GS = GetWorld()->GetGameState();
+				check(GS);
+				UGameModeManagerComponent* GameModeManagerComponent = GS->FindComponentByClass<UGameModeManagerComponent>();
+				check(GameModeManagerComponent);
+				if (GameModeManagerComponent->IsGameModeLoaded())
+				{
+					if (const UCrashGameModeData* GameModeData = GameModeManagerComponent->GetCurrentGameModeDataChecked())
+					{
+						bDestroyDeactivatedPlayers = GameModeData->bDestroyDeactivatedPlayers;
+						break;
+					}
+				}
+			}
+		default:
+			break;
+	}
+
+	SetPlayerConnectionType(EPlayerConnectionType::InactivePlayer);
+
+	// Destroy this player state if deactivated players should be immediately destroyed.
+	if (bDestroyDeactivatedPlayers)
+	{
+		Destroy();
+	}
+}
+
+void ACrashPlayerState::OnReactivated()
+{
+	// Change this player's connection type to "Active" when they are reactivated.
+	if (GetPlayerConnectionType() == EPlayerConnectionType::InactivePlayer)
+	{
+		SetPlayerConnectionType(EPlayerConnectionType::Player);
+	}
+}
+
+void ACrashPlayerState::SetPlayerConnectionType(EPlayerConnectionType NewConnectionType)
+{
+	// Update this player's current connection type.
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ConnectionType, this);
+	ConnectionType = NewConnectionType;
 }
 
 void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
@@ -126,5 +184,6 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	FDoRepLifetimeParams SharedParams;
 	SharedParams.bIsPushBased = true;
 
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ConnectionType, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnData, SharedParams);
 }

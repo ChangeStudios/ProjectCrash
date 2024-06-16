@@ -18,7 +18,16 @@ class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	// Challenger selection.
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UCrashGameModeData();
+
+
+
+	// Game mode properties.
 
 public:
 	
@@ -26,6 +35,11 @@ public:
 	 * should be null. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
 	TObjectPtr<UPawnData> DefaultPawn;
+
+	/** Whether players should be immediately destroyed when they become inactive, or if they should be allowed to
+	 * stay to be potentially re-activated if the player reconnects. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
+	bool bDestroyDeactivatedPlayers;
 
 
 

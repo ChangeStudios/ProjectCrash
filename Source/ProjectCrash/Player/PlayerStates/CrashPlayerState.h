@@ -13,6 +13,22 @@ class UCrashGameModeData;
 class UPawnData;
 
 /**
+ * Defines how a client is connected.
+ */
+UENUM()
+enum class EPlayerConnectionType : uint8
+{
+	// An active player.
+	Player = 0,
+	// A deactivated player (disconnected).
+	InactivePlayer,
+	// A spectator connected to a running game.
+	Spectator
+};
+
+
+
+/**
  * Base modular player state for this project. Handles core functionality used regardless of game mode: manages pawn
  * data, an ability system component, the team framework, and runtime player statistics.
  */
@@ -43,6 +59,31 @@ public:
 
 	/** Initializes pawn data using the game mode. */
 	void OnGameModeLoaded(const UCrashGameModeData* GameModeData);
+
+
+
+	// Player connections.
+
+public:
+
+	/** Changes this player's connection status to "Inactive." Destroys this player state unless the game mode wants to
+	 * keep inactive players (defined by game mode data). */
+	virtual void OnDeactivated() override;
+
+	/** Changes this player's connection status to "Active." */
+	virtual void OnReactivated() override;
+
+	/** Updates this player's current connection type. */
+	void SetPlayerConnectionType(EPlayerConnectionType NewConnectionType);
+
+	/** This player's current connection type. */
+	EPlayerConnectionType GetPlayerConnectionType() const { return ConnectionType; }
+
+private:
+
+	/** How this player is currently connected to the server (as a spectator, an inactive player, etc.). */
+	UPROPERTY(Replicated)
+	EPlayerConnectionType ConnectionType;
 
 
 
