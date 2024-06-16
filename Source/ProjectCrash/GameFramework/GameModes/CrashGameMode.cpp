@@ -31,9 +31,7 @@ void ACrashGameMode::InitGameState()
 	// Start listening for the game mode to be fully loaded.
 	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
 	check(GameModeManagerComponent);
-	GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(
-		FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this,&ThisClass::OnGameModeLoaded),
-		ECrashGameModeLoadedResponsePriority::Final);
+	GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this,&ThisClass::OnGameModeLoaded));
 }
 
 void ACrashGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -132,9 +130,8 @@ void ACrashGameMode::OnFindGameModeDataFailed()
 
 void ACrashGameMode::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 {
-	/* Restart all players, so they can be re-initialized using the new game mode data. This usually only affects the
-	 * listen server player, since everyone else typically won't even be in the game when the game mode finishes
-	 * loading on the server. */
+	/* Restart any players that joined before the game mode finished loading. These players were prevented from
+	 * starting by HandleStartingNewPlayer. */
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		APlayerController* PC = Cast<APlayerController>(*Iterator);
@@ -142,6 +139,7 @@ void ACrashGameMode::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 		{
 			if (PlayerCanRestart(PC))
 			{
+				UE_LOG(LogTemp, Error, TEXT("Player restarted!"));
 				RestartPlayer(PC);
 			}
 		}
@@ -160,10 +158,16 @@ bool ACrashGameMode::IsGameModeLoaded() const
 
 void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	/**  */
+	/** Don't start new players until the game mode has finished loading. Players that join prior to this will be
+	 * started by OnGameModeLoaded. */
 	if (IsGameModeLoaded())
 	{
+		UE_LOG(LogTemp, Error, TEXT("Player started!"));
 		Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player prevented from starting!"));
 	}
 }
 

@@ -43,19 +43,16 @@ public:
 	/** Attempts to retrieve the game mode data that should be used for the current game. */
 	void FindGameModeData();
 
-	/**
-	 * Sends the game mode data to the game state, if it's found. The game state takes over initialization upon
-	 * receiving the data.
-	 *
-	 * Restarts all players so they can be re-initialized using the new game mode data.
-	 */
+	/** Sends the game mode data to the game state, if it's found. The game state takes over initialization upon
+	 * receiving the data. */
 	void OnGameModeDataFound(const FPrimaryAssetId& GameModeDataId, const FString& GameModeDataSource);
 
 	/** If game mode data cannot be found, the game cannot continue. Cancels the game and returns all players to the
 	 * main menu. */
 	void OnFindGameModeDataFailed();
 
-	/** Called when the game state finishes fully loading the game mode (features, start-up actions, etc.). */
+	/** Called when the game state finishes fully loading the game mode (features, start-up actions, etc.). Starts any
+	 * players that joined before the game mode finished loading. */
 	void OnGameModeLoaded(const UCrashGameModeData* GameModeData);
 
 	/** Returns whether the current game mode has been fully loaded. */
@@ -67,6 +64,8 @@ public:
 
 public:
 
+	/** Prevents players from starting before the game mode finishes loading. Players prevented from starting this way
+	 * will be started by OnGameModeLoaded. */
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 	/** Attempts to retrieve the pawn data that should be used for the given controller. Searches for pawn data that's

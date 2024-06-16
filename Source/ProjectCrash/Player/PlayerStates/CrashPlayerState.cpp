@@ -28,9 +28,7 @@ void ACrashPlayerState::PostInitializeComponents()
 		check(GS);
 		UGameModeManagerComponent* GameModeManagerComponent = GS->FindComponentByClass<UGameModeManagerComponent>();
 		check(GameModeManagerComponent);
-		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(
-			FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this, &ThisClass::OnGameModeLoaded),
-			ECrashGameModeLoadedResponsePriority::First);
+		GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateUObject(this, &ThisClass::OnGameModeLoaded));
 	}
 }
 

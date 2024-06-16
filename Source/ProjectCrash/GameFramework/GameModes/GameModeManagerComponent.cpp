@@ -271,7 +271,7 @@ void UGameModeManagerComponent::OnGameModeFullLoadComplete()
 	// Update the load state.
 	LoadState = ECrashGameModeLoadState::Loaded;
 
-	// Broadcast that the game mode finished loading. The order in which these delegates are invoked MATTERS.
+	// Broadcast that the game mode finished loading. The order in which these delegates are invoked matters.
 	CrashGameModeLoadedDelegate_FirstPriority.Broadcast(CurrentGameModeData);
 	CrashGameModeLoadedDelegate_FirstPriority.Clear();
 

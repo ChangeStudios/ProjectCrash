@@ -28,12 +28,8 @@ enum class ECrashGameModeLoadState
 	Deactivating
 };
 
-/**
- * The priority of delegates broadcast when the game mode finishes fully loading.
- *
- * Used to control the order in which game mode loading responses execute. E.g. player states should set their pawn
- * data with a loaded game mode BEFORE the game mode restarts all players.
- */
+/** The priority of delegates broadcast when the game mode finishes fully loading. Used to control the order in which
+ * game mode loading responses execute. */
 enum class ECrashGameModeLoadedResponsePriority
 {
 	// Broadcast first when the game mode finishes fully loading.
@@ -121,7 +117,7 @@ private:
 
 
 
-	// Loading callbacks.
+	// Post-loading callbacks.
 
 public:
 
