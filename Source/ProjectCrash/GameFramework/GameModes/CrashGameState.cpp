@@ -9,6 +9,7 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
+#include "Editor/UnrealEd/Classes/Settings/LevelEditorPlaySettings.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
@@ -85,11 +86,8 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 			return false;
 		}
 
-		// TODO: The number of player states in Initializing must be the number of players in the session.
-		bool bAllPlayersReadyToInitialize = true;
-		// TODO: Check for disconnects.
-
-		return bAllPlayersReadyToInitialize;
+		// All players must be connected and in the Initializing state.
+		return GetNumExpectedPlayers() == GetNumPlayersInState(STATE_INITIALIZING);
 	}
 	// Transition to GameplayReady when all components AND player states are in GameplayReady.
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
@@ -100,11 +98,8 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 			return false;
 		}
 
-		// TODO: players must be GameplayReady.
-		bool bAllPlayersGameplayReady = true;
-		// TODO: Check for disconnects.
-
-		return bAllPlayersGameplayReady;
+		// All players must be connected and in the GameplayReady state. Ensures their pawns are also in GameplayReady.
+		return GetNumExpectedPlayers() == GetNumPlayersInState(STATE_GAMEPLAY_READY);
 	}
 
 	return false;
@@ -127,35 +122,19 @@ void ACrashGameState::HandleChangeInitState(UGameFrameworkComponentManager* Mana
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
 		// TODO: Start the game.
-		UE_LOG(LogCrashGameMode, Log, TEXT("Game started!"));
+		if (HasAuthority())
+		{
+			UE_LOG(LogCrashGameMode, Log, TEXT("Game started!"));
+		}
 	}
 }
 
 void ACrashGameState::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
-	// If another feature has changed init states (e.g. one of our components), check if we should too.
+	// If another feature has changed init states (e.g. a player state), check if we should too.
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
 		CheckDefaultInitialization();
-	}
-
-	if (Params.FeatureName == ACrashPlayerState::NAME_ActorFeatureName)
-	{
-		UE_LOG(LogTemp, Error, TEXT("PS Progressed"));
-		if (Params.FeatureState == STATE_GAMEPLAY_READY)
-		{
-			for (APlayerState* PS : PlayerArray)
-			{
-				if (APlayerController* PC = PS->GetPlayerController())
-				{
-					if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
-					{
-						GM->RestartPlayer(PC);
-						UE_LOG(LogTemp, Error, TEXT("Restarted"));
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -183,4 +162,59 @@ void ACrashGameState::AddPlayerState(APlayerState* PlayerState)
 			PlayerStateInitStateChangedHandles.Add(CrashPS, ComponentManager->RegisterAndCallForActorInitState(CrashPS, CrashPS->GetFeatureName(), FGameplayTag(), ActorInitStateChangedDelegate, false));
 		}
 	}
+}
+
+int32 ACrashGameState::GetNumExpectedPlayers() const
+{
+	// During PIE, use the "Number of Players" setting from the multiplayer options.
+	if (GetWorld()->IsPlayInEditor())
+	{
+		const ULevelEditorPlaySettings* PlayInSettings = GetDefault<ULevelEditorPlaySettings>();
+		int32 PlayNumberOfClients = 0;
+		PlayInSettings->GetPlayNumberOfClients(PlayNumberOfClients);
+		return PlayNumberOfClients;
+	}
+
+	// TODO: Read session settings for the number of players in the session.
+
+	// TODO: Check for disconnects.
+
+	return 0;
+}
+
+int32 ACrashGameState::GetNumPlayersInState(FGameplayTag StateToCheck, bool bMatchStateExact) const
+{
+	int PlayersInState = 0;
+
+	for (APlayerState* PS : PlayerArray)
+	{
+		// Don't count spectators.
+		if (PS->IsSpectator())
+		{
+			continue;
+		}
+
+		if (IGameFrameworkInitStateInterface* InitStateInterface = Cast<IGameFrameworkInitStateInterface>(PS))
+		{
+			/* If we only care about reaching the given state and not the exact state of the player, check if the
+			 * player has reached the desired state. */
+			if (!bMatchStateExact)
+			{
+				if (InitStateInterface->HasReachedInitState(StateToCheck))
+				{
+					PlayersInState++;
+				}
+			}
+			// If the player needs to be in the EXACT given state, check if they are.
+			else
+			{
+				if (InitStateInterface->GetInitState().MatchesTagExact(StateToCheck))
+				{
+					PlayersInState++;
+				}
+			}
+		}
+	}
+
+	return PlayersInState;
 }

@@ -49,7 +49,8 @@ public class ProjectCrash : ModuleRules
 			"Slate",
 			"SlateCore",
 			"UIExtension",
-			"UMG"
+			"UMG",
+			"UnrealEd"
 		});
 
         DynamicallyLoadedModuleNames.AddRange(new string[] 

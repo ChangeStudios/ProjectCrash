@@ -93,7 +93,7 @@ bool ACrashPlayerState::CanChangeInitState(UGameFrameworkComponentManager* Manag
 	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
 	{
 		// Pawn data must be set before we can initialize this player.
-		if (!PawnData)
+		if (!GetWorld()->GetGameState()->FindComponentByClass<UGameModeManagerComponent>()->IsGameModeLoaded() || !PawnData)
 		{
 			return false;
 		}

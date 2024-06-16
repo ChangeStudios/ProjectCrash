@@ -28,27 +28,11 @@ void UIntroCinematicComponent::BeginPlay()
 	// Start listening for changes to the owning player state's initialization state.
 	BindOnActorInitStateChanged(ACrashPlayerState::NAME_ActorFeatureName, FGameplayTag(), false);
 
-	// Initialize this actor's initialization state.
+	// Initialize this actor's initialization state, which starts the cinematic.
 	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
 	CheckDefaultInitialization();
 
-	// Retrieve the intro cinematic from the current world settings.
-	if (ACrashWorldSettings* CrashWorldSettings = Cast<ACrashWorldSettings>(GetOwner()->GetWorldSettings()))
-	{
-		if (CrashWorldSettings->IntroCinematic)
-		{
-			// Play the intro cinematic for this player, if the world has one.
-			FMovieSceneSequencePlaybackSettings IntroCinematicSettings = FMovieSceneSequencePlaybackSettings();
-			IntroCinematicSettings.bAutoPlay = true;
-			IntroCinematicSettings.bHidePlayer = true;
-			IntroCinematicSettings.bDisableMovementInput = true;
-
-			ULevelSequencePlayer::CreateLevelSequencePlayer(GetOwner(), CrashWorldSettings->IntroCinematic, IntroCinematicSettings, IntroCinematicSequenceActor);
-
-			// Listen for when the first sequence finishes.
-			IntroCinematicSequenceActor->GetSequencePlayer()->OnFinished.AddDynamic(this, &UIntroCinematicComponent::OnFirstLoopFinished);
-		}
-	}
+	// TODO: Don't play the cinematic if we joined late and the game has already started.
 }
 
 void UIntroCinematicComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -90,6 +74,52 @@ bool UIntroCinematicComponent::CanChangeInitState(UGameFrameworkComponentManager
 	}
 
 	return false;
+}
+
+void UIntroCinematicComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
+{
+	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
+	{
+		// Retrieve the intro cinematic from the current world settings.
+		if (ACrashWorldSettings* CrashWorldSettings = Cast<ACrashWorldSettings>(GetOwner()->GetWorldSettings()))
+		{
+			if (CrashWorldSettings->IntroCinematic)
+			{
+				// Play the intro cinematic for this player, if the level has one.
+				// FActorSpawnParameters SpawnParams;
+				// SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				// SpawnParams.ObjectFlags |= RF_Transient;
+				// SpawnParams.bAllowDuringConstructionScript = true;
+				// SpawnParams.bDeferConstruction = true;
+				// SpawnParams.Owner = GetOwner();
+				//
+				// IntroCinematicSequenceActor = GetWorld()->SpawnActor<ALevelSequenceActor>(SpawnParams);
+				//
+				// FMovieSceneSequencePlaybackSettings Settings = FMovieSceneSequencePlaybackSettings();
+				// IntroCinematicSequenceActor->PlaybackSettings = Settings;
+				// IntroCinematicSequenceActor->GetSequencePlayer()->SetPlaybackSettings(Settings);
+				// IntroCinematicSequenceActor->bReplicatePlayback = false;
+				//
+				// IntroCinematicSequenceActor->SetSequence(CrashWorldSettings->IntroCinematic);
+				// IntroCinematicSequenceActor->InitializePlayer();
+				//
+				// FTransform DefaultTransform;
+				// IntroCinematicSequenceActor->FinishSpawning(DefaultTransform);
+				//
+				// IntroCinematicSequenceActor->GetSequencePlayer()->Play();
+
+				FMovieSceneSequencePlaybackSettings IntroCinematicSettings = FMovieSceneSequencePlaybackSettings();
+				IntroCinematicSettings.bAutoPlay = true;
+				IntroCinematicSettings.bHidePlayer = true;
+				IntroCinematicSettings.bDisableMovementInput = true;
+
+				ULevelSequencePlayer::CreateLevelSequencePlayer(GetOwner(), CrashWorldSettings->IntroCinematic, IntroCinematicSettings, IntroCinematicSequenceActor);
+
+				// Listen for when the first sequence finishes.
+				IntroCinematicSequenceActor->GetSequencePlayer()->OnFinished.AddDynamic(this, &UIntroCinematicComponent::OnFirstLoopFinished);
+			}
+		}
+	}
 }
 
 void UIntroCinematicComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)

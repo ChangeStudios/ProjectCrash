@@ -94,4 +94,27 @@ public:
 	/** Starts listening for changes to the new player state's initialization state. The game state's initialization
 	 * state depends on that of the player states. */
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
+
+
+
+	// Utils.
+
+private:
+
+	/**
+	 * Determines how many players should be in this game. The game will wait until this many players have logged in
+	 * and been initialized before starting. Also checks for any disconnects.
+	 *
+	 * Uses session properties for standalone runs. Uses the editor's "Number of Players" setting during PIE.
+	 */
+	int32 GetNumExpectedPlayers() const;
+
+	/**
+	 * Iterates through the PlayerArray and returns the number of connected players in the given initialization
+	 * state. Does not count spectators.
+	 *
+	 * @param bMatchStateExact		If true, will only count players in the exact given state. If false, any players in
+	 *								OR PAST the given state will be counted.
+	 */
+	int32 GetNumPlayersInState(FGameplayTag StateToCheck, bool bMatchStateExact = false) const;
 };
