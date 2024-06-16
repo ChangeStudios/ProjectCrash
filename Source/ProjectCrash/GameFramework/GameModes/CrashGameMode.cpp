@@ -139,7 +139,6 @@ void ACrashGameMode::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 		{
 			if (PlayerCanRestart(PC))
 			{
-				UE_LOG(LogTemp, Error, TEXT("Player restarted!"));
 				RestartPlayer(PC);
 			}
 		}
@@ -162,12 +161,7 @@ void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* N
 	 * started by OnGameModeLoaded. */
 	if (IsGameModeLoaded())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Player started!"));
 		Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Player prevented from starting!"));
 	}
 }
 

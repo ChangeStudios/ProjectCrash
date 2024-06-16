@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "ModularPlayerState.h"
 #include "Characters/Data/PawnData.h"
 #include "CrashPlayerState.generated.h"
 
+class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
 
@@ -15,15 +17,28 @@ class UPawnData;
  * data, an ability system component, the team framework, and runtime player statistics.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState
+class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	ACrashPlayerState(const FObjectInitializer& ObjectInitializer);
+
+
 
 	// Initialization.
 
 public:
 
-	/** Listens for the game mode to finish loading to initialize pawn data. */
+	/**
+	 * Initializes ASC actor info.
+	 *
+	 * Starts listening for the game mode to finish loading so the pawn data can be initialized.
+	 */
 	virtual void PostInitializeComponents() override;
 
 	/** Initializes pawn data using the game mode. */
@@ -62,4 +77,20 @@ public:
 	/** Game framework component extension event fired when this player receives their pawn's default ability sets.
 	 * Used to handle abilities' dependencies on other abilities. */
 	static const FName NAME_AbilitiesReady;
+
+// Ability system component.
+public:
+
+	/** Typed getter for this player's ASC. */
+	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerState")
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }
+
+	/** Interfaced getter for this player's ASC. */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+private:
+
+	/** This player's ability system component. */
+	UPROPERTY(VisibleAnywhere, Category = "Crash|PlayerState")
+	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
 };

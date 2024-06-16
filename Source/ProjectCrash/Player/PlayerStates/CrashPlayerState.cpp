@@ -3,12 +3,10 @@
 
 #include "Player/PlayerStates/CrashPlayerState.h"
 
-#include "CrashGameplayTags.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
@@ -16,11 +14,25 @@
 
 const FName ACrashPlayerState::NAME_AbilitiesReady("AbilitiesReady");
 
+ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UCrashAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	MinNetUpdateFrequency = 2.0f;
+	NetUpdateFrequency = 100.0f;
+}
+
 void ACrashPlayerState::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	// Listen for the game mode to finish loading so we can use it to initialize our pawn data.
+	// Initialize this player as the owner of its ASC.
+	check(AbilitySystemComponent);
+	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
+
+	// Listen for the game mode to finish loading, so we can use it to initialize our pawn data.
 	UWorld* World = GetWorld();
 	if (World && World->IsGameWorld() && World->GetNetMode() != NM_Client)
 	{
@@ -83,7 +95,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	{
 		if (AbilitySet)
 		{
-			// AbilitySet->GiveToAbilitySystem(UCrashAbilitySystemComponent, nullptr);
+			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, nullptr);
 		}
 	}
 
@@ -100,6 +112,11 @@ void ACrashPlayerState::OnRep_PawnData()
 		*GetNameSafe(PawnData),
 		*GetNameSafe(this),
 		*GetClientServerContextString(this));
+}
+
+UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
+{
+	return GetCrashAbilitySystemComponent();
 }
 
 void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
