@@ -52,7 +52,7 @@ void ACrashGameState::BeginPlay()
 
 void ACrashGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	// Unregister this actor as an initialization state feature.
+	// Unregister this actor from the initialization state framework.
 	UnregisterInitStateFeature();
 
 	Super::EndPlay(EndPlayReason);
