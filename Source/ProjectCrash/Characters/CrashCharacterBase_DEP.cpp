@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
@@ -16,12 +16,12 @@
 #define FIRST_PERSON_TAG CrashGameplayTags::TAG_State_Perspective_FirstPerson
 #define THIRD_PERSON_TAG CrashGameplayTags::TAG_State_Perspective_ThirdPerson
 
-ACrashCharacterBase::ACrashCharacterBase(const FObjectInitializer& ObjectInitializer)
+ACrashCharacterBase_DEP::ACrashCharacterBase_DEP(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass(CharacterMovementComponentName, UCrashCharacterMovementComponent::StaticClass()))
 {
 }
 
-void ACrashCharacterBase::SetPerspective(FGameplayTag NewPerspective)
+void ACrashCharacterBase_DEP::SetPerspective(FGameplayTag NewPerspective)
 {
 	// Make sure a perspective tag was given.
 	check(NewPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
@@ -86,26 +86,26 @@ void ACrashCharacterBase::SetPerspective(FGameplayTag NewPerspective)
 	}
 }
 
-void ACrashCharacterBase::InitializePerspective()
+void ACrashCharacterBase_DEP::InitializePerspective()
 {
 	// Start local players in first-person. Everyone else (including spectators) starts in third-person.
 	const bool bStartFPP = IsLocallyControlled();
 	SetPerspective(bStartFPP ? FIRST_PERSON_TAG : THIRD_PERSON_TAG);
 }
 
-bool ACrashCharacterBase::CanEnterFirstPerson() const
+bool ACrashCharacterBase_DEP::CanEnterFirstPerson() const
 {
 	// Only enter first-person if we have a valid camera, mesh, and someone is actually viewing this character.
 	return GetFirstPersonCameraComponent() && GetFirstPersonMesh() && (IsLocallyControlled() || IsLocallyViewed());
 }
 
-void ACrashCharacterBase::ListenForPerspectiveStates()
+void ACrashCharacterBase_DEP::ListenForPerspectiveStates()
 {
 	// If this character has an ASC, it can listen for perspective events.
 	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(this))
 	{
-		ASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Perspective_FirstPerson, EGameplayTagEventType::AnyCountChange).AddUObject(this, &ACrashCharacterBase::OnPerspectiveStateChanged);
-		ASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Perspective_ThirdPerson, EGameplayTagEventType::AnyCountChange).AddUObject(this, &ACrashCharacterBase::OnPerspectiveStateChanged);
+		ASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Perspective_FirstPerson, EGameplayTagEventType::AnyCountChange).AddUObject(this, &ACrashCharacterBase_DEP::OnPerspectiveStateChanged);
+		ASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Perspective_ThirdPerson, EGameplayTagEventType::AnyCountChange).AddUObject(this, &ACrashCharacterBase_DEP::OnPerspectiveStateChanged);
 	}
 	else
 	{
@@ -113,7 +113,7 @@ void ACrashCharacterBase::ListenForPerspectiveStates()
 	}
 }
 
-void ACrashCharacterBase::OnPerspectiveStateChanged(const FGameplayTag Tag, int32 NewCount)
+void ACrashCharacterBase_DEP::OnPerspectiveStateChanged(const FGameplayTag Tag, int32 NewCount)
 {
 	// Calculate the change in tags. Should only ever be +1 or -1.
 	int32 CountChange = NewCount;
@@ -163,7 +163,7 @@ void ACrashCharacterBase::OnPerspectiveStateChanged(const FGameplayTag Tag, int3
 	TotalPerspectiveTags += CountChange;
 }
 
-void ACrashCharacterBase::OnJumped_Implementation()
+void ACrashCharacterBase_DEP::OnJumped_Implementation()
 {
 	Super::OnJumped_Implementation();
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
-#include "CrashCharacterBase.generated.h"
+#include "CrashCharacterBase_DEP.generated.h"
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpedSignature);
@@ -16,7 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPerspectiveChangedSignature, FGamep
  * delegates.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashCharacterBase : public ACharacter
+class PROJECTCRASH_API ACrashCharacterBase_DEP : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -25,7 +25,7 @@ class PROJECTCRASH_API ACrashCharacterBase : public ACharacter
 public:
 
 	/** Default constructor. */
-	ACrashCharacterBase(const FObjectInitializer& ObjectInitializer);
+	ACrashCharacterBase_DEP(const FObjectInitializer& ObjectInitializer);
 
 
 

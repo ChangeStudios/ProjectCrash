@@ -8,7 +8,7 @@
 #include "GameplayCueManager.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
@@ -229,7 +229,7 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 	/* Get the first-person mesh's animation instance, if there is one. This can only be retrieved via the
 	 * ACrashCharacterBase interface. */
 	UAnimInstance* AnimInstance = nullptr;
-	if (const ACrashCharacterBase* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase>(GetAvatarActor()) : nullptr)
+	if (const ACrashCharacterBase_DEP* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase_DEP>(GetAvatarActor()) : nullptr)
 	{
 		AnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;
 	}
@@ -310,7 +310,7 @@ void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimM
 
 	// Retrieve the first-person animation instance. This can only be retrieved via the ACrashCharacterBase interface.
 	UAnimInstance* AnimInstance = nullptr;
-	if (const ACrashCharacterBase* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase>(GetAvatarActor()) : nullptr)
+	if (const ACrashCharacterBase_DEP* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase_DEP>(GetAvatarActor()) : nullptr)
 	{
 		AnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;
 	}

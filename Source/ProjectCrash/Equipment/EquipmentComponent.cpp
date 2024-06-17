@@ -8,7 +8,7 @@
 #include "Animation/ChallengerAnimInstanceBase.h"
 #include "EquipmentPieceActor.h"
 #include "CrashGameplayTags.h"
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
@@ -171,7 +171,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 	// Try to get the equipping actor as characters for character-specific equipment logic (e.g. updating animations).
 	ACharacter* EquippingChar = Cast<ACharacter>(Owner);
-	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(Owner);
+	ACrashCharacterBase_DEP* EquippingCrashChar = Cast<ACrashCharacterBase_DEP>(Owner);
 
 	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
 	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;

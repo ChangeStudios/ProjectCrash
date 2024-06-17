@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CrashCharacterBase.h"
+#include "CrashCharacterBase_DEP.h"
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
@@ -32,7 +32,7 @@ DECLARE_MULTICAST_DELEGATE(FInputComponentInitializedSignature);
  * such as a first-person camera, input, and an interface with the ability system.
  */
 UCLASS(Abstract, Meta = (PrioritizeCategories = "Challenger Data"))
-class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase, public IAbilitySystemInterface
+class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase_DEP, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
