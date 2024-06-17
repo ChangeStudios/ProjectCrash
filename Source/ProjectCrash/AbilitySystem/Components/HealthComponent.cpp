@@ -29,7 +29,7 @@ UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	HealthSet = nullptr;
 }
 
-void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC, UHealthAttributeBaseValues* InAttributeBaseValues)
+void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC)
 {
 	AActor* Owner = GetOwner();
 	check(Owner);
@@ -59,20 +59,11 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	HealthSet->MaxHealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
 	HealthSet->OutOfHealthAttributeDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
 
-	// Initialize the attribute set's base values.
-	if (IsValid(InAttributeBaseValues))
-	{
-		AttributeBaseValues = InAttributeBaseValues;
-
-		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), AttributeBaseValues->BaseMaxHealth);
-		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), AttributeBaseValues->BaseHealth);
-		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), AttributeBaseValues->BaseDamage);
-		AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), AttributeBaseValues->BaseHealing);
-	}
-	else
-	{
-		ABILITY_LOG(Warning, TEXT("Health component owned by [%s] was not given a valid HealthAttributeBaseValues data asset to initialize its attributes."), *GetNameSafe(Owner));
-	}
+	// Initialize the attributes to the attribute set's default values.
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), HealthSet->GetMaxHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), 0.0f);
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), 0.0f);
 
 	// Broadcast the initial changes to the attributes.
 	HealthChangedDelegate.Broadcast(this, nullptr, HealthSet->GetHealth(), HealthSet->GetHealth());
@@ -134,28 +125,21 @@ void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, AActor* Effe
 
 void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
-	OutOfHealthDelegate.Broadcast(this, DamageInstigator, DamageMagnitude);
-
 #if WITH_SERVER_CODE
 
 	if (AbilitySystemComponent)
 	{
-		// Notify the game mode that the ASC's avatar has died. Death logic will work with an avatar of any actor class.
-		if (ACrashGameMode_DEP* CrashGM = Cast<ACrashGameMode_DEP>(UGameplayStatics::GetGameMode(GetWorld())))
-		{
-			const FDeathData DeathData = FDeathData
-			(
-				AbilitySystemComponent->GetAvatarActor(),
-				AbilitySystemComponent->AbilityActorInfo->PlayerController.Get(),
-				AbilitySystemComponent,
-				DamageInstigator,
-				DamageCauser,
-				DamageEffectSpec,
-				DamageMagnitude
-			);
-
-			CrashGM->StartDeath(DeathData);
-		}
+		// Send a "Death" event through the dying actor's ASC. This can be used to trigger a death ability.
+		const FDeathData DeathData = FDeathData
+		(
+			AbilitySystemComponent->GetAvatarActor(),
+			AbilitySystemComponent->AbilityActorInfo->PlayerController.Get(),
+			AbilitySystemComponent,
+			DamageInstigator,
+			DamageCauser,
+			DamageEffectSpec,
+			DamageMagnitude
+		);
 
 		/* Send a standardized verb message that other systems can observe. This is used for things like updating the
 		 * kill-feed. */

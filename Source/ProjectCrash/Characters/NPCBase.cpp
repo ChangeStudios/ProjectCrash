@@ -76,7 +76,7 @@ void ANPCBase::OnAbilitySystemInitialized()
 	}
 
 	// Initialize this character's attribute sets.
-	HealthComponent->InitializeWithAbilitySystem(CrashASC, NPCData->HealthAttributeBaseValues);
+	HealthComponent->InitializeWithAbilitySystem(CrashASC);
 }
 
 void ANPCBase::OnAbilitySystemUninitialized()

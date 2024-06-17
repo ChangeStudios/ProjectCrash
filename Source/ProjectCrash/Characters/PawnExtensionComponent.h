@@ -61,9 +61,25 @@ public:
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
 
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
-	virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) override;
 	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	virtual void CheckDefaultInitialization() override;
+
+
+
+	// Pawn events.
+
+public:
+
+	/** Must be called by the owning pawn when its controller changes. Refreshes ASC actor info and checks init state
+	 * progress. */
+	void HandleControllerChanged();
+
+	/** Must be called by the owning pawn when its owning player state has been replicated. Checks init state
+	 * progress. */
+	void HandlePlayerStateReplicated();
+
+	/** Must be called by the owning pawn when its input component finishes setting up. Checks init state progress. */
+	void HandleInputComponentSetUp();
 
 
 
@@ -96,10 +112,10 @@ private:
 // ASC initialization.
 public:
 
-	/** Must be called by the owning pawn to become the avatar of the given ASC. */
+	/** Called by the owning pawn to become the avatar of the given ASC. */
 	void InitializeAbilitySystem(UCrashAbilitySystemComponent* InASC, AActor* InOwnerActor);
 
-	/** Must be called by the owning pawn to remove itself as the avatar of its current ASC. */
+	/** Called by the owning pawn to remove itself as the avatar of its current ASC. */
 	void UninitializeAbilitySystem();
 
 	/** Binds a delegate to when the owning pawn initializes itself as the avatar of an ASC. Immediately invokes the
@@ -134,9 +150,11 @@ private:
 
 
 
-	// Input.
+	// Utils.
 
 public:
 
-	
+	/** Retrieves the given actor's pawn extension component, if it has one. Returns nullptr otherwise. */
+	UFUNCTION(BlueprintPure, Category = "Crash|Pawn")
+	static UPawnExtensionComponent* FindPawnExtensionComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UPawnExtensionComponent>() : nullptr); }
 };

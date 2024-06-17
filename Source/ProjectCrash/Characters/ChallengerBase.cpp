@@ -442,7 +442,7 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	}
 
 	// Initialize this character's attribute sets.
-	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
+	HealthComponent->InitializeWithAbilitySystem(CrashASC);
 
 	// Bind death events.
 	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);

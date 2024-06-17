@@ -41,11 +41,6 @@ void UHealthbarWidget::InitWidget(APawn* PawnToBindTo)
 		HealthComponent->HealthChangedDelegate.RemoveDynamic(this, &UHealthbarWidget::OnHealthChanged);
 		HealthComponent->MaxHealthChangedDelegate.RemoveDynamic(this, &UHealthbarWidget::OnMaxHealthChanged);
 
-		if (OnOutOfHealthDelegateHandle.IsValid())
-		{
-			HealthComponent->OutOfHealthDelegate.Remove(OnOutOfHealthDelegateHandle);
-		}
-
 		HealthComponent = nullptr;
 	}
 
@@ -64,7 +59,6 @@ void UHealthbarWidget::InitWidget(APawn* PawnToBindTo)
 		// Bind callbacks to the new health component's events.
 		HealthComponent->HealthChangedDelegate.AddDynamic(this, &UHealthbarWidget::OnHealthChanged);
 		HealthComponent->MaxHealthChangedDelegate.AddDynamic(this, &UHealthbarWidget::OnMaxHealthChanged);
-		OnOutOfHealthDelegateHandle = HealthComponent->OutOfHealthDelegate.AddUObject(this, &UHealthbarWidget::OnOutOfHealth);
 
 		// Initialize this widget's Health and MaxHealth.
 		OnHealthChanged(HealthComponent, GetOwningPlayer(), 0.0f, HealthComponent->GetHealth());

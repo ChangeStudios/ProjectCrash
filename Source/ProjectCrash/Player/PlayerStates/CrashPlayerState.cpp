@@ -134,7 +134,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 			*GetNameSafe(this),
 			*GetNameSafe(PawnData));
 
-		/* Note: If we wanted a game mode where players can switch pawns during a game (e.g. Overwatch), we would have
+		/* @Note: If we wanted a game mode where players can switch pawns during a game (e.g. Overwatch), we would have
 		 * to remove the current pawn data's added ability sets and input configuration. */
 		return;
 	}

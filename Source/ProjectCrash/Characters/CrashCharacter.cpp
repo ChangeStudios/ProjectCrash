@@ -3,7 +3,10 @@
 
 #include "Characters/CrashCharacter.h"
 
+#include "PawnExtensionComponent.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
+#include "AbilitySystem/Components/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 
 
@@ -55,4 +58,80 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
+
+
+	// Pawn extension component.
+	PawnExtComponent = CreateDefaultSubobject<UPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
+	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+
+
+	// Health component.
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+}
+
+void ACrashCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Notify the pawn extension component that the pawn's controller changed.
+	PawnExtComponent->HandleControllerChanged();
+}
+
+void ACrashCharacter::UnPossessed()
+{
+	Super::UnPossessed();
+
+	// Notify the pawn extension component that the pawn's controller changed.
+    PawnExtComponent->HandleControllerChanged();
+}
+
+void ACrashCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	// Notify the pawn extension component that the pawn's controller changed.
+	PawnExtComponent->HandleControllerChanged();
+}
+
+void ACrashCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// Notify the pawn extension component that the pawn's owning player state changed.
+	PawnExtComponent->HandlePlayerStateReplicated();
+}
+
+void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	// Notify the pawn extension component that the pawn's input component has been been set up.
+	PawnExtComponent->HandleInputComponentSetUp();
+}
+
+UCrashAbilitySystemComponent* ACrashCharacter::GetCrashAbilitySystemComponent() const
+{
+	check(PawnExtComponent);
+
+	/* Get this character's ASC via its pawn extension component. This avoids having to know where the ASC is stored
+	 * (e.g. player state vs pawn). */
+	return PawnExtComponent->GetCrashAbilitySystemComponent();
+}
+
+UAbilitySystemComponent* ACrashCharacter::GetAbilitySystemComponent() const
+{
+	return GetCrashAbilitySystemComponent();
+}
+
+void ACrashCharacter::OnAbilitySystemInitialized()
+{
+	// Register the health component with the ASC.
+	HealthComponent->InitializeWithAbilitySystem(GetCrashAbilitySystemComponent());
+}
+
+void ACrashCharacter::OnAbilitySystemUninitialized()
+{
+	// Unregister the health component from the ASC.
+	HealthComponent->UninitializeFromAbilitySystem();
 }

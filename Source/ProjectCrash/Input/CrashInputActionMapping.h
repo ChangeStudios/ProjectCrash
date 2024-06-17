@@ -36,7 +36,7 @@ public:
  * abilities with matching input tags, while native actions must be manually bound (usually to handler functions).
  *
  * Because input actions are in-editor assets, they need to be loaded or defined with references in the editor to be
- * used in C++. This map compartmentalizes the editor-defined references into an independent data asset and allows
+ * used in C++. This mapping compartmentalizes the editor-defined references into an independent data asset and allows
  * input actions to be referenced in C++ easily using tags rather than object pointers.
  */
 UCLASS(BlueprintType, Const)
