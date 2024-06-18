@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/CrashPlayerState.h"
 
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
@@ -50,7 +50,7 @@ void ACrashPlayerState::OnGameModeLoaded(const UCrashGameModeData* GameModeData)
 	// Use the game mode to initialize the pawn data.
 	if (ACrashGameMode* CrashGM = GetWorld()->GetAuthGameMode<ACrashGameMode>())
 	{
-		if (const UPawnData* NewPawnData = CrashGM->FindPawnDataForController(GetOwningController()))
+		if (const UPawnData* NewPawnData = CrashGM->FindDefaultPawnDataForPlayer(GetOwningController()))
 		{
 			SetPawnData(NewPawnData);
 		}

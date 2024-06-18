@@ -9,7 +9,7 @@
 #include "MovieSceneSequencePlaybackSettings.h"
 #include "GameFramework/CrashWorldSettings.h"
 #include "GameFramework/GameModes/CrashGameState.h"
-#include "PlayerStates/CrashPlayerState.h"
+#include "CrashPlayerState.h"
 
 const FName UIntroCinematicComponent::NAME_ActorFeatureName("IntroCinematic");
 

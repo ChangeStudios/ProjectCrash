@@ -50,11 +50,8 @@ public:
 
 public:
 
-	/**
-	 * Initializes ASC actor info.
-	 *
-	 * Starts listening for the game mode to finish loading so the pawn data can be initialized.
-	 */
+	/** Initializes ASC actor info. Starts listening for the game mode to finish loading so the pawn data can be
+	 * initialized. */
 	virtual void PostInitializeComponents() override;
 
 	/** Initializes pawn data using the game mode. */

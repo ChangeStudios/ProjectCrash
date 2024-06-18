@@ -8,7 +8,7 @@
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/CrashPlayerState.h"
 #include "Editor/UnrealEd/Classes/Settings/LevelEditorPlaySettings.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");

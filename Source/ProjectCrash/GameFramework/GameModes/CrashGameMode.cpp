@@ -5,23 +5,22 @@
 
 #include "CrashGameplayTags.h"
 #include "GameModeManagerComponent.h"
-#include "Characters/ChallengerBase.h"
+#include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
-#include "Components/GameFrameworkComponentManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/CrashWorldSettings.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/CrashPlayerController.h"
+#include "Player/CrashPlayerState.h"
 
 ACrashGameMode::ACrashGameMode()
 {
 	GameStateClass = ACrashGameState::StaticClass();
 	PlayerStateClass = ACrashPlayerState::StaticClass();
-	// PlayerControllerClass = ACrashPlayerController::StaticClass();
+	PlayerControllerClass = ACrashPlayerController::StaticClass();
 }
 
 void ACrashGameMode::InitGameState()
@@ -165,23 +164,12 @@ void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* N
 	}
 }
 
-const UPawnData* ACrashGameMode::FindPawnDataForController(AController* Controller)
+const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Player)
 {
-	check(GameState);
-	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
-	check(GameModeManagerComponent);
-
-	// Always return null if the game mode has not been loaded yet.
-	if (!GameModeManagerComponent->IsGameModeLoaded())
-	{
-		return nullptr;
-	}
-
 	/**
-	 * If the game mode is loaded, attempt to retrieve pawn data in the following methods. The first pawn data
-	 * succcessfully retrieved will be used.
+	 * Attempt to retrieve pawn data in the following methods. The first pawn data succcessfully retrieved will be used.
 	 *
-	 *		- Session/game settings, if a pawn has been assigned to the specific player.
+	 *		- Session/game settings, if a pawn has been assigned to the specific controller.
 	 *		- Developer settings, if in PIE.
 	 *		- Game mode's default pawn as defined in the GM data.
 	 */
@@ -190,7 +178,9 @@ const UPawnData* ACrashGameMode::FindPawnDataForController(AController* Controll
 	FString PawnDataSource;
 	UWorld* World = GetWorld();
 
+
 	// TODO: Check for pawn data assigned to the given player in the session/game's settings.
+
 
 	// If in PIE, override the pawn data using developer settings.
 	if (!NewPawnData && World->IsPlayInEditor())
@@ -206,44 +196,131 @@ const UPawnData* ACrashGameMode::FindPawnDataForController(AController* Controll
 		}
 	}
 
-	// Use the game mode's default pawn data.
+
+	// If the game mode is loaded, use the game mode's default pawn data.
 	if (!NewPawnData)
 	{
-		const UCrashGameModeData* GameModeData = GameModeManagerComponent->GetCurrentGameModeDataChecked();
+		check(GameState);
+		UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
+		check(GameModeManagerComponent);
 
-		NewPawnData = GameModeData->DefaultPawn;
-		PawnDataSource = TEXT("Game Mode Default Pawn");
+		if (GameModeManagerComponent->IsGameModeLoaded())
+		{
+			const UCrashGameModeData* GameModeData = GameModeManagerComponent->GetCurrentGameModeDataChecked();
+
+			if (GameModeData->DefaultPawn)
+			{
+				NewPawnData = GameModeData->DefaultPawn;
+				PawnDataSource = TEXT("Game Mode Default Pawn");
+			}
+		}
 	}
+
 
 	// Use the found pawn data.
 	if (NewPawnData != nullptr)
 	{
-		UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found pawn data [%s] for player [%s] (Source: %s)."), *GetNameSafe(NewPawnData), *GetNameSafe(Controller), *PawnDataSource);
+		UE_LOG(LogCrashGameMode, Log, TEXT("Successfully found pawn data [%s] for player [%s] (Source: %s)."),
+			*GetNameSafe(NewPawnData),
+			*GetNameSafe(Player),
+			*PawnDataSource);
+
 		return NewPawnData;
 	}
 
+
 	// If no pawn data was found, something is wrong. This function was likely called too early.
-	UE_LOG(LogCrashGameMode, Error, TEXT("Game mode unable to retrieve pawn data for player [%s]."), *GetNameSafe(Controller));
+	UE_LOG(LogCrashGameMode, Error, TEXT("Game mode unable to retrieve pawn data for player [%s]."), *GetNameSafe(Player));
 	return nullptr;
 }
 
-UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+const UPawnData* ACrashGameMode::GetPawnDataForController(AController* InController)
 {
-	// If the player's pawn data has been set, use their pawn data.
+	/* If the given controller has already set their pawn data on their player state, use it. */
 	if (InController)
 	{
 		if (const ACrashPlayerState* CrashPS = InController->GetPlayerState<ACrashPlayerState>())
 		{
 			if (const UPawnData* PawnData = CrashPS->GetPawnData<UPawnData>())
 			{
-				if (PawnData->PawnClass)
-				{
-					return PawnData->PawnClass;
-				}
+				return PawnData;
 			}
 		}
 	}
 
-	// If the player's pawn data has not been set yet, do not spawn a pawn for them.
+	// If the game mode is loaded, fall back to the game mode's default pawn data.
+	check(GameState);
+	UGameModeManagerComponent* GameModeManagerComponent = GameState->FindComponentByClass<UGameModeManagerComponent>();
+	check(GameModeManagerComponent);
+
+	if (GameModeManagerComponent->IsGameModeLoaded())
+	{
+		const UCrashGameModeData* GameModeData = GameModeManagerComponent->GetCurrentGameModeDataChecked();
+
+		if (GameModeData->DefaultPawn)
+		{
+			return GameModeData->DefaultPawn;
+		}
+	}
+
+	// If the game mode is not loaded, there is no pawn data that we can use.
+	return nullptr;
+}
+
+UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	// Try to find pawn data to use for the given controller.
+	if (const UPawnData* PawnData = GetPawnDataForController(InController))
+	{
+		if (PawnData->PawnClass)
+		{
+			return PawnData->PawnClass;
+		}
+	}
+
+	// Fall back to the game mode's default pawn.
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
+}
+
+APawn* ACrashGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform)
+{
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.bDeferConstruction = true;
+
+	// Determine which pawn class to spawn.
+	if (UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer))
+	{
+		// Spawn the new pawn.
+		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
+		{
+			// If the pawn has an extension component, initialize its pawn data with the data that was used to spawn it.
+			if (UPawnExtensionComponent* PawnExtensionComponent = UPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
+			{
+				if (const UPawnData* PawnData = GetPawnDataForController(NewPlayer))
+				{
+					PawnExtensionComponent->SetPawnData(PawnData);
+				}
+				else
+				{
+					UE_LOG(LogCrash, Error, TEXT("Game mode failed to initialize pawn data for new pawn [%s]. Pawn data could not be found for player [%s]."), *GetNameSafe(SpawnedPawn), *GetNameSafe(NewPlayer));
+				}
+			}
+
+			SpawnedPawn->FinishSpawning(SpawnTransform);
+
+			return SpawnedPawn;
+		}
+		else
+		{
+			UE_LOG(LogCrash, Error, TEXT("Game mode failed to spawn pawn of class [%s] for player [%s] at [%s]."), *GetNameSafe(PawnClass), *GetNameSafe(NewPlayer), *SpawnTransform.ToHumanReadableString());
+		}
+	}
+	else
+	{
+		UE_LOG(LogCrash, Error, TEXT("Game mode was unable to spawn pawn for [%s]. Unable to find valid pawn class."), *GetNameSafe(NewPlayer));
+	}
+
 	return nullptr;
 }

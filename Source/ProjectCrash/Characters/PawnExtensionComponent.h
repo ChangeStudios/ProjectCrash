@@ -12,14 +12,17 @@ class UPawnData;
 
 /**
  * Component that coordinates initialization between pawn components. This should be added to any pawns that need to
- * handle initialization of their actor components.
+ * manage initialization of their actor components. This can be used by both player and non-player pawns.
  *
- * This component essentially provides a variety of utilities that should be used to initialize a pawn with an ASC, and
- * to initialize any other pawn components.
+ * This component provides a variety of utilities for initializing a pawn's components, such as centralized access to
+ * the owning pawn's pawn data.
  *
- * Provides centralized access to the owning pawn's pawn data and ability system component. This allows other classes
- * to use these features without having to know where they are stored. E.g. without having to search the player state
- * AND the pawn for the ASC.
+ * This also provides centralized access to the pawn's ASC, allowing other classes to access it without having to know
+ * where it's stored (e.g. player state vs pawn). This component also handles automatic initialization of the ASC,
+ * either using the pawn's ASC (if it stores one itself, i.e. non-player pawns) or using the pawn's owning player
+ * state, if it has one.
+ *
+ * Note that AI controllers need a player state if they want to use any pawns with this component.
  */
 UCLASS()
 class PROJECTCRASH_API UPawnExtensionComponent : public UPawnComponent, public IGameFrameworkInitStateInterface
@@ -61,6 +64,7 @@ public:
 	virtual FName GetFeatureName() const override { return NAME_ActorFeatureName; }
 
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const override;
+	virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) override;
 	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) override;
 	virtual void CheckDefaultInitialization() override;
 
@@ -91,13 +95,18 @@ public:
 	template <class T>
 	const T* GetPawnData() const { return Cast<T>(PawnData); }
 
-	/** Sets this component's current pawn data. */
+	/**
+	 * Must be called when this pawn is created to set its pawn data.
+	 *
+	 * By default, this is called by the game mode when spawning a new pawn. But this could also be called, for
+	 * example, by a bot-spawner, after spawning a bot.
+	 */
 	void SetPawnData(const UPawnData* InPawnData);
 
 private:
 
-	/** The pawn data corresponding to this component's owning pawn. Should match the player state's pawn data for
-	 * player-controlled pawns. */
+	/** The pawn data corresponding to this component's owning pawn. Can be set in-editor for pawns that are not
+	 * dynamically spawned. */
 	UPROPERTY(EditInstanceOnly, ReplicatedUsing = OnRep_PawnData, Category = "Crash|Pawn")
 	TObjectPtr<const UPawnData> PawnData;
 
@@ -112,10 +121,11 @@ private:
 // ASC initialization.
 public:
 
-	/** Called by the owning pawn to become the avatar of the given ASC. */
+	/** Called by the owning pawn to become the avatar of the given ASC. Called automatically by the pawn extension
+	 * component when it enters the Initializing state. */
 	void InitializeAbilitySystem(UCrashAbilitySystemComponent* InASC, AActor* InOwnerActor);
 
-	/** Called by the owning pawn to remove itself as the avatar of its current ASC. */
+	/** Called by the owning pawn to remove itself as the avatar of its current ASC, usually when it's destroyed. */
 	void UninitializeAbilitySystem();
 
 	/** Binds a delegate to when the owning pawn initializes itself as the avatar of an ASC. Immediately invokes the

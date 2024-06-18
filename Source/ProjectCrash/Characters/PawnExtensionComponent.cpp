@@ -3,13 +3,16 @@
 
 #include "Characters/PawnExtensionComponent.h"
 
+#include "AIController.h"
 #include "Characters/Data/PawnData.h"
 #include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
+#include "Player/CrashPlayerState.h"
 
 const FName UPawnExtensionComponent::NAME_ActorFeatureName("PawnExtension");
 
@@ -71,15 +74,14 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 	check(Manager);
 	APawn* Pawn = GetPawn<APawn>();
 
-	// Transition to the initial state once we have a valid pawn, controller, and pawn data.
+	// Transition to the initial state if we have a valid pawn.
 	if (!CurrentState.IsValid() && DesiredState == STATE_WAITING_FOR_DATA)
 	{
-		// Check for a valid owning pawn.
-		if (!Pawn)
-		{
-			return false;
-		}
-
+		return (Pawn != nullptr);
+	}
+	// Transition to Initializing when we have a valid controller, player state, and pawn data.
+	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
+	{
 		// Check that the possessing controller is valid, if it should be (server or local controller).
 		if ((Pawn->HasAuthority()) || (Pawn->IsLocallyControlled()))
 		{
@@ -88,7 +90,13 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 				return false;
 			}
 		}
-	
+
+		// Check for a valid player state. This is required for players to initialize their ASC.
+		if (!Pawn->GetPlayerState<ACrashPlayerState>())
+		{
+			return false;
+		}
+
 		// Check for valid pawn data.
 		if (!PawnData)
 		{
@@ -97,18 +105,38 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 
 		return true;
 	}
-	// Transition to initializing when all of our features have reached Initializing.
-	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
-	{
-		return Manager->HaveAllFeaturesReachedInitState(Pawn, STATE_INITIALIZING);
-	}
 	// Transition to GameplayReady once all of our features are GameplayReady.
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
-		return Manager->HaveAllFeaturesReachedInitState(Pawn, STATE_GAMEPLAY_READY);
+		return Manager->HaveAllFeaturesReachedInitState(Pawn, STATE_GAMEPLAY_READY, UPawnExtensionComponent::NAME_ActorFeatureName);
 	}
 
 	return false;
+}
+
+void UPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
+{
+	// Initialize the ASC when this pawn's data is ready.
+	if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
+	{
+		APawn* Pawn = GetPawnChecked<APawn>();
+
+		// Try to initialize the ability system component using their owning player state.
+		if (ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>())
+		{
+			InitializeAbilitySystem(CrashPS->GetCrashAbilitySystemComponent(), CrashPS);
+		}
+		// Try to initialize the ability system component using the owning pawn.
+		else if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Pawn))
+		{
+			InitializeAbilitySystem(CrashASC, Pawn);
+		}
+		// The pawn extension component expects its owner to have an ASC.
+		else
+		{
+			UE_LOG(LogCrash, Error, TEXT("Failed to initialize ability system component via pawn extension component on [%s]."), *GetNameSafe(Pawn));
+		}
+	}
 }
 
 void UPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
@@ -173,7 +201,7 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 		return;
 	}
 
-	// Players cannot change pawn data during the game.
+	// Pawns cannot change their pawn data.
 	if (PawnData)
 	{
 		UE_LOG(LogCrash, Error, TEXT("Tried to set pawn data [%s] on pawn [%s]. This pawn already has valid pawn data: [%s]."),
@@ -181,8 +209,6 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 			*GetNameSafe(Pawn),
 			*GetNameSafe(PawnData));
 
-		/* @Note: If we wanted a game mode where players can switch pawns during a game (e.g. Overwatch), we would have
-		 * to remove the current pawn data's added ability sets and input configuration. */
 		return;
 	}
 
@@ -221,7 +247,12 @@ void UPawnExtensionComponent::InitializeAbilitySystem(UCrashAbilitySystemCompone
 	APawn* Pawn = GetPawnChecked<APawn>();
 	AActor* ExistingAvatar = InASC->GetAvatarActor();
 
-	UE_LOG(LogCrash, Verbose, TEXT("Setting up ASC [%s] on pawn [%s]. ASC Owner: [%s]. Current Avatar: [%s]."), *GetNameSafe(InASC), *GetNameSafe(Pawn), *GetNameSafe(InOwnerActor), *GetNameSafe(ExistingAvatar));
+	UE_LOG(LogCrash, Verbose, TEXT("Setting up ASC [%s] on pawn [%s]. ASC Owner: [%s]. Existing Avatar: [%s]. (%s)"),
+		*GetNameSafe(InASC),
+		*GetNameSafe(Pawn),
+		*GetNameSafe(InOwnerActor),
+		*GetNameSafe(ExistingAvatar),
+		*GetClientServerContextString(GetOwner()));
 
 	// Make sure the given ASC does not already have a pawn avatar.
 	if ((ExistingAvatar != nullptr) && (ExistingAvatar != Pawn))
