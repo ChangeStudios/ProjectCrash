@@ -10,6 +10,7 @@
 
 class UCrashInputComponent;
 class UCrashInputActionMapping;
+struct FInputActionValue;
 
 /**
  * Defines input for pawns. Applies input configurations and defines handlers for gameplay abilities. This component
