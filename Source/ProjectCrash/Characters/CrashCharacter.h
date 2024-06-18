@@ -77,7 +77,7 @@ private:
 
 	// Pawn extension.
 
-private:
+protected:
 
 	/** Coordinates initialization of this actor's ASC, and its other components. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crash|Character", Meta = (AllowPrivateAccess = "true"))

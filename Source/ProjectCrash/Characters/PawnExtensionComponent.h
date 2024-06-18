@@ -21,8 +21,6 @@ class UPawnData;
  * where it's stored (e.g. player state vs pawn). This component also handles automatic initialization of the ASC,
  * either using the pawn's ASC (if it stores one itself, i.e. non-player pawns) or using the pawn's owning player
  * state, if it has one.
- *
- * Note that AI controllers need a player state if they want to use any pawns with this component.
  */
 UCLASS()
 class PROJECTCRASH_API UPawnExtensionComponent : public UPawnComponent, public IGameFrameworkInitStateInterface

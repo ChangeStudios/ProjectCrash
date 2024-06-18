@@ -10,10 +10,13 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Input/CrashInputComponent.h"
-#include "Misc/UObjectToken.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
+
+#if WITH_EDITOR
+#include "Misc/UObjectToken.h"
+#endif	// WITH_EDITOR
 
 const FName UInputHandlerComponentBase::NAME_ActorFeatureName("InputHandler");
 const FName UInputHandlerComponentBase::NAME_BindInputsNow("BindInputsNow");

@@ -79,7 +79,7 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 	{
 		return (Pawn != nullptr);
 	}
-	// Transition to Initializing when we have a valid controller, player state, and pawn data.
+	// Transition to Initializing when we have a valid controller, ASC, and pawn data.
 	else if (CurrentState == STATE_WAITING_FOR_DATA && DesiredState == STATE_INITIALIZING)
 	{
 		// Check that the possessing controller is valid, if it should be (server or local controller).
@@ -91,8 +91,11 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 			}
 		}
 
-		// Check for a valid player state. This is required for players to initialize their ASC.
-		if (!Pawn->GetPlayerState<ACrashPlayerState>())
+		/* The pawn either needs a valid player state (with an ASC) or a self-contained ASC before it can be
+		 * initialized. */
+		bool bValidPS = IsValid(Pawn->GetPlayerState<ACrashPlayerState>());
+		bool bPawnOwnedASC = IsValid(UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Pawn));
+		if (!bValidPS && !bPawnOwnedASC)
 		{
 			return false;
 		}

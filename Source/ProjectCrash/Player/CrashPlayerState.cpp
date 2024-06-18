@@ -18,6 +18,7 @@ const FName ACrashPlayerState::NAME_AbilitiesReady("AbilitiesReady");
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	// Construct the ASC.
 	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UCrashAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);

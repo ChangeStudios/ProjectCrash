@@ -112,16 +112,17 @@ void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 UCrashAbilitySystemComponent* ACrashCharacter::GetCrashAbilitySystemComponent() const
 {
+	// Use the interfaced ASC getter so this function works with subclasses that override it.
+	return Cast<UCrashAbilitySystemComponent>(GetAbilitySystemComponent());
+}
+
+UAbilitySystemComponent* ACrashCharacter::GetAbilitySystemComponent() const
+{
 	check(PawnExtComp);
 
 	/* Get this character's ASC via its pawn extension component. This avoids having to know where the ASC is stored
 	 * (e.g. player state vs pawn). */
 	return PawnExtComp->GetCrashAbilitySystemComponent();
-}
-
-UAbilitySystemComponent* ACrashCharacter::GetAbilitySystemComponent() const
-{
-	return GetCrashAbilitySystemComponent();
 }
 
 void ACrashCharacter::OnAbilitySystemInitialized()
