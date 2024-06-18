@@ -25,6 +25,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
+
+	/** This struct can be equivalent to an input action if it's wrapping that input action. */
+	bool operator==(const UInputAction* Other) const
+	{
+		return InputAction == Other;
+	}
 };
 
 

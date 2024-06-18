@@ -7,5 +7,4 @@ UPawnData::UPawnData()
 {
 	PawnClass = nullptr;
 	DefaultActionMapping = nullptr;
-	DefaultMappingContext = nullptr;
 }

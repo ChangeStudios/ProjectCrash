@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PawnData.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Engine/DataAsset.h"
 #include "ChallengerData_DEP.generated.h"
@@ -14,23 +15,6 @@ class UEquipmentSetDefinition;
 class UHealthAttributeBaseValues;
 class UInputMappingContext;
 class ULevelSequence;
-
-/**
- * Defines an input mapping context with the priority with which it should be bound.
- */
-USTRUCT(BlueprintType)
-struct FPrioritizedInputMappingContext
-{
-	GENERATED_BODY()
-
-	/** The mapping context referenced by this data structure. */
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	TObjectPtr<UInputMappingContext> MappingContext = nullptr;
-
-	/** The priority of this mapping context. */
-	UPROPERTY(EditDefaultsOnly, Category = Input)
-	int32 Priority = 0;
-};
 
 
 

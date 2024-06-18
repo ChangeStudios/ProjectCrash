@@ -499,7 +499,7 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	// Add each mapping context to the local player with its specified priority.
 	for (const FPrioritizedInputMappingContext& PrioritizedContext : ChallengerData->DefaultInputMappings)
 	{
-		Subsystem->AddMappingContext(PrioritizedContext.MappingContext, PrioritizedContext.Priority);
+		Subsystem->AddMappingContext(PrioritizedContext.MappingContext.Get(), PrioritizedContext.Priority);
 	}
 
 	/* Bind the native input actions from each default native action mapping to handler functions. */

@@ -4,11 +4,16 @@
 #include "Characters/InputHandlerComponentBase.h"
 
 #include "CrashGameplayTags.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "PawnExtensionComponent.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "Input/CrashInputComponent.h"
 #include "Misc/UObjectToken.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 
 const FName UInputHandlerComponentBase::NAME_ActorFeatureName("InputHandler");
 const FName UInputHandlerComponentBase::NAME_BindInputsNow("BindInputsNow");
@@ -134,27 +139,152 @@ void UInputHandlerComponentBase::HandleChangeInitState(UGameFrameworkComponentMa
 
 		// Retrieve the pawn data for this component's owning pawn.
 		const UPawnData* PawnData = nullptr;
-		if (UPawnExtensionComponent* PawnExtensionComponent = UPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		if (UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 		{
-			PawnData = PawnExtensionComponent->GetPawnData<UPawnData>();
+			PawnData = PawnExtComp->GetPawnData<UPawnData>();
+		}
+
+		// Initialize the owning pawn's input component.
+		if (ACrashPlayerController* CrashPC = GetController<ACrashPlayerController>())
+		{
+			if (Pawn->InputComponent)
+			{
+				InitializePlayerInput(Pawn->InputComponent);
+			}
 		}
 	}
 }
 
 void UInputHandlerComponentBase::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
-	IGameFrameworkInitStateInterface::OnActorInitStateChanged(Params);
+	// If another feature has changed init states (i.e. another actor component), check if we should too.
+	if (Params.FeatureName != NAME_ActorFeatureName)
+	{
+		CheckDefaultInitialization();
+	}
 }
 
 void UInputHandlerComponentBase::CheckDefaultInitialization()
 {
-	IGameFrameworkInitStateInterface::CheckDefaultInitialization();
+	ContinueInitStateChain(CrashGameplayTags::StateChain);
 }
 
-void UInputHandlerComponentBase::AddAdditionalInputActions(const UCrashInputActionMapping* InputActionMapping)
+void UInputHandlerComponentBase::AddAdditionalInputActions(const UCrashInputActionMapping* ActionMapping)
 {
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(InputSubsystem);
+
+	// Bind the given action mapping's ability actions.
+	UCrashInputComponent* CrashIC = Pawn->FindComponentByClass<UCrashInputComponent>();
+	if (ensureAlwaysMsgf(CrashIC, TEXT("Pawn [%s] is not using an input component of type CrashInputComponent. Input will not be properly bound."), *GetNameSafe(Pawn)))
+	{
+		CrashIC->BindAbilityInputActions(ActionMapping);
+	}
 }
 
-void UInputHandlerComponentBase::RemoveAdditionalInputActions(const UCrashInputActionMapping* InputActionMapping)
+void UInputHandlerComponentBase::RemoveAdditionalInputActions(const UCrashInputActionMapping* ActionMapping)
 {
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(InputSubsystem);
+
+	// Remove the given action mapping's ability actions.
+	UCrashInputComponent* CrashIC = Pawn->FindComponentByClass<UCrashInputComponent>();
+	if (ensureAlwaysMsgf(CrashIC, TEXT("Pawn [%s] is not using an input component of type CrashInputComponent. Input will not be properly bound."), *GetNameSafe(Pawn)))
+	{
+		CrashIC->RemoveAbilityInputActions(ActionMapping);
+	}
+}
+
+void UInputHandlerComponentBase::InitializePlayerInput(UInputComponent* PlayerInputComponent)
+{
+	check(PlayerInputComponent);
+
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(InputSubsystem);
+
+	// Clear all existing action mappings.
+	InputSubsystem->ClearAllMappings();
+
+	// Retrieve the owning pawn's pawn data using the extension component. 
+	if (const UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (const UPawnData* PawnData = PawnExtComp->GetPawnData<UPawnData>())
+		{
+			if (const UCrashInputActionMapping* ActionMapping = PawnData->DefaultActionMapping)
+			{
+				// Add the input mapping context to the local player.
+				if (UInputMappingContext* IMC = PawnData->DefaultMappingContext.MappingContext.Get())
+				{
+					// Register the new input mapping with the user's settings.
+					if (UEnhancedInputUserSettings* Settings = InputSubsystem->GetUserSettings())
+					{
+						Settings->RegisterInputMappingContext(IMC);
+					}
+
+					// Add the input mapping to the player.
+					FModifyContextOptions Options = {};
+					Options.bIgnoreAllPressedKeysUntilRelease = false;
+					InputSubsystem->AddMappingContext(IMC, PawnData->DefaultMappingContext.Priority, Options);
+				}
+
+				// Ensure we're using the correct input component.
+				UCrashInputComponent* CrashIC = Cast<UCrashInputComponent>(PlayerInputComponent);
+				if (ensureAlwaysMsgf(CrashIC, TEXT("Pawn [%s] is not using an input component of type CrashInputComponent. Input will not be properly bound."), *GetNameSafe(GetOwner())))
+				{
+					// Bind the mapping's ability actions.
+					CrashIC->BindAbilityInputActions(ActionMapping);
+
+					// Bind any input handler functions defined in this component.
+					BindInputHandlers(CrashIC, ActionMapping);
+				}
+			}
+		}
+	}
+
+	// Prevent input from being bound multiple times.
+	if (ensure(!bReadyToBindInputs))
+	{
+		bReadyToBindInputs = true;
+	}
+
+	/* Tell the modular game framework that we are ready to bind input. This is used to add additional game
+	 * mode-specific input bindings. */
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
 }

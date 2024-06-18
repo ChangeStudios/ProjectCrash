@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Characters/HeroInputManager.h"
+#include "Characters/HeroInputHandlerComponent.h"
 
 
 

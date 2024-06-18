@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/InputHandlerComponentBase.h"
-#include "HeroInputManager.generated.h"
+#include "HeroInputHandlerComponent.generated.h"
 
 class UCrashInputActionMapping;
 
@@ -12,7 +12,7 @@ class UCrashInputActionMapping;
  * Defines input for basic pawn movement.
  */
 UCLASS(Meta = (BlueprintSpawnableComponent, ShortToolTip = "Sets up input for basic pawn movement. Requires a pawn extension component."))
-class PROJECTCRASH_API UHeroInputManager : public UInputHandlerComponentBase
+class PROJECTCRASH_API UHeroInputHandlerComponent : public UInputHandlerComponentBase
 {
 	GENERATED_BODY()
 };

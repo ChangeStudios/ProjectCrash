@@ -8,6 +8,7 @@
 #include "Input/CrashInputActionMapping.h"
 #include "InputHandlerComponentBase.generated.h"
 
+class UCrashInputComponent;
 class UCrashInputActionMapping;
 
 /**
@@ -55,15 +56,30 @@ public:
 
 public:
 
-	void AddAdditionalInputActions(const UCrashInputActionMapping* InputActionMapping);
+	/** Binds all ability actions in the given mapping. Note that this does NOT bind any native actions defined in the
+	 * given action mapping. */
+	void AddAdditionalInputActions(const UCrashInputActionMapping* ActionMapping);
 
-	void RemoveAdditionalInputActions(const UCrashInputActionMapping* InputActionMapping);
+	/** Unbinds all ability actions in the given mapping, if the mapping is currently bound. */
+	void RemoveAdditionalInputActions(const UCrashInputActionMapping* ActionMapping);
 
+	/** Whether this component is ready to bind input. Used to determine when to add modular input bindings. */
 	bool IsReadyToBindInput() const { return bReadyToBindInputs; }
 
+protected:
+
+	/** Initializes the given input component with this component's handlers and its owning pawn's pawn data. */
+	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+
+	/** Binds the handler functions defined in this component with the appropriate input action. Override this to bind
+	 * handler functions defined by pawn-specific subclasses of this component. */
+	virtual void BindInputHandlers(UCrashInputComponent* CrashIC, const UCrashInputActionMapping* ActionMapping) {};
+
+	/** Event name for when the modular game framework should bind modular, game mode-specific input. */
 	static const FName NAME_BindInputsNow;
 
 protected:
 
+	/** Whether input can currently be bound with this component. */
 	bool bReadyToBindInputs;
 };

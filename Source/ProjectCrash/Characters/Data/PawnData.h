@@ -11,6 +11,25 @@ class UCrashInputActionMapping;
 class UInputMappingContext;
 
 /**
+ * Defines an input mapping context with the priority with which it should be bound.
+ */
+USTRUCT(BlueprintType)
+struct FPrioritizedInputMappingContext
+{
+	GENERATED_BODY()
+
+	/** The mapping context referenced by this data structure. */
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	TSoftObjectPtr<UInputMappingContext> MappingContext = nullptr;
+
+	/** The priority of this mapping context. */
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	int32 Priority = 0;
+};
+
+
+
+/**
  * Immutable properties defining a pawn. This can be derived from to create more specific pawn properties. E.g. a
  * "Challenger" might add properties defining its appearance in the "Challenger Selection" screen.
  */
@@ -59,5 +78,5 @@ public:
 	/** This pawn's default mapping context. Typically null, as it will be determined by the game mode. But this may
 	 * be useful for pawns with custom, game mode-independent input (think of Sova's drone or Junkrat's tire). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputMappingContext> DefaultMappingContext;
+	FPrioritizedInputMappingContext DefaultMappingContext;
 };

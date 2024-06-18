@@ -81,7 +81,7 @@ private:
 
 	/** Coordinates initialization of this actor's ASC, and its other components. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crash|Character", Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPawnExtensionComponent> PawnExtComponent;
+	TObjectPtr<UPawnExtensionComponent> PawnExtComp;
 
 
 

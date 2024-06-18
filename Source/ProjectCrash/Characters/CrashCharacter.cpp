@@ -61,9 +61,9 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 
 
 	// Pawn extension component.
-	PawnExtComponent = CreateDefaultSubobject<UPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
-	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
-	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+	PawnExtComp = CreateDefaultSubobject<UPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
+	PawnExtComp->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	PawnExtComp->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
 
 
 	// Health component.
@@ -75,7 +75,7 @@ void ACrashCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	// Notify the pawn extension component that the pawn's controller changed.
-	PawnExtComponent->HandleControllerChanged();
+	PawnExtComp->HandleControllerChanged();
 }
 
 void ACrashCharacter::UnPossessed()
@@ -83,7 +83,7 @@ void ACrashCharacter::UnPossessed()
 	Super::UnPossessed();
 
 	// Notify the pawn extension component that the pawn's controller changed.
-    PawnExtComponent->HandleControllerChanged();
+    PawnExtComp->HandleControllerChanged();
 }
 
 void ACrashCharacter::OnRep_Controller()
@@ -91,7 +91,7 @@ void ACrashCharacter::OnRep_Controller()
 	Super::OnRep_Controller();
 
 	// Notify the pawn extension component that the pawn's controller changed.
-	PawnExtComponent->HandleControllerChanged();
+	PawnExtComp->HandleControllerChanged();
 }
 
 void ACrashCharacter::OnRep_PlayerState()
@@ -99,7 +99,7 @@ void ACrashCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	// Notify the pawn extension component that the pawn's owning player state changed.
-	PawnExtComponent->HandlePlayerStateReplicated();
+	PawnExtComp->HandlePlayerStateReplicated();
 }
 
 void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -107,16 +107,16 @@ void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// Notify the pawn extension component that the pawn's input component has been been set up.
-	PawnExtComponent->HandleInputComponentSetUp();
+	PawnExtComp->HandleInputComponentSetUp();
 }
 
 UCrashAbilitySystemComponent* ACrashCharacter::GetCrashAbilitySystemComponent() const
 {
-	check(PawnExtComponent);
+	check(PawnExtComp);
 
 	/* Get this character's ASC via its pawn extension component. This avoids having to know where the ASC is stored
 	 * (e.g. player state vs pawn). */
-	return PawnExtComponent->GetCrashAbilitySystemComponent();
+	return PawnExtComp->GetCrashAbilitySystemComponent();
 }
 
 UAbilitySystemComponent* ACrashCharacter::GetAbilitySystemComponent() const

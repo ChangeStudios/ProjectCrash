@@ -296,11 +296,11 @@ APawn* ACrashGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* N
 		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
 		{
 			// If the pawn has an extension component, initialize its pawn data with the data that was used to spawn it.
-			if (UPawnExtensionComponent* PawnExtensionComponent = UPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
+			if (UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
 			{
 				if (const UPawnData* PawnData = GetPawnDataForController(NewPlayer))
 				{
-					PawnExtensionComponent->SetPawnData(PawnData);
+					PawnExtComp->SetPawnData(PawnData);
 				}
 				else
 				{
