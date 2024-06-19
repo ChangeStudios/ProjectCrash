@@ -18,7 +18,7 @@ struct FInputActionValue;
  *
  * This component requires that its owning pawn has a pawn extension component for proper initialization.
  */
-UCLASS(Blueprintable)
+UCLASS(Abstract)
 class PROJECTCRASH_API UInputHandlerComponentBase : public UPawnComponent, public IGameFrameworkInitStateInterface
 {
 	GENERATED_BODY()

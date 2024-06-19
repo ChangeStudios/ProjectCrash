@@ -14,7 +14,8 @@
 				"ModularGameplayActors",
 				"CommonGame",
 				"ModularGameplay",
-				"GameFeatures"
+				"GameFeatures",
+				"CoreUObject"
 			]
 		},
 		{
