@@ -127,19 +127,19 @@ protected:
 	float FieldOfView;
 
 	/** Minimum pitch (vertical axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Pitch", Meta = (UIMin = "-90.0", UIMax = "FMath::Min(ViewPitchMax, 90.0f)", ClampMin = "-90.0", ClampMax = "FMath::Min(ViewPitchMax, 90.0f)", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Pitch", Meta = (UIMin = "-90.0", UIMax = "90", ClampMin = "-90.0", ClampMax = "90", Units = "Degrees"))
 	float ViewPitchMin;
 
 	/** Maximum pitch (vertical axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Pitch", Meta = (UIMin = "FMath::Max(ViewPitchMin, -90.0f)", UIMax = "90.0", ClampMin = "FMath::Max(ViewPitchMin, -90.0f)", ClampMax = "90.0", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Pitch", Meta = (UIMin = "-90.0", UIMax = "90.0", ClampMin = "-90.0", ClampMax = "90.0", Units = "Degrees"))
 	float ViewPitchMax;
 
 	/** Minimum yaw (horizontal axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Yaw", Meta = (UIMin = "0.0", UIMax = "FMath::Min(ViewPitchMax, 360.0f)", ClampMin = "0.0", ClampMax = "FMath::Min(ViewPitchMax, 360.0f)", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Yaw", Meta = (UIMin = "0.0", UIMax = "360.0", ClampMin = "0.0", ClampMax = "360.0", Units = "Degrees"))
 	float ViewYawMin;
 
 	/** Maximum yaw (horizontal axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Yaw", Meta = (UIMin = "FMath::Max(ViewPitchMin, 0.0f)", UIMax = "360.0", ClampMin = "FMath::Max(ViewPitchMin, 0.0f)", ClampMax = "360.0", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Yaw", Meta = (UIMin = "0.0", UIMax = "360.0", ClampMin = "0.0", ClampMax = "360.0", Units = "Degrees"))
 	float ViewYawMax;
 
 
@@ -186,6 +186,11 @@ public:
 
 	/** Helper for retrieving the outer camera component's target actor. */
 	AActor* GetTargetActor() const;
+
+#if WITH_EDITOR
+	/** Prevents Min and Max clamps from passing each other. */
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };
 
 

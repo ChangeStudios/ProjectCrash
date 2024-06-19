@@ -6,6 +6,7 @@
 #include "CrashCameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CrashLogging.h"
 
 /**
  * FCameraModeView
@@ -199,3 +200,48 @@ AActor* UCrashCameraModeBase::GetTargetActor() const
 	// Use the outer camera's target actor.
 	return GetCrashCameraComponent()->GetTargetActor();
 }
+
+#if WITH_EDITOR
+void UCrashCameraModeBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	UObject::PostEditChangeProperty(PropertyChangedEvent);
+
+	FName ChangedProperty = PropertyChangedEvent.GetMemberPropertyName();
+
+	// Clamp minimum pitch below maximum pitch.
+	if (ChangedProperty == GET_MEMBER_NAME_CHECKED(UCrashCameraModeBase, ViewPitchMin))
+	{
+		if (ViewPitchMin > ViewPitchMax)
+		{
+			ViewPitchMin = ViewPitchMax;
+		}
+	}
+
+	// Clamp maximum pitch above minimum pitch.
+	else if (ChangedProperty == GET_MEMBER_NAME_CHECKED(UCrashCameraModeBase, ViewPitchMax))
+	{
+		if (ViewPitchMax < ViewPitchMin)
+		{
+			ViewPitchMax = ViewPitchMin;
+		}
+	}
+
+	// Clamp minimum yaw below maximum yaw.
+	else if (ChangedProperty == GET_MEMBER_NAME_CHECKED(UCrashCameraModeBase, ViewYawMin))
+	{
+		if (ViewYawMin > ViewYawMax)
+		{
+			ViewYawMin = ViewYawMax;
+		}
+	}
+
+	// Clamp maximum yaw above minimum yaw.
+	else if (ChangedProperty == GET_MEMBER_NAME_CHECKED(UCrashCameraModeBase, ViewYawMax))
+	{
+		if (ViewYawMax < ViewYawMin)
+		{
+			ViewYawMax = ViewYawMin;
+		}
+	}
+}
+#endif

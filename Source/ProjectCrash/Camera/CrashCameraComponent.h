@@ -9,7 +9,7 @@ class AActor;
 class UCrashCameraModeBase;
 class UCrashCameraModeStack;
 
-DECLARE_DELEGATE_RetVal(TSubclassOf<UCameraMode>, FDetermineCameraModeSignature);
+DECLARE_DELEGATE_RetVal(TSubclassOf<UCrashCameraModeBase>, FDetermineCameraModeSignature);
 
 /**
  * Default camera component for this project. All player-viewable cameras should use this component.
