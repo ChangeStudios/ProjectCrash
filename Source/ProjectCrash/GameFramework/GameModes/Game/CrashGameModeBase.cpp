@@ -106,7 +106,7 @@ void ACrashGameModeBase::CheckDefaultInitialization()
 
 	/* Attempts to progress through the state chain if requirements for the next state are met, determined by
 	 * CanChangeInitState. */
-	ContinueInitStateChain(CrashGameplayTags::StateChain);
+	ContinueInitStateChain({ STATE_WAITING_FOR_DATA, STATE_INITIALIZING, STATE_GAMEPLAY_READY });
 }
 
 UClass* ACrashGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)

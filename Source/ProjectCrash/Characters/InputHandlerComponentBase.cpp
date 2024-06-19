@@ -169,7 +169,7 @@ void UInputHandlerComponentBase::OnActorInitStateChanged(const FActorInitStateCh
 
 void UInputHandlerComponentBase::CheckDefaultInitialization()
 {
-	ContinueInitStateChain(CrashGameplayTags::StateChain);
+	ContinueInitStateChain({ STATE_WAITING_FOR_DATA, STATE_INITIALIZING, STATE_GAMEPLAY_READY });
 }
 
 void UInputHandlerComponentBase::AddAdditionalInputActions(const UCrashInputActionMapping* ActionMapping)

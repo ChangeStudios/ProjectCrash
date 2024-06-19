@@ -93,10 +93,5 @@ namespace CrashGameplayTags
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_UI_Layer_Dialog);
 
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_UI_Action_Escape);
-
-
-
-	// Global state chain used for initializing the game framework.
-	static const TArray<FGameplayTag> StateChain = { TAG_InitState_WaitingForData, TAG_InitState_Initializing, TAG_InitState_GameplayReady };
 };
 

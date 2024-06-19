@@ -20,7 +20,7 @@ struct FPrioritizedInputMappingContext
 
 	/** The mapping context referenced by this data structure. */
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-	TSoftObjectPtr<UInputMappingContext> MappingContext = nullptr;
+	TObjectPtr<UInputMappingContext> MappingContext = nullptr;
 
 	/** The priority of this mapping context. */
 	UPROPERTY(EditDefaultsOnly, Category = Input)

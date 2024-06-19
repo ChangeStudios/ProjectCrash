@@ -146,7 +146,7 @@ void ACrashGameStateBase::CheckDefaultInitialization()
 {
 	// Before checking our progress, try progressing any other features we might depend on.
 	CheckDefaultInitializationForImplementers();
-	ContinueInitStateChain(CrashGameplayTags::StateChain);
+	ContinueInitStateChain({ STATE_WAITING_FOR_DATA, STATE_INITIALIZING, STATE_GAMEPLAY_READY });
 }
 
 void ACrashGameStateBase::AddPlayerState(APlayerState* PlayerState)
