@@ -1,12 +1,12 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Characters/InputHandlerComponentBase.h"
+#include "InputHandlerComponentBase.h"
 
 #include "CrashGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "PawnExtensionComponent.h"
+#include "Characters/PawnExtensionComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Input/CrashInputComponent.h"

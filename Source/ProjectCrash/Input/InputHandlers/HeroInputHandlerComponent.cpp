@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Characters/HeroInputHandlerComponent.h"
+#include "HeroInputHandlerComponent.h"
 
 #include "CrashGameplayTags.h"
 #include "Input/CrashInputComponent.h"

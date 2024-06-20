@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Characters/InputHandlerComponentBase.h"
+#include "Input/InputHandlers/InputHandlerComponentBase.h"
 #include "HeroInputHandlerComponent.generated.h"
 
 class UCrashInputActionMapping;
