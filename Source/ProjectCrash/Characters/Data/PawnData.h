@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "PawnData.generated.h"
 
+class UCrashCameraModeBase;
 class UCrashAbilitySet;
 class UCrashInputActionMapping;
 class UInputMappingContext;
@@ -79,4 +80,14 @@ public:
 	 * be useful for pawns with custom, game mode-independent input (think of Sova's drone or Junkrat's tire). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	FPrioritizedInputMappingContext DefaultMappingContext;
+
+
+
+	// Camera.
+
+public:
+
+	/** The default camera mode used for this pawn, if given a camera component. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera")
+	TSubclassOf<UCrashCameraModeBase> DefaultCameraMode;
 };

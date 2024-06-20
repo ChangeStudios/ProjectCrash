@@ -4,6 +4,7 @@
 #include "Camera/CrashCameraModeBase.h"
 
 #include "CrashCameraComponent.h"
+#include "CrashPlayerCameraManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/Character.h"
@@ -16,7 +17,7 @@ FCrashCameraModeView::FCrashCameraModeView() :
     Location(ForceInit),
 	Rotation(ForceInit),
 	ControlRotation(ForceInit),
-	FieldOfView(100.0f) // TODO: Change to preprocessor var
+	FieldOfView(CAMERA_DEFAULT_FOV)
 {
 }
 
@@ -56,11 +57,11 @@ void FCrashCameraModeView::Blend(const FCrashCameraModeView& Other, float Weight
  * UCrashCameraModeBase
  */
 UCrashCameraModeBase::UCrashCameraModeBase() :
-	FieldOfView(100.0f), // TODO: Change to preprocessor var
+	FieldOfView(CAMERA_DEFAULT_FOV),
 	ViewPitchMin(-90.0f),
 	ViewPitchMax(90.0f),
 	ViewYawMin(0.0f),
-	ViewYawMax(360.0f),
+	ViewYawMax(359.9f),
 
 	BlendTime(0.25f),
 	BlendFunction(ECrashCameraModeBlendFunction::EaseOut),
@@ -135,8 +136,14 @@ void UCrashCameraModeBase::UpdateView(float DeltaTime)
 	FRotator PivotRotation = GetPivotRotation();
 
 	// Apply view angle clamps.
-	PivotRotation.Pitch = FMath::ClampAngle(PivotRotation.Pitch, ViewPitchMin, ViewPitchMax);
-	PivotRotation.Yaw = FMath::ClampAngle(PivotRotation.Yaw, ViewYawMin, ViewYawMax);
+	if (bClampPitch)
+	{
+		PivotRotation.Pitch = FMath::ClampAngle(PivotRotation.Pitch, ViewPitchMin, ViewPitchMax);
+	}
+	if (bClampYaw)
+	{
+		PivotRotation.Yaw = FMath::ClampAngle(PivotRotation.Yaw, ViewYawMin, ViewYawMax);
+	}
 
 	// Use the current pivot location and rotation as the camera's view for this default implementation.
 	View.Location = PivotLocation;

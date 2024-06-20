@@ -134,20 +134,28 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170.0", ClampMin = "5.0", ClampMax = "170.0", Units = "Degrees"))
 	float FieldOfView;
 
+	/** Whether to restrict the viewer's vertical camera angle. */
+	UPROPERTY(EditDefaultsOnly, Category = "View|Pitch", DisplayName = "Clamp Pitch?")
+	bool bClampPitch = true;
+
 	/** Minimum pitch (vertical axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Pitch", Meta = (UIMin = "-90.0", UIMax = "90", ClampMin = "-90.0", ClampMax = "90", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View|Pitch", DisplayName = "Minimum View Pitch", Meta = (EditCondition = "bClampPitch", UIMin = "-90.0", UIMax = "90", ClampMin = "-90.0", ClampMax = "90", Units = "Degrees"))
 	float ViewPitchMin;
 
 	/** Maximum pitch (vertical axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Pitch", Meta = (UIMin = "-90.0", UIMax = "90.0", ClampMin = "-90.0", ClampMax = "90.0", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View|Pitch", DisplayName = "Maximum View Pitch", Meta = (EditCondition = "bClampPitch", UIMin = "-90.0", UIMax = "90.0", ClampMin = "-90.0", ClampMax = "90.0", Units = "Degrees"))
 	float ViewPitchMax;
 
+	/** Whether to restrict the viewer's horizontal camera angle. */
+	UPROPERTY(EditDefaultsOnly, Category = "View|Yaw", DisplayName = "Clamp Yaw?")
+	bool bClampYaw = false;
+
 	/** Minimum yaw (horizontal axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Minimum View Yaw", Meta = (UIMin = "0.0", UIMax = "360.0", ClampMin = "0.0", ClampMax = "360.0", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View|Yaw", DisplayName = "Minimum View Yaw", Meta = (EditCondition = "bClampYaw", UIMin = "0.0", UIMax = "359.9", ClampMin = "0.0", ClampMax = "359.9", Units = "Degrees"))
 	float ViewYawMin;
 
 	/** Maximum yaw (horizontal axis) that this camera can view. */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "Maximum View Yaw", Meta = (UIMin = "0.0", UIMax = "360.0", ClampMin = "0.0", ClampMax = "360.0", Units = "Degrees"))
+	UPROPERTY(EditDefaultsOnly, Category = "View|Yaw", DisplayName = "Maximum View Yaw", Meta = (EditCondition = "bClampYaw", UIMin = "0.0", UIMax = "359.9", ClampMin = "0.0", ClampMax = "359.9", Units = "Degrees"))
 	float ViewYawMax;
 
 

@@ -29,15 +29,23 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	CapsuleComp->InitCapsuleSize(35.0f, 90.0f);
 
 
+	// Camera.
+	BaseEyeHeight = 76.5f;
+	CameraComponent = CreateDefaultSubobject<UCrashCameraComponent>(TEXT("CrashCameraComponent"));
+	check(CameraComponent);
+	CameraComponent->SetupAttachment(CapsuleComp);
+	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight));
+
+
 	// First-person mesh.
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonCharacterMesh"));
 	check(FirstPersonMesh);
 	FirstPersonMesh->bReceivesDecals = false;
 	FirstPersonMesh->CastShadow = false;
 	FirstPersonMesh->bOnlyOwnerSee = true;
-	FirstPersonMesh->SetupAttachment(CapsuleComp);
+	FirstPersonMesh->SetupAttachment(CameraComponent);
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
+	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f));
 
 
 	// Third-person mesh.
@@ -49,12 +57,6 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
-
-
-	// Camera.
-	BaseEyeHeight = 166.5f;
-	CameraComponent = CreateDefaultSubobject<UCrashCameraComponent>(TEXT("CameraComponent"));
-	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 90.0f));
 
 
 	// Input.

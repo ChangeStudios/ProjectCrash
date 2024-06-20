@@ -29,6 +29,11 @@ void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& Des
 {
 	check(CameraModeStack);
 
+	if (!GetWorld()->IsGameWorld())
+	{
+		return;
+	}
+
 	// Check if we need to push any new camera modes to the stack.
 	UpdateCameraModes();
 

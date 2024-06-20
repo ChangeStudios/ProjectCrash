@@ -15,7 +15,7 @@ class UCrashCameraModeBase;
  *
  * This component requires that its owning pawn has a pawn extension component for proper initialization.
  */
-UCLASS(NotBlueprintable, Meta = (BlueprintSpawnableComponent))
+UCLASS(NotBlueprintable, Category = "Camera", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UPawnCameraManager : public UPawnComponent, public IGameFrameworkInitStateInterface
 {
 	GENERATED_BODY()

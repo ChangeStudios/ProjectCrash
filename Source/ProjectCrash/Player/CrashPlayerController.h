@@ -13,4 +13,11 @@ UCLASS()
 class PROJECTCRASH_API ACrashPlayerController : public ACommonPlayerController
 {
 	GENERATED_BODY()
+
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	ACrashPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };
