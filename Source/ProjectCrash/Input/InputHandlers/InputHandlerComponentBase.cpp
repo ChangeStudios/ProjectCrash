@@ -8,6 +8,7 @@
 #include "InputMappingContext.h"
 #include "Characters/PawnExtensionComponent.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameFeatures/GameFeatureAction_AddInputActionMapping.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Input/CrashInputComponent.h"
 #include "Player/CrashPlayerController.h"
@@ -19,7 +20,6 @@
 #endif	// WITH_EDITOR
 
 const FName UInputHandlerComponentBase::NAME_ActorFeatureName("InputHandler");
-const FName UInputHandlerComponentBase::NAME_BindInputsNow("BindInputsNow");
 
 void UInputHandlerComponentBase::OnRegister()
 {
@@ -288,6 +288,6 @@ void UInputHandlerComponentBase::InitializePlayerInput(UInputComponent* PlayerIn
 
 	/* Tell the modular game framework that we are ready to bind input. This is used to add additional game
 	 * mode-specific input bindings. */
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), UGameFeatureAction_AddInputActionMapping::NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), UGameFeatureAction_AddInputActionMapping::NAME_BindInputsNow);
 }

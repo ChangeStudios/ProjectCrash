@@ -76,8 +76,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UCrashInputActionMapping> DefaultActionMapping;
 
-	/** This pawn's default mapping context. Typically null, as it will be determined by the game mode. But this may
-	 * be useful for pawns with custom, game mode-independent input (think of Sova's drone or Junkrat's tire). */
+	/** This pawn's default mapping context. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	FPrioritizedInputMappingContext DefaultMappingContext;
 

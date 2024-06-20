@@ -76,9 +76,6 @@ protected:
 	 * handler functions defined by pawn-specific subclasses of this component. */
 	virtual void BindInputHandlers(UCrashInputComponent* CrashIC, const UCrashInputActionMapping* ActionMapping) {};
 
-	/** Event name for when the modular game framework should bind modular, game mode-specific input. */
-	static const FName NAME_BindInputsNow;
-
 protected:
 
 	/** Whether input can currently be bound with this component. */
