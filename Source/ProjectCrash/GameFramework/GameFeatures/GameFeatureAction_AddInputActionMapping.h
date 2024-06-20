@@ -41,7 +41,7 @@ public:
 
 private:
 
-	/** Starts listening for the extension request that triggers this action. */
+	/** Starts listening for the extension request that triggers this action: NAME_BindInputsNow. */
 	virtual void AddToWorld(const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext) override;
 
 
@@ -65,11 +65,11 @@ private:
 	/** Context-specific data for each context in which this game feature action is active. */
 	TMap<FGameFeatureStateChangeContext, FPerContextData> ContextData;
 
-// Utils.
-private:
-
 	/** Resets the given context data. */
 	void Reset(FPerContextData& ActiveData);
+
+// Utils.
+private:
 
 	/** Adds or removes this action's mappings when its associated extension request is added or removed by the
 	 * player. */
@@ -88,7 +88,7 @@ private:
 public:
 
 #if WITH_EDITOR
-	/** Validates this action is not using any null action mappings and that no action mappings are trying to bind
+	/** Validates that this action is not using any null action mappings and that no action mappings are trying to bind
 	 * native actions. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 #endif
