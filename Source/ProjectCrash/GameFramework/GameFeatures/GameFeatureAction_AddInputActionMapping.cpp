@@ -17,7 +17,7 @@ const FName UGameFeatureAction_AddInputActionMapping::NAME_BindInputsNow("BindIn
 
 void UGameFeatureAction_AddInputActionMapping::OnGameFeatureActivating(FGameFeatureActivatingContext& Context)
 {
-	// Create or reset this action's context data for the given context.
+	// Create or reset context data for the given context.
 	FPerContextData& ActiveData = ContextData.FindOrAdd(Context);
 	if (!ensure(ActiveData.ExtensionRequestHandles.IsEmpty()) ||
 		!ensure(ActiveData.PawnsAddedTo.IsEmpty()))
@@ -32,7 +32,7 @@ void UGameFeatureAction_AddInputActionMapping::OnGameFeatureDeactivating(FGameFe
 {
 	Super::OnGameFeatureDeactivating(Context);
 
-	// Reset this action's context data for the given context.
+	// Reset the context data for the given context.
 	FPerContextData* ActiveData = ContextData.Find(Context);
 	if (ensure(ActiveData))
 	{
@@ -66,7 +66,7 @@ void UGameFeatureAction_AddInputActionMapping::AddToWorld(const FWorldContext& W
 
 void UGameFeatureAction_AddInputActionMapping::Reset(FPerContextData& ActiveData)
 {
-	// Clear extension event delegates.
+	// Clear extension request delegates.
 	ActiveData.ExtensionRequestHandles.Empty();
 
 	// Remove the input mappings added by this action from each pawn to which it was added.

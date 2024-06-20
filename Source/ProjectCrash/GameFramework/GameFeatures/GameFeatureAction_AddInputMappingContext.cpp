@@ -34,7 +34,7 @@ void UGameFeatureAction_AddInputMappingContext::OnGameFeatureRegistering()
 
 void UGameFeatureAction_AddInputMappingContext::OnGameFeatureActivating(FGameFeatureActivatingContext& Context)
 {
-	// Create or reset this action's context data for the given context.
+	// Create or reset context data for the given context.
 	FPerContextData& ActiveData = ContextData.FindOrAdd(Context);
 	if (!ensure(ActiveData.ExtensionRequestHandles.IsEmpty()) ||
 		!ensure(ActiveData.ControllersAddedTo.IsEmpty()))
@@ -49,7 +49,7 @@ void UGameFeatureAction_AddInputMappingContext::OnGameFeatureDeactivating(FGameF
 {
 	Super::OnGameFeatureDeactivating(Context);
 
-	// Reset this action's context data for the given context.
+	// Reset the context data for the given context.
 	FPerContextData* ActiveData = ContextData.Find(Context);
 	if (ensure(ActiveData))
 	{
@@ -99,7 +99,7 @@ void UGameFeatureAction_AddInputMappingContext::AddToWorld(const FWorldContext& 
 
 void UGameFeatureAction_AddInputMappingContext::Reset(FPerContextData& ActiveData)
 {
-	// Clear extension event delegates.
+	// Clear extension request delegates.
 	ActiveData.ExtensionRequestHandles.Empty();
 
 	// Remove the mapping contexts added by this action from each controller to which it was added.

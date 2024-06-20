@@ -24,11 +24,11 @@ class UGameFeatureAction_AddInputActionMapping : public UGameFeatureAction_World
 
 public:
 
-	/** Creates a new context data instance for the given context. Resets this action's context data if it already has
+	/** Creates a new context data instance for the given context. Resets the context's context data if it already has
 	 * one. */
 	virtual void OnGameFeatureActivating(FGameFeatureActivatingContext& Context) override;
 
-	/** Resets this action's context data for the given context. */
+	/** Resets the context data for the given context. */
 	virtual void OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context) override;
 
 	/** Action mappings that will be added to the local player when this action is activated. */
@@ -68,11 +68,10 @@ private:
 	/** Resets the given context data. */
 	void Reset(FPerContextData& ActiveData);
 
-// Utils.
+// Adding action mappings.
 private:
 
-	/** Adds or removes this action's mappings when its associated extension request is added or removed by the
-	 * player. */
+	/** Adds or removes this action's mappings from a pawn when that pawn adds or removes their extension request. */
 	void HandlePawnExtension(AActor* Actor, FName EventName, FGameFeatureStateChangeContext ChangeContext);
 
 	/** Actually adds this action's mappings to the given pawn. */

@@ -8,12 +8,11 @@
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameFeatures/GameFeatureAction_AddAbilities.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
 #include "Net/UnrealNetwork.h"
-
-const FName ACrashPlayerState::NAME_AbilitiesReady("AbilitiesReady");
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -158,9 +157,9 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		}
 	}
 
-	/* Fire a game framework component extension event notifying the manager that this player received its pawn's
-	 * default ability sets. */
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_AbilitiesReady);
+	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
+	 * mode-specific abilities via game feature actions. */
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
 
 	ForceNetUpdate();
 }

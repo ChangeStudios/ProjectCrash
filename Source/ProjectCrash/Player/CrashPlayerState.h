@@ -112,13 +112,6 @@ protected:
 
 public:
 
-	/** Game framework component extension event fired when this player receives their pawn's default ability sets.
-	 * Used to handle abilities' dependencies on other abilities. */
-	static const FName NAME_AbilitiesReady;
-
-// Ability system component.
-public:
-
 	/** Typed getter for this player's ASC. */
 	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerState")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }

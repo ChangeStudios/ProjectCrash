@@ -5,8 +5,6 @@
 #include "GameFramework/GameFeatures/GameFeatureAction_WorldActionBase.h"
 #include "GameFeatureAction_AddInputMappingContext.generated.h"
 
-#define LOCTEXT_NAMESPACE "GameFeatures"
-
 struct FComponentRequestHandle;
 struct FPrioritizedInputMappingContext;
 
@@ -31,11 +29,11 @@ public:
 	 * mapping contexts with the input registry subsystem for any game instances that have already started. */
 	virtual void OnGameFeatureRegistering() override;
 
-	/** Creates a new context data instance for the given context. Resets this action's context data if it already has
+	/** Creates a new context data instance for the given context. Resets the context's context data if it already has
 	 * one. */
 	virtual void OnGameFeatureActivating(FGameFeatureActivatingContext& Context) override;
 
-	/** Resets this action's context data for the given context. */
+	/** Resets the context data for the given context. */
 	virtual void OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context) override;
 
 	/** Unregisters this action's mapping contexts. */
@@ -103,8 +101,8 @@ private:
 // Adding contexts.
 private:
 
-	/** Adds or removes this action's mapping contexts when its associated extension request is added or removed by the
-	 * player. */
+	/** Adds or removes this action's mapping contexts from a local player when that player adds or removes their
+	 * extension request. */
 	void HandleControllerExtension(AActor* Actor, FName EventName, FGameFeatureStateChangeContext ChangeContext);
 
 	/** Adds this action's mapping contexts to the given local player. */

@@ -288,7 +288,7 @@ void UInputHandlerComponentBase::InitializePlayerInput(UInputComponent* PlayerIn
 	}
 
 	/* Tell the modular game framework that we are ready to bind input. This is used to add additional game
-	 * mode-specific input bindings. */
+	 * mode-specific input bindings via game feature actions. */
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), UGameFeatureAction_AddInputMappingContext::NAME_AddContextsNow);
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), UGameFeatureAction_AddInputActionMapping::NAME_BindInputsNow);
 }
