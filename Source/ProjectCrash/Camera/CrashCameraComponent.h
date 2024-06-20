@@ -17,6 +17,8 @@ DECLARE_DELEGATE_RetVal(TSubclassOf<UCrashCameraModeBase>, FDetermineCameraModeS
  * This camera uses "camera modes" to dynamically blend between different data-driven views during runtime. It maintains
  * a stack of camera modes: when a new mode is pushed, the camera blends to it; when a mode is popped, the camera blends
  * to the next one on the stack.
+ *
+ * TODO: Implement first- and third-person camera modes for determining mesh and effects visibility.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashCameraComponent : public UCameraComponent
@@ -39,10 +41,10 @@ public:
 
 public:
 
-	/** Returns the actor that this camera is currently focused on. Returns the camera's owner by default. */
+	/** The actor that this camera is looking at. Usually the pawn that owns this component. */
 	virtual AActor* GetTargetActor() const { return GetOwner(); }
 
-	/** Delegate used to query for the desired camera mode. */
+	/** Delegate used to query for the desired camera mode. Bind to this to push camera modes. */
 	FDetermineCameraModeSignature DetermineCameraModeDelegate;
 
 protected:
@@ -50,8 +52,10 @@ protected:
 	/** Defines this camera's current desired view using the current camera mode. */
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
 
+	/** Checks for any new camera modes that should be pushed to the stack. */
 	virtual void UpdateCameraModes();
 
+	/** The camera mode stack handling the camera modes, and blending between them. */
 	UPROPERTY()
 	TObjectPtr<UCrashCameraModeStack> CameraModeStack;
 

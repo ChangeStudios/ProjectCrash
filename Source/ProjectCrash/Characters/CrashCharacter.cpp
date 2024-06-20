@@ -7,6 +7,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
+#include "Camera/CrashCameraComponent.h"
 #include "Components/CapsuleComponent.h"
 
 
@@ -50,8 +51,10 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
 
 
-	// TODO: Camera.
+	// Camera.
 	BaseEyeHeight = 166.5f;
+	CameraComponent = CreateDefaultSubobject<UCrashCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 90.0f));
 
 
 	// Input.

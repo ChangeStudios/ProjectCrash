@@ -7,14 +7,15 @@
 #include "ModularCharacter.h"
 #include "CrashCharacter.generated.h"
 
+class UCrashCameraComponent;
 class UCrashAbilitySystemComponent;
 class UHealthComponent;
 class UPawnExtensionComponent;
 
 /**
  * Base modular character class for this project. Provides first- and third-person perspective functionality via
- * dual mesh components; provides a health component and an interface with the ability system; contains a pawn
- * extension component for coordinating modular actor components.
+ * dual mesh components; contains a camera component; provides a health component and an interface with the ability
+ * system; contains a pawn extension component for coordinating modular actor components.
  *
  * New behavior should be implemented modularly via actor components; specifically, UPawnComponent. 
  */
@@ -72,6 +73,16 @@ private:
 	/** Mesh component only visible in third-person. Determined by current camera mode. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
+
+
+
+	// Camera.
+
+protected:
+
+	/** This character's camera. Requires a pawn camera manager component to manage its camera modes. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crash|Character", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCrashCameraComponent> CameraComponent;
 
 
 
