@@ -117,6 +117,10 @@ protected:
 	 */
 	virtual FRotator GetPivotRotation() const;
 
+	/** Returns the result of GetPivotRotation, clamped to this camera mode's minimum and maximum pitch and yaw
+	 * angles. */
+	FRotator GetPivotRotationClamped() const;
+
 	/**
 	 * Updates this camera mode's internal view.
 	 *
@@ -204,6 +208,11 @@ protected:
 
 	/** Blend weight calculated using the blend alpha and blend function. */
 	float BlendWeight;
+
+	/** When set, skips all interpolation and puts the camera in the desired position. Gets automatically set to false
+	 * next frame. */
+	UPROPERTY(Transient)
+	uint32 bResetInterpolation : 1;
 
 
 

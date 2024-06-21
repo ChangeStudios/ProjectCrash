@@ -68,7 +68,8 @@ UCrashCameraModeBase::UCrashCameraModeBase() :
 	BlendFunction(ECrashCameraModeBlendFunction::EaseOut),
 	BlendExponent(4.0f),
 	BlendAlpha(1.0f),
-	BlendWeight(1.0f)
+	BlendWeight(1.0f),
+	bResetInterpolation(0)
 {
 }
 
@@ -131,9 +132,9 @@ FRotator UCrashCameraModeBase::GetPivotRotation() const
 	return TargetActor->GetActorRotation();
 }
 
-void UCrashCameraModeBase::UpdateView(float DeltaTime)
+FRotator UCrashCameraModeBase::GetPivotRotationClamped() const
 {
-	FVector PivotLocation = GetPivotLocation();
+	// Get the base pivot rotation.
 	FRotator PivotRotation = GetPivotRotation();
 
 	// Apply view angle clamps.
@@ -145,6 +146,14 @@ void UCrashCameraModeBase::UpdateView(float DeltaTime)
 	{
 		PivotRotation.Yaw = FMath::ClampAngle(PivotRotation.Yaw, ViewYawMin, ViewYawMax);
 	}
+
+	return PivotRotation;
+}
+
+void UCrashCameraModeBase::UpdateView(float DeltaTime)
+{
+	FVector PivotLocation = GetPivotLocation();
+	FRotator PivotRotation = GetPivotRotationClamped();
 
 	// Use the current pivot location and rotation as the camera's view for this default implementation.
 	View.Location = PivotLocation;

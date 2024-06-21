@@ -42,7 +42,6 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	check(FirstPersonMesh);
 	FirstPersonMesh->bReceivesDecals = false;
 	FirstPersonMesh->CastShadow = false;
-	FirstPersonMesh->bOnlyOwnerSee = true;
 	FirstPersonMesh->SetupAttachment(CameraComponent);
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f));
@@ -53,7 +52,6 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	check(ThirdPersonMesh);
 	ThirdPersonMesh->bReceivesDecals = false;
 	ThirdPersonMesh->bCastHiddenShadow = true;
-	ThirdPersonMesh->bOwnerNoSee = true;
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
