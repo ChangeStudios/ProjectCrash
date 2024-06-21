@@ -6,6 +6,8 @@
 #include "Camera/CrashCameraModeBase.h"
 #include "CrashCameraMode_ThirdPersonBase.generated.h"
 
+class UCurveVector;
+
 /**
  * Defines a ray used to detect and predict camera collisions to avoid penetration.
  */
