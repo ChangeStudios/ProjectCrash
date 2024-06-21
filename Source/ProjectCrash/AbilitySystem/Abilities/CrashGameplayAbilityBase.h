@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
+class UCrashCameraModeBase;
 class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
@@ -37,6 +38,8 @@ enum class EAbilityActivationGroup : uint8
 /**
  * The base class for gameplay abilities in this project. Extends the base gameplay ability class with additional
  * functionality and various helper functions.
+ *
+ * TODO: This class is a mess. Fix it!!
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashGameplayAbilityBase : public UGameplayAbility
@@ -52,7 +55,7 @@ public:
 
 
 
-	// Ability behavior.
+	// Behavior.
 
 // Ability activation.
 public:
@@ -98,27 +101,24 @@ public:
 
 
 
-	// Ability activation requisites.
+	// Activation.
 
 public:
 
 	/** Checks this ability is disabled or if its activation group is currently blocked. */
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
-
-
-	// Ability activation.
-
 protected:
 
 	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 
 
-	// Ability cooldowns.
+	// Cooldowns.
 
 protected:
 
@@ -127,9 +127,9 @@ protected:
 
 
 
-	// Blueprint-implementable callback functions.
+	// Event callbacks.
 
-// Internal callbacks.
+// Internals.
 protected:
 
 	/** Calls optional blueprint implementation of InputReleased. */
@@ -141,7 +141,7 @@ protected:
 	/** Calls optional blueprint implementation of OnRemoveAbility. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-// Optional blueprint callbacks.
+// Blueprint-exposed callbacks.
 protected:
 
 	/** Blueprint-implementable event called when this ability's input is completed. */
@@ -157,6 +157,27 @@ protected:
 	 * super call. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "On Remove Ability")
 	void K2_OnRemoveAbility();
+
+
+
+	// Gameplay events.
+
+public:
+
+	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
+	 * PawnCameraManager component. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Abilities")
+	void SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode);
+
+	/** Clears this ability's overriding camera mode for the ability's avatar. Called automatically when this ability
+	 * ends. */
+	UFUNCTION(BlueprintCallable, Category = "Ability System|Abilities")
+	void ClearCameraMode();
+
+protected:
+
+	/** The camera mode currently being overridden by this ability. */
+	TSubclassOf<UCrashCameraModeBase> ActiveCameraMode;
 
 
 

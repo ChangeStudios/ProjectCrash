@@ -26,7 +26,7 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	// Capsule component.
 	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
 	check(CapsuleComp);
-	CapsuleComp->InitCapsuleSize(35.0f, 90.0f);
+	CapsuleComp->InitCapsuleSize(45.0f, 90.0f);
 
 
 	// Camera.

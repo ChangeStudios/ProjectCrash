@@ -87,4 +87,14 @@ protected:
 
 	/** Spec handle for the last ability to set the camera mode. */
 	FGameplayAbilitySpecHandle AbilityCameraModeOwningSpecHandle;
+
+
+
+	// Utils.
+
+public:
+
+	/** Retrieves the given actor's PawnCameraManager, if it has one. Returns null otherwise. */
+	UFUNCTION(BlueprintPure, Category = "Crash|Camera")
+	static UPawnCameraManager* FindPawnCameraManagerComponent(const AActor* Actor) { return Actor ? Actor->FindComponentByClass<UPawnCameraManager>() : nullptr; }
 };

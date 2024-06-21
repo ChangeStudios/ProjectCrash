@@ -10,6 +10,7 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
 #include "Characters/ChallengerBase.h"
+#include "Characters/PawnCameraManager.h"
 #include "Characters/Data/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
@@ -17,6 +18,16 @@
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PlayerStates/CrashPlayerState_DEP.h"
+
+// Util for functions that require an instantiated ability.
+#define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
+{																																							\
+	if (!ensure(IsInstantiated()))																															\
+	{																																						\
+		ABILITY_LOG(Error, TEXT("%s: " #FunctionName " cannot be called on a non-instanced ability. Check the instancing policy."), *GetPathName());		\
+		return ReturnValue;																																	\
+	}																																						\
+}
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -300,6 +311,31 @@ void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo*
 
 	// Optional blueprint implementation of this callback.
 	K2_OnRemoveAbility();
+}
+
+void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)
+{
+	ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(SetCameraMode, );
+
+	// Set the overriding camera mode via the avatar's pawn camera manager component.
+	if (UPawnCameraManager* PawnCameraManager = CurrentActorInfo ? UPawnCameraManager::FindPawnCameraManagerComponent(CurrentActorInfo->AvatarActor.Get()) : nullptr)
+	{
+		PawnCameraManager->SetAbilityCameraMode(CameraMode, CurrentSpecHandle);
+		ActiveCameraMode = CameraMode;
+	}
+}
+
+void UCrashGameplayAbilityBase::ClearCameraMode()
+{
+	ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(ClearCameraMode, );
+
+	// Clear the overriding camera mode via the avatar's pawn camera manager component.
+	if (UPawnCameraManager* PawnCameraManager = CurrentActorInfo ? UPawnCameraManager::FindPawnCameraManagerComponent(CurrentActorInfo->AvatarActor.Get()) : nullptr)
+	{
+		PawnCameraManager->ClearAbilityCameraMode(CurrentSpecHandle);
+	}
+
+	ActiveCameraMode = nullptr;
 }
 
 FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const
