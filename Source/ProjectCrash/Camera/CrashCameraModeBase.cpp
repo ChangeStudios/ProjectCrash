@@ -57,6 +57,7 @@ void FCrashCameraModeView::Blend(const FCrashCameraModeView& Other, float Weight
  * UCrashCameraModeBase
  */
 UCrashCameraModeBase::UCrashCameraModeBase() :
+	bIsFirstPersonCamera(false),
 	FieldOfView(CAMERA_DEFAULT_FOV),
 	ViewPitchMin(-90.0f),
 	ViewPitchMax(90.0f),

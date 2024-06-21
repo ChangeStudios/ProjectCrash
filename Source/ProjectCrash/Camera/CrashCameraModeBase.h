@@ -124,11 +124,16 @@ protected:
 	 */
 	virtual void UpdateView(float DeltaTime);
 
-// Internals.
+// Properties.
 protected:
 
 	/** This camera mode's current view data. */
 	FCrashCameraModeView View;
+
+	/** Whether this camera is used as in a first-person view. When this camera mode is active, this determines the
+	 * visibility of first-person meshes and visual effects.  */
+	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "First-Person Camera?")
+	bool bIsFirstPersonCamera;
 
 	/** Horizontal field of view. */
 	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170.0", ClampMin = "5.0", ClampMax = "170.0", Units = "Degrees"))
