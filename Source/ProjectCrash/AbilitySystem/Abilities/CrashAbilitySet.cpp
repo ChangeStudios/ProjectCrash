@@ -5,7 +5,7 @@
 
 #include "AbilitySystemLog.h"
 #include "CrashGameplayAbilityBase.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/CrashLogging.h"
 

@@ -4,7 +4,7 @@
 #include "Equipment/EquipmentPieceActor.h"
 
 #include "AbilitySystemGlobals.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "Characters/CrashCharacterBase.h"
 #include "GameFramework/CrashLogging.h"
 #include "Kismet/KismetMaterialLibrary.h"

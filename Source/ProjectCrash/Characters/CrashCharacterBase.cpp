@@ -7,7 +7,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemLog.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CrashLogging.h"

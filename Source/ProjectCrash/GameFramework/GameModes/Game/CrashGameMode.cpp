@@ -7,7 +7,7 @@
 #include "GameFramework/GameModes/Data/CrashGameModeData.h"
 #include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
-#include "AbilitySystem/CrashGameplayTags.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
