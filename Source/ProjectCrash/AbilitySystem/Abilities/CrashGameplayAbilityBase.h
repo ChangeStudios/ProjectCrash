@@ -24,22 +24,20 @@ enum class EAbilityActivationGroup : uint8
 	// This ability's activation does not affect and does not rely on other abilities.
 	Independent,
 
-	/* This ability cannot be activated while another "exclusive" ability is active. This ability can be cancelled and
-	 * replaced by other exclusive abilities. */
+	/* This ability cannot be activated while another "exclusive" ability is active. If another exclusive ability is
+	 * activated, this ability will be cancelled. */
 	Exclusive_Replaceable,
 
-	/* This ability cannot be activated while another "exclusive" ability is active. This ability can never be
-	 * cancelled and replaced by other exclusive abilities. */
+	/* This ability cannot be activated while another "exclusive" ability is active. Other exclusive abilities cannot
+	 * be activated until this ability ends. */
 	Exclusive_Blocking
 };
 
 
 
 /**
- * The base class for gameplay abilities in this project. Extends the base gameplay ability class with additional
- * functionality and various helper functions.
- *
- * TODO: This class is a mess. Fix it!!
+ * Base gameplay ability class for this project. Extends the base gameplay ability class with additional functionality,
+ * integration with this project's input system, and and various utilities.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashGameplayAbilityBase : public UGameplayAbility
@@ -55,54 +53,40 @@ public:
 
 
 
-	// Behavior.
+	// Input
 
-// Ability activation.
 public:
 
 	/** Getter for this ability's input tag. */
-	UFUNCTION(BlueprintPure, Category = "Ability System|Ability Activation", Meta = (ToolTip = "This tag will be bound to corresponding input actions to trigger this ability."))
-	const FGameplayTag& GetInputTag() const { return InputTag; }
-
-	/** Getter for this ability's activation group. */
-	UFUNCTION(BlueprintPure, Category = "Ability System|Ability Activation", Meta = (ToolTip = "How this ability's activation affects and relies on other abilities."))
-	EAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
+	UFUNCTION(BlueprintPure, Category = "Ability|Activation", Meta = (ToolTip = "The tag corresponding to the input action used to trigger this ability."))
+	FGameplayTag GetInputTag() const { return InputTag; }
 
 protected:
 
-	/** This tag will be bound to corresponding input actions to trigger this ability. This is bound by the owning
-	 * ability set when it's granted. */
+	/** The input tag used to trigger this ability's activation via user input. When an input action corresponding to
+	 * this tag is triggered, this ability will be activated. Determined by the local player's current input action
+	 * mappings. */
 	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
-
-	/** How this ability's activation affects and relies on other abilities. */
-	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Group")
-	EAbilityActivationGroup ActivationGroup;
-
-// User interface.
-public:
-
-	/** Tags defining this ability's behavior in the user interface. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface", Meta = (Categories = "Ability.Behavior.UI"))
-	FGameplayTagContainer UserInterfaceTags;
-
-	/** Display name of this ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	FString DisplayedAbilityName;
-
-	/** User-facing description of this ability. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	FString DisplayedAbilityDescription;
-
-	/** This ability's icon in the ability bar. Abilities must have an AbilityBehavior tag enabling their appearance in
-	 * the user interface before the ability will appear. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
-	TObjectPtr<UTexture2D> AbilityIcon;
 
 
 
 	// Activation.
 
+// Activation group.
+public:
+
+	/** Getter for this ability's activation group. */
+	UFUNCTION(BlueprintPure, Category = "Ability|Activation", Meta = (ToolTip = "This ability's activation group."))
+	EAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
+
+protected:
+
+	/** How this ability's activation affects or responds to the activation of other abilities. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Group")
+	EAbilityActivationGroup ActivationGroup;
+
+// Activation logic.
 public:
 
 	/** Checks this ability is disabled or if its activation group is currently blocked. */
@@ -115,6 +99,33 @@ protected:
 
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	
+
+
+
+	// Optional user-facing ability information.
+
+public:
+
+	/** Whether this ability should appear in ability information widgets: the HUD, character selection screens, etc. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", DisplayName = "User-Facing Ability?")
+	bool bIsUserFacingAbility;
+
+	/** This ability's user-facing name. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	FText UserFacingName;
+
+	/** This ability's user-facing description. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	FText UserFacingDescription;
+
+	/** This ability's icon. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	TObjectPtr<UTexture2D> AbilityIcon;
+
+	/** Additional tags defining this ability's behavior in various user interface contexts. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides, Categories = "Ability.Behavior.UI"))
+	FGameplayTagContainer UserInterfaceTags;
 
 
 
@@ -122,45 +133,36 @@ protected:
 
 protected:
 
-	/** Sends a gameplay message when this ability's cooldown is applied. */
+	/** Broadcasts a gameplay message when this ability's cooldown is applied. */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 
 
 
-	// Event callbacks.
+	// Ability event callbacks.
 
 // Internals.
 protected:
 
-	/** Calls optional blueprint implementation of InputReleased. */
-	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
-	/** Calls optional blueprint implementation of OnGiveAbility. */
+	/** Fires the associated blueprint event. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Calls optional blueprint implementation of OnRemoveAbility. */
+	/** Fires the associated blueprint event. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-// Blueprint-exposed callbacks.
+// Blueprint-exposed event callbacks.
 protected:
 
-	/** Blueprint-implementable event called when this ability's input is completed. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "Input Released")
-	void K2_InputReleased();
-
-	/** Blueprint-implementable event called when this ability is given to an ASC. Called BEFORE C++ OnGiveAbility
-	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "On Give Ability")
+	/** Called when this ability is given to an ASC. */
+	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "On Give Ability")
 	void K2_OnGiveAbility();
 
-	/** Blueprint-implementable event called when this ability is removed from an ASC. Called BEFORE C++ OnRemoveAbility
-	 * super call. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability System|Abilities", DisplayName = "On Remove Ability")
+	/** Called when this ability is removed from an ASC. */
+	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "On Remove Ability")
 	void K2_OnRemoveAbility();
 
 
 
-	// Gameplay events.
+	// Gameplay.
 
 public:
 
@@ -190,69 +192,36 @@ protected:
 
 protected:
 
-	/** Gameplay effects that are applied to the instigating ASC when this ability is activated and persist after the
-	 * ability ends. These effects must be removed manually. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and persist after it ends. Must be removed manually. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
+	/** Gameplay effects applied to the owning ASC when this ability is activated, and persist after the ability ends.
+	 * These effects must be removed manually. */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and persist after it ends. Must be removed manually."))
 	TArray<TSubclassOf<UGameplayEffect>> OngoingEffectsToApplyOnStart;
 
-	/** Gameplay effects that are applied to the instigating ASC when this ability is activated and automatically
-	* removed when this ability ends. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and automatically removed after it ends. These should NOT be temporary or one-off effects like \"burning,\" but instead state-based effects like \"Crouching.\""))
+	/** Gameplay effects applied to the owning ASC when this ability is activated, and automatically removed when this
+	 * ability ends. */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", Meta = (ToolTip = "Effects applied when this ability is activated and automatically removed after it ends."))
 	TArray<TSubclassOf<UGameplayEffect>> OngoingEffectsToApplyOnStartAndRemoveOnEnd;
 
-	/** Handles used to track effects applied by this ability that need to be removed when it ends. */
+	/** Handles to gameplay effects applied from OngoingEffectsToApplyOnStartAndRemoveOnEnd, so they can be removed when
+	 * the ability ends. */
 	TArray<FActiveGameplayEffectHandle> EffectsToRemoveOnEndHandles;
 
 
 
-	// Utilities.
+	// Utils.
 
 public:
 
-	/**
-	 * Retrieves the ability owner's current skin's version of the given gameplay cue. The retrieves the first cue
-	 * in the skin's AbilityCues array with the given DefaultCue as a parent.
-	 *
-	 * @param DefaultCue		The default gameplay cue for the cue to be retrieved.
-	 * @return					The first gameplay cue in the ability's owner's current skin's AbilityCues array that is
-	 *							a sub-tag of DefaultCue. Returns DefaultCue if the skin does not define a sub-tag of
-	 *							the given cue.
-	 *
-	 *							E.g. to retrieve the "Joust" ability's impact cue for the current skin, call this with
-	 *							GameplayCue.Knight.Joust.Impact.Default. This function will return any sub-tag cue in
-	 *							AbilityCues (e.g. GameplayCue.Knight.Joust.Impact.MySkin), if one exists.
-	 */
-	UFUNCTION(BlueprintPure, Category = "Ability System|Utilities", Meta = (Categories = "GameplayCue"))
-	FGameplayTag GetAbilityCueFromSkin(FGameplayTag DefaultCue);
-
-// Casting.
-public:
-
-	/** Returns this ability's instigating ASC if it is a CrashAbilitySystemComponent. Returns nullptr if the ASC was
-	 * not found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	/** Returns this ability's owning ASC as a CrashAbilitySystemComponent. */
+	UFUNCTION(BlueprintCallable, Category = "Ability")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
-
-	/** Returns this ability's avatar actor if it is a subclass of the base challenger character class. Returns nullptr
-	 * if the avatar could not be found or is of the wrong class. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
-	AChallengerBase* GetChallengerFromActorInfo() const;
-
-// Helpers.
-public:
 
 	/** Attempts to retrieve any controller responsible for this ability: the owning actor's PC, the avatar's
 	 * controller, etc. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Utilities")
+	UFUNCTION(BlueprintCallable, Category = "Ability")
 	AController* GetControllerFromActorInfo() const;
 
 	/** Returns this ability's CDO. */
+	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO??"))
 	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
-
-#if WITH_EDITOR
-
-	/** Define when certain properties can be edited in this ability's archetype. */
-	virtual bool CanEditChange(const FProperty* InProperty) const override;
-
-#endif // #if WITH_EDITOR
 };

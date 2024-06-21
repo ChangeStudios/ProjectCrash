@@ -19,7 +19,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
-// Util for functions that require an instantiated ability.
+// Helper for functions that require an instantiated ability.
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
 {																																							\
 	if (!ensure(IsInstantiated()))																															\
@@ -32,114 +32,16 @@
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-
 	ActivationGroup = EAbilityActivationGroup::Independent;
-	DisplayedAbilityName = "";
-	DisplayedAbilityDescription = "";
+	bIsUserFacingAbility = false;
 	AbilityIcon = nullptr;
-
-	if (InstancingPolicy != EGameplayAbilityInstancingPolicy::InstancedPerActor)
-	{
-		ABILITY_LOG(Warning, TEXT("Ability [%s] is not instanced-per-actor. Certain activation style features may not work properly."), *GetName());
-	}
-}
-
-FGameplayTag UCrashGameplayAbilityBase::GetAbilityCueFromSkin(FGameplayTag DefaultCue)
-{
-	check(DefaultCue.IsValid());
-	const FGameplayTag Parent = DefaultCue.RequestDirectParent();
-
-	// Retrieve the current skin from this ability's owner.
-	const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(CurrentActorInfo->OwnerActor);
-	// const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-	//
-	// // Find a matching ability cue.
-	// if (SkinData)
-	// {
-	// 	for (FGameplayTag AbilityCue : SkinData->AbilityCues)
-	// 	{
-	// 		if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
-	// 		{
-	// 			return AbilityCue;
-	// 		}
-	// 	}
-	// }
-
-	// If a matching cue can't be found, return the default cue, which was given.
-	return DefaultCue;
 }
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
 {
-	// Retrieve the ASC from the current actor info and cast it to a CrashAbilitySystemComponent.
-	return CurrentActorInfo && CurrentActorInfo->AbilitySystemComponent.Get() ? Cast<UCrashAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr;
+	// Retrieve the ASC from the current actor info and cast it to CrashAbilitySystemComponent.
+	return (CurrentActorInfo ? Cast<UCrashAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr);
 }
-
-AChallengerBase* UCrashGameplayAbilityBase::GetChallengerFromActorInfo() const
-{
-	// Retrieve the avatar from the current actor info and cast it to AChallengerBase.
-	return CurrentActorInfo && GetAvatarActorFromActorInfo() ? Cast<AChallengerBase>(GetAvatarActorFromActorInfo()) : nullptr;
-}
-
-AController* UCrashGameplayAbilityBase::GetControllerFromActorInfo() const
-{
-	if (CurrentActorInfo)
-	{
-		// Try to get the owning actor's player controller.
-		if (AController* PC = CurrentActorInfo->PlayerController.Get())
-		{
-			return PC;
-		}
-
-		// If the owning actor's player controller isn't found, look for a controller anywhere in the owner chain.
-		AActor* TestActor = CurrentActorInfo->OwnerActor.Get();
-		while (TestActor)
-		{
-			if (AController* C = Cast<AController>(TestActor))
-			{
-				return C;
-			}
-
-			if (APawn* Pawn = Cast<APawn>(TestActor))
-			{
-				return Pawn->GetController();
-			}
-
-			TestActor = TestActor->GetOwner();
-		}
-	}
-
-	return nullptr;
-}
-
-#if WITH_EDITOR
-
-bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
-{
-	bool bIsMutable = Super::CanEditChange(InProperty);
-
-	if (bIsMutable && InProperty != NULL)
-	{
-		const FName PropName = InProperty->GetFName();
-
-		// Only display the ability icon property if this ability will appear in the UI.
-		if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, AbilityIcon))
-		{
-			bIsMutable = UserInterfaceTags.HasTag(CrashGameplayTags::TAG_Ability_Behavior_UI_Slotted_Generic.GetTag().RequestDirectParent());
-		}
-		/* Only display frontend ability properties if this ability will appear in the frontend (e.g. character
-		 * selection screens). */
-		else if (PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, DisplayedAbilityName) ||
-			PropName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, DisplayedAbilityDescription))
-		{
-			bIsMutable = UserInterfaceTags.HasTag(CrashGameplayTags::TAG_Ability_Behavior_UI_Frontend_PrimaryWeapon.GetTag().RequestDirectParent());
-		}
-	}
-
-	return bIsMutable;
-}
-
-#endif // #if WITH_EDITOR
 
 bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
@@ -289,19 +191,11 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 	}
 }
 
-void UCrashGameplayAbilityBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	// Optional blueprint implementation of this callback.
-	K2_InputReleased();
-
-	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
-}
-
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	// Optional blueprint implementation of this callback.
+	// Trigger the blueprint-exposed version of this callback.
 	K2_OnGiveAbility();
 }
 
@@ -309,7 +203,7 @@ void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo*
 {
 	Super::OnRemoveAbility(ActorInfo, Spec);
 
-	// Optional blueprint implementation of this callback.
+	// Trigger the blueprint-exposed version of this callback.
 	K2_OnRemoveAbility();
 }
 
@@ -349,4 +243,35 @@ FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const 
 	check(CrashEffectContext);
 
 	return OutEffectContextHandle;
+}
+
+AController* UCrashGameplayAbilityBase::GetControllerFromActorInfo() const
+{
+	if (CurrentActorInfo)
+	{
+		// Try to get the owning actor's player controller.
+		if (AController* PC = CurrentActorInfo->PlayerController.Get())
+		{
+			return PC;
+		}
+
+		// If the owning actor's player controller isn't found, look for a controller anywhere in the owner chain.
+		AActor* TestActor = CurrentActorInfo->OwnerActor.Get();
+		while (TestActor)
+		{
+			if (AController* C = Cast<AController>(TestActor))
+			{
+				return C;
+			}
+
+			if (APawn* Pawn = Cast<APawn>(TestActor))
+			{
+				return Pawn->GetController();
+			}
+
+			TestActor = TestActor->GetOwner();
+		}
+	}
+
+	return nullptr;
 }
