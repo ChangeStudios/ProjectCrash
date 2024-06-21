@@ -6,8 +6,8 @@
 #include "CommonNumericTextBlock.h"
 #include "TeamWidget.h"
 #include "Components/DynamicEntryBox.h"
-#include "GameFramework/GameModes/Game/CrashGameMode.h"
-#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
+#include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
 #include "Player/PlayerStates/CrashPlayerState.h"
@@ -18,7 +18,7 @@ void UGameModeInfoBase::NativeConstruct()
 
 	// Cache the game state.
 	AGameStateBase* GS = UGameplayStatics::GetGameState(GetOwningPlayer());
-	CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
+	CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
 
 	if (CrashGS)
 	{

@@ -3,8 +3,8 @@
 
 #include "Player/PlayerControllers/CrashPlayerController.h"
 
-#include "GameFramework/GameModes/Data/CrashGameModeData.h"
-#include "GameFramework/GameStates/CrashGameState.h"
+#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Kismet/GameplayStatics.h"
 
 void ACrashPlayerController::BeginPlay()
@@ -12,7 +12,7 @@ void ACrashPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	AGameStateBase* GS = UGameplayStatics::GetGameState(this);
-	if (ACrashGameState* CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr)
+	if (ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr)
 	{
 		/* If the game mode data is already valid (i.e. this is a listen server's player), immediately initialize this
 		 * player's UI. */

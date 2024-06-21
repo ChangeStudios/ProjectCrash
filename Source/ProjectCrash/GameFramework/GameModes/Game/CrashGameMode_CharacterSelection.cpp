@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich 2024.
 
 
-#include "GameFramework/GameModes/PreGame/CrashGameMode_CharacterSelection.h"
+#include "GameFramework/GameModes/Game/CrashGameMode_CharacterSelection.h"
 
 #include "EngineUtils.h"
 

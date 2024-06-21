@@ -8,7 +8,7 @@
 
 class UTeamWidget;
 class UGameModePlayerWidget;
-class ACrashGameState;
+class ACrashGameState_DEP;
 class UDynamicEntryBox;
 class UCommonNumericTextBlock;
 
@@ -104,5 +104,5 @@ protected:
 
 	// Game state used for this widget's information, cached for convenience.
 	UPROPERTY()
-	TObjectPtr<ACrashGameState> CrashGS;
+	TObjectPtr<ACrashGameState_DEP> CrashGS;
 };

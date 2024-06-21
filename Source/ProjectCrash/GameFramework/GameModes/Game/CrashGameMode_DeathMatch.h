@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModes/Game/CrashGameMode.h"
+#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
 #include "CrashGameMode_DeathMatch.generated.h"
 
 /**
@@ -11,7 +11,7 @@
  * This game mode works for any team size, including one player per team (i.e. free-for-all).
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameMode_DeathMatch : public ACrashGameMode
+class PROJECTCRASH_API ACrashGameMode_DeathMatch : public ACrashGameMode_DEP
 {
 	GENERATED_BODY()
 

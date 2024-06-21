@@ -4,7 +4,7 @@
 #include "Characters/NPCBase.h"
 
 #include "AbilitySystemLog.h"
-#include "NPCData.h"
+#include "Data/NPCData.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/Components/AbilitySystemExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"

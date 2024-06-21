@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
-#include "Characters/ChallengerSkinData.h"
+#include "Characters/Data/ChallengerSkinData.h"
 #include "Engine/DataAsset.h"
 #include "EquipmentSetDefinition.generated.h"
 
