@@ -100,7 +100,7 @@ void ACrashGameMode_DEP::PostLogin(APlayerController* NewPlayer)
 	{
 		// TODO: Override this for custom games, where teams are decided before the game begins.
 		const FCrashTeamID NewTeam = ChooseTeam(CrashPS);
-		UE_LOG(LogTemp, Error, TEXT("Assigned player to [%i]"), NewTeam);
+		// UE_LOG(LogTemp, Error, TEXT("Assigned player to [%i]"), NewTeam);
 		CrashPS->SetTeamID(NewTeam);
 	}
 

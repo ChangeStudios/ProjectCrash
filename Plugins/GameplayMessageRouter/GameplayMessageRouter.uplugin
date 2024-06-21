@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Gameplay Message Subsystem",
-	"Description": "A subsystem that provides a broadcaster-listener message system for quickly broadcasting events, with payloads, to any active listeners.",
+	"Description": "A subsystem that allows registering for and sending messages between unconnected gameplay objects.",
 	"Category": "Gameplay",
 	"CreatedBy": "Epic Games, Inc.",
 	"CreatedByURL": "http://epicgames.com",

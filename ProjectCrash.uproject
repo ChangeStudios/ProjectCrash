@@ -9,20 +9,24 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"EnhancedInput",
-				"Engine",
-				"GameplayAbilities",
-				"CommonUI",
-				"UMG",
-				"CoreUObject",
-				"OnlineSubsystemUtils",
-				"GameplayTags",
-				"PhysicsCore",
-				"CommonGame"
+				"DeveloperSettings",
+				"Engine"
 			]
 		}
 	],
 	"Plugins": [
+		{
+			"Name": "AudioModulation",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
 		{
 			"Name": "ModelingToolsEditorMode",
 			"Enabled": true,
@@ -31,30 +35,7 @@
 			]
 		},
 		{
-			"Name": "GameplayAbilities",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayMessageRouter",
-			"Enabled": true
-		},
-		{
-			"Name": "SkeletalMeshModelingTools",
-			"Enabled": true
-		},
-		{
-			"Name": "CommonUI",
-			"Enabled": true
-		},
-		{
-			"Name": "WinDualShock",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Win64"
-			]
-		},
-		{
-			"Name": "OnlineSubsystemEOS",
+			"Name": "OnlineFramework",
 			"Enabled": true
 		},
 		{
@@ -66,15 +47,19 @@
 			"Enabled": true
 		},
 		{
-			"Name": "OnlineFramework",
-			"Enabled": true
-		},
-		{
 			"Name": "OnlineServicesOSSAdapter",
 			"Enabled": true
 		},
 		{
+			"Name": "OnlineSubsystemEOS",
+			"Enabled": true
+		},
+		{
 			"Name": "OnlineSubsystemSteam",
+			"Enabled": true
+		},
+		{
+			"Name": "SkeletalMeshModelingTools",
 			"Enabled": true
 		},
 		{
@@ -86,39 +71,15 @@
 			"Enabled": true
 		},
 		{
-			"Name": "AudioModulation",
-			"Enabled": true
-		},
-		{
-			"Name": "FlatNodes",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/b719437f3fb54c259b34227363df8cab"
-		},
-		{
-			"Name": "ElectronicNodes",
+			"Name": "WinDualShock",
 			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
-		},
-		{
-			"Name": "DarkerNodes",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b3441f0228a40ec9ca986489a5bd682"
-		},
-		{
-			"Name": "ModularGameplay",
-			"Enabled": true
-		},
-		{
-			"Name": "GameFeatures",
-			"Enabled": true
-		},
-		{
-			"Name": "AbilitySystemGameFeatureActions",
-			"Enabled": true
+			"SupportedTargetPlatforms": [
+				"Win64"
+			]
 		}
 	],
 	"TargetPlatforms": [
-		"Windows",
-		"PS5"
+		"PS5",
+		"Windows"
 	]
 }
