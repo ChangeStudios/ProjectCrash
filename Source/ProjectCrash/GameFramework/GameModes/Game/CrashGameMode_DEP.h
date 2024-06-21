@@ -1,8 +1,8 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
-#include "GameFramework/Data/CrashGameModeData.h"
+#include "GameFramework/GameModes/CrashGameModeData_DEP.h"
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
@@ -10,7 +10,7 @@
 #include "GameFramework/Teams/CrashTeams.h"
 #include "CrashGameMode_DEP.generated.h"
 
-class ACrashPlayerState;
+class ACrashPlayerState_DEP;
 class APlayerStart;
 class APriorityPlayerStart;
 class UCrashAbilitySystemComponent;
@@ -71,7 +71,7 @@ public:
 
 	/** Returns which team the given player should be assigned to, according to the game mode rules and current
 	 * state. */
-	virtual FCrashTeamID ChooseTeam(ACrashPlayerState* CrashPS);
+	virtual FCrashTeamID ChooseTeam(ACrashPlayerState_DEP* CrashPS);
 
 	/** Spawns and initializes new players (enables input, draws the game HUD, etc.). */
 	virtual void RestartPlayer(AController* NewPlayer) override;
@@ -161,13 +161,13 @@ public:
 
 	/** Getter for GameModeData. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game|Data", Meta = (ToolTip = "Data defining various properties of this game mode."))
-	UCrashGameModeData* GetGameModeData() const { return GameModeData.Get(); }
+	UCrashGameModeData_DEP* GetGameModeData() const { return GameModeData.Get(); }
 
 protected:
 
 	/** Data defining various properties of this game mode, such as players' default starting lives. */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Game Mode Data", Meta = (ToolTip = "Data defining various properties of this game mode, such as players' default starting lives."))
-	TObjectPtr<UCrashGameModeData> GameModeData;
+	TObjectPtr<UCrashGameModeData_DEP> GameModeData;
 
 
 

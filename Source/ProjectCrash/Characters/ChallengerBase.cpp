@@ -1,10 +1,10 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "ChallengerBase.h"
 
 #include "AbilitySystemLog.h"
-#include "Data/ChallengerData.h"
+#include "Data/ChallengerData_DEP.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "CrashGameplayTags.h"
@@ -18,15 +18,15 @@
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/GlobalGameData.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "Input/CrashInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 AChallengerBase::AChallengerBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
@@ -127,7 +127,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	// Initialize the ASC on the server.
-	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+	ACrashPlayerState_DEP* CrashPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	if (!ensure(CrashPS))
 	{
@@ -147,7 +147,7 @@ void AChallengerBase::PossessedBy(AController* NewController)
 	}
 
 	// Update this character with the new player's current skin.
-	InitCharacterSkin(CrashPS->GetCurrentSkin());
+	// InitCharacterSkin(CrashPS->GetCurrentSkin());
 
 	// Update this character's fresnel when a new controller possesses it on the server.
 	UpdateTeamFresnel();
@@ -158,7 +158,7 @@ void AChallengerBase::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	// If this character gets a new player state, initialize its ASC on the client.
-	ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>();
+	ACrashPlayerState_DEP* CrashPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	if (!CrashPS)
 	{
@@ -178,7 +178,7 @@ void AChallengerBase::OnRep_PlayerState()
 	}
 
 	// Update this character with the new player's current skin.
-	InitCharacterSkin(CrashPS->GetCurrentSkin());
+	// InitCharacterSkin(CrashPS->GetCurrentSkin());
 
 	// Update this character's fresnel when a new PS possesses it.
 	UpdateTeamFresnel();
@@ -203,7 +203,7 @@ void AChallengerBase::InitializeGameplayTags()
 	}
 }
 
-void AChallengerBase::InitCharacterSkin(UChallengerSkinData* Skin)
+void AChallengerBase::InitCharacterSkin(const UChallengerSkinData* Skin)
 {
 	ensure(Skin);
 
@@ -300,15 +300,15 @@ void AChallengerBase::UpdateTeamFresnel()
 	const UGlobalGameData* GlobalGameData = &UCrashAssetManager::Get().GetGlobalGameData();
 	const AGameStateBase* GS = UGameplayStatics::GetGameState(this);
 	const ACrashGameState_DEP* CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
-	const UCrashGameModeData* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
+	const UCrashGameModeData_DEP* GMData = CrashGS ? CrashGS->GetGameModeData() : nullptr;
 
 	// Get this character's player state.
-	const ACrashPlayerState* CharacterPS = GetPlayerState<ACrashPlayerState>();
+	const ACrashPlayerState_DEP* CharacterPS = GetPlayerState<ACrashPlayerState_DEP>();
 
 	// Get the local player's player state to check attitude with this character.
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	APlayerController* LocalPC = LocalPlayer ? LocalPlayer->PlayerController.Get() : Cast<APlayerController>(GetController());
-	ACrashPlayerController* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController>(LocalPC) : nullptr;
+	ACrashPlayerController_DEP* LocalCrashPC = LocalPC ? Cast<ACrashPlayerController_DEP>(LocalPC) : nullptr;
 	const APlayerState* LocalPS = LocalPC ? LocalPC->GetPlayerState<APlayerState>() : nullptr;
 
 	if (CharacterPS && LocalPS && GlobalGameData && GMData)
@@ -327,7 +327,7 @@ void AChallengerBase::UpdateTeamFresnel()
 		LocalCrashPC->PlayerStateChangedDelegate.RemoveAll(this);
 
 		// If the local player is on a team (i.e. not spectating), use their team to determine this character's fresnel.
-		if (const ACrashPlayerState* LocalCrashPS = Cast<ACrashPlayerState>(LocalPS))
+		if (const ACrashPlayerState_DEP* LocalCrashPS = Cast<ACrashPlayerState_DEP>(LocalPS))
 		{
 			
 			switch (FCrashTeamID::GetAttitude(CharacterPS, LocalPS))
@@ -442,7 +442,7 @@ void AChallengerBase::OnAbilitySystemInitialized()
 	}
 
 	// Initialize this character's attribute sets.
-	HealthComponent->InitializeWithAbilitySystem(CrashASC, ChallengerData->HealthAttributeBaseValues);
+	HealthComponent->InitializeWithAbilitySystem(CrashASC);
 
 	// Bind death events.
 	CrashASC->RegisterGameplayTagEvent(CrashGameplayTags::TAG_State_Dying, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AChallengerBase::HandleDeathStateChanged);
@@ -499,7 +499,7 @@ void AChallengerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	// Add each mapping context to the local player with its specified priority.
 	for (const FPrioritizedInputMappingContext& PrioritizedContext : ChallengerData->DefaultInputMappings)
 	{
-		Subsystem->AddMappingContext(PrioritizedContext.MappingContext, PrioritizedContext.Priority);
+		Subsystem->AddMappingContext(PrioritizedContext.MappingContext.Get(), PrioritizedContext.Priority);
 	}
 
 	/* Bind the native input actions from each default native action mapping to handler functions. */

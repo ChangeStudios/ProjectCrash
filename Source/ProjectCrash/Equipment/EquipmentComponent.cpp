@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "Equipment/EquipmentComponent.h"
@@ -8,11 +8,11 @@
 #include "Animation/ChallengerAnimInstanceBase.h"
 #include "EquipmentPieceActor.h"
 #include "CrashGameplayTags.h"
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 UEquipmentComponent::UEquipmentComponent() :
 	EquippedSetHandle(FEquipmentSetHandle()),
@@ -171,19 +171,19 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 	// Try to get the equipping actor as characters for character-specific equipment logic (e.g. updating animations).
 	ACharacter* EquippingChar = Cast<ACharacter>(Owner);
-	ACrashCharacterBase* EquippingCrashChar = Cast<ACrashCharacterBase>(Owner);
+	ACrashCharacterBase_DEP* EquippingCrashChar = Cast<ACrashCharacterBase_DEP>(Owner);
 
 	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
 	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;
 
 	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
 	{
-		ACrashPlayerState* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState>();
-		UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-		if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
-		{
-			EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
-		}
+		ACrashPlayerState_DEP* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState_DEP>();
+		// const UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+		// if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
+		// {
+		// 	EquippingSetSkinData = *ChallengerSkin->EquipmentSetSkins.Find(SetToEquip->SetID);
+		// }
 	}
 
 	/* We should always have skin data for an equipment set, either from a character skin or from the set's default

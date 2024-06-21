@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "AbilityTask_PlayDualMontageAndWait.h"
@@ -9,7 +9,7 @@
 #include "AbilitySystemLog.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 
 
 void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
@@ -163,7 +163,7 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 
 		// Try to retrieve the first- and third-person animation instances via the ACrashCharacterBase interface.
 		AActor* Avatar = Ability->GetCurrentActorInfo()->AvatarActor.Get();
-		if (ACrashCharacterBase* CrashAvatar = Avatar ? Cast<ACrashCharacterBase>(Avatar) : nullptr)
+		if (ACrashCharacterBase_DEP* CrashAvatar = Avatar ? Cast<ACrashCharacterBase_DEP>(Avatar) : nullptr)
 		{
 			const USkeletalMeshComponent* FPPMesh = CrashAvatar->GetFirstPersonMesh();
 			FirstPersonAnimInstance = FPPMesh ? FPPMesh->GetAnimInstance() : nullptr;
@@ -267,7 +267,7 @@ bool UAbilityTask_PlayDualMontageAndWait::StopPlayingMontage()
 
 	// Try to retrieve the first- and third-person animation instances via the ACrashCharacterBase interface.
 	const AActor* Avatar = Ability->GetCurrentActorInfo()->AvatarActor.Get();
-	const ACrashCharacterBase* CrashAvatar = Avatar ? Cast<ACrashCharacterBase>(Avatar) : nullptr;
+	const ACrashCharacterBase_DEP* CrashAvatar = Avatar ? Cast<ACrashCharacterBase_DEP>(Avatar) : nullptr;
 	if (CrashAvatar)
 	{
 		FirstPersonAnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;

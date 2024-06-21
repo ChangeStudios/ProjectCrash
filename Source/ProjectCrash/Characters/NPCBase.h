@@ -1,10 +1,10 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CrashCharacterBase.h"
+#include "CrashCharacterBase_DEP.h"
 #include "NPCBase.generated.h"
 
 class UAbilitySystemExtensionComponent;
@@ -18,7 +18,7 @@ class UNPCData;
  * taking damage, getting gameplay effects, etc.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API ANPCBase : public ACrashCharacterBase, public IAbilitySystemInterface
+class PROJECTCRASH_API ANPCBase : public ACrashCharacterBase_DEP, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 

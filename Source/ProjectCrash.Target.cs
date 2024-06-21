@@ -1,15 +1,22 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Samuel Reitich. All rights reserved.
 
 using UnrealBuildTool;
-using System.Collections.Generic;
 
 public class ProjectCrashTarget : TargetRules
 {
 	public ProjectCrashTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V5;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
+
 		ExtraModuleNames.Add("ProjectCrash");
+
+		ProjectCrashTarget.ApplySharedTargetSettings(this);
+	}
+
+	/** Applies settings used by all targets. */
+	internal static void ApplySharedTargetSettings(TargetRules Target)
+	{
+		Target.DefaultBuildSettings = BuildSettingsVersion.V5;
+		Target.IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
@@ -34,7 +34,7 @@ void UCrashCharacterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (ACrashCharacterBase* OwningChar = Cast<ACrashCharacterBase>(GetOwner()))
+	if (ACrashCharacterBase_DEP* OwningChar = Cast<ACrashCharacterBase_DEP>(GetOwner()))
 	{
 		// Bind the OnJumped callback to when this character jumps.
 		OwningChar->JumpedDelegate.AddDynamic(this, &UCrashCharacterMovementComponent::OnJumped);

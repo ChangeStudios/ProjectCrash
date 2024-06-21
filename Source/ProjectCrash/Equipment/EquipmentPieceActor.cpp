@@ -1,11 +1,11 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "Equipment/EquipmentPieceActor.h"
 
 #include "AbilitySystemGlobals.h"
 #include "CrashGameplayTags.h"
-#include "Characters/CrashCharacterBase.h"
+#include "Characters/CrashCharacterBase_DEP.h"
 #include "GameFramework/CrashLogging.h"
 #include "Kismet/KismetMaterialLibrary.h"
 
@@ -34,7 +34,7 @@ void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEqui
     Perspective = InEquipmentPerspective;
 
 	// If this equipment actor's owner can change perspectives, listen for those changes.
-	ACrashCharacterBase* CrashChar = Cast<ACrashCharacterBase>(GetOwner());
+	ACrashCharacterBase_DEP* CrashChar = Cast<ACrashCharacterBase_DEP>(GetOwner());
     if (CrashChar)
     {
 	    CrashChar->PerspectiveChangedDelegate.AddDynamic(this, &AEquipmentPieceActor::OnPerspectiveChanged);

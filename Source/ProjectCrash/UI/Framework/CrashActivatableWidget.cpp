@@ -1,11 +1,11 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "UI/Framework/CrashActivatableWidget.h"
 
 #include "CommonInputSubsystem.h"
 #include "Animation/WidgetAnimation.h"
-#include "Player/PlayerControllers/CrashPlayerControllerBase.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 
 UCrashActivatableWidget::UCrashActivatableWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -63,7 +63,7 @@ void UCrashActivatableWidget::NativeOnActivated()
 	}
 }
 
-ACrashPlayerControllerBase* UCrashActivatableWidget::GetOwningCrashPlayer() const
+ACrashPlayerController_DEP* UCrashActivatableWidget::GetOwningCrashPlayer() const
 {
-	return Cast<ACrashPlayerControllerBase>(GetOwningPlayer());
+	return Cast<ACrashPlayerController_DEP>(GetOwningPlayer());
 }

@@ -1,10 +1,10 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "CrashCharacterBase.h"
+#include "CrashCharacterBase_DEP.h"
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
@@ -17,7 +17,7 @@ class UEquipmentComponent;
 class UHealthComponent;
 class UAbilitySystemExtensionComponent;
 class UCameraComponent;
-class UChallengerData;
+class UChallengerData_DEP;
 class UCrashAbilitySystemComponent;
 class UCrashInputActionMapping;
 class UCrashInputComponent;
@@ -32,7 +32,7 @@ DECLARE_MULTICAST_DELEGATE(FInputComponentInitializedSignature);
  * such as a first-person camera, input, and an interface with the ability system.
  */
 UCLASS(Abstract, Meta = (PrioritizeCategories = "Challenger Data"))
-class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase, public IAbilitySystemInterface
+class PROJECTCRASH_API AChallengerBase : public ACrashCharacterBase_DEP, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -65,7 +65,7 @@ public:
 	virtual void InitializeGameplayTags();
 
 	/** Initializes this character with a given character skin. */
-	virtual void InitCharacterSkin(UChallengerSkinData* Skin);
+	virtual void InitCharacterSkin(const UChallengerSkinData* Skin);
 
 
 
@@ -109,14 +109,14 @@ public:
 
 	/** Getter for ChallengerData. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Character|Challenger|Data", Meta = (ToolTip = "Data used to define the default properties of a challenger."))
-	UChallengerData* GetChallengerData() const { return ChallengerData; }
+	UChallengerData_DEP* GetChallengerData() const { return ChallengerData; }
 
 protected:
 
 	/** Data used to define the default properties of this challenger, such as its default abilities and input
 	 * mappings. */
 	UPROPERTY(EditDefaultsOnly, Category = "Challenger Data")
-	TObjectPtr<UChallengerData> ChallengerData;
+	TObjectPtr<UChallengerData_DEP> ChallengerData;
 
 
 

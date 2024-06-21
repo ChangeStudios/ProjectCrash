@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
@@ -13,6 +13,8 @@ class UCrashInputActionMapping;
 
 /**
  * An input component that uses input action mappings to bind handler functions or abilities to input actions.
+ *
+ * // TODO: Route input activation through ASC to batch ability activation by processing input from the same frame together.
  */
 UCLASS(Config = Input)
 class PROJECTCRASH_API UCrashInputComponent : public UEnhancedInputComponent
@@ -44,6 +46,9 @@ public:
 	 * actions to handler functions that attempt to activate the corresponding ability by tag. */
 	void BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping);
 
+	/** Unbinds all ability actions in the given mapping, if the given mapping is currently bound. */
+	void RemoveAbilityInputActions(const UCrashInputActionMapping* ActionMapping);
+
 private:
 
 	/** Handler function called when an ability input action is pressed. Activates abilities with the matching input
@@ -60,7 +65,7 @@ private:
 public:
 
 	/** Returns the action mappings currently bound by this input component. */
-	TArray<const UCrashInputActionMapping*> GetCurrentActionMappings() const { return CurrentActionMappings; };
+	TArray<const UCrashInputActionMapping*> GetCurrentActionMappings() const { return CurrentActionMappings; }
 
 protected:
 

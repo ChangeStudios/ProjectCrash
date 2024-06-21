@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "CrashGameplayAbilityBase.h"
@@ -16,7 +16,7 @@
 #include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/PlayerStates/CrashPlayerState.h"
+#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -39,20 +39,20 @@ FGameplayTag UCrashGameplayAbilityBase::GetAbilityCueFromSkin(FGameplayTag Defau
 	const FGameplayTag Parent = DefaultCue.RequestDirectParent();
 
 	// Retrieve the current skin from this ability's owner.
-	const ACrashPlayerState* CrashPS = Cast<ACrashPlayerState>(CurrentActorInfo->OwnerActor);
-	const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
-
-	// Find a matching ability cue.
-	if (SkinData)
-	{
-		for (FGameplayTag AbilityCue : SkinData->AbilityCues)
-		{
-			if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
-			{
-				return AbilityCue;
-			}
-		}
-	}
+	const ACrashPlayerState_DEP* CrashPS = Cast<ACrashPlayerState_DEP>(CurrentActorInfo->OwnerActor);
+	// const UChallengerSkinData* SkinData = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
+	//
+	// // Find a matching ability cue.
+	// if (SkinData)
+	// {
+	// 	for (FGameplayTag AbilityCue : SkinData->AbilityCues)
+	// 	{
+	// 		if (AbilityCue.RequestDirectParent().MatchesTag(Parent))
+	// 		{
+	// 			return AbilityCue;
+	// 		}
+	// 	}
+	// }
 
 	// If a matching cue can't be found, return the default cue, which was given.
 	return DefaultCue;

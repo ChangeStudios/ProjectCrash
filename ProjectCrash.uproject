@@ -10,7 +10,20 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"DeveloperSettings",
-				"Engine"
+				"Engine",
+				"ModularGameplayActors",
+				"CommonGame",
+				"ModularGameplay",
+				"GameFeatures",
+				"CoreUObject"
+			]
+		},
+		{
+			"Name": "ProjectCrashEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"UnrealEd"
 			]
 		}
 	],
@@ -76,6 +89,40 @@
 			"SupportedTargetPlatforms": [
 				"Win64"
 			]
+		},
+		{
+			"Name": "DarkerNodes",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b3441f0228a40ec9ca986489a5bd682"
+		},
+		{
+			"Name": "ElectronicNodes",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
+		},
+		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplayActors",
+			"Enabled": true
+		},
+		{
+			"Name": "UIExtension",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
+		},
+		{
+			"Name": "AssetReferenceRestrictions",
+			"Enabled": true
+		},
+		{
+			"Name": "WinterHolidaysEvent",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

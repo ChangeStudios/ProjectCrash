@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "UI/Foundation/AbilitySystemWidget.h"
@@ -7,13 +7,13 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/PlayerControllers/CrashPlayerController.h"
+#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 
 void UAbilitySystemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (ACrashPlayerControllerBase* CrashPC = GetOwningCrashPlayer())
+	if (ACrashPlayerController_DEP* CrashPC = GetOwningCrashPlayer())
 	{
 		// If this widget was created for a player with a valid player state, register with it immediately.
 		if (CrashPC && CrashPC->GetPlayerState<APlayerState>())

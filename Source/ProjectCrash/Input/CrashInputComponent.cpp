@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 
 #include "CrashInputComponent.h"
@@ -11,6 +11,8 @@
 
 void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping)
 {
+	check(ActionMapping);
+
 	// Cache the new action mapping.
 	CurrentActionMappings.AddUnique(ActionMapping);
 
@@ -19,6 +21,27 @@ void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMappin
 	{
 		BindAction(AbilityInputAction.InputAction, ETriggerEvent::Triggered, this, &ThisClass::Input_AbilityInputTagPressed, AbilityInputAction.InputTag);
 		BindAction(AbilityInputAction.InputAction, ETriggerEvent::Completed, this, &ThisClass::Input_AbilityInputTagReleased, AbilityInputAction.InputTag);
+	}
+}
+
+void UCrashInputComponent::RemoveAbilityInputActions(const UCrashInputActionMapping* ActionMapping)
+{
+	check(ActionMapping);
+
+	// Only unbind the given actions if they are currently bound.
+	if (ensureAlwaysMsgf(CurrentActionMappings.Contains(ActionMapping), TEXT("Attempted to unbind abilities in action mapping [%s] from pawn [%s], but the abilities are now bound."), *GetNameSafe(ActionMapping), *GetNameSafe(GetOwner())))
+	{
+		// Unbind each ability input action in the given mapping.
+		for (const TUniquePtr<FEnhancedInputActionEventBinding>& ActionBinding : GetActionEventBindings())
+		{
+			if (ActionMapping->AbilityInputActions.Contains(ActionBinding->GetAction()))
+			{
+				RemoveBinding(*ActionBinding.Get());
+			}
+		}
+
+		// Remove the action mapping, since it's no longer bound.
+		CurrentActionMappings.Remove(ActionMapping);
 	}
 }
 

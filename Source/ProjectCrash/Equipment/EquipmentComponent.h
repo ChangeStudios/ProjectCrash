@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
@@ -60,7 +60,7 @@ public:
 	 * Unequips the current temporarily equipped set and equips EquippedSet on the server. This should NOT be called
 	 * when switching temporarily equipped sets.
 	 *
-	 * @returns		Whether a set was unequipped. Is false if this function is called when there isn't a set
+	 * @return		Whether a set was unequipped. Is false if this function is called when there isn't a set
 	 *				temporarily equipped.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")

@@ -1,4 +1,4 @@
-// Copyright Samuel Reitich 2024.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
@@ -19,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChangedSignature,
 /**
  * Component used by actors with an ASC to interface with health attributes. This compartmentalizes health functionality
  * into a unique component, while also providing an interface to actors that need to be aware of health events, but may
- * not have the health attribute set itself; e.g. the avatar of an ASC that's held a the player state.
+ * not have the health attribute set itself; e.g. the avatar of an ASC that's owned by the player state.
  */
 UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UHealthComponent : public UActorComponent
@@ -41,7 +41,7 @@ public:
 
 	// Initialize the component using an ability system component.
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
-	void InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC, UHealthAttributeBaseValues* InAttributeBaseValues);
+	void InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC);
 
 	// Uninitialize the component, clearing any references to the ability system.
 	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
@@ -111,19 +111,6 @@ public:
 	/** Delegate broadcast when the MaxHealth attribute's value changes. */
 	UPROPERTY(BlueprintAssignable)
 	FHealth_AttributeChangedSignature MaxHealthChangedDelegate;
-
-	/** Delegate broadcast when the Health attribute reaches 0. */
-	FHealth_AttributeEventSignature OutOfHealthDelegate;
-
-
-
-	// Data.
-
-protected:
-
-	/** The default values to which this set's attributes are initialized. Set when this component is initialized with
-	 * an ASC. */
-	TSoftObjectPtr<UHealthAttributeBaseValues> AttributeBaseValues;
 
 
 

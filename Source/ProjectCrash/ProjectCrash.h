@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Samuel Reitich. All rights reserved.
 
 #pragma once
 
