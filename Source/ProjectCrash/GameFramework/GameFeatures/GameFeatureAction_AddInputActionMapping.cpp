@@ -140,8 +140,8 @@ void UGameFeatureAction_AddInputActionMapping::RemoveInputMapping(APawn* Pawn, F
 
 	if (ULocalPlayer* LP = PC ? PC->GetLocalPlayer() : nullptr)
 	{
-		// Ensure the player is using the enhanced input system.
-		if (ensureAlwaysMsgf(LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(), TEXT("Tried to remove action mappings to local player, but the player is not using the enhanced input system. Input mappings cannot be removed.")))
+		// Make sure the player is using the enhanced input system.
+		if (LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			// Use the input handler component to remove this action's added action mappings.
 			if (UInputHandlerComponentBase* InputHandlerComponent = Pawn->FindComponentByClass<UInputHandlerComponentBase>())
