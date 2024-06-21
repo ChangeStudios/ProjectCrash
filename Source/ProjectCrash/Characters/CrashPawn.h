@@ -10,7 +10,7 @@ class UPawnExtensionComponent;
 
 /**
  * A simple pawn that provides functionality with a pawn extension component. Useful for non-character pawns that still
- * need to handle things like input or cameras.
+ * need to handle things like input or cameras. Can be possessed by players or AI.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashPawn : public AModularPawn

@@ -5,13 +5,12 @@
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AIController.h"
-#include "GameFramework/CrashLogging.h"
 
 #if WITH_EDITOR
-#include "Misc/UObjectToken.h"
+#include "Misc/DataValidation.h"
 #endif	// WITH_EDITOR
 
-#if WITH_EDITOR
+#define LOCTEXT_NAMESPACE "CharacterWithAbilities"
 
 ACharacterWithAbilities::ACharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -24,59 +23,43 @@ ACharacterWithAbilities::ACharacterWithAbilities(const FObjectInitializer& Objec
 	NetUpdateFrequency = 100.0f;
 }
 
-void ACharacterWithAbilities::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+UAbilitySystemComponent* ACharacterWithAbilities::GetAbilitySystemComponent() const
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+	// Use this character's self-contained ASC.
+	return AbilitySystemComponent;
+}
 
-	// Make sure this character's AI controller doesn't request a player state.
+#if WITH_EDITOR
+EDataValidationResult ACharacterWithAbilities::IsDataValid(FDataValidationContext& Context) const
+{
+	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
+
+	// If this character has a controller, make sure it won't create a player state.
 	if (AIControllerClass)
 	{
-		// This character cannot be AI-controlled by a player controller. This would create a player state for it.
+		// This character cannot be controlled by a player controller.
 		if (AIControllerClass->IsChildOf(APlayerController::StaticClass()))
 		{
-			UE_LOG(LogCrash, Error, TEXT("Character [%s] has player controller [%s] set as its AI controller. This will create a player state for this character, which will interfere with its self-contained ASC."),
-				*GetNameSafe(this),
-				*GetNameSafe(AIControllerClass));
-
-			static const FText Message = NSLOCTEXT("CharacterWithAbilities", "PlayerStateRequestedError", "uses a player controller as its AI controller class. This means it will be given a player state. This character possesses its own ASC and will not function properly with a player state.");
-			static const FName CharacterWithAbilitiesMessageLogName = TEXT("CharacterWithAbilities");
-
-			FMessageLog(CharacterWithAbilitiesMessageLogName).Error()
-				->AddToken(FUObjectToken::Create(this, FText::FromString(GetNameSafe(this))))
-				->AddToken(FTextToken::Create(Message));
-
-			FMessageLog(CharacterWithAbilitiesMessageLogName).Open();
+			Result = EDataValidationResult::Invalid;
+			Context.AddError(LOCTEXT("CharacterWillHavePlayerState", "Character uses a player controller. This will spawn a player state for this character, which will interfere with its self-contained ASC. Use a non-player controller instead."));
 		}
 
-		// This character cannot be AI-controlled by a controller that wants a player state.
+		// This character cannot be controlled by an AI controller that wants a player state.
 		else if (AIControllerClass->IsChildOf(AAIController::StaticClass()))
 		{
 			if (AAIController* ControllerCDO = AIControllerClass->GetDefaultObject<AAIController>())
 			{
 				if (ControllerCDO->bWantsPlayerState)
 				{
-					UE_LOG(LogCrash, Error, TEXT("Character [%s] has controller [%s] set as its AI controller, which wants a player state. This character cannot use a player state, as it will interfere with its self-contained ASC."),
-						*GetNameSafe(this),
-						*GetNameSafe(AIControllerClass));
-
-					static const FText Message = NSLOCTEXT("CharacterWithAbilities", "PlayerStateRequestedError", "uses an AI controller that wants a player state. This character possesses its own ASC and will not function properly with a player state.");
-					static const FName CharacterWithAbilitiesMessageLogName = TEXT("CharacterWithAbilities");
-
-					FMessageLog(CharacterWithAbilitiesMessageLogName).Error()
-						->AddToken(FUObjectToken::Create(this, FText::FromString(GetNameSafe(this))))
-						->AddToken(FTextToken::Create(Message));
-
-					FMessageLog(CharacterWithAbilitiesMessageLogName).Open();
+					Result = EDataValidationResult::Invalid;
+					Context.AddError(FText::Format(LOCTEXT("CharacterWillHavePlayerState", "Character uses controller {0}, which wants a player state. This will interfere with this character's self-contained ASC. Use an AI controller that does not want a player state instead."), FText::FromString(GetNameSafe(AIControllerClass))));
 				}
 			}
 		}
 	}
-}
 
-#endif // WITH_EDITOR
-
-UAbilitySystemComponent* ACharacterWithAbilities::GetAbilitySystemComponent() const
-{
-	// Use this character's self-contained ASC.
-	return AbilitySystemComponent;
+	return Result;
 }
+#endif
+
+#undef LOCTEXT_NAMESPACE
