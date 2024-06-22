@@ -7,7 +7,7 @@
 #include "AbilitySystemLog.h"
 #include "GameplayCueManager.h"
 #include "CrashGameplayTags.h"
-#include "AbilitySystem/CrashGlobalAbilitySystem.h"
+#include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
 #include "Characters/CrashCharacterBase_DEP.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
@@ -23,7 +23,7 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
 	// Register this ASC with the global ability system.
-	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
+	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
 		GlobalAbilitySystem->RegisterASC(this);
 	}
@@ -37,7 +37,7 @@ void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayRea
 	Super::EndPlay(EndPlayReason);
 
 	// Unregister this ASC from the global ability system.
-	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
+	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
 		GlobalAbilitySystem->UnregisterASC(this);
 	}

@@ -4,10 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "CrashGameplayAbilityTypes.generated.h"
 
-struct PROJECTCRASH_API FCrashGameplayAbilityActorInfo : FGameplayAbilityActorInfo
+/**
+ * Actor info structure for this project. Adds separate first-person and third-person skeletal mesh component properties
+ * for avatars of the CrashCharacter type.
+ */
+USTRUCT(BlueprintType)
+struct PROJECTCRASH_API FCrashGameplayAbilityActorInfo : public FGameplayAbilityActorInfo
 {
-	/** Attempts to find the third-person mesh from the avatar actor if it's an ACrashCharacterBase. Otherwise, falls
-	 * back to any skeletal mesh component in the avatar actor. */
+	GENERATED_BODY()
+
+	FCrashGameplayAbilityActorInfo() {};
+
+	/** First-person mesh of the avatar actor. Often null. */
+	UPROPERTY(BlueprintReadOnly, Category = "ActorInfo")
+	TWeakObjectPtr<USkeletalMeshComponent> FirstPersonSkeletalMeshComponent;
+
+	/** Caches the first- and third-person meshes if the avatar is a CrashCharacter. Otherwise, tries to cache any
+	 * skeletal mesh component as SkeletalMeshComponent, and leaves the first-person component null. */
 	virtual void InitFromActor(AActor* OwnerActor, AActor* AvatarActor, UAbilitySystemComponent* InAbilitySystemComponent) override;
 };

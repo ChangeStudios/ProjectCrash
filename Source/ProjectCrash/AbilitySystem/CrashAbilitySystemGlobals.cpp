@@ -23,6 +23,6 @@ UCrashAbilitySystemComponent* UCrashAbilitySystemGlobals::GetCrashAbilitySystemC
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActor(Actor, LookForComponent);
 	UCrashAbilitySystemComponent* CrashASC = ASC ? Cast<UCrashAbilitySystemComponent>(ASC) : nullptr;
 
-	// Return nullptr even if an ASC was found if it's not the correct type.
+	// Return nullptr, even if an ASC was found, if it's not the correct type.
 	return CrashASC ? CrashASC : nullptr;
 }

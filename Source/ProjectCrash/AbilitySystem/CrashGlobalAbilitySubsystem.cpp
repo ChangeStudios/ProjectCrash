@@ -1,12 +1,14 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/CrashGlobalAbilitySystem.h"
+#include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
 
-#include "Abilities/GameplayAbility.h"
 #include "Components/CrashAbilitySystemComponent.h"
 
-void FGlobalGrantedAbilityList::GrantToASC(UCrashAbilitySystemComponent* ASC)
+/**
+ * FGloballyGrantedAbility
+ */
+void FGloballyGrantedAbility::GrantToASC(UCrashAbilitySystemComponent* ASC)
 {
 	// If this ability is already granted to the given ASC, remove it before granting it again.
 	if (Handles.Find(ASC))
@@ -23,7 +25,7 @@ void FGlobalGrantedAbilityList::GrantToASC(UCrashAbilitySystemComponent* ASC)
 	Handles.Add(ASC, AbilitySpecHandle);
 }
 
-void FGlobalGrantedAbilityList::RemoveFromASC(UCrashAbilitySystemComponent* ASC)
+void FGloballyGrantedAbility::RemoveFromASC(UCrashAbilitySystemComponent* ASC)
 {
 	// Retrieve the global ability's handle for the given ASC.
 	if (FGameplayAbilitySpecHandle* SpecHandle = Handles.Find(ASC))
@@ -35,16 +37,16 @@ void FGlobalGrantedAbilityList::RemoveFromASC(UCrashAbilitySystemComponent* ASC)
 }
 
 
-UCrashGlobalAbilitySystem::UCrashGlobalAbilitySystem()
-{
-}
 
-void UCrashGlobalAbilitySystem::GrantGlobalAbility(TSubclassOf<UGameplayAbility> Ability)
+/**
+ * UCrashGlobalAbilitySubsystem
+ */
+void UCrashGlobalAbilitySubsystem::GrantGlobalAbility(TSubclassOf<UGameplayAbility> Ability)
 {
 	if ((Ability.Get() != nullptr) && (!GrantedAbilities.Contains(Ability)))
 	{
 		// Create a new entry to cache the granted ability and its handles.
-		FGlobalGrantedAbilityList& Entry = GrantedAbilities.Add(Ability);
+		FGloballyGrantedAbility& Entry = GrantedAbilities.Add(Ability);
 		Entry.GrantedAbility = Ability;
 
 		// Grant the ability to each registered ASC.
@@ -55,14 +57,13 @@ void UCrashGlobalAbilitySystem::GrantGlobalAbility(TSubclassOf<UGameplayAbility>
 	}
 }
 
-void UCrashGlobalAbilitySystem::RemoveGlobalAbility(TSubclassOf<UGameplayAbility> Ability)
+void UCrashGlobalAbilitySubsystem::RemoveGlobalAbility(TSubclassOf<UGameplayAbility> Ability)
 {
 	if ((Ability.Get() != nullptr) && (GrantedAbilities.Contains(Ability)))
 	{
-		// Retrieve the ability list containing the handles of the granted ability.
-		FGlobalGrantedAbilityList& Entry = GrantedAbilities[Ability];
+		FGloballyGrantedAbility& Entry = GrantedAbilities[Ability];
 
-		// Remove the ability from each ASC to which it's currently registered.
+		// Remove the ability from each ASC to which it's currently granted.
 		for (auto& KVP : Entry.Handles)
 		{
 			if (KVP.Key != nullptr)
@@ -71,26 +72,26 @@ void UCrashGlobalAbilitySystem::RemoveGlobalAbility(TSubclassOf<UGameplayAbility
 			}
 		}
 
-		// Update the granted abilities list.
+		// Update the global ability entry.
 		GrantedAbilities.Remove(Ability);
 	}
 }
 
-void UCrashGlobalAbilitySystem::RegisterASC(UCrashAbilitySystemComponent* ASC)
+void UCrashGlobalAbilitySubsystem::RegisterASC(UCrashAbilitySystemComponent* ASC)
 {
 	check(ASC);
+
+	// Cache the new ASC.
+	RegisteredASCs.AddUnique(ASC);
 
 	// Grant each current global ability.
 	for (auto& Entry : GrantedAbilities)
 	{
 		Entry.Value.GrantToASC(ASC);
 	}
-
-	// Cache the new ASC.
-	RegisteredASCs.AddUnique(ASC);
 }
 
-void UCrashGlobalAbilitySystem::UnregisterASC(UCrashAbilitySystemComponent* ASC)
+void UCrashGlobalAbilitySubsystem::UnregisterASC(UCrashAbilitySystemComponent* ASC)
 {
 	check(ASC);
 
@@ -103,6 +104,6 @@ void UCrashGlobalAbilitySystem::UnregisterASC(UCrashAbilitySystemComponent* ASC)
 		}
 	}
 
-	// Clear references to the ASC.
+	// Clear the cached ASC.
 	RegisteredASCs.Remove(ASC);
 }

@@ -7,7 +7,7 @@
 #include "EngineUtils.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "CrashGameplayTags.h"
-#include "AbilitySystem/CrashGlobalAbilitySystem.h"
+#include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
 #include "AbilitySystem/Abilities/Generic/GA_Death.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Engine/PlayerStartPIE.h"
@@ -47,7 +47,7 @@ void ACrashGameMode_DEP::InitGame(const FString& MapName, const FString& Options
 void ACrashGameMode_DEP::BeginPlay()
 {
 	// Add the Death ability to the global ability system, which will grant it to each ASC as they are created.
-	if (UCrashGlobalAbilitySystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySystem>(GetWorld()))
+	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
 		if (GameModeData && GameModeData->DefaultDeathAbility)
 		{
