@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
+class ACrashPlayerState;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
 class UCrashCameraModeBase;
@@ -213,14 +214,30 @@ protected:
 
 public:
 
+	/** Retrieves this ability's current actor info as CrashGameplayAbilityActorInfo. */
+	const FCrashGameplayAbilityActorInfo* GetCrashActorInfo() const;
+
+	/** Blueprint-exposed accessor for typed actor info. Returns a copy instead of a pointer. */
+	UFUNCTION(BlueprintCallable, Category = "Ability", DisplayName = "GetCrashActorInfo", Meta = (ToolTip = "Retrieves this ability's typed actor info."))
+	FCrashGameplayAbilityActorInfo K2_GetCrashActorInfo() const;
+
 	/** Returns this ability's owning ASC as a CrashAbilitySystemComponent. */
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+
+	/** Returns the typed player controller from the current actor info. Often null. To try to retrieve any controller,
+	 * use GetControllerFromActorInfo instead. */
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	ACrashPlayerController* GetCrashPlayerControllerFromActorInfo() const;
 
 	/** Attempts to retrieve any controller responsible for this ability: the owning actor's PC, the avatar's
 	 * controller, etc. */
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	AController* GetControllerFromActorInfo() const;
+
+	/** Attempts to retrieve the typed player state from the current actor info. Often null. */
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	ACrashPlayerState* GetCrashPlayerStateFromActorInfo() const;
 
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO??"))

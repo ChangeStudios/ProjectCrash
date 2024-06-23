@@ -18,10 +18,10 @@ class PROJECTCRASH_API UCrashAbilitySystemGlobals : public UAbilitySystemGlobals
 
 private:
 
-	/** Tells the system to create effect contexts of our custom type (FCrashGameplayEffectContext). */
+	/** Tells the system to create effect contexts of our custom type: FCrashGameplayEffectContext. */
 	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
 
-	/** Tells the system to create ability actor info structs of our custom type (FCrashGameplayAbilityActorInfo). */
+	/** Tells the system to create ability actor info structs of our custom type: FCrashGameplayAbilityActorInfo. */
 	virtual FGameplayAbilityActorInfo* AllocAbilityActorInfo() const override;
 
 public:

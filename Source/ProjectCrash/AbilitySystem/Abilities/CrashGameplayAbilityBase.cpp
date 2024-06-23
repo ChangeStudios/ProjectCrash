@@ -9,6 +9,7 @@
 #include "AbilitySystemLog.h"
 #include "Characters/PawnCameraManager.h"
 #include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
@@ -31,12 +32,6 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 	ActivationGroup = EAbilityActivationGroup::Independent;
 	bIsUserFacingAbility = false;
 	AbilityIcon = nullptr;
-}
-
-UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
-{
-	// Retrieve the ASC from the current actor info and cast it to CrashAbilitySystemComponent.
-	return (CurrentActorInfo ? Cast<UCrashAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr);
 }
 
 bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -241,6 +236,35 @@ FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const 
 	return OutEffectContextHandle;
 }
 
+const FCrashGameplayAbilityActorInfo* UCrashGameplayAbilityBase::GetCrashActorInfo() const
+{
+	// The current actor info should always be of type FCrashGameplayAbilityActorInfo. This should never fail.
+	return static_cast<const FCrashGameplayAbilityActorInfo*>(CurrentActorInfo);
+}
+
+FCrashGameplayAbilityActorInfo UCrashGameplayAbilityBase::K2_GetCrashActorInfo() const
+{
+	// We should always have actor info. But we still have to return something if we don't.
+	if (!ensure(CurrentActorInfo))
+	{
+		return FCrashGameplayAbilityActorInfo();
+	}
+
+	return *static_cast<const FCrashGameplayAbilityActorInfo*>(CurrentActorInfo);
+}
+
+UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
+{
+	// Retrieve the typed ASC cached by our custom actor info.
+	return GetCrashActorInfo()->GetCrashAbilitySystemComponent();
+}
+
+ACrashPlayerController* UCrashGameplayAbilityBase::GetCrashPlayerControllerFromActorInfo() const
+{
+	// Retrieve the actor info's typed PC.
+	return GetCrashActorInfo()->GetCrashPlayerController();
+}
+
 AController* UCrashGameplayAbilityBase::GetControllerFromActorInfo() const
 {
 	if (CurrentActorInfo)
@@ -270,4 +294,10 @@ AController* UCrashGameplayAbilityBase::GetControllerFromActorInfo() const
 	}
 
 	return nullptr;
+}
+
+ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo() const
+{
+	// Retrieve the actor info's typed PS.
+	return GetCrashActorInfo()->GetCrashPlayerState();
 }
