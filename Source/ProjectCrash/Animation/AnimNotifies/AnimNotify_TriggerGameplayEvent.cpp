@@ -41,14 +41,14 @@ void UAnimNotify_TriggerGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, 
 	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(MeshComp->GetOwner());
 	if (!IsValid(ASC))
 	{
-		UE_LOG(LogAnimation, Warning, TEXT("UAnimNotify_TriggerGameplayEvent: Tried to send a gameplay event in animation [%s], but the owning actor, [%s], does not have a valid ASC."), *GetNameSafe(Animation), *MeshComp->GetOwner()->GetName());
+		UE_LOG(LogAnimation, Warning, TEXT("UAnimNotify_TriggerGameplayEvent: Tried to send a gameplay event in animation [%s], but the owning actor, [%s], does not have a valid ASC."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
 		return;
 	}
 
 	// Ensure the specified gameplay tag for the event is valid.
 	if (!EventTag.IsValid())
 	{
-		UE_LOG(LogAnimation, Warning, TEXT("UAnimNotify_TriggerGameplayEvent: Tried to send a gameplay event in animation [%s] for [%s], but the gameplay event tag is not set or is not valid."), *GetNameSafe(Animation), *MeshComp->GetOwner()->GetName());
+		UE_LOG(LogAnimation, Warning, TEXT("UAnimNotify_TriggerGameplayEvent: Tried to send a gameplay event in animation [%s] for [%s], but the gameplay event tag is not set or is not valid."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
 		return;
 	}
 

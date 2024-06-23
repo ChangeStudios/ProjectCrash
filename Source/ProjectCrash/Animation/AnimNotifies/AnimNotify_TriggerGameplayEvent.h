@@ -10,8 +10,8 @@
 /**
  * An animation notify that triggers a gameplay event with a given gameplay event tag.
  *
- * The gameplay event is sent to the owner of the mesh on which this notify is triggered. This is most efficiently used
- * in abilities with a PlayMontageAndWait followed by a WaitGameplayEventToActor node.
+ * The gameplay event is sent to the owner of the mesh on which this notify is triggered. This is often paired with
+ * an animation played by PlayDualMontageAndWaitForEvent.
  */
 UCLASS(Const, HideCategories = Object, CollapseCategories, DisplayName = "Trigger Gameplay Event")
 class PROJECTCRASH_API UAnimNotify_TriggerGameplayEvent : public UAnimNotify
