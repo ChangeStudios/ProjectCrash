@@ -8,7 +8,6 @@
 #include "UI/Data/UserInterfaceData.h"
 #include "CrashAssetManager.generated.h"
 
-class UUserFacingMapData;
 class UGlobalGameData;
 class UCrashGameModeData_DEP;
 class UUserInterfaceData;

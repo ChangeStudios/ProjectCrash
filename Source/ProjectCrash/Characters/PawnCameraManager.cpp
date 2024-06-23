@@ -10,6 +10,7 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "PawnExtensionComponent.h"
+#include "Components/GameFrameworkComponentDelegates.h"
 
 #if WITH_EDITOR
 #include "Misc/UObjectToken.h"

@@ -12,9 +12,7 @@
 UDamageExecution::UDamageExecution()
 {
 	// Define the specifications for capturing each attribute needed for this execution.
-	BaseDamageDef.AttributeToCapture = UHealthAttributeSet::GetDamageAttribute();
-	BaseDamageDef.AttributeSource = EGameplayEffectAttributeCaptureSource::Source;
-	BaseDamageDef.bSnapshot = true;
+	BaseDamageDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 
 	// Capture the attributes needed to perform this execution.
 	RelevantAttributesToCapture.Add(BaseDamageDef);
@@ -23,6 +21,7 @@ UDamageExecution::UDamageExecution()
 void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 // Only perform executions on the server.
+// TODO: Finish this function.
 #if WITH_SERVER_CODE
 
 	// Retrieve this execution's owning gameplay effect.
@@ -34,7 +33,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	FCrashGameplayEffectContext* CrashContext = FCrashGameplayEffectContext::GetCrashContextFromHandle(Spec.GetContext());
 	if (!CrashContext)
 	{
-		ABILITY_LOG(Fatal, TEXT("UDamageExecution: Effect context failed to cast to FCrashGameplayEffectContext for damage from [%s]. Context MUST be of type FCrashGameplayEffectContext for damage executions."), *GetPathNameSafe(OwningGameplayEffect));
+		ABILITY_LOG(Fatal, TEXT("UDamageExecution: Effect context failed to cast to FCrashGameplayEffectContext for damage from [%s]. Context must be of type FCrashGameplayEffectContext for damage executions."), *GetPathNameSafe(OwningGameplayEffect));
 	}
 
 
@@ -88,11 +87,9 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	float DamageToApply;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvaluateParameters, DamageToApply);
 
-
 	/* Round the damage value down to the nearest whole number. This may be necessary in the future if we deal with
 	 * damage multipliers. */
 	DamageToApply = FMath::Floor(DamageToApply);
-
 
 	// Apply the damage by adding it to the target's "Damage" attribute.
 	if (DamageToApply > 0.0f)

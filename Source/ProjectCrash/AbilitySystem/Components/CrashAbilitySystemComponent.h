@@ -7,17 +7,6 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "CrashAbilitySystemComponent.generated.h"
 
-/**
- * Defines from where a gameplay ability was granted.
- */
-UENUM()
-enum EAbilitySource : uint8
-{
-	Other,
-	Challenger,
-	Equipment
-};
-
 /** A generic delegate signature that passes a single gameplay ability pointer. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGenericAbilitySignature, UGameplayAbility*, Ability);
 /** Delegate used to broadcast when this ability system is initialized. */
@@ -32,11 +21,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathDa
 /**
  * The ability system component used for this project.
  *
- * This project's GAS implementation (like any implementation of GAS) is complex and may be difficult to understand
- * purely from inline documentation. If you'd like a more digestible explanation of how this framework functions, view
+ * This project's GAS implementation (like any implementation of GAS) is complex, and may be difficult to understand
+ * purely from inline documentation. If you'd like a more digestible explanation of how this framework works, view
  * this document detailing the implementation this system from a higher level:
  *
- *		https://docs.google.com/document/d/1lrocajswgfGHrTl-TFuM-Iw5N444_QWDiKfILris98c/edit?usp=sharing
+ *		https://docs.google.com/document/d/1O7YPWexCDY6cmNgkvG8EtkZL657hN82NOsViu8EdND4/edit?usp=sharing
+ *
+ * TODO: Route input activation through ASC to batch ability activation by processing input from the same frame together. See UCrashInputComponent.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemComponent
@@ -56,31 +47,15 @@ public:
 
 public:
 
-	/** Registers this ASC with the global ability system and broadcasts OnInit. */
+	/** Registers this ASC with the global ability subsystem and broadcasts InitDelegate. */
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
-	/** Delegate broadcast when this ASC is initialized with a new actor (e.g. after respawning). */
+	/** Broadcast when this ASC is initialized with a new owner and/or avatar (e.g. after respawning). */
 	UPROPERTY()
 	FASCInitSignature InitDelegate;
 
-
-
-	// Uninitialization.
-
-public:
-
-	/** Unregisters this ASC from the global ability system. */
+	/** Unregisters this ASC from the global ability subsystem. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-
-
-	// Utilities.
-
-public:
-
-	/** Returns the actor currently acting as this ASC's avatar. Blueprint-exposed wrapper for GetAvatarActor(). */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability System|Utilities", Meta = (DisplayName = "Get Avatar Actor"))
-	AActor* K2_GetAvatarActor() { return GetAvatarActor(); };
 
 
 
@@ -88,25 +63,25 @@ public:
 
 public:
 
-	/** Delegate fired when a new ability is granted to this ASC. */
+	/** Broadcast when a new ability is granted to this ASC. */
 	UPROPERTY()
 	FAbilityGrantedSignature AbilityGrantedDelegate;
 
-	/** Delegate fired when an ability is removed from this ASC. */
+	/** Broadcast when an ability is removed from this ASC. */
 	UPROPERTY()
 	FAbilityRemovedSignature AbilityRemovedDelegate;
 
 protected:
 
-	/** Fires the AbilityGrantedDelegate when an ability is granted to this ASC. */
+	/** Broadcasts AbilityGrantedDelegate when an ability is granted to this ASC. */
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
-	/** Fires the AbilityRemovedDelegate when an ability is removed from this ASC. */
+	/** Broadcasts AbilityRemovedDelegate when an ability is removed from this ASC. */
 	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 
 
 
-	// Ability activation.
+	// Ability activation groups.
 
 public:
 
@@ -114,23 +89,25 @@ public:
 	 * are never blocked; exclusive abilities are only blocked if there is an ongoing blocking exclusive ability. */
 	bool IsActivationGroupBlocked(EAbilityActivationGroup ActivationGroup) const;
 
-	/** Caches the given ability if it's an exclusive ability and can override the current exclusive ability. If it can,
-	 * the current exclusive ability will be cancelled. */
+	/** If an exclusive ability is activated, this caches the ability as the current exclusive ability, and cancels the
+	 * current exclusive ability, if one exists and is replaceable. Assumes we already checked whether the given
+	 * ability's activation group can be activated.
+	 */
 	void HandleAbilityActivatedForActivationGroup(UCrashGameplayAbilityBase* ActivatedAbility);
 
-	/** Clears the given ability from the current exclusive ability cache if it's exclusive, allowing new exclusive
+	/** If the current exclusive ability ends, clears it as the current exclusive ability, allowing new exclusive
 	 * abilities to be activated. */
 	void HandleAbilityEndedForActivationGroup(UCrashGameplayAbilityBase* EndedAbility);
 
 protected:
 
-	/** The current ongoing exclusive gameplay ability. */
+	/** The current exclusive gameplay ability. Null if there is no active exclusive ability. */
 	UPROPERTY()
 	TObjectPtr<UCrashGameplayAbilityBase> CurrentExclusiveAbility;
 
 
 
-	// Ability notifications.
+	// Ability activation events.
 
 public:
 
@@ -168,28 +145,26 @@ public:
 public:
 
 	/**
-	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a ACrashCharacterBase.
-	 * Otherwise, returns -1.0.
+	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a CrashCharacter. Use
+	 * PlayMontage to play a montage on the avatar's third-person mesh.
 	 *
 	 * This does not affect the ability system's animation data, such as LocalAnimMontageInfo. The ability system's
 	 * animation data is only affected by third-person animations, since first-person animations are rarely relevant to
 	 * anyone besides the local client.
+	 *
+	 * @param AnimatingAbility		The ability responsible for playing this animation.
+	 * @param ActivationInfo		Activation info used to activate AnimatingAbility.
+	 * @param Montage				The montage to play on the first-person mesh.
+	 * @param InPlayRate			Montage play-rate.
+	 * @param StartSectionName		(Optional) Section of the montage to start playing.
+	 * @param StartTimeSeconds		(Optional) Time of the montage from which to start playing.
+	 * @return						The remaining duration of the montage. If the montage could not be played (i.e. the
+	 *								avatar is null or is not of type CrashCharacter), returns -1.0.
 	 */
-	float PlayFirstPersonMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
+	float PlayMontage_FirstPerson(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f);
 
 protected:
 
 	/** Called when a prediction key that played a first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
-
-
-
-	// Death.
-
-public:
-
-	/** Delegate broadcast when a Death ability is activated to communicate death data. */
-	UPROPERTY()
-	FDeathEventSignature DeathEventDelegate;
-
 };

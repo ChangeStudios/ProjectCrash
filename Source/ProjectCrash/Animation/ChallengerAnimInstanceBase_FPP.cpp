@@ -4,7 +4,7 @@
 #include "Animation/ChallengerAnimInstanceBase_FPP.h"
 
 #include "Camera/CameraComponent.h"
-#include "Characters/ChallengerBase.h"
+#include "Characters/CrashCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -13,7 +13,7 @@ void UChallengerAnimInstanceBase_FPP::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 	// Only update first-person animations on the local client. Updates can be turned back on when spectating.
-	if (OwningChallenger && !OwningChallenger->IsLocallyControlled())
+	if (OwningCharacter && !OwningCharacter->IsLocallyControlled())
 	{
 		bUseMultiThreadedAnimationUpdate = false;
 	}
@@ -65,9 +65,9 @@ void UChallengerAnimInstanceBase_FPP::NativeThreadSafeUpdateAnimation(float Delt
 void UChallengerAnimInstanceBase_FPP::UpdateAimOffset()
 {
 	// Cache the character's current normalized camera pitch.
-	if (IsValid(OwningChallenger))
+	if (IsValid(OwningCharacter))
 	{
-		FVector CurrentRotAsVector = OwningChallenger->GetFirstPersonCameraComponent()->GetRelativeRotation().Vector();
+		FVector CurrentRotAsVector = OwningCharacter->GetBaseAimRotation().Vector();
 		CurrentRotAsVector.Normalize();
 		NormalizedCameraPitch = CurrentRotAsVector.Z;
 	}
@@ -75,12 +75,12 @@ void UChallengerAnimInstanceBase_FPP::UpdateAimOffset()
 
 void UChallengerAnimInstanceBase_FPP::UpdateAimSpeed()
 {
-	if (IsValid(OwningChallenger))
+	if (IsValid(OwningCharacter))
 	{
 		// Update aim rotation.
-		PawnRotation = OwningChallenger->GetActorRotation();
+		PawnRotation = OwningCharacter->GetActorRotation();
 		PreviousAimRotation = CurrentAimRotation;
-		CurrentAimRotation = OwningChallenger->GetFirstPersonCameraComponent()->GetComponentRotation();
+		CurrentAimRotation = OwningCharacter->GetBaseAimRotation();
 		const FRotator RotationSinceLastUpdate = CurrentAimRotation - PreviousAimRotation;
 
 		// Retrieve time differences.
@@ -99,10 +99,10 @@ void UChallengerAnimInstanceBase_FPP::UpdateAimSpeed()
 
 void UChallengerAnimInstanceBase_FPP::CalculateMovementSway()
 {
-	if (IsValid(OwningChallenger))
+	if (IsValid(OwningCharacter))
 	{
 		// Calculate target spring values using current movement speeds.
-		const float MaxWalkSpeed = OwningChallenger->GetCharacterMovement()->MaxWalkSpeed;
+		const float MaxWalkSpeed = OwningCharacter->GetCharacterMovement()->MaxWalkSpeed;
 		const float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange(ForwardBackwardSpeed, 0.0f, MaxWalkSpeed) * CurrentAnimationData->MoveSwayForwardBackwardSpringData.InterpSpeed;
 		const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange(RightLeftSpeed, 0.0, MaxWalkSpeed) * CurrentAnimationData->MoveSwayRightLeftSpringData.InterpSpeed;
 
@@ -128,7 +128,7 @@ void UChallengerAnimInstanceBase_FPP::CalculateMovementSway()
 
 void UChallengerAnimInstanceBase_FPP::CalculateAimSway()
 {
-	if (IsValid(OwningChallenger))
+	if (IsValid(OwningCharacter))
 	{
 		// Normalizes a value between -1.0 and 1.0 instead of 0.0 and 1.0.
 		auto NormalizeNegative = [](const float& X, const float& Min, const float& Max)

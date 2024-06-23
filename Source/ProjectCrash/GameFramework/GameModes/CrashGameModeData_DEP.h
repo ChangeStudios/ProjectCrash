@@ -7,7 +7,7 @@
 #include "CrashGameModeData_DEP.generated.h"
 
 class UCommonActivatableWidget;
-class UGA_Death;
+class UGA_DeathAbility;
 class UUserInterfaceData;
 
 /**
@@ -184,7 +184,7 @@ public:
 	/** The default death ability to use in this game mode. This will be activated on ASCs when their avatars die via
 	 * running out of health. */
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
-	TSubclassOf<UGA_Death> DefaultDeathAbility;
+	TSubclassOf<UGA_DeathAbility> DefaultDeathAbility;
 
 	/** The amount of time to wait between StartDeath and FinishDeath. */
 	UPROPERTY(EditDefaultsOnly, Category = "Death", Meta = (Units = "seconds"))

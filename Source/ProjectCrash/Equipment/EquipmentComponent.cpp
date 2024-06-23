@@ -8,11 +8,10 @@
 #include "Animation/ChallengerAnimInstanceBase.h"
 #include "EquipmentPieceActor.h"
 #include "CrashGameplayTags.h"
-#include "Characters/CrashCharacterBase_DEP.h"
+#include "Characters/CrashCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 UEquipmentComponent::UEquipmentComponent() :
 	EquippedSetHandle(FEquipmentSetHandle()),
@@ -171,14 +170,14 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 	// Try to get the equipping actor as characters for character-specific equipment logic (e.g. updating animations).
 	ACharacter* EquippingChar = Cast<ACharacter>(Owner);
-	ACrashCharacterBase_DEP* EquippingCrashChar = Cast<ACrashCharacterBase_DEP>(Owner);
+	ACrashCharacter* EquippingCrashChar = Cast<ACrashCharacter>(Owner);
 
 	// Attempt to retrieve the owning character's skin in order to retrieve the skin data for the equipping set.
 	UEquipmentSetSkinData* EquippingSetSkinData = SetToEquip->DefaultSkinData;
 
 	if (const APawn* OwnerAsPawn = Cast<APawn>(Owner))
 	{
-		ACrashPlayerState_DEP* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState_DEP>();
+		// ACrashPlayerState_DEP* CrashPS = OwnerAsPawn->GetPlayerState<ACrashPlayerState_DEP>();
 		// const UChallengerSkinData* ChallengerSkin = CrashPS ? CrashPS->GetCurrentSkin() : nullptr;
 		// if (ChallengerSkin && ChallengerSkin->EquipmentSetSkins.Contains(SetToEquip->SetID))
 		// {
@@ -213,7 +212,7 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 			 * need to re-enable them. */
 			if (bWasTemporarilyUnequipped)
 			{
-				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, nullptr, this, true);
+				SetToEquip->GrantedAbilitySet->GiveToAbilitySystem(CrashASC, nullptr, this);
 			}
 			// If we're equipping this set from scratch, grant and cache its ability set.
 			else
@@ -334,7 +333,7 @@ void UEquipmentComponent::UnequipSet_Internal(FEquipmentSetHandle& SetToUnequip,
 		// If we're only temporarily unequipping this set, we disable the granted ability set instead of removing it.
 		if (bUnequipTemporarily)
 		{
-			SetToUnequip.GrantedAbilitySetHandle.RemoveFromAbilitySystem(SetToUnequip.GrantedASC, true);
+			SetToUnequip.GrantedAbilitySetHandle.RemoveFromAbilitySystem(SetToUnequip.GrantedASC);
 		}
 		// If we're completely unequipping this set, remove its ability set and null its granted ASC.
 		else

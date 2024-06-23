@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "GA_Death.generated.h"
+#include "GA_DeathAbility.generated.h"
 
 /**
  * Data used when performing actor death logic. Most of this information is given by the Health attribute set upon
@@ -64,9 +64,11 @@ struct FDeathData
 /**
  * Called on dying characters to handle their death. Cancels ongoing abilities, calls "StartDeath" in the gamemode and
  * calls "FinishDeath" in the gamemode after a delay.
+ *
+ * TODO: Deprecate.
  */
 UCLASS()
-class PROJECTCRASH_API UGA_Death : public UCrashGameplayAbilityBase
+class PROJECTCRASH_API UGA_DeathAbility : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
@@ -75,7 +77,7 @@ class PROJECTCRASH_API UGA_Death : public UCrashGameplayAbilityBase
 public:
 
 	/** Default constructor. */
-	UGA_Death(const FObjectInitializer& ObjectInitializer);
+	UGA_DeathAbility(const FObjectInitializer& ObjectInitializer);
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 

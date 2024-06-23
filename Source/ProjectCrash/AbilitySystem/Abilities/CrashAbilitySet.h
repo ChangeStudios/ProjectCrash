@@ -27,7 +27,12 @@ public:
 	/** The gameplay ability to grant. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCrashGameplayAbilityBase> GameplayAbility = nullptr;
+
+	/** The level of the gameplay ability to grant. */
+	UPROPERTY(EditDefaultsOnly)
+	int32 AbilityLevel = 1;
 };
+
 
 
 /**
@@ -50,8 +55,9 @@ public:
 };
 
 
+
 /**
- * Data used to grant an attribute set via an ability set.
+ * Data used to add an attribute set via an ability set.
  */
 USTRUCT(BlueprintType)
 struct FCrashAbilitySet_AttributeSet
@@ -60,10 +66,11 @@ struct FCrashAbilitySet_AttributeSet
 
 public:
 
-	/** The attribute set to grant. */
+	/** The attribute set to add. */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCrashAttributeSet> AttributeSet = nullptr;
 };
+
 
 
 /**
@@ -80,20 +87,15 @@ public:
 
 	/** Adds the given gameplay ability spec handle to the collection of ability handles. */
 	void AddGameplayAbilitySpecHandle(const FGameplayAbilitySpecHandle& HandleToAdd);
+
 	/** Adds the given gameplay effect handle to the collection of effect handles. */
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& HandleToAdd);
-	/** Adds the given attribute set to the collection of tracked attribute sets. */
+
+	/** Adds the given attribute set to the collection of attribute set handles. */
 	void AddAttributeSet(UAttributeSet* SetToAdd);
 
-	/**
-	 * Removes every ability, effect, and attribute set in this structure from the specified ability system.
-	 *
-	 * @param AbilitySystemToRemoveFrom		The ASC from which to remove this ability set.
-	 * @param bDisableInsteadOfRemove		If true, this ability set's abilities won't be removed from the given ASC.
-	 *										Instead, they'll be given the "Disabled" tag to disable them without
-	 *										removing them. Used when temporarily unequipping equipment sets.
-	 */
-	void RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom, bool bDisableInsteadOfRemove = false);
+	/** Removes each ability, effect, and attribute set in this ability set from the specified ability system. */
+	void RemoveFromAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToRemoveFrom);
 
 
 
@@ -109,29 +111,22 @@ protected:
 	UPROPERTY()
 	TArray<FActiveGameplayEffectHandle> AppliedEffectHandles;
 
-	/** Pointers to the granted attribute sets. */
+	/** Pointers to the added attribute sets. */
 	UPROPERTY()
-	TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
+	TArray<TObjectPtr<UAttributeSet>> AddedAttributeSets;
 };
 
 
+
 /**
- * A collection of abilities, effects, and attribute sets that are granted to and removed from an ASC together. This is
- * the *ONLY* way to grant abilities, as it performs crucial logic that links an input tag to an ability. Even if only
- * one ability is being granted, it must be granted via a set.
- *
- * This set-only method is used to avoid losing references to abilities and effects. If we were to allow abilities and
- * effects to be granted/applied independently, we may not have handles to safely remove them later. This also forces
- * the ability system to be coupled with their source. E.g. each challenger has an ability set, each weapon has an
- * ability set, each power-up has an ability set, etc. This method also prevents any "floating" abilities that are
- * difficult to track. E.g. abilities can't be granted via hard-coding, making them impossible to find when debugging.
+ * A collection of abilities, effects, and attribute sets that are granted to and removed from an ASC together.
  */
 UCLASS(BlueprintType, Const)
 class PROJECTCRASH_API UCrashAbilitySet : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	// Utilities.
+	// Ability system.
 
 public:
 
@@ -143,12 +138,8 @@ public:
 	 * @param OutGrantedHandles			A collection of handles to the granted abilities, effects, and attribute sets. 
 										This can be used to remove these later.
 	 * @param SourceObject				(Optional) The object responsible for granting this ability set.
-	 * @param bEnableInsteadOfGive		If true, this set's abilities won't be given to the system. Instead, any
-	 *									of them that the system already has will have any "Disabled" tags removed.
-	 *									Used to disable and enable abilities without removing them when temporarily
-	 *									unequipping equipment sets.
 	 */
-	void GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr, bool bEnableInsteadOfGive = false) const;
+	void GiveToAbilitySystem(UCrashAbilitySystemComponent* AbilitySystemToGiveTo, FCrashAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
 
 
 
@@ -157,14 +148,14 @@ public:
 public:
 
 	/** The gameplay abilities to grant when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities")
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", DisplayName = "Abilities to Grant", Meta = (TitleProperty = "GameplayAbility"))
 	TArray<FCrashAbilitySet_GameplayAbility> GrantedGameplayAbilities;
 
 	/** The gameplay effects to apply when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", DisplayName = "Effects to Apply", Meta = (TitleProperty = "GameplayEffect"))
 	TArray<FCrashAbilitySet_GameplayEffect> GrantedGameplayEffects;
 
 	/** The attribute sets to add when this ability set is given to an ASC. */
-	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets")
+	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets", DisplayName = "Attribute Sets to Add", Meta = (TitleProperty = "AttributeSet"))
 	TArray<FCrashAbilitySet_AttributeSet> GrantedAttributeSets;
 };

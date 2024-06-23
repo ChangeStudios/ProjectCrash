@@ -19,6 +19,8 @@ struct FGameplayEffectSpec;
  *		float GetHealth() const;
  *		void SetHealth(float NewVal);
  *		void InitHealth(float NewVal);
+ *
+ * Yes, this is a macro of macros. Deal with it.
  */
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
 		GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
@@ -26,26 +28,33 @@ struct FGameplayEffectSpec;
 		GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 		GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
-/** Delegate used to broadcast attribute events, such as running out of health or attribute values changing. Some of
- * these parameters may be null on clients. */
-DECLARE_MULTICAST_DELEGATE_FourParams(FAttributeEventSignature, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/, const FGameplayEffectSpec& /*EffectSpec*/, float /*EffectMagnitude*/);
+/** Delegate used to broadcast attribute events, such as running out of health. Some of these parameters may be null on
+ * clients. */
+DECLARE_MULTICAST_DELEGATE_FourParams(FAttributeEventSignature, AActor* /* EffectInstigator */, AActor* /* EffectCauser */, const FGameplayEffectSpec& /* EffectSpec */, float /* EffectMagnitude */);
 /** Delegate used to broadcast attribute value changes. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FAttributeChangedSignature, AActor*, EffectInstigator, AActor*, EffectCauser, const FGameplayEffectSpec&, EffectSpec, float, OldValue, float, NewValue);
 
 /**
- * Base class for attribute sets in this project. Handles attribute setup and provides utilities.
+ * Base class for attribute sets in this project. Provides utilities and helpers for defining common attribute
+ * functions.
+ *
+ * Note the importance of calling the ATTRIBUTE_ACCESSORS for each attribute you define when subclassing this. This is
+ * not required but is very helpful.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
 
+	// Utils.
+
 public:
 
-	/** Returns the UWorld of this attribute's outer object instead of trying to retrieve it itself. */
+	/** Returns the UWorld of this attribute's outer object (usually the ASC) instead of trying to retrieve it
+	 * itself. */
 	UWorld* GetWorld() const override;
 
-	/** Returns this attribute set's owning ASC, cast to the UCrashAbilitySystemComponent class. Returns nullptr if the
-	 * ASC does not exist or is of the wrong class. */
+	/** Returns this attribute set's owning ASC as a CrashAbilitySystemComponent. Returns null if the ASC does not
+	 * exist or is of the wrong type. */
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
 };

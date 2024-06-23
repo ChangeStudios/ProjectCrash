@@ -6,15 +6,13 @@
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
-#include "AbilitySystem/AttributeSets/HealthAttributeBaseValues.h"
+#include "AbilitySystem/Abilities/Generic/GA_DeathAbility.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
-#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/PlayerState.h"
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "GameFramework/Messages/CrashVerbMessageHelpers.h"
+#include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
@@ -34,27 +32,30 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	AActor* Owner = GetOwner();
 	check(Owner);
 
+	// Don't initialize this component if it's already been initialized with an ASC.
 	if (AbilitySystemComponent)
 	{
-		ABILITY_LOG(Error, TEXT("Health component for owner [%s] has already been initialized with an ability system owned by: [%s]."), *GetNameSafe(Owner), *GetNameSafe(AbilitySystemComponent->GetOwnerActor()));
+		ABILITY_LOG(Error, TEXT("Failed to initialize health component on [%s]. The component has already been initialized with an ability system."), *GetNameSafe(Owner));
 		return;
 	}
 
+	// Don't initialize this component without a valid ASC.
 	AbilitySystemComponent = InASC;
 	if (!AbilitySystemComponent)
 	{
-		ABILITY_LOG(Error, TEXT("Cannot initialize health component for owner [%s] with NULL ability system."), *GetNameSafe(Owner));
+		ABILITY_LOG(Error, TEXT("Failed to initialize health component on [%s]. An invalid ability system component was given."), *GetNameSafe(Owner));
 		return;
 	}
 
+	// Don't initialize this component if the given ASC does not have a HealthAttributeSet.
 	HealthSet = AbilitySystemComponent->GetSet<UHealthAttributeSet>();
 	if (!HealthSet)
 	{
-		ABILITY_LOG(Error, TEXT("Cannot initialize health component for owner [%s] with NULL health set on the ability system."), *GetNameSafe(Owner));
+		ABILITY_LOG(Error, TEXT("Failed to initialize health component on [%s] with ASC owned by [%s]. The ASC does not have an attribute set of type HealthAttributeSet."), *GetNameSafe(Owner), *GetNameSafe(AbilitySystemComponent->GetOwnerActor()));
 		return;
 	}
 
-	// Bind delegates to the health attribute set's attribute changes and events.
+	// Register to listen for health attribute events.
 	HealthSet->HealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
 	HealthSet->MaxHealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
 	HealthSet->OutOfHealthAttributeDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
@@ -65,13 +66,14 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), 0.0f);
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), 0.0f);
 
-	// Broadcast the initial changes to the attributes.
+	// Broadcast the attributes' initialization.
 	HealthChangedDelegate.Broadcast(this, nullptr, HealthSet->GetHealth(), HealthSet->GetHealth());
 	MaxHealthChangedDelegate.Broadcast( this, nullptr, HealthSet->GetMaxHealth(), HealthSet->GetMaxHealth());
 }
 
 void UHealthComponent::UninitializeFromAbilitySystem()
 {
+	// Clear health event delegates.
 	if (HealthSet)
 	{
 		HealthSet->HealthAttributeChangedDelegate.RemoveAll(this);
@@ -85,6 +87,7 @@ void UHealthComponent::UninitializeFromAbilitySystem()
 
 void UHealthComponent::OnUnregister()
 {
+	// Uninitialize this component when it's unregistered, in case UninitializeFromAbilitySystem wasn't called manually.
 	UninitializeFromAbilitySystem();
 
 	Super::OnUnregister();
@@ -141,8 +144,8 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			DamageMagnitude
 		);
 
-		/* Send a standardized verb message that other systems can observe. This is used for things like updating the
-		 * kill-feed. */
+		/* Broadcast a message communicating the death that other systems can observe. This is used for things like
+		 * updating the kill-feed. */
 		if (AbilitySystemComponent && UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DeathMessage;
@@ -156,16 +159,16 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
 
-			// Broadcast the message to clients.
-			if (ACrashGameState_DEP* GS = Cast<ACrashGameState_DEP>(UGameplayStatics::GetGameState(GetWorld())))
+			// TODO: Broadcast the message to clients.
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
-				GS->MulticastReliableMessageToClients(DeathMessage);
+				// GS->MulticastReliableMessageToClients(DeathMessage);
 			}
 		}
 	}
 	else
 	{
-		ABILITY_LOG(Warning, TEXT("UHealthComponent: Actor [%s] ran out of health, but could not die."), *GetNameSafe(GetOwner()));
+		ABILITY_LOG(Error, TEXT("UHealthComponent: Actor [%s] ran out of health, but could not die."), *GetNameSafe(GetOwner()));
 	}
 
 #endif // #if WITH_SERVER_CODE

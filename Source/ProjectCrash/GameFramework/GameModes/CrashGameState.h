@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "ModularGameState.h"
 #include "Components/GameFrameworkInitStateInterface.h"
-#include "GameFramework/GameStates/CrashGameStateBase.h"
 #include "CrashGameState.generated.h"
 
 namespace UE::GameFeatures { struct FResult; }

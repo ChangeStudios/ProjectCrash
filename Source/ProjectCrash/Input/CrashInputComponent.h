@@ -13,8 +13,6 @@ class UCrashInputActionMapping;
 
 /**
  * An input component that uses input action mappings to bind handler functions or abilities to input actions.
- *
- * // TODO: Route input activation through ASC to batch ability activation by processing input from the same frame together.
  */
 UCLASS(Config = Input)
 class PROJECTCRASH_API UCrashInputComponent : public UEnhancedInputComponent

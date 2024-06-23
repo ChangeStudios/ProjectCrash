@@ -8,7 +8,6 @@
 #include "WeaponSlotWidget.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "Characters/ChallengerBase.h"
 #include "Components/DynamicEntryBox.h"
 #include "GameFramework/CrashLogging.h"
 #include "Input/CrashInputComponent.h"
@@ -19,7 +18,7 @@ void UAbilityBarWidget::OnASCReady()
 
 	// Bind to relevant ASC events.
 	OwningASC->InitDelegate.AddDynamic(this, &UAbilityBarWidget::OnASCInit);
-	OwningASC->DeathEventDelegate.AddDynamic(this, &UAbilityBarWidget::OnDeath);
+	// OwningASC->DeathEventDelegate.AddDynamic(this, &UAbilityBarWidget::OnDeath);
 	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
 
 	// Get the player's current abilities and sort them by their input tag, so they always appear in the same order.
@@ -55,37 +54,37 @@ void UAbilityBarWidget::InitializeAbilityWithUI(const FGameplayAbilitySpec& Abil
 {
 	const UInputAction* AbilityInputAction = nullptr;
 
-	// Find the input action associated with the given ability.
-	if (AChallengerBase* OwningChallenger = Cast<AChallengerBase>(OwningASC->GetAvatarActor()))
-	{
-		/* If this widget's owning player has already initialized their input component, search its bound action
-		 * mappings for an input action with a matching input tag. */
-		if (OwningChallenger->GetCrashInputComponent())
-		{
-			if (const UCrashInputComponent* CrashInputComponent = OwningChallenger->GetCrashInputComponent())
-			{
-				for (const UCrashInputActionMapping* ActionMapping : CrashInputComponent->GetCurrentActionMappings())
-				{
-					const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
-					if (CrashAbility && CrashAbility->GetInputTag().IsValid() && ActionMapping->FindAbilityInputActionForTag(CrashAbility->GetInputTag()))
-					{
-						AbilityInputAction = ActionMapping->FindAbilityInputActionForTag(CrashAbility->GetInputTag());
-					}
-				}
-			}
-		}
-		/* If this widget's owning player's input component hasn't been initialized yet, bind a callback to call this
-		 * function again once the input component is ready. */
-		else
-		{
-			OwningChallenger->InputComponentInitializedDelegate.AddWeakLambda(this, [this, AbilitySpec]
-			{
-				InitializeAbilityWithUI(AbilitySpec);
-			});
-
-			return;
-		}
-	}
+	// TODO: Find the input action associated with the given ability.
+	// if (AChallengerBase* OwningChallenger = Cast<AChallengerBase>(OwningASC->GetAvatarActor()))
+	// {
+	// 	/* If this widget's owning player has already initialized their input component, search its bound action
+	// 	 * mappings for an input action with a matching input tag. */
+	// 	if (OwningChallenger->GetCrashInputComponent())
+	// 	{
+	// 		if (const UCrashInputComponent* CrashInputComponent = OwningChallenger->GetCrashInputComponent())
+	// 		{
+	// 			for (const UCrashInputActionMapping* ActionMapping : CrashInputComponent->GetCurrentActionMappings())
+	// 			{
+	// 				const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+	// 				if (CrashAbility && CrashAbility->GetInputTag().IsValid() && ActionMapping->FindAbilityInputActionForTag(CrashAbility->GetInputTag()))
+	// 				{
+	// 					AbilityInputAction = ActionMapping->FindAbilityInputActionForTag(CrashAbility->GetInputTag());
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	/* If this widget's owning player's input component hasn't been initialized yet, bind a callback to call this
+	// 	 * function again once the input component is ready. */
+	// 	else
+	// 	{
+	// 		OwningChallenger->InputComponentInitializedDelegate.AddWeakLambda(this, [this, AbilitySpec]
+	// 		{
+	// 			InitializeAbilityWithUI(AbilitySpec);
+	// 		});
+	//
+	// 		return;
+	// 	}
+	// }
 
 	// Decide which widget type to create for this ability: generic, equipment, or weapon.
 	const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);

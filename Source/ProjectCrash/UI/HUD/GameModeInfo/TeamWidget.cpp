@@ -7,13 +7,13 @@
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/Data/GlobalGameData.h"
 #include "GameFramework/Teams/CrashTeams.h"
-#include "Player/PlayerStates/CrashPlayerState_DEP.h"
+#include "Player/CrashPlayerState.h"
 
 
 void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 {
 	check(InPlayer);
-	ACrashPlayerState_DEP* BoundCrashPS = Cast<ACrashPlayerState_DEP>(InPlayer);
+	ACrashPlayerState* BoundCrashPS = Cast<ACrashPlayerState>(InPlayer);
 	check(BoundCrashPS);
 
 	// Make sure the same player is not bound to this widget multiple times.
@@ -25,10 +25,10 @@ void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 	// Only bind players of the same team.
 	if (BoundPlayers.Num() > 0)
 	{
-		if (BoundCrashPS->GetTeamID() != BoundTeam)
-		{
-			return;
-		}
+		// if (BoundCrashPS->GetTeamID() != BoundTeam)
+		// {
+		// 	return;
+		// }
 	}
 
 	// Bind the new player.
@@ -37,13 +37,13 @@ void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 	// Bind the new player's team, if they're the first player bound to this widget.
 	if (BoundPlayers.Num() == 0)
 	{
-		BoundTeam = BoundCrashPS->GetTeamID();
+		// BoundTeam = BoundCrashPS->GetTeamID();
 	}
 
 	const APlayerController* LocalPC = GetOwningLocalPlayer()->PlayerController;
 	const APlayerState* LocalPS = LocalPC ? LocalPC->PlayerState : nullptr;
-	const ACrashPlayerState_DEP* LocalCrashPS = LocalPS ? Cast<ACrashPlayerState_DEP>(LocalPS) : nullptr;
-	ensure(LocalCrashPS);
+	// const ACrashPlayerState_DEP* LocalCrashPS = LocalPS ? Cast<ACrashPlayerState_DEP>(LocalPS) : nullptr;
+	// ensure(LocalCrashPS);
 
 	const UGlobalGameData& GlobalData = UCrashAssetManager::Get().GetGlobalGameData();
 
@@ -59,10 +59,10 @@ void UTeamWidget::BindPlayer(APlayerState* InPlayer)
 			}
 			case Hostile:
 			{
-				const FCrashTeamID LocalID = LocalCrashPS->GetTeamID();
-				const FCrashTeamID CharTeamID = BoundCrashPS->GetTeamID();
+				// const FCrashTeamID LocalID = LocalCrashPS->GetTeamID();
+				// const FCrashTeamID CharTeamID = BoundCrashPS->GetTeamID();
 					
-				PlayerBox_Border->GetDynamicMaterial()->SetVectorParameterValue("InnerColor", GlobalData.TeamColor_HostileList[(CharTeamID < LocalID) || (CharTeamID == 0) ? (int)CharTeamID : CharTeamID - 1].TeamUIColor);
+				// PlayerBox_Border->GetDynamicMaterial()->SetVectorParameterValue("InnerColor", GlobalData.TeamColor_HostileList[(CharTeamID < LocalID) || (CharTeamID == 0) ? (int)CharTeamID : CharTeamID - 1].TeamUIColor);
 				break;
 			}
 			default:

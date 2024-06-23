@@ -4,7 +4,7 @@
 #include "Animation/ChallengerAnimInstanceBase_TPP.h"
 
 #include "AnimData/CharacterAnimData.h"
-#include "Characters/ChallengerBase.h"
+#include "Characters/CrashCharacter.h"
 
 void UChallengerAnimInstanceBase_TPP::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
@@ -16,9 +16,9 @@ void UChallengerAnimInstanceBase_TPP::NativeThreadSafeUpdateAnimation(float Delt
 void UChallengerAnimInstanceBase_TPP::UpdateAimOffset()
 {
 	// Cache the character's current normalized aim pitch.
-	if (OwningChallenger)
+	if (OwningCharacter)
 	{
-		FVector CurrentRotAsVector = OwningChallenger->GetBaseAimRotation().Vector();
+		FVector CurrentRotAsVector = OwningCharacter->GetBaseAimRotation().Vector();
 		CurrentRotAsVector.Normalize();
 		NormalizedAimPitch = FMath::Clamp(CurrentRotAsVector.Z, CurrentAnimationData->MinNormalizedPitch, CurrentAnimationData->MaxNormalizedPitch);
 	}

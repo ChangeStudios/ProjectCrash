@@ -4,11 +4,9 @@
 #include "GameFramework/CrashAssetManager.h"
 
 #include "CrashLogging.h"
-#include "Data/UserFacingMapData.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Data/GlobalGameData.h"
 #include "Misc/ScopedSlowTask.h"
-#include "UI/Data/UserInterfaceData.h"
 #include "UnrealEngine.h"
 
 static FAutoConsoleCommandWithWorldAndArgs CVarDumpLoadedAssets

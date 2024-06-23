@@ -6,10 +6,9 @@
 #include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
-class UCrashCameraModeBase;
-class UAbilityTask_WaitInputRelease;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
+class UCrashCameraModeBase;
 
 /** Generic gameplay ability delegate with support for dynamic binding.*/
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
@@ -37,7 +36,9 @@ enum class EAbilityActivationGroup : uint8
 
 /**
  * Base gameplay ability class for this project. Extends the base gameplay ability class with additional functionality,
- * integration with this project's input system, and and various utilities.
+ * integration with this project's input system, and various utilities.
+ *
+ * TODO: Add utilities for FCrashGameplayAbilityActorInfo.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashGameplayAbilityBase : public UGameplayAbility

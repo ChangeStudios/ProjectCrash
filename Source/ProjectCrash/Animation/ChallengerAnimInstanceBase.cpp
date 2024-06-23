@@ -7,7 +7,8 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AnimData/CharacterAnimData.h"
 #include "Camera/CameraComponent.h"
-#include "Characters/ChallengerBase.h"
+#include "Characters/CrashCharacter.h"
+#include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/ChallengerSkinData.h"
 #include "GameFramework/CrashLogging.h"
 
@@ -24,25 +25,18 @@ void UChallengerAnimInstanceBase::NativeBeginPlay()
 	Super::NativeBeginPlay();
 
 	// Cache the owning challenger character.
-	OwningChallenger = TryGetPawnOwner() ? Cast<AChallengerBase>(TryGetPawnOwner()) : nullptr;
+	OwningCharacter = TryGetPawnOwner() ? Cast<ACrashCharacter>(TryGetPawnOwner()) : nullptr;
 
 	// This animation instance won't work without a valid Challenger.
-	if (!IsValid(OwningChallenger))
+	if (!IsValid(OwningCharacter))
 	{
 		ANIMATION_LOG(Fatal, TEXT("OwningChallenger not valid in animation instance [%s] for [%s]. The animation system will not work properly."), *GetName(), *GetNameSafe(TryGetPawnOwner()));
 		bUseMultiThreadedAnimationUpdate = false;
+		return;
 	}
 
-	// If the owning Challenger's ASC has already been initialized, link it to this animation instance.
-	if (UCrashAbilitySystemComponent* CrashASC = OwningChallenger->GetCrashAbilitySystemComponent())
-	{
-		OnASCInitialized(CrashASC);
-	}
-	// If the owning challenger has not initialized its ASC yet, bind to the delegate fired for when it does.
-	else
-	{
-		OwningChallenger->ASCInitializedDelegate.AddDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
-	}
+	// Listen for when the owning character's ASC is initialized.
+	UPawnExtensionComponent::FindPawnExtensionComponent(OwningCharacter)->OnAbilitySystemInitialized_RegisterAndCall(FSimpleDelegate::CreateUObject(this, &UChallengerAnimInstanceBase::OnASCInitialized));
 }
 
 bool UChallengerAnimInstanceBase::ThreadSafeHasTagExact(UAbilitySystemComponent* ASC, FGameplayTag TagToSearch) const
@@ -65,14 +59,9 @@ int UChallengerAnimInstanceBase::ThreadSafeTagCount(UAbilitySystemComponent* ASC
 	return ASC->GetGameplayTagCount(TagToCount);
 }
 
-void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent* CrashASC)
+void UChallengerAnimInstanceBase::OnASCInitialized()
 {
-	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *GetClientServerContextString(OwningChallenger), *GetName(), *GetNameSafe(GetOwningActor()));
-
-	if (!CrashASC)
-	{
-		ANIMATION_LOG(Fatal, TEXT("OnASCInitialized broadcast to [%s] without a valid ASC."), *GetName());
-	}
+	ANIMATION_LOG(VeryVerbose, TEXT("ASC Initialized on [%s] for [%s] owned by [%s]"), *GetClientServerContextString(OwningCharacter), *GetName(), *GetNameSafe(GetOwningActor()));
 
 	if (OwningASC)
 	{
@@ -80,8 +69,7 @@ void UChallengerAnimInstanceBase::OnASCInitialized(UCrashAbilitySystemComponent*
 		return;
 	}
 
-	OwningASC = CrashASC;
-	OwningChallenger->ASCInitializedDelegate.RemoveDynamic(this, &UChallengerAnimInstanceBase::OnASCInitialized);
+	OwningASC = OwningCharacter->GetCrashAbilitySystemComponent();
 }
 
 void UChallengerAnimInstanceBase::UpdateAnimData(UCharacterAnimData* NewAnimData, UEquipmentSetSkinData* EquipmentSetSkinData)
@@ -115,12 +103,12 @@ void UChallengerAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSec
 void UChallengerAnimInstanceBase::UpdateMovementVelocity()
 {
 	// Cache the pawn's current movement values.
-	if (IsValid(OwningChallenger))
+	if (IsValid(OwningCharacter))
 	{
-		const FVector PawnVelocity = OwningChallenger->GetVelocity();
-		SignedSpeed = OwningChallenger->GetVelocity().Length();
+		const FVector PawnVelocity = OwningCharacter->GetVelocity();
+		SignedSpeed = OwningCharacter->GetVelocity().Length();
 		
-		const FVector UnrotatedVelocity = OwningChallenger->GetActorRotation().UnrotateVector(PawnVelocity);
+		const FVector UnrotatedVelocity = OwningCharacter->GetActorRotation().UnrotateVector(PawnVelocity);
 		ForwardBackwardSpeed = UnrotatedVelocity.X;
 		RightLeftSpeed = UnrotatedVelocity.Y;
 		UpDownSpeed = UnrotatedVelocity.Z;

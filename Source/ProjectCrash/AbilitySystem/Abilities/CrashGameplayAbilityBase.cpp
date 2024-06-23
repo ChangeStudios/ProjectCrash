@@ -3,21 +3,17 @@
 
 #include "CrashGameplayAbilityBase.h"
 
-#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "AbilitySystemLog.h"
-#include "NativeGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "CrashGameplayTags.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
-#include "Characters/ChallengerBase.h"
+#include "AbilitySystemLog.h"
 #include "Characters/PawnCameraManager.h"
-#include "Characters/Data/ChallengerSkinData.h"
-#include "GameFramework/CrashLogging.h"
+#include "CrashGameplayTags.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/PlayerStates/CrashPlayerState_DEP.h"
+#include "Player/CrashPlayerState.h"
 
 // Helper for functions that require an instantiated ability.
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
@@ -173,7 +169,7 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 			{
 				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;
-				AbilityMessage.Ability = GetAbilityCDO();
+				AbilityMessage.AbilitySpecHandle = Handle;
 				AbilityMessage.ActorInfo = GetActorInfo();
 				const FActiveGameplayEffect* CooldownEffect = GetAbilitySystemComponentFromActorInfo_Checked()->GetActiveGameplayEffect(CooldownEffectHandle);
 				AbilityMessage.OptionalMagnitude = CooldownEffect->GetDuration();
@@ -181,10 +177,10 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 				UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 				MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
 
-				// Broadcast the message to clients, since ApplyCooldown is only called on the server.
-				if (ACrashGameState_DEP* GS = Cast<ACrashGameState_DEP>(UGameplayStatics::GetGameState(GetWorld())))
+				// TODO: Broadcast the message to clients, since ApplyCooldown is only called on the server.
+				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 				{
-					GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
+					// GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
 				}
 			}
 		}

@@ -41,15 +41,15 @@ public:
 public:
 
 	/** Fresnel to use on "friendly" actors. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Friendly Team Color")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Friendly Team Color", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
 	FTeamColorData TeamColor_Friendly;
 
 	/** Fresnel to use on "neutral" actors. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Neutral Team Color")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Neutral Team Color", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
 	FTeamColorData TeamColor_Neutral;
 
 	/** Fresnels to use on hostile actors, if each hostile team should get a unique fresnel. Used for team-based game-
 	 * modes. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Hostile Team Colors")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Hostile Team Colors", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
 	TArray<FTeamColorData> TeamColor_HostileList;
 };

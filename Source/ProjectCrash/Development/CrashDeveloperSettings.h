@@ -6,7 +6,6 @@
 #include "CrashDeveloperSettings.generated.h"
 
 class UPawnData;
-class UChallengerData_DEP;
 class UChallengerSkinData;
 class UCrashGameModeData;
 

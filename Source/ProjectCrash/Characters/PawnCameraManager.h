@@ -31,7 +31,7 @@ public:
 
 	// Initialization.
 
-protected:
+public:
 
 	/** Registers this component with the initialization state framework. */
 	virtual void OnRegister() override;

@@ -8,7 +8,7 @@
 #include "CrashGameplayTags.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -85,10 +85,10 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
 
-			// Broadcast the message to clients.
-			if (ACrashGameState_DEP* GS = Cast<ACrashGameState_DEP>(UGameplayStatics::GetGameState(GetWorld())))
+			// TODO: Broadcast the message to clients.
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
-				GS->MulticastReliableMessageToClients(DamageMessage);
+				// GS->MulticastReliableMessageToClients(DamageMessage);
 			}
 		}
 

@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayCueInterface.h"
-#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
+#include "WeaponGameplayAbility.h"
 #include "MeleeAttackAbility.generated.h"
 
 class AGameplayAbilityTargetActor_Trace;
@@ -12,6 +11,10 @@ class AGameplayAbilityTargetActor_SingleLineTrace;
 class AGameplayAbilityTargetActor_CollisionDetector_Capsule;
 
 
+/**
+ * Defines the targeting method used for a melee ability. It'll take some play-testing to figure out which of these
+ * works best for this project. Once we do, we'll likely only be using one for most of the melee abilities.
+ */
 UENUM(BlueprintType)
 enum class EMeleeTargetingType : uint8
 {
@@ -24,6 +27,7 @@ enum class EMeleeTargetingType : uint8
 	 * are played on the server, it does not matter which one you choose.
 	 */
 	Instant,
+
 	/**
 	 * Begins targeting when the "MeleeAttack.Start" event is received, and stops targeting when "MeleeAttack.Stop" is
 	 * received.
@@ -31,9 +35,12 @@ enum class EMeleeTargetingType : uint8
 	 * Warning: Do not use; not currently supported. TODO: Implement.
 	 */
 	EventDuration,
-	/** A target actor is used to perform continuous collision testing while the ability is active. */
+
+	/** A target actor is used to perform continuous collision testing while the ability is active (i.e. while the
+	 * montage is playing). */
 	EntireDuration,
 };
+
 
 
 /**
@@ -49,8 +56,8 @@ enum class EMeleeTargetingType : uint8
  * received by the owning ASC. The bUseInstantTargeting property can be disabled to switch to duration-based targeting,
  * which will use a target actor to continuously perform hit detection while the ability is active.
  */
-UCLASS()
-class PROJECTCRASH_API UMeleeAttackAbility : public UCrashGameplayAbilityBase
+UCLASS(Abstract)
+class PROJECTCRASH_API UMeleeAttackAbility : public UWeaponGameplayAbility
 {
 	GENERATED_BODY()
 

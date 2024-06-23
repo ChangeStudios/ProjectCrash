@@ -11,9 +11,7 @@
 UHealingExecution::UHealingExecution()
 {
 	// Define the specifications for capturing each attribute needed for this execution.
-	BaseHealingDef.AttributeToCapture = UHealthAttributeSet::GetHealingAttribute();
-	BaseHealingDef.AttributeSource = EGameplayEffectAttributeCaptureSource::Source;
-	BaseHealingDef.bSnapshot = true;
+	BaseHealingDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetHealingAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 
 	// Capture the attributes needed to perform this execution.
 	RelevantAttributesToCapture.Add(BaseHealingDef);
@@ -22,6 +20,7 @@ UHealingExecution::UHealingExecution()
 void UHealingExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 // Only perform executions on the server.
+// TODO: Finish this function.
 #if WITH_SERVER_CODE
 
 	// Retrieve this execution's owning gameplay effect.

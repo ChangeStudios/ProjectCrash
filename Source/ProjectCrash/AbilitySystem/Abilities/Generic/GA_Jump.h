@@ -9,17 +9,12 @@
 /**
  * The default character jump ability. This uses the built-in character jump method, meaning its properties (e.g.
  * jump height) can be altered in the owning character's class and movement component, including the implementation of
- * double-jump.
+ * multiple jumps.
  */
 UCLASS()
 class PROJECTCRASH_API UGA_Jump : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
-
-public:
-
-	/** Default constructor. */
-	UGA_Jump(const FObjectInitializer& ObjectInitializer);
 
 protected:
 

@@ -2,17 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbilityTypes.h"
-
 #include "CrashAbilityMessage.generated.h"
 
 /**
  * A message involving the behavior of a gameplay ability. Provides information about the ability, along with a
  * tag defining the type of message itself (e.g. "Activated," "Ended," "Cancelled," etc.).
- *
- * This message can be treated like an anonymous, localized gameplay event.
  */
 USTRUCT(BlueprintType)
 struct FCrashAbilityMessage
@@ -25,7 +21,7 @@ struct FCrashAbilityMessage
 
 	/** The ability referred to by the message. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	TObjectPtr<const UGameplayAbility> Ability;
+	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
 	/** The actor info of this message's ability, with which this message was broadcast. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)

@@ -6,11 +6,10 @@
 #include "CommonNumericTextBlock.h"
 #include "TeamWidget.h"
 #include "Components/DynamicEntryBox.h"
-#include "GameFramework/GameModes/Game/CrashGameMode_DEP.h"
-#include "GameFramework/GameStates/CrashGameState_DEP.h"
+#include "GameFramework/GameMode.h"
+#include "GameFramework/GameModes/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/PlayerStates/CrashPlayerState_DEP.h"
 
 void UGameModeInfoBase::NativeConstruct()
 {
@@ -18,13 +17,7 @@ void UGameModeInfoBase::NativeConstruct()
 
 	// Cache the game state.
 	AGameStateBase* GS = UGameplayStatics::GetGameState(GetOwningPlayer());
-	CrashGS = GS ? Cast<ACrashGameState_DEP>(GS) : nullptr;
-
-	if (CrashGS)
-	{
-		// Register for match state updates.
-		CrashGS->MatchStateChangedDelegate.AddUniqueDynamic(this, &ThisClass::OnMatchStateChanged);
-	}
+	CrashGS = GS ? Cast<ACrashGameState>(GS) : nullptr;
 }
 
 void UGameModeInfoBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -37,9 +30,9 @@ void UGameModeInfoBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		if (Timer_Text)
 		{
 			// We have to manually format the timer text because UCommonNumericTextBlock::SetCurrentValue lags slightly.
-			const FTimespan CurrentSeconds = FTimespan::FromSeconds(CrashGS->PhaseTimeRemaining);
-			FText::AsTimespan(CurrentSeconds);
-			Timer_Text->SetText(FText::AsTimespan(CurrentSeconds));
+			// const FTimespan CurrentSeconds = FTimespan::FromSeconds(CrashGS->PhaseTimeRemaining);
+			// FText::AsTimespan(CurrentSeconds);
+			// Timer_Text->SetText(FText::AsTimespan(CurrentSeconds));
 		}
 
 		// Check if there are any players in the match that the owning player hasn't created widgets for yet.
@@ -56,27 +49,14 @@ void UGameModeInfoBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 void UGameModeInfoBase::NativeDestruct()
 {
 	Super::NativeDestruct();
-
-	// Clear callbacks.
-	if (CrashGS)
-	{
-		CrashGS->MatchStateChangedDelegate.RemoveDynamic(this, &ThisClass::OnMatchStateChanged);
-	}
 }
 
 void UGameModeInfoBase::OnMatchStateChanged(FName NewMatchState)
 {
 	// Play an animation when overtime begins.
-	if (NewMatchState == CrashMatchState::InProgress_OT && OvertimeStart_Anim)
+	if (NewMatchState == MatchState::InProgress && OvertimeStart_Anim)
 	{
 		PlayAnimation(OvertimeStart_Anim);
-		return;
-	}
-
-	// Play an animation when overtime ends, to remove the "overtime" pop-up.
-	if (NewMatchState != CrashMatchState::InProgress_OT && OvertimeEnd_Anim)
-	{
-		PlayAnimation(OvertimeEnd_Anim);
 		return;
 	}
 }

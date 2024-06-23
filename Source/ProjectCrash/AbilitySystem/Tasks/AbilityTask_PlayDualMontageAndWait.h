@@ -7,8 +7,18 @@
 #include "AbilityTask_PlayDualMontageAndWait.generated.h"
 
 /**
- * Extends the PlayMontageAndWait task to play two montages: one on the character's first-person mesh and one on the
- * third-person mesh.
+ * Plays two montages: one on the avatar's first-person mesh and one on their third-person mesh. Avatar must be of type
+ * CrashCharacter in order to access both meshes. To only play a third-person montage, use PlayMontageAndWait.
+ *
+ * The third-person montage acts as the "authoritative" montage. I.e. playback events are triggered by the third-person
+ * montage. This prevents conflicting events, such as if one montage is interrupted, while another finishes
+ * successfully. This means the montages don't have to be the same length (though they should be).
+ *
+ * Currently, this task can playing both montages or just the third-person montage. If we wanted to, we could easily
+ * refactor this task to also be able to play just the first-person montage, if we wanted to. We would just have to
+ * track the "authoritative" montage, instead of always using the third-person montage.
+ *
+ * TODO: Subclass this into PlayDualMontageAndWaitForEvent.
  */
 UCLASS()
 class PROJECTCRASH_API UAbilityTask_PlayDualMontageAndWait : public UAbilityTask
@@ -19,21 +29,21 @@ class PROJECTCRASH_API UAbilityTask_PlayDualMontageAndWait : public UAbilityTask
 
 public:
 
-	/** Called when this task was successfully completed, i.e. the third-person montage successfully finished
-	 * playing AND finished blending out. */
-	UPROPERTY(BlueprintAssignable)
-	FMontageWaitSimpleDelegate OnCompleted;
-
-	/** Called when the third-person montage begins blending out. If it blends out after being interrupted,
-	 * OnInterrupted will be called instead of this. */
+	/** Fired when the third-person montage BEGINS blending out. If a montage begins blending out because it was
+	 * interrupted, OnInterrupted will be fired instead of this. */
 	UPROPERTY(BlueprintAssignable)
 	FMontageWaitSimpleDelegate OnBlendOut;
 
-	/** Called if the third-person montage is interrupted by another montage before it finishes playing. */
+	/** Called when the third-person montage finishes playing and finishes blending out. */
+	UPROPERTY(BlueprintAssignable)
+	FMontageWaitSimpleDelegate OnCompleted;
+
+	/** Fired if the third-person montage is interrupted by another montage before it finishes playing. */
 	UPROPERTY(BlueprintAssignable)
 	FMontageWaitSimpleDelegate OnInterrupted;
 
-	/** Called if this task is cancelled, which stops any montages that are currently playing. */
+	/** Fired if this task is cancelled. Stops any montages that are currently playing. Does not trigger OnBlendOut or
+	 * OnInterrupted. */
 	UPROPERTY(BlueprintAssignable)
 	FMontageWaitSimpleDelegate OnCancelled;
 
@@ -43,37 +53,35 @@ public:
 
 public:
 
-	/** Callback function for when the third-person montage finishes blending out. */
+	/** Callback function for when the third-person montage begins blending out. */
 	UFUNCTION()
 	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 
-	/** Callback function for when the owning Gameplay Ability is cancelled. Stops playing this task's montages and
-	 * ends this task. */
-	UFUNCTION()
-	virtual void OnGameplayAbilityCancelled();
-
-	/** Callback function for when the third-person montage finishes. */
+	/** Callback function for when the third-person montage finishes playing and finishes blending out. */
 	UFUNCTION()
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-	/** Broadcasts the OnCancelled delegate when this task is externally cancelled. */
+	/** Callback function for when the owning gameplay ability is cancelled. Ends this task and stops playing any
+	 * montages, if requested. */
+	UFUNCTION()
+	virtual void OnGameplayAbilityCancelled();
+
+	/** Broadcasts OnCancelled when this task is externally cancelled. */
 	virtual void ExternalCancel() override;
 
+// Internal delegates.
 protected:
 
-	/** Delegate fired when the third-person montage begins blending out. If the third-person montage was not played,
-	 * this is never fired. */
+	/** Fired when the third-person montage begins blending out. */
 	FOnMontageBlendingOutStarted BlendingOutDelegate;
 
-	/** Delegate fired when the third-person montage finishes playing. If the third-person montage was not played,
-	 * this is never fired. */
+	/** Fired when the third-person montage finishes playing and finishes blending out. */
 	FOnMontageEnded MontageEndedDelegate;
 
-	/** Delegate fired when another montage is played on the third-person mesh before the third-person montage is
-	 * finished playing. If the third-person montage was not played, this is never fired. */
+	/** Fired if another montage is played on the third-person mesh before the third-person montage finishes playing. */
 	FDelegateHandle InterruptedHandle;
 
-	/** Stops ongoing montages when the owning ability ends if bStopWhenAbilityEnds is true. */
+	/** Stops ongoing montages when the owning ability ends, if bStopWhenAbilityEnds is true. */
 	virtual void OnDestroy(bool AbilityEnded) override;
 
 
@@ -82,44 +90,45 @@ protected:
 
 public:
 
-	/** 
-	 * Plays an animation montage on the avatar actor's first-person mesh and an animation montage on the third-person
-	 * mesh. The avatar actor must be a child of AChallengerCharacterBase and have a valid third-person mesh to play
-	 * either montage. Otherwise, the task immediately ends without doing anything.
+	/**
+	 * Plays an animation montage on the avatar actor's first-person mesh and third-person mesh. The avatar must be of
+	 * type CrashCharacter.
 	 *
-	 * This task's ability logic uses the third-person montage, meaning the first-person montage does not need to be
-	 * played for this task to function correctly (e.g. NPCs don't need first-person montages). If both montages are
-	 * played, ensure that they are the same length for the best results.
+	 * The third-person montage is considered the "authority" for this task; output pins are fired in response to the
+	 * third-person montage's playback events. This means that both montages do not need to be the same length. It also
+	 * means that this task CAN be used without a first-person mesh or without a first-person montage, but must always
+	 * have a third-person montage.
 	 *
-	 * If StopWhenAbilityEnds is true, this montage will be aborted if the ability ends normally. It is always stopped
-	 * when the ability is explicitly cancelled.
-	 *
-	 * On normal execution, OnBlendOut is called when the third-person montage begins blending out, and OnCompleted
-	 * when it is completely done playing. OnInterrupted is called if another montage overwrites the third-person
-	 * montage (e.g. if PlayMontageAndWait is called), and OnCancelled is called if the ability or task is cancelled.
+	 * To cover all cases (e.g. guaranteeing logic executes when this task ends), hook into OnInterrupted, OnCancelled,
+	 * and OnBlendOut OR OnCompleted. Hooking the same logic into both OnBlendOut and OnCompleted will run that logic
+	 * twice: once when the montage finishes playing and once when it finishes blending out.
 	 *
 	 * @param TaskInstanceName					Overrides the name of this task for later querying.
 	 * @param FirstPersonMontageToPlay			Montage to play on the character's first-person mesh.
 	 * @param ThirdPersonMontageToPlay			Montage to play on the character's third-person mesh.
 	 * @param FirstPersonRate					Rate at which the first-person montage is played.
 	 * @param ThirdPersonRate					Rate at which the third-person montage is played.
-	 * @param FirstPersonStartSection			If not empty, named montage section from which to start the 
+	 * @param FirstPersonStartSection			(Optional) Name of the montage section from which to start the
 	 *											first-person montage.
-	 * @param ThirdPersonStartSection			If not empty, named montage section from which to start the 
+	 * @param ThirdPersonStartSection			(Optional) Name of the Montage section from which to start the 
 	 *											third-person montage.
-	 * @param bStopWhenAbilityEnds				If true, this montage will be aborted if the ability ends normally. It
-	 *											is always stopped when the ability is explicitly cancelled.
+	 * @param bStopWhenAbilityEnds				If true, the montages will be cancelled if the ability ends normally.
+	 *											Montages are always stopped when the ability is explicitly cancelled,
+	 *											regardless of this value. Note that this task's output pins will not
+	 *											fire after this task ends, even if this value is false.
 	 * @param AnimRootMotionTranslationScale	Modifies the size of root motion. Set to 0 to block it entirely.
-	 * @param FirstPersonStartTimeSeconds		Starting time offset in the first-person montage. This will be
+	 * @param FirstPersonStartTimeSeconds		Playback time at which to start the first-person montage. This will be
 	 *											overridden by FirstPersonStartSection if that is also set.
-	 * @param ThirdPersonStartTimeSeconds		Starting time offset in the third-person montage. This will be
+	 * @param ThirdPersonStartTimeSeconds		Playback time at which to start the third-person montage. This will be
 	 *											overridden by ThirdPersonStartSection if that is also set.
-	 * @param bAllowInterruptAfterBlendOut		If true, you can receive OnInterrupted after an OnBlendOut started.
-	 *											Otherwise, OnInterrupted will not fire when interrupted, but you will
-	 *											not get OnComplete.
+	 * @param bAllowInterruptAfterBlendOut		If true, OnInterrupted can be fired AFTER the montage begins blending
+	 *											out, meaning both OnBlendOut and OnInterrupted can BOTH be fired. If
+	 *											false, OnInterrupted will not fire if the montage is interrupted after
+	 *											it already began blending out.
+	 *											TODO: OnComplete does not fire when the montage is interrupted if this is false.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", Meta = (DisplayName = "PlayDualMontageAndWait",
-		HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+		HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UAbilityTask_PlayDualMontageAndWait* CreatePlayDualMontageAndWaitProxy
 	(
 		UGameplayAbility* OwningAbility,
@@ -185,7 +194,7 @@ protected:
 
 protected:
 
-	/** Checks if the ability is playing a montage and stops that montage. Returns whether a montage was stopped. */
+	/** Stops any montages that the outer ability is currently playing. Returns whether a montage was stopped. */
 	bool StopPlayingMontage();
 
 	/** Returns a string identifying this task. */

@@ -8,6 +8,8 @@
 
 /**
  * A gameplay ability that represents an attack with a weapon. Provides functionality for limited ammo and reloading.
+ *
+ * TODO: Implement
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UWeaponGameplayAbility : public UCrashGameplayAbilityBase

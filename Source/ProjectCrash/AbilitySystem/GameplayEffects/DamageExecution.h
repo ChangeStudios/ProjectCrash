@@ -32,7 +32,7 @@ public:
 protected:
 
 	/** Performs the execution logic. Performs calculations required before applying damage, and then applies damage
-	 * to the target's Health attributes. */
+	 * to the target's health attributes (HealthAttributeSet). */
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
 
@@ -43,5 +43,4 @@ protected:
 
 	/** The base damage dealt by this execution, defined by the gameplay effect performing this execution. */
 	FGameplayEffectAttributeCaptureDefinition BaseDamageDef;
-
 };

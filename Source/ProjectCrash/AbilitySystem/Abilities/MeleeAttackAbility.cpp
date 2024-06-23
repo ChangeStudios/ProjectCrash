@@ -15,12 +15,9 @@
 #include "AbilitySystem/Tasks/AbilityTask_PlayDualMontageAndWait.h"
 #include "AbilitySystem/Tasks/AbilityTask_WaitReusableTargetData.h"
 #include "BlueprintLibraries/AbilitySystemUtilitiesLibrary.h"
-#include "Camera/CameraComponent.h"
-#include "Characters/ChallengerBase.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/HUD.h"
 #include "Kismet/KismetSystemLibrary.h"
-
 
 #define USING_DURATION_TARGETING TargetingType == EMeleeTargetingType::EventDuration || TargetingType == EMeleeTargetingType::EntireDuration
 
@@ -89,13 +86,14 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	else if (USING_DURATION_TARGETING)
 	{
 		// Determine where to attach the target actor.
+		// TODO: Fix
 		USceneComponent* TargetActorAttach;
-		if (const AChallengerBase* AvatarAsChallenger = Cast<AChallengerBase>(ASC->GetAvatarActor()))
-		{
-			// If the avatar is a player character, use their camera.
-			TargetActorAttach = AvatarAsChallenger->GetFirstPersonCameraComponent();
-		}
-		else
+		// if (const AChallengerBase* AvatarAsChallenger = Cast<AChallengerBase>(ASC->GetAvatarActor()))
+		// {
+		// 	// If the avatar is a player character, use their camera.
+		// 	TargetActorAttach = AvatarAsChallenger->GetFirstPersonCameraComponent();
+		// }
+		// else
 		{
 			// If the avatar is not a player, use their root component.
 			TargetActorAttach = ASC->GetAvatarActor()->GetRootComponent();
@@ -565,13 +563,14 @@ void UMeleeAttackAbility::GetCapsulePosition(bool bIncludeRadius, FVector& Base,
 	FVector BaseWithRadius = OwningASC->GetAvatarActor()->GetActorLocation();
 	FVector Forward = OwningASC->GetAvatarActor()->GetActorForwardVector();
 
+	// TODO: Fix
 	// If the avatar is a player character, use their camera instead.
-	if (const AChallengerBase* AvatarAsChallenger = Cast<AChallengerBase>(OwningASC->GetAvatarActor()))
-	{
-		BaseWithRadius = AvatarAsChallenger->GetFirstPersonCameraComponent()->GetComponentLocation();
-		const FRotator Rot = AvatarAsChallenger->GetControlRotation();
-		Forward = FRotationMatrix::Make(Rot).GetUnitAxis(EAxis::X);
-	}
+	// if (const AChallengerBase* AvatarAsChallenger = Cast<AChallengerBase>(OwningASC->GetAvatarActor()))
+	// {
+	// 	BaseWithRadius = AvatarAsChallenger->GetFirstPersonCameraComponent()->GetComponentLocation();
+	// 	const FRotator Rot = AvatarAsChallenger->GetControlRotation();
+	// 	Forward = FRotationMatrix::Make(Rot).GetUnitAxis(EAxis::X);
+	// }
 
 	const FVector TopWithRadius = BaseWithRadius + (Forward * AttackRange);
 	const FVector BaseWithoutRadius = BaseWithRadius + (Forward * AttackRadius);

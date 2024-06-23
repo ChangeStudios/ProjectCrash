@@ -7,7 +7,7 @@
 #include "Animation/AnimInstance.h"
 #include "ChallengerAnimInstanceBase.generated.h"
 
-class AChallengerBase;
+class ACrashCharacter;
 class UAbilitySystemComponent;
 class UCharacterAnimData;
 class UCrashAbilitySystemComponent;
@@ -50,7 +50,7 @@ protected:
 
 	/** This animation instance's owning pawn, cached for convenience. */
 	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation")
-	TObjectPtr<AChallengerBase> OwningChallenger;
+	TObjectPtr<ACrashCharacter> OwningCharacter;
 
 	/** This animation instance's owning pawn's ASC, cached for convenience. */
 	UPROPERTY(BlueprintReadOnly, Category = "Characters|Challenger|Animation")
@@ -58,7 +58,7 @@ protected:
 
 	/** Caches this animation's owning pawn's ASC after it is initialized. */
 	UFUNCTION()
-	void OnASCInitialized(UCrashAbilitySystemComponent* CrashASC);
+	void OnASCInitialized();
 
 
 

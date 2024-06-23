@@ -7,7 +7,7 @@
 #include "GameFramework/Teams/CrashTeams.h"
 #include "TeamWidget.generated.h"
 
-class ACrashPlayerState_DEP;
+class ACrashPlayerState;
 class UBorder;
 
 /**
@@ -29,7 +29,7 @@ protected:
 
 	/** The players to which this widget is currently bound. */
 	UPROPERTY(BlueprintReadOnly)
-	TArray<TObjectPtr<ACrashPlayerState_DEP>> BoundPlayers;
+	TArray<TObjectPtr<ACrashPlayerState>> BoundPlayers;
 
 	/** The team to which this widget is currently bound. */
 	FCrashTeamID BoundTeam;

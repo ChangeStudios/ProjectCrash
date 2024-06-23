@@ -6,10 +6,11 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilityTask_OnTick.generated.h"
 
+/** Broadcasts each tick this task is active. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTaskDelegate, float, DeltaTime);
 
 /**
- * Ability task that can hook gameplay abilities into the Tick process.
+ * Hooks gameplay abilities into the tick process, allowing them to fire callbacks each tick while the task is active.
  */
 UCLASS()
 class PROJECTCRASH_API UAbilityTask_OnTick : public UAbilityTask
@@ -48,7 +49,7 @@ public:
 
 
 
-	// Internal variables.
+	// Internals.
 		
 protected:
 

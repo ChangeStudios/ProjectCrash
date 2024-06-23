@@ -4,8 +4,7 @@
 #include "UI/Framework/CrashActivatableWidget.h"
 
 #include "CommonInputSubsystem.h"
-#include "Animation/WidgetAnimation.h"
-#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
+#include "Player/CrashPlayerController.h"
 
 UCrashActivatableWidget::UCrashActivatableWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -63,7 +62,7 @@ void UCrashActivatableWidget::NativeOnActivated()
 	}
 }
 
-ACrashPlayerController_DEP* UCrashActivatableWidget::GetOwningCrashPlayer() const
+ACrashPlayerController* UCrashActivatableWidget::GetOwningCrashPlayer() const
 {
-	return Cast<ACrashPlayerController_DEP>(GetOwningPlayer());
+	return Cast<ACrashPlayerController>(GetOwningPlayer());
 }

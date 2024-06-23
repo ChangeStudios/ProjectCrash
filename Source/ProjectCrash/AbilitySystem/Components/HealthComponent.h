@@ -8,18 +8,17 @@
 #include "HealthComponent.generated.h"
 
 class UHealthAttributeSet;
-class UHealthAttributeBaseValues;
 class UCrashAbilitySystemComponent;
 
-/** Broadcast on health attribute events, like when the Health attribute reaches 0. */
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FHealth_AttributeEventSignature, UHealthComponent* /*HealthComponent*/, AActor* /*Instigator*/, float /*DamageMagnitude*/);
-/** Broadcast when health attributes' values are changed. */
+/** Generic signature for broadcasting health attribute events. E.g. running out of health. */
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FHealth_AttributeEventSignature, UHealthComponent* /* HealthComponent */, AActor* /* Instigator */, float /* DamageMagnitude */);
+/** Broadcast when an attribute in the Health set changes. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChangedSignature, UHealthComponent*, HealthComponent, AActor*, Instigator, float, OldValue, float, NewValue);
 
 /**
- * Component used by actors with an ASC to interface with health attributes. This compartmentalizes health functionality
- * into a unique component, while also providing an interface to actors that need to be aware of health events, but may
- * not have the health attribute set itself; e.g. the avatar of an ASC that's owned by the player state.
+ * Component used by actors to interface with health attributes. This compartmentalizes health functionality into a
+ * unique component, while also providing an interface to actors that need to be aware of health events, but may not
+ * have the health attribute set itself. E.g. the avatar of an ASC that's owned by the player state.
  */
 UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UHealthComponent : public UActorComponent
@@ -39,28 +38,20 @@ public:
 
 public:
 
-	// Initialize the component using an ability system component.
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
+	/** Must be called by the owning actor to initialize this component with an ASC and start receiving health events.
+	 * The given ASC must have a HealthAttributeSet. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	void InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC);
 
-	// Uninitialize the component, clearing any references to the ability system.
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
+	/** Uninitializes this component from its current ASC. Should be called by the owning actor to stop receiving health
+	 * events. Called automatically when this component is unregistered. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	void UninitializeFromAbilitySystem();
 
 protected:
 
-	/** Called when this component is unregistered. Wraps UninitializeFromAbilitySystem. */
+	/** Automatically uninitializes this component from the ability system when it's unregistered. */
 	virtual void OnUnregister() override;
-
-
-
-	// Utils.
-
-public:
-
-	/** Retrieves the given actor's HealthComponent, if it has one. Otherwise, returns nullptr. */
-	UFUNCTION(BlueprintPure, Category = "Ability System|Attributes|Health")
-	static UHealthComponent* FindHealthComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UHealthComponent>() : nullptr); }
 
 
 
@@ -69,60 +60,66 @@ public:
 public:
 
 	// Returns the current value of the Health attribute.
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetHealth() const;
 
 	// Returns the current value of the MaxHealth attribute.
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetMaxHealth() const;
 
 	// Returns the current value of the Health attribute normalized from 0 to MaxHealth.
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Attributes|Health")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetHealthNormalized() const;
 
 
 
 	// Attribute changes.
 
-// Callbacks bound to when attribute values are changed. These broadcast HealthComponent delegates.
+// Attribute change callbacks.
 protected:
 
-	/** Called when the Health attribute's value changes. Broadcasts HealthChangedDelegate. */
+	/** Broadcasts HealthChangedDelegate when the Health attribute changes. */
 	UFUNCTION()
 	void OnHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
-	/** Called when the MaxHealth attribute's value changes. Broadcasts MaxHealthChangedDelegate. */
+	/** Broadcasts MaxHealthChangedDelegate when the MaxHealth attribute changes. */
 	UFUNCTION()
 	void OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
-	/** Called when Health reaches 0. Broadcasts OutOfHealthDelegate and notifies the game mode of this component's
-	 * owning actor's death. */
+	/** Broadcasts OutOfHealthDelegate when the Health attribute reaches 0. */
 	UFUNCTION()
 	void OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
 
-/* Delegates broadcast when an attribute is changed. These wrap the health set's delegates, provide a reference to the
- * health component, and expose the delegates to BP. */
+/* Attribute change delegates. */
 public:
 
-	/** Delegate broadcast when the Health attribute's value changes. */
+	/** Broadcast when the Health attribute changes. */
 	UPROPERTY(BlueprintAssignable)
 	FHealth_AttributeChangedSignature HealthChangedDelegate;
 
-	/** Delegate broadcast when the MaxHealth attribute's value changes. */
+	/** Broadcast when the MaxHealth attribute changes. */
 	UPROPERTY(BlueprintAssignable)
 	FHealth_AttributeChangedSignature MaxHealthChangedDelegate;
 
 
 
-	// Internal variables.
+	// Internals.
 
 protected:
 
-	/** Ability system used by this component. */
-	UPROPERTY()
+	/** Ability system to which this component is currently bound. */
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
 
-	/** Health set used by this component. */
-	UPROPERTY()
+	/** Health attribute set to which this component is currently bound. Owned by AbilitySystemComponent. */
 	TObjectPtr<const UHealthAttributeSet> HealthSet;
+
+
+
+	// Utils.
+
+public:
+
+	/** Retrieves the given actor's HealthComponent, if it has one. Returns null otherwise. */
+	UFUNCTION(BlueprintPure, Category = "Ability|Attribute|Health")
+	static UHealthComponent* FindHealthComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UHealthComponent>() : nullptr); }
 };

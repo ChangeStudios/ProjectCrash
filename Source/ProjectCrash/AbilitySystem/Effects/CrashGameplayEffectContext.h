@@ -11,18 +11,21 @@
  * executions to use. It can be retrieved from a context handle with GetCrashContextFromHandle.
  */
 USTRUCT()
-struct FCrashGameplayEffectContext: public FGameplayEffectContext
+struct FCrashGameplayEffectContext : public FGameplayEffectContext
 {
 	GENERATED_BODY()
 
 public:
 
 	/** Default constructor. */
-	FCrashGameplayEffectContext() {}
+	FCrashGameplayEffectContext()
+	{}
 
 	/** Constructor providing an instigator (e.g. a player that's throwing a grenade) and an effect causer (e.g. the
-	 * grenade that's dealing damage). */
-	FCrashGameplayEffectContext(AActor* InInstigator, AActor* InEffectCauser) : FGameplayEffectContext(InInstigator, InEffectCauser) {}
+	 * grenade actor that's dealing damage). */
+	FCrashGameplayEffectContext(AActor* InInstigator, AActor* InEffectCauser)
+		: FGameplayEffectContext(InInstigator, InEffectCauser)
+	{}
 
 	/** Creates the given handle's context cast to CrashGameplayEffectContext. */
 	static PROJECTCRASH_API FCrashGameplayEffectContext* GetCrashContextFromHandle(FGameplayEffectContextHandle Handle);
@@ -43,12 +46,15 @@ public:
 		return NewContext;
 	}
 
-	/** If new fields are added to this structure, serializes them here. */
+	/** If new fields are added to this structure, serialize them here. */
 	virtual bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess) override;
 };
 
 
-/** Enable net serialization. */
+
+/**
+ * Enable net serialization.
+ */
 template<>
 struct TStructOpsTypeTraits<FCrashGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FCrashGameplayEffectContext>
 {

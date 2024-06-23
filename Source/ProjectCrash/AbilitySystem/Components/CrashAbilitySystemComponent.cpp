@@ -8,8 +8,7 @@
 #include "GameplayCueManager.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
-#include "Characters/CrashCharacterBase_DEP.h"
-#include "GameFramework/CrashLogging.h"
+#include "Characters/CrashCharacter.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 
@@ -22,10 +21,10 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 {
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
-	// Register this ASC with the global ability system.
-	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
+	// Register this ASC with the global ability subsystem.
+	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
-		GlobalAbilitySystem->RegisterASC(this);
+		GlobalAbilitySubsystem->RegisterASC(this);
 	}
 
 	// Broadcast that this ASC was initialized.
@@ -34,13 +33,13 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 
 void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
-
-	// Unregister this ASC from the global ability system.
-	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
+	// Unregister this ASC from the global ability subsystem.
+	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
-		GlobalAbilitySystem->UnregisterASC(this);
+		GlobalAbilitySubsystem->UnregisterASC(this);
 	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
@@ -105,7 +104,7 @@ void UCrashAbilitySystemComponent::HandleAbilityActivatedForActivationGroup(UCra
 				 * given ability should not have been activated). */
 				else
 				{
-					ABILITY_LOG(Warning, TEXT("UCrashAbilitySystemComponent: A replaceable ability, [%s], was activated, but the current exclusive ability was not successfully overridden."), *GetNameSafe(ActivatedAbility));
+					ABILITY_LOG(Error, TEXT("UCrashAbilitySystemComponent: A replaceable ability, [%s], was activated, but the current exclusive ability was not successfully overridden."), *GetNameSafe(ActivatedAbility));
 					return;
 				}
 			}
@@ -135,16 +134,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbility
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Activated;
 		AbilityMessage.ActorInfo = *AbilityActorInfo;
-
-		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
-		{
-			// Observers expect the failed ability's CDO.
-			AbilityMessage.Ability = CrashAbility->GetAbilityCDO();
-		}
-		else
-		{
-			AbilityMessage.Ability = Ability;
-		}
+		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
@@ -161,16 +151,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Ended;
 		AbilityMessage.ActorInfo = *AbilityActorInfo;
-
-		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
-		{
-			// Observers expect the failed ability's CDO.
-			AbilityMessage.Ability = CrashAbility->GetAbilityCDO();
-		}
-		else
-		{
-			AbilityMessage.Ability = Ability;
-		}
+		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
@@ -187,16 +168,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
 		AbilityMessage.ActorInfo = *AbilityActorInfo;
-
-		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
-		{
-			// Observers expect the failed ability's CDO.
-			AbilityMessage.Ability = CrashAbility->GetAbilityCDO();
-		}
-		else
-		{
-			AbilityMessage.Ability = Ability;
-		}
+		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
@@ -222,39 +194,47 @@ void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag Gam
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters, EGameplayCueExecutionOptions::IgnoreSuppression);
 }
 
-float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
+float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
+	check(Montage);
+	
 	float Duration = -1.0f;
 
-	/* Get the first-person mesh's animation instance, if there is one. This can only be retrieved via the
-	 * ACrashCharacterBase interface. */
+	// Get the first-person mesh, if the avatar is a CrashCharacter.
 	UAnimInstance* AnimInstance = nullptr;
-	if (const ACrashCharacterBase_DEP* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase_DEP>(GetAvatarActor()) : nullptr)
+	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
+
+	// First-person montages cannot be played without a CrashCharacter avatar. No other actors have a first-person mesh.
+	if (!CrashCharacter)
 	{
-		AnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;
+		return Duration;
 	}
 
-	if (AnimInstance && NewAnimMontage)
+	// Retrieve the first-person mesh animation instance.
+	USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
+	AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
+
+	if (AnimInstance && Montage)
 	{
-		// Play the montage on the first-person animation instance.
-		Duration = AnimInstance->Montage_Play(NewAnimMontage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
+		// Play the montage locally. This is predicted on the owning client.
+		Duration = AnimInstance->Montage_Play(Montage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
 
 		if (Duration > 0.f)
 		{
-			UAnimSequenceBase* Animation = NewAnimMontage->IsDynamicMontage() ? NewAnimMontage->GetFirstAnimReference() : NewAnimMontage;
+			UAnimSequenceBase* Animation = Montage->IsDynamicMontage() ? Montage->GetFirstAnimReference() : Montage;
 
-			if (NewAnimMontage->HasRootMotion() && AnimInstance->GetOwningActor())
+			if (Montage->HasRootMotion() && AnimInstance->GetOwningActor())
 			{
-				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayFirstPersonMontage [%s], Role: [%s]")
-					, *GetNameSafe(NewAnimMontage)
+				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayMontage_FirstPerson [%s], Role: [%s]")
+					, *GetNameSafe(Montage)
 					, *UEnum::GetValueAsString(TEXT("Engine.ENetRole"), AnimInstance->GetOwningActor()->GetLocalRole())
 					);
 			}
 
-			// Start the montage at the given Section.
+			// Start the montage at the given section, if desired.
 			if (StartSectionName != NAME_None)
 			{
-				AnimInstance->Montage_JumpToSection(StartSectionName, NewAnimMontage);
+				AnimInstance->Montage_JumpToSection(StartSectionName, Montage);
 			}
 
 			/* Replicate for non-owners and for replay recordings. The data we set from GetRepAnimMontageInfo_Mutable()
@@ -265,7 +245,7 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 			{
 				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
 
-				// Static parameters. These are set when the montage is played and are never changed afterwards.
+				// Static parameters. These are set when the montage is played and are never changed after.
 				MutableRepAnimMontageInfo.Animation = Animation;
 				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
 
@@ -273,7 +253,7 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 				if (MutableRepAnimMontageInfo.Animation && StartSectionName != NAME_None)
 				{
 					// Add one so INDEX_NONE can be used in the OnRep.
-					MutableRepAnimMontageInfo.SectionIdToPlay = NewAnimMontage->GetSectionIndex(StartSectionName) + 1;
+					MutableRepAnimMontageInfo.SectionIdToPlay = Montage->GetSectionIndex(StartSectionName) + 1;
 				}
 
 				// Update replicated data that changed during the montage's lifetime.
@@ -289,13 +269,14 @@ float UCrashAbilitySystemComponent::PlayFirstPersonMontage(UGameplayAbility* InA
 					AbilityActorInfo->AvatarActor->ForceNetUpdate();
 				}
 			}
+			// Listen for potential prediction rejection.
 			else
 			{
-				// If this prediction key is rejected, we need to stop the predicted montage.
 				FPredictionKey PredictionKey = GetPredictionKeyForNewAction();
 				if (PredictionKey.IsValidKey())
 				{
-					PredictionKey.NewRejectedDelegate().BindUObject(this, &UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected, NewAnimMontage);
+					// If this prediction key is rejected, we need to stop the predicted montage.
+					PredictionKey.NewRejectedDelegate().BindUObject(this, &UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected, Montage);
 				}
 			}
 		}
@@ -308,12 +289,21 @@ void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimM
 {
 	static const float MONTAGE_PREDICTION_REJECT_FADETIME = 0.25f;
 
-	// Retrieve the first-person animation instance. This can only be retrieved via the ACrashCharacterBase interface.
+	// Get the first-person mesh, if the avatar is a CrashCharacter.
 	UAnimInstance* AnimInstance = nullptr;
-	if (const ACrashCharacterBase_DEP* CrashAvatar = GetAvatarActor() ? Cast<ACrashCharacterBase_DEP>(GetAvatarActor()) : nullptr)
+	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
+
+	/* First-person montages cannot be played without a CrashCharacter avatar. This should never happen, since we were
+	 * able to play the montage. */
+	if (!CrashCharacter)
 	{
-		AnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;
+		ABILITY_LOG(Error, TEXT("Attempted to reject predicted first-person montage [%s] without a valid CrashCharacter avatar. Avatar may have been lost."), *GetNameSafe(PredictiveMontage));
+		return;
 	}
+
+	// Retrieve the first-person mesh animation instance.
+	USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
+	AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
 
 	if (AnimInstance && PredictiveMontage)
 	{

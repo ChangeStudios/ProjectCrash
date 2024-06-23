@@ -8,9 +8,9 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "Characters/CrashCharacterBase_DEP.h"
-
+#include "Characters/CrashCharacter.h"
 
 void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
@@ -37,9 +37,10 @@ void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Mon
 		}
 	}
 
-	// Broadcast delegates to kismet.
+	// Trigger the appropriate output pin.
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
+		// If the montage is blending out because it was interrupted, fire OnInterrupted.
 		if (bInterrupted)
 		{
 			OnInterrupted.Broadcast();
@@ -47,6 +48,7 @@ void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Mon
 			// End this task after the montage finishes blending out after being interrupted.
 			EndTask();
 		}
+		// If the montage is blending out after its montage finished, fire OnBlendOut.
 		else
 		{
 			OnBlendOut.Broadcast();
@@ -56,8 +58,8 @@ void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Mon
 
 void UAbilityTask_PlayDualMontageAndWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	/* Broadcast to kismet that this task was completed when the montage finishes playing. If the montage was
-	 * interrupted, this will be handled by OnGameplayAbilityCancelled instead. */
+	/* Fire the OnCompleted pin when this montage ends. If the montage ended because it was interrupted, this will
+	 * instead be handled by OnGameplayAbilityCancelled. */
 	if (!bInterrupted)
 	{
 		if (ShouldBroadcastAbilityTaskDelegates())
@@ -74,14 +76,14 @@ void UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled()
 	// If this ability is cancelled, stop any ongoing montages and end this task.
 	if (StopPlayingMontage() || bAllowInterruptAfterBlendOut)
 	{
-		// Broadcast the interrupt to kismet.
+		// Fire the OnInterrupted pin.
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnInterrupted.Broadcast();
 		}
 	}
 
-	// Clean up delegates.
+	// Clear delegates.
 	OnCompleted.Clear();
 	OnBlendOut.Clear();
 	OnInterrupted.Clear();
@@ -92,7 +94,7 @@ void UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled()
 
 void UAbilityTask_PlayDualMontageAndWait::ExternalCancel()
 {
-	// Broadcast to kismet that this task was cancelled.
+	// Fire the OnCancelled pin.
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
 		OnCancelled.Broadcast();
@@ -109,7 +111,7 @@ void UAbilityTask_PlayDualMontageAndWait::OnDestroy(bool AbilityEnded)
 		// Clear the OnInterrupted delegate.
 		Ability->OnGameplayAbilityCancelled.Remove(InterruptedHandle);
 
-		// Stop ongoing montages.
+		// Stop any montages currently playing, if desired.
 		if (AbilityEnded && bStopWhenAbilityEnds)
 		{
 			StopPlayingMontage();
@@ -125,12 +127,13 @@ UAbilityTask_PlayDualMontageAndWait* UAbilityTask_PlayDualMontageAndWait::Create
 	FName ThirdPersonStartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale,
 	float FirstPersonStartTimeSeconds, float ThirdPersonStartTimeSeconds, bool bAllowInterruptAfterBlendOut)
 {
+	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(FirstPersonRate);
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(ThirdPersonRate);
 
 	// Create the ability task.
 	UAbilityTask_PlayDualMontageAndWait* MyObj = NewAbilityTask<UAbilityTask_PlayDualMontageAndWait>(OwningAbility, TaskInstanceName);
 
-	// Set the new task's parameters.
+	// Set the task's parameters.
 	MyObj->FirstPersonMontageToPlay = FirstPersonMontageToPlay;
 	MyObj->ThirdPersonMontageToPlay = ThirdPersonMontageToPlay;
 	MyObj->FirstPersonRate = FirstPersonRate;
@@ -153,76 +156,53 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 		return;
 	}
 
-	bool bPlayedFirstPersonMontage = false;
 	bool bPlayedThirdPersonMontage = false;
+
 
 	if (UCrashAbilitySystemComponent* CrashASC = AbilitySystemComponent.Get() ? Cast<UCrashAbilitySystemComponent>(AbilitySystemComponent.Get()) : nullptr)
 	{
+		// TODO: Retrieve the first-person and third-person animation instances.
+		// const FCrashGameplayAbilityActorInfo* ActorInfo = CastChecked<FCrashGameplayAbilityActorInfo>(Ability->GetCurrentActorInfo());
+		// UAnimInstance* FirstPersonAnimInstance = ActorInfo->GetFirstPersonAnimInstance();
+		// UAnimInstance* ThirdPersonAnimInstance = ActorInfo->GetAnimInstance();
 		UAnimInstance* FirstPersonAnimInstance = nullptr;
 		UAnimInstance* ThirdPersonAnimInstance = nullptr;
 
-		// Try to retrieve the first- and third-person animation instances via the ACrashCharacterBase interface.
-		AActor* Avatar = Ability->GetCurrentActorInfo()->AvatarActor.Get();
-		if (ACrashCharacterBase_DEP* CrashAvatar = Avatar ? Cast<ACrashCharacterBase_DEP>(Avatar) : nullptr)
-		{
-			const USkeletalMeshComponent* FPPMesh = CrashAvatar->GetFirstPersonMesh();
-			FirstPersonAnimInstance = FPPMesh ? FPPMesh->GetAnimInstance() : nullptr;
-
-			const USkeletalMeshComponent* TPPMesh = CrashAvatar->GetThirdPersonMesh();
-			ThirdPersonAnimInstance = TPPMesh ? TPPMesh->GetAnimInstance() : nullptr;
-		}
-
-		/* If the avatar is not a CrashCharacterBase, try to retrieve just the third-person animation instance by
-		 * searching for any skeletal mesh it has. */
+		/* This task requires a third-person animation instance. If the avatar does not have one, this task does
+		 * nothing. */
 		if (ThirdPersonAnimInstance == nullptr)
 		{
-			const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
-			ThirdPersonAnimInstance = ActorInfo ? ActorInfo->GetAnimInstance() : nullptr;
-		}
-
-		/* This task requires at least a valid third-person animation instance to function properly. If the avatar does
-		 * not have one, this task does nothing. */
-		if (ThirdPersonAnimInstance == nullptr)
-		{
-			ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait: PlayDualMontageAndWait task was called on [%s], but failed to retrieve a third-person animation instance."), *GetNameSafe(AbilitySystemComponent.Get()));
+			ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait: PlayDualMontageAndWait task was called by [%s], but failed to find a third-person animation instance."), *GetNameSafe(Ability));
 			return;
 		}
+
+		// Play the first-person montage if the avatar has a valid first-person animation instance.
+		FirstPersonAnimInstance != nullptr ? CrashASC->PlayMontage_FirstPerson(Ability, Ability->GetCurrentActivationInfo(), FirstPersonMontageToPlay, FirstPersonRate, FirstPersonStartSection, FirstPersonStartTimeSeconds) > 0.0f : false;
 
 		// Play the third-person montage.
 		bPlayedThirdPersonMontage = CrashASC->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), ThirdPersonMontageToPlay, ThirdPersonRate, ThirdPersonStartSection, ThirdPersonStartTimeSeconds) > 0.0f;
 
-		// Play the third-person montage if the avatar has a valid first-person animation instance.
-		bPlayedFirstPersonMontage = FirstPersonAnimInstance != nullptr ? CrashASC->PlayFirstPersonMontage(Ability, Ability->GetCurrentActivationInfo(), FirstPersonMontageToPlay, FirstPersonRate, FirstPersonStartSection, FirstPersonStartTimeSeconds) > 0.0f : false;
-
-		// If either montage was successfully played, handle any consequences they could have on ability logic.
-		if (bPlayedFirstPersonMontage || bPlayedThirdPersonMontage)
+		// If the third-person montage was successfully played, start listening for relevant gameplay events.
+		if (bPlayedThirdPersonMontage)
 		{
-			// Playing a montage could potentially fire off a callback into game code which could kill this ability.
+			// We only need to bind gameplay events if we want to broadcast delegates in response.
 			if (ShouldBroadcastAbilityTaskDelegates() == false)
 			{
 				return;
 			}
 
-			// Bind ability logic to the third-person montage.
-			if (bPlayedThirdPersonMontage)
-			{
-				// Bind the OnInterrupted callback to when this ability is cancelled.
-				InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled);
+			// Bind OnInterrupted to when this ability is cancelled.
+			InterruptedHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled);
 
-				// Bind the OnMontageBlendingOut callback to when the third-person montage finishes blending out.
-				BlendingOutDelegate.BindUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut);
-				ThirdPersonAnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, ThirdPersonMontageToPlay);
+			// Bind OnMontageBlendingOut to when the third-person montage finishes blending out.
+			BlendingOutDelegate.BindUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut);
+			ThirdPersonAnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, ThirdPersonMontageToPlay);
 
-				// Bind the OnMontageEnded callback to when the third-person montage ends.
-				MontageEndedDelegate.BindUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnMontageEnded);
-				ThirdPersonAnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, ThirdPersonMontageToPlay);
-			}
-			else
-			{
-				ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait call to PlayThirdPersonMontage failed."));
-			}
+			// Bind OnMontageEnded to when the third-person montage ends.
+			MontageEndedDelegate.BindUObject(this, &UAbilityTask_PlayDualMontageAndWait::OnMontageEnded);
+			ThirdPersonAnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, ThirdPersonMontageToPlay);
 
-			// Update the root motion translation scale if we have authority over this ability.
+			// Update the root motion translation scale, if we have authority over this ability.
 			ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
 			if (Character && (Character->GetLocalRole() == ROLE_Authority ||
 							  ( (Character->GetLocalRole() == ROLE_AutonomousProxy) &&
@@ -232,20 +212,21 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 				Character->SetAnimRootMotionTranslationScale(AnimRootMotionTranslationScale);
 			}
 		}
-		else
-		{
-			ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait calls to PlayFirstPersonMontage and PlayThirdPersonMontage failed."));
-		}
 	}
 	else
 	{
-		ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait called on an invalid ASC."));
+		ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait called without a valid ASC."));
 	}
 
-	// Cancel this task if neither montage was played successfully.
-	if (!bPlayedFirstPersonMontage && !bPlayedThirdPersonMontage)
+
+	// Cancel this task if the third-person montage was played successfully.
+	if (!bPlayedThirdPersonMontage)
 	{
-		ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait called in ability [%s] failed to play montages [%s] and [%s]. Task Instance Name: [%s]."), *Ability->GetName(), *GetNameSafe(FirstPersonMontageToPlay), *GetNameSafe(ThirdPersonMontageToPlay), *InstanceName.ToString());
+		ABILITY_LOG(Warning, TEXT("UAbilityTask_PlayDualMontageAndWait called in ability [%s] failed to play third-person montage [%s] Task Instance Name: [%s]."), *GetNameSafe(Ability), *GetNameSafe(ThirdPersonMontageToPlay), *InstanceName.ToString());
+
+		// Cancel the first-person montage if it successfully played.
+		StopPlayingMontage();
+
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnCancelled.Broadcast();
@@ -262,25 +243,18 @@ bool UAbilityTask_PlayDualMontageAndWait::StopPlayingMontage()
 		return false;
 	}
 
+	const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
+	if (ActorInfo == nullptr)
+	{
+		return false;
+	}
+
+	// TODO: Retrieve the first-person and third-person animation instances.
+	// const FCrashGameplayAbilityActorInfo* CrashActorInfo = CastChecked<FCrashGameplayAbilityActorInfo>(ActorInfo);
+	// UAnimInstance* FirstPersonAnimInstance = CrashActorInfo->GetFirstPersonAnimInstance();
+	// UAnimInstance* ThirdPersonAnimInstance = CrashActorInfo->GetAnimInstance();
 	UAnimInstance* FirstPersonAnimInstance = nullptr;
 	UAnimInstance* ThirdPersonAnimInstance = nullptr;
-
-	// Try to retrieve the first- and third-person animation instances via the ACrashCharacterBase interface.
-	const AActor* Avatar = Ability->GetCurrentActorInfo()->AvatarActor.Get();
-	const ACrashCharacterBase_DEP* CrashAvatar = Avatar ? Cast<ACrashCharacterBase_DEP>(Avatar) : nullptr;
-	if (CrashAvatar)
-	{
-		FirstPersonAnimInstance = CrashAvatar->GetFirstPersonMesh() ? CrashAvatar->GetFirstPersonMesh()->GetAnimInstance() : nullptr;
-		ThirdPersonAnimInstance = CrashAvatar->GetThirdPersonMesh() ? CrashAvatar->GetThirdPersonMesh()->GetAnimInstance() : nullptr;
-	}
-
-	/* If the avatar is not a CrashCharacterBase, try to retrieve just the third-person animation instance by searching
-	 * for any skeletal mesh it has. */
-	if (ThirdPersonAnimInstance == nullptr)
-	{
-		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
-		ThirdPersonAnimInstance = ActorInfo ? ActorInfo->GetAnimInstance() : nullptr;
-	}
 
 	if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
 	{
@@ -326,13 +300,11 @@ FString UAbilityTask_PlayDualMontageAndWait::GetDebugString() const
 {
 	UAnimMontage* PlayingMontage = nullptr;
 
+	// Print the montage currently playing on the third-person mesh when debugging this task.
 	if (Ability)
 	{
-		// The ASC's GetAnimInstance function should return the third-person montage if it's currently being played.
 		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
-		UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
-
-		if (AnimInstance != nullptr)
+		if (UAnimInstance* AnimInstance = ActorInfo ? ActorInfo->GetAnimInstance() : nullptr)
 		{
 			PlayingMontage = AnimInstance->Montage_IsActive(ThirdPersonMontageToPlay) ? ToRawPtr(ThirdPersonMontageToPlay) : AnimInstance->GetCurrentActiveMontage();
 		}

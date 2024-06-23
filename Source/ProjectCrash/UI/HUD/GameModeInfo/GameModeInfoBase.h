@@ -6,9 +6,9 @@
 #include "UI/Framework/CrashActivatableWidget.h"
 #include "GameModeInfoBase.generated.h"
 
+class ACrashGameState;
 class UTeamWidget;
 class UGameModePlayerWidget;
-class ACrashGameState_DEP;
 class UDynamicEntryBox;
 class UCommonNumericTextBlock;
 
@@ -104,5 +104,5 @@ protected:
 
 	// Game state used for this widget's information, cached for convenience.
 	UPROPERTY()
-	TObjectPtr<ACrashGameState_DEP> CrashGS;
+	TObjectPtr<ACrashGameState> CrashGS;
 };

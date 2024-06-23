@@ -7,26 +7,25 @@
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/PlayerControllers/CrashPlayerController_DEP.h"
 
 void UAbilitySystemWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (ACrashPlayerController_DEP* CrashPC = GetOwningCrashPlayer())
-	{
-		// If this widget was created for a player with a valid player state, register with it immediately.
-		if (CrashPC && CrashPC->GetPlayerState<APlayerState>())
-		{
-			OnPlayerStateChanged();
-		}
-		/* If this widget's owner has not yet initialized their player state, wait until they do, so the player state
-		 * can be used to retrieve the player's ASC. */
-		else
-		{
-			CrashPC->PlayerStateChangedDelegate.AddDynamic(this, &UAbilitySystemWidget::OnPlayerStateChanged);
-		}
-	}
+	// if (ACrashPlayerController_DEP* CrashPC = GetOwningCrashPlayer())
+	// {
+	// 	// If this widget was created for a player with a valid player state, register with it immediately.
+	// 	if (CrashPC && CrashPC->GetPlayerState<APlayerState>())
+	// 	{
+	// 		OnPlayerStateChanged();
+	// 	}
+	// 	/* If this widget's owner has not yet initialized their player state, wait until they do, so the player state
+	// 	 * can be used to retrieve the player's ASC. */
+	// 	else
+	// 	{
+	// 		CrashPC->PlayerStateChangedDelegate.AddDynamic(this, &UAbilitySystemWidget::OnPlayerStateChanged);
+	// 	}
+	// }
 }
 
 void UAbilitySystemWidget::OnPlayerStateChanged()

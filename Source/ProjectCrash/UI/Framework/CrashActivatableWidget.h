@@ -53,7 +53,7 @@ public:
 	/** Returns this widget's owning player controller cast to ACrashPlayerController. Returns null if the player is
 	 * invalid OR is not of the correct class. */
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "Widget")
-	ACrashPlayerController_DEP* GetOwningCrashPlayer() const;
+	ACrashPlayerController* GetOwningCrashPlayer() const;
 
 
 

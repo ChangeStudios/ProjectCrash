@@ -6,27 +6,21 @@
 #include "AbilitySystemLog.h"
 #include "GameFramework/Character.h"
 
-UGA_Jump::UGA_Jump(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
-}
-
 bool UGA_Jump::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
 	// We need a valid avatar in order to jump.
-	if (!ActorInfo || !ActorInfo->AvatarActor.IsValid())
+	AActor* Avatar = GetAvatarActorFromActorInfo();
+	if (!Avatar)
 	{
-		ABILITY_LOG(Warning, TEXT("[%s] tried to use the [%s] ability, but does not have a valid avatar to perform it. [%s] should not have this ability without a valid avatar."), *GetNameSafe(GetOwningActorFromActorInfo()), *GetName(), *GetNameSafe(GetOwningActorFromActorInfo()));
+		ABILITY_LOG(Warning, TEXT("[%s] tried to activate [%s], but does not have a valid avatar to perform it."), *GetNameSafe(GetOwningActorFromActorInfo()), *GetNameSafe(this));
 		return false;
 	}
 
-	// Only characters are allowed to jump.
-	const ACharacter* Character = Cast<ACharacter>(ActorInfo->AvatarActor.Get());
+	// Only characters can jump.
+	const ACharacter* Character = Cast<ACharacter>(Avatar);
 	if (!Character)
 	{
-		ABILITY_LOG(Warning, TEXT("[%s] tried to use the [%s] ability, but its avatar is not a character."), *GetNameSafe(GetOwningActorFromActorInfo()), *GetName());
+		ABILITY_LOG(Warning, TEXT("[%s] tried to activate [%s], but its avatar [%s] is not a character."), *GetNameSafe(GetOwningActorFromActorInfo()), *GetNameSafe(this), *GetNameSafe(Avatar));
 		return false;
 	}
 
@@ -38,19 +32,19 @@ void UGA_Jump::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FG
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	ACharacter* Character = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
+	ACharacter* Character = CastChecked<ACharacter>(GetAvatarActorFromActorInfo());
 
 	// Players can only make their local avatar jump.
 	if (Character->IsLocallyControlled())
 	{
-		// Use the character's built-in Jump method, integrated with the character movement component.
+		// Use the character's built-in Jump method.
 		Character->Jump();
 	}
 }
 
 void UGA_Jump::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	ACharacter* Character = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
+	ACharacter* Character = CastChecked<ACharacter>(GetAvatarActorFromActorInfo());
 
 	// Players can only make their local avatar jump.
 	if (Character->IsLocallyControlled())
