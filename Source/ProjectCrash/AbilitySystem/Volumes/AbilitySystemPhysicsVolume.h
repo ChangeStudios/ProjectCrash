@@ -127,7 +127,7 @@ protected:
 
 
 
-	// Debug.
+	// Debugging.
 
 public:
 

@@ -7,8 +7,7 @@
 #include "GameplayAbilityTargetActor_CollisionDetector.generated.h"
 
 /**
- * A collision shape that detects collision while active. This should be subclassed with custom shapes. This actor
- * generates target data directly on the server.
+ * A collision shape that detects collision while active. This should be subclassed with custom shapes.
  */
 UCLASS(Abstract, NotPlaceable)
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AGameplayAbilityTargetActor
@@ -49,7 +48,7 @@ protected:
 	UFUNCTION()
 	virtual void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	/** The collision component used to detect collision with this actor. */
+	/** The collision component used to detect collision with this actor. Must be constructed by subclasses. */
 	TObjectPtr<UShapeComponent> CollisionDetector;
 
 
@@ -58,7 +57,7 @@ protected:
 
 protected:
 
-	/** Whether to ignore the owner of the gameplay ability utilizing this target actor when checking for targets. */
+	/** Whether to ignore the avatar of the gameplay ability using this target actor when checking for targets. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	bool bIgnoreSelf;
 

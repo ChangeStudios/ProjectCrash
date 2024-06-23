@@ -7,6 +7,7 @@
 #include "GameplayAbilityTargetActor_CollisionDetector_Capsule.generated.h"
 
 class UCapsuleComponent;
+
 /**
  * A collision detector using a configurable capsule collision shape.
  */
@@ -37,7 +38,8 @@ public:
 	 *
 	 * @param InCapsuleRadius						This actor's detection capsule's radius.
 	 * @param InCapsuleHalfHeight					This actor's detection capsule's half-height.
-	 * @param bInIgnoreSelf							Ignores this target data actor's SourceActor if hit.
+	 * @param bInIgnoreSelf							Ignores this target data actor's SourceActor if hit. The
+	 *												SourceActor is the targeting ability's avatar by default.
 	 * @param bInRepeatTargets						Whether the same targets can be detected multiple times. If false,
 	 *												the Targets array must be explicitly cleared before a target can be
 	 *												detected again, after being sent the first time. This is done
@@ -79,12 +81,12 @@ protected:
 
 private:
 
-	/** This actor's collision detector cast to a capsule component for convenience. */
+	/** This actor's collision detector cached as a capsule component for convenience. */
 	TObjectPtr<UCapsuleComponent> DetectorAsCapsule;
 
 
 
-	// Debug.
+	// Debugging.
 
 public:
 

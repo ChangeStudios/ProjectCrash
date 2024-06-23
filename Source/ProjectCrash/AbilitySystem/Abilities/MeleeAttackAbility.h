@@ -222,7 +222,7 @@ private:
 	 * the target actor's position, or to generate data for a sphere trace that simulates the target actor's capsule. */
 	void GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const;
 
-// Debug.
+// Debugging.
 private:
 
 	bool bGASDebugEnabled;

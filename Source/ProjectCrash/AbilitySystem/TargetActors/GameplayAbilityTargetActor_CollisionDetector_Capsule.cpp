@@ -14,7 +14,7 @@ AGameplayAbilityTargetActor_CollisionDetector_Capsule::AGameplayAbilityTargetAct
 	CapsuleRadius = 22.0f;
 	CapsuleHalfHeight = 44.0f;
 
-	// Create and cache this target actor's collision detection component.
+	// Construct this target actor's collision detection component.
 	CollisionDetector = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CollisionCapsule"));
 	DetectorAsCapsule = CollisionDetector ? Cast<UCapsuleComponent>(CollisionDetector) : nullptr;
 	RootComponent = CollisionDetector ? CollisionDetector : nullptr;
@@ -33,7 +33,7 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCa
 {
 	check(DetectorAsCapsule);
 
-	// Update this target actor's parameters.
+	// Configure this target actor's parameters.
 	CapsuleRadius = InCapsuleRadius;
 	CapsuleHalfHeight = InCapsuleHalfHeight;
 	bIgnoreSelf = bInIgnoreSelf;

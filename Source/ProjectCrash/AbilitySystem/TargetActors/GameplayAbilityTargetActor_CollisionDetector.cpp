@@ -36,9 +36,9 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	StartLocation.SourceAbility = Ability;
 	StartLocation.LiteralTransform = IsValid(CollisionDetector) ? CollisionDetector->GetComponentTransform() : FTransform();
 
-	/* Ensure the collision detector has been created. Subclasses of AGameplayAbilityTargetActor_CollisionDetector
-	 * must create their own collision detector component. */
-	ensureAlwaysMsgf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
+	/* Check that the collision detector has been created. Subclasses of AGameplayAbilityTargetActor_CollisionDetector
+	 * must construct their own collision detector component. */
+	checkf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
 
 	// Reset the hit targets each time targeting restarts, if desired.
 	if (bResetTargetsOnStart)
@@ -100,7 +100,7 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 {
 	if (ShouldProduceTargetData())
 	{
-		// Perform owner filtering.
+		// Perform avatar filtering.
 		if (bIgnoreSelf && OtherActor == SourceActor)
 		{
 			return;
