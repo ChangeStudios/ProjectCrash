@@ -161,12 +161,10 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 
 	if (UCrashAbilitySystemComponent* CrashASC = AbilitySystemComponent.Get() ? Cast<UCrashAbilitySystemComponent>(AbilitySystemComponent.Get()) : nullptr)
 	{
-		// TODO: Retrieve the first-person and third-person animation instances.
-		// const FCrashGameplayAbilityActorInfo* ActorInfo = CastChecked<FCrashGameplayAbilityActorInfo>(Ability->GetCurrentActorInfo());
-		// UAnimInstance* FirstPersonAnimInstance = ActorInfo->GetFirstPersonAnimInstance();
-		// UAnimInstance* ThirdPersonAnimInstance = ActorInfo->GetAnimInstance();
-		UAnimInstance* FirstPersonAnimInstance = nullptr;
-		UAnimInstance* ThirdPersonAnimInstance = nullptr;
+		// Retrieve the first-person and third-person animation instances.
+		const FCrashGameplayAbilityActorInfo* CrashActorInfo = CastChecked<UCrashGameplayAbilityBase>(Ability)->GetCrashActorInfo();
+		UAnimInstance* FirstPersonAnimInstance = CrashActorInfo->GetFirstPersonAnimInstance();
+		UAnimInstance* ThirdPersonAnimInstance = CrashActorInfo->GetAnimInstance();
 
 		/* This task requires a third-person animation instance. If the avatar does not have one, this task does
 		 * nothing. */
@@ -249,12 +247,10 @@ bool UAbilityTask_PlayDualMontageAndWait::StopPlayingMontage()
 		return false;
 	}
 
-	// TODO: Retrieve the first-person and third-person animation instances.
-	// const FCrashGameplayAbilityActorInfo* CrashActorInfo = CastChecked<FCrashGameplayAbilityActorInfo>(ActorInfo);
-	// UAnimInstance* FirstPersonAnimInstance = CrashActorInfo->GetFirstPersonAnimInstance();
-	// UAnimInstance* ThirdPersonAnimInstance = CrashActorInfo->GetAnimInstance();
-	UAnimInstance* FirstPersonAnimInstance = nullptr;
-	UAnimInstance* ThirdPersonAnimInstance = nullptr;
+	// Retrieve the first-person and third-person animation instances.
+	const FCrashGameplayAbilityActorInfo* CrashActorInfo = CastChecked<UCrashGameplayAbilityBase>(Ability)->GetCrashActorInfo();
+	UAnimInstance* FirstPersonAnimInstance = CrashActorInfo->GetFirstPersonAnimInstance();
+	UAnimInstance* ThirdPersonAnimInstance = CrashActorInfo->GetAnimInstance();
 
 	if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
 	{
