@@ -28,7 +28,7 @@ void AAbilitySystemPhysicsVolume::ActorEnteredVolume(AActor* Other)
 {
 	Super::ActorEnteredVolume(Other);
 
-	// Only utilize the ability system on the server.
+	// Only perform ability system logic on the server.
 	if (!HasAuthority())
 	{
 		return;
@@ -99,7 +99,7 @@ void AAbilitySystemPhysicsVolume::ActorLeavingVolume(AActor* Other)
 {
 	Super::ActorLeavingVolume(Other);
 
-	// Only utilize the ability system on the server.
+	// Only perform ability system logic on the server.
 	if (!HasAuthority())
 	{
 		return;

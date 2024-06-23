@@ -153,11 +153,11 @@ protected:
 protected:
 
 	/** Called when this ability is given to an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "On Give Ability")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Give Ability")
 	void K2_OnGiveAbility();
 
 	/** Called when this ability is removed from an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "On Remove Ability")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability")
 	void K2_OnRemoveAbility();
 
 
@@ -168,12 +168,12 @@ public:
 
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")
 	void SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode);
 
 	/** Clears this ability's overriding camera mode for the ability's avatar. Called automatically when this ability
 	 * ends. */
-	UFUNCTION(BlueprintCallable, Category = "Ability System|Abilities")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")
 	void ClearCameraMode();
 
 protected:
@@ -216,25 +216,25 @@ public:
 	const FCrashGameplayAbilityActorInfo* GetCrashActorInfo() const;
 
 	/** Blueprint-exposed accessor for typed actor info. Returns a copy instead of a pointer. */
-	UFUNCTION(BlueprintCallable, Category = "Ability", DisplayName = "GetCrashActorInfo", Meta = (ToolTip = "Retrieves this ability's typed actor info."))
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info", DisplayName = "GetCrashActorInfo", Meta = (ToolTip = "Retrieves this ability's typed actor info."))
 	FCrashGameplayAbilityActorInfo K2_GetCrashActorInfo() const;
 
 	/** Returns this ability's owning ASC as a CrashAbilitySystemComponent. */
-	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
 
 	/** Returns the typed player controller from the current actor info. Often null. To try to retrieve any controller,
 	 * use GetControllerFromActorInfo instead. */
-	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	ACrashPlayerController* GetCrashPlayerControllerFromActorInfo() const;
 
 	/** Attempts to retrieve any controller responsible for this ability: the owning actor's PC, the avatar's
 	 * controller, etc. */
-	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	AController* GetControllerFromActorInfo() const;
 
 	/** Attempts to retrieve the typed player state from the current actor info. Often null. */
-	UFUNCTION(BlueprintCallable, Category = "Ability")
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	ACrashPlayerState* GetCrashPlayerStateFromActorInfo() const;
 
 	/** Returns this ability's CDO. */

@@ -55,15 +55,16 @@ public:
 
 
 
-	// Physics detection.
+	// Volume events.
 
 public:
 
-	/** Grant this volume's abilities and apply its effects to any actors with an ASC when they enter the volume. */
+	/** Grants this volume's abilities, applies its effects, and fires its gameplay events to any actors with an ASC
+	 * when they enter the volume. */
 	virtual void ActorEnteredVolume(AActor* Other) override;
 
-	/** Remove this volume's temporary abilities and effects from actors leaving the volume if they were given by this
-	 * volume. */
+	/** Removes this volume's temporary abilities and effects from actors leaving the volume. Fires exiting gameplay
+	 * events on any actors with an ASC. */
 	virtual void ActorLeavingVolume(AActor* Other) override;
 
 
@@ -81,8 +82,9 @@ protected:
 	/**
 	 * Gameplay effects to apply to an actor when it leaves this volume.
 	 *
-	 * Note that these effects' handles are not saved, and these effects will not be automatically removed by this volume.
-	 * As such, they should either be fire-and-forget effects, duration-based, or manually removed by class.
+	 * These effects' handles are not saved, and these effects will not be automatically removed by this volume. Unless
+	 * they are permanent effects, they should either be instant effects, duration-based effects, or manually
+	 * removed.
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "Ability System|Gameplay Effects", EditAnywhere)
 	TArray<TSubclassOf<UGameplayEffect>> OnExitEffectsToApply;
@@ -90,16 +92,16 @@ protected:
 // Abilities.
 protected:
 
-	/** Gameplay abilities given to an actor when it enters this volume. These will be removed when the actors exits
+	/** Gameplay abilities given to an actor when it enters this volume. These will be removed when the actor exits
 	 * this volume. */
 	UPROPERTY(BlueprintReadWrite, Category = "Ability System|Gameplay Abilities", EditAnywhere)
 	TArray<TSubclassOf<UGameplayAbility>> OngoingAbilitiesToGive;
 
 	/**
-	 * Gameplay abilities given to an actor when they enter this volume.
+	 * Gameplay abilities given to an actor when they enter this volume. These are not removed when the actor exists
+	 * this volume.
 	 *
-	 * Note that these abilities' handles are not saved, and these abilities will not be automatically removed by this
-	 * volume. If they should ever been removed, they must be manually removed by the ASC by class.
+	 * These abilities' handles are not saved. If they should ever been removed, they must be removed manually.
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "Ability System|Gameplay Abilities", EditAnywhere)
 	TArray<TSubclassOf<UGameplayAbility>> PermanentAbilitiesToGive;
@@ -118,10 +120,11 @@ protected:
 // Internals.
 protected:
 
-	/** Actors currently inside this physics volume, mapped to a handle containing their temporarily granted abilities
-	 * and applied effects that will be removed when the actor leaves. */
+	/** Actors currently inside this physics volume, mapped to a handle containing their granted abilities and applied
+	 * effects that will be removed when the actor leaves. */
 	UPROPERTY()
 	TMap<AActor*, FEnteredActorAbilitySystemHandle> EnteredActorHandles;
+
 
 
 	// Debug.
