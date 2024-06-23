@@ -26,8 +26,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathDa
  * this document detailing the implementation this system from a higher level:
  *
  *		https://docs.google.com/document/d/1O7YPWexCDY6cmNgkvG8EtkZL657hN82NOsViu8EdND4/edit?usp=sharing
- *
- * TODO: Route input activation through ASC to batch ability activation by processing input from the same frame together. See UCrashInputComponent.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemComponent

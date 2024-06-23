@@ -160,9 +160,9 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		false
 	);
 
-	AnimTask->OnBlendOut.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
-	AnimTask->OnInterrupted.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
-	AnimTask->OnCancelled.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->BlendOutDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->InterruptedDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->CancelledDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
 	AnimTask->ReadyForActivation();
 
 
@@ -501,14 +501,14 @@ void UMeleeAttackAbility::StartTargeting()
 
 	/* Start waiting for target data. This is done predictively, which can trigger a warning like "LogPredictionKey:
 	 * Warning: UnAck'd PredictionKey...". This warning is a bug that should be fixed in future UE versions. */
-	UAbilityTask_WaitReusableTargetData* WaitTargetDataTask = UAbilityTask_WaitReusableTargetData::WaitTargetDataWithReusableActor
+	UAbilityTask_WaitReusableTargetData* WaitTargetDataTask = UAbilityTask_WaitReusableTargetData::CreateWaitTargetDataWithReusableActorProxy
 	(
 		this,
 		FName("WaitTargetDataTask"),
 		EGameplayTargetingConfirmation::CustomMulti,
 		TargetActor
 	);
-	WaitTargetDataTask->ValidDataSentDelegate.AddDynamic(this, &UMeleeAttackAbility::OnTargetDataReceived);
+	WaitTargetDataTask->TargetDataReadyDelegate.AddDynamic(this, &UMeleeAttackAbility::OnTargetDataReceived);
 	WaitTargetDataTask->ReadyForActivation();
 }
 

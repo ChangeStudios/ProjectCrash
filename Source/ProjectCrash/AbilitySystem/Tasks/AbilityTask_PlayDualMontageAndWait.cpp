@@ -12,115 +12,6 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/CrashCharacter.h"
 
-void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
-{
-	// Check if this ability is currently playing this task's third-person montage.
-	if ( (Montage == ThirdPersonMontageToPlay) && (Ability) && (Ability->GetCurrentMontage() == ThirdPersonMontageToPlay) )
-	{
-		// Reset the root motion translation scale.
-		ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-		if (Character && (Character->GetLocalRole() == ROLE_Authority ||
-							( (Character->GetLocalRole() == ROLE_AutonomousProxy) &&
-								(Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
-							)))
-		{
-			Character->SetAnimRootMotionTranslationScale(1.0f);
-		}
-
-		// Notify the ASC that this ability is no longer animating the avatar.
-		if (bInterrupted || !bAllowInterruptAfterBlendOut)
-		{
-			if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
-			{
-				ASC->ClearAnimatingAbility(Ability);
-			}
-		}
-	}
-
-	// Trigger the appropriate output pin.
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		// If the montage is blending out because it was interrupted, fire OnInterrupted.
-		if (bInterrupted)
-		{
-			OnInterrupted.Broadcast();
-
-			// End this task after the montage finishes blending out after being interrupted.
-			EndTask();
-		}
-		// If the montage is blending out after its montage finished, fire OnBlendOut.
-		else
-		{
-			OnBlendOut.Broadcast();
-		}
-	}
-}
-
-void UAbilityTask_PlayDualMontageAndWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	/* Fire the OnCompleted pin when this montage ends. If the montage ended because it was interrupted, this will
-	 * instead be handled by OnGameplayAbilityCancelled. */
-	if (!bInterrupted)
-	{
-		if (ShouldBroadcastAbilityTaskDelegates())
-		{
-			OnCompleted.Broadcast();
-		}
-	}
-
-	EndTask();
-}
-
-void UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled()
-{
-	// If this ability is cancelled, stop any ongoing montages and end this task.
-	if (StopPlayingMontage() || bAllowInterruptAfterBlendOut)
-	{
-		// Fire the OnInterrupted pin.
-		if (ShouldBroadcastAbilityTaskDelegates())
-		{
-			OnInterrupted.Broadcast();
-		}
-	}
-
-	// Clear delegates.
-	OnCompleted.Clear();
-	OnBlendOut.Clear();
-	OnInterrupted.Clear();
-	OnCancelled.Clear();
-
-	EndTask();
-}
-
-void UAbilityTask_PlayDualMontageAndWait::ExternalCancel()
-{
-	// Fire the OnCancelled pin.
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		OnCancelled.Broadcast();
-	}
-	
-	Super::ExternalCancel();
-}
-
-void UAbilityTask_PlayDualMontageAndWait::OnDestroy(bool AbilityEnded)
-{
-	// Stop any ongoing montages when this ability ends.
-	if (Ability)
-	{
-		// Clear the OnInterrupted delegate.
-		Ability->OnGameplayAbilityCancelled.Remove(InterruptedHandle);
-
-		// Stop any montages currently playing, if desired.
-		if (AbilityEnded && bStopWhenAbilityEnds)
-		{
-			StopPlayingMontage();
-		}
-	}
-
-	Super::OnDestroy(AbilityEnded);
-}
-
 UAbilityTask_PlayDualMontageAndWait* UAbilityTask_PlayDualMontageAndWait::CreatePlayDualMontageAndWaitProxy(
 	UGameplayAbility* OwningAbility, FName TaskInstanceName, UAnimMontage* FirstPersonMontageToPlay,
 	UAnimMontage* ThirdPersonMontageToPlay, float FirstPersonRate, float ThirdPersonRate, FName FirstPersonStartSection,
@@ -227,11 +118,120 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
-			OnCancelled.Broadcast();
+			CancelledDelegate.Broadcast();
 		}
 	}
 
 	SetWaitingOnAvatar();
+}
+
+void UAbilityTask_PlayDualMontageAndWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+{
+	// Check if this ability is currently playing this task's third-person montage.
+	if ( (Montage == ThirdPersonMontageToPlay) && (Ability) && (Ability->GetCurrentMontage() == ThirdPersonMontageToPlay) )
+	{
+		// Reset the root motion translation scale.
+		ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
+		if (Character && (Character->GetLocalRole() == ROLE_Authority ||
+							( (Character->GetLocalRole() == ROLE_AutonomousProxy) &&
+								(Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
+							)))
+		{
+			Character->SetAnimRootMotionTranslationScale(1.0f);
+		}
+
+		// Notify the ASC that this ability is no longer animating the avatar.
+		if (bInterrupted || !bAllowInterruptAfterBlendOut)
+		{
+			if (UAbilitySystemComponent* ASC = AbilitySystemComponent.Get())
+			{
+				ASC->ClearAnimatingAbility(Ability);
+			}
+		}
+	}
+
+	// Trigger the appropriate output pin.
+	if (ShouldBroadcastAbilityTaskDelegates())
+	{
+		// If the montage is blending out because it was interrupted, fire OnInterrupted.
+		if (bInterrupted)
+		{
+			InterruptedDelegate.Broadcast();
+
+			// End this task after the montage finishes blending out after being interrupted.
+			EndTask();
+		}
+		// If the montage is blending out after its montage finished, fire OnBlendOut.
+		else
+		{
+			BlendOutDelegate.Broadcast();
+		}
+	}
+}
+
+void UAbilityTask_PlayDualMontageAndWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	/* Fire the OnCompleted pin when this montage ends. If the montage ended because it was interrupted, this will
+	 * instead be handled by OnGameplayAbilityCancelled. */
+	if (!bInterrupted)
+	{
+		if (ShouldBroadcastAbilityTaskDelegates())
+		{
+			CompletedDelegate.Broadcast();
+		}
+	}
+
+	EndTask();
+}
+
+void UAbilityTask_PlayDualMontageAndWait::OnGameplayAbilityCancelled()
+{
+	// If this ability is cancelled, stop any ongoing montages and end this task.
+	if (StopPlayingMontage() || bAllowInterruptAfterBlendOut)
+	{
+		// Fire the OnInterrupted pin.
+		if (ShouldBroadcastAbilityTaskDelegates())
+		{
+			InterruptedDelegate.Broadcast();
+		}
+	}
+
+	// Clear delegates.
+	CompletedDelegate.Clear();
+	BlendOutDelegate.Clear();
+	InterruptedDelegate.Clear();
+	CancelledDelegate.Clear();
+
+	EndTask();
+}
+
+void UAbilityTask_PlayDualMontageAndWait::ExternalCancel()
+{
+	// Fire the OnCancelled pin.
+	if (ShouldBroadcastAbilityTaskDelegates())
+	{
+		CancelledDelegate.Broadcast();
+	}
+	
+	Super::ExternalCancel();
+}
+
+void UAbilityTask_PlayDualMontageAndWait::OnDestroy(bool AbilityEnded)
+{
+	// Stop any ongoing montages when this ability ends.
+	if (Ability)
+	{
+		// Clear the OnInterrupted delegate.
+		Ability->OnGameplayAbilityCancelled.Remove(InterruptedHandle);
+
+		// Stop any montages currently playing, if desired.
+		if (AbilityEnded && bStopWhenAbilityEnds)
+		{
+			StopPlayingMontage();
+		}
+	}
+
+	Super::OnDestroy(AbilityEnded);
 }
 
 bool UAbilityTask_PlayDualMontageAndWait::StopPlayingMontage()

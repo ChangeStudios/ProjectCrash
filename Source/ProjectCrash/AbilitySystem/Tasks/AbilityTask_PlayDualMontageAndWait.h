@@ -25,67 +25,6 @@ class PROJECTCRASH_API UAbilityTask_PlayDualMontageAndWait : public UAbilityTask
 {
 	GENERATED_BODY()
 
-	// Task output pins.
-
-public:
-
-	/** Fired when the third-person montage BEGINS blending out. If a montage begins blending out because it was
-	 * interrupted, OnInterrupted will be fired instead of this. */
-	UPROPERTY(BlueprintAssignable)
-	FMontageWaitSimpleDelegate OnBlendOut;
-
-	/** Called when the third-person montage finishes playing and finishes blending out. */
-	UPROPERTY(BlueprintAssignable)
-	FMontageWaitSimpleDelegate OnCompleted;
-
-	/** Fired if the third-person montage is interrupted by another montage before it finishes playing. */
-	UPROPERTY(BlueprintAssignable)
-	FMontageWaitSimpleDelegate OnInterrupted;
-
-	/** Fired if this task is cancelled. Stops any montages that are currently playing. Does not trigger OnBlendOut or
-	 * OnInterrupted. */
-	UPROPERTY(BlueprintAssignable)
-	FMontageWaitSimpleDelegate OnCancelled;
-
-
-
-	// Task callbacks.
-
-public:
-
-	/** Callback function for when the third-person montage begins blending out. */
-	UFUNCTION()
-	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
-
-	/** Callback function for when the third-person montage finishes playing and finishes blending out. */
-	UFUNCTION()
-	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	/** Callback function for when the owning gameplay ability is cancelled. Ends this task and stops playing any
-	 * montages, if requested. */
-	UFUNCTION()
-	virtual void OnGameplayAbilityCancelled();
-
-	/** Broadcasts OnCancelled when this task is externally cancelled. */
-	virtual void ExternalCancel() override;
-
-// Internal delegates.
-protected:
-
-	/** Fired when the third-person montage begins blending out. */
-	FOnMontageBlendingOutStarted BlendingOutDelegate;
-
-	/** Fired when the third-person montage finishes playing and finishes blending out. */
-	FOnMontageEnded MontageEndedDelegate;
-
-	/** Fired if another montage is played on the third-person mesh before the third-person montage finishes playing. */
-	FDelegateHandle InterruptedHandle;
-
-	/** Stops ongoing montages when the owning ability ends, if bStopWhenAbilityEnds is true. */
-	virtual void OnDestroy(bool AbilityEnded) override;
-
-
-
 	// Task construction.
 
 public:
@@ -99,7 +38,7 @@ public:
 	 * means that this task CAN be used without a first-person mesh or without a first-person montage, but must always
 	 * have a third-person montage.
 	 *
-	 * To cover all cases (e.g. guaranteeing logic executes when this task ends), hook into OnInterrupted, OnCancelled,
+	 * To cover all cases (i.e. guaranteeing logic executes when this task ends), hook into OnInterrupted, OnCancelled,
 	 * and OnBlendOut OR OnCompleted. Hooking the same logic into both OnBlendOut and OnCompleted will run that logic
 	 * twice: once when the montage finishes playing and once when it finishes blending out.
 	 *
@@ -146,8 +85,75 @@ public:
 		bool bAllowInterruptAfterBlendOut = false
 	);
 
-	/** Begins ability task logic. */
+
+
+	// Task initialization.
+
+protected:
+
+	/** Begins playing the task's montages and listening for playback events. */
 	virtual void Activate() override;
+
+
+
+	// Task output pins.
+
+public:
+
+	/** Fired when the third-person montage BEGINS blending out. If a montage begins blending out because it was
+	 * interrupted, OnInterrupted will be fired instead of this. */
+	UPROPERTY(BlueprintAssignable, DisplayName = "OnBlendOut")
+	FMontageWaitSimpleDelegate BlendOutDelegate;
+
+	/** Fired when the third-person montage finishes playing and finishes blending out. */
+	UPROPERTY(BlueprintAssignable, DisplayName = "OnCompleted")
+	FMontageWaitSimpleDelegate CompletedDelegate;
+
+	/** Fired if the third-person montage is interrupted by another montage before it finishes playing. */
+	UPROPERTY(BlueprintAssignable, DisplayName = "OnInterrupted")
+	FMontageWaitSimpleDelegate InterruptedDelegate;
+
+	/** Fired if this task is cancelled. Stops any montages that are currently playing. Does not trigger OnBlendOut or
+	 * OnInterrupted. */
+	UPROPERTY(BlueprintAssignable, DisplayName = "OnCancelled")
+	FMontageWaitSimpleDelegate CancelledDelegate;
+
+
+
+	// Task callbacks.
+
+public:
+
+	/** Callback function for when the third-person montage begins blending out. */
+	UFUNCTION()
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+
+	/** Callback function for when the third-person montage finishes playing and finishes blending out. */
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	/** Callback function for when the owning gameplay ability is cancelled. Ends this task and stops playing any
+	 * montages, if requested. */
+	UFUNCTION()
+	virtual void OnGameplayAbilityCancelled();
+
+	/** Broadcasts OnCancelled when this task is externally cancelled. */
+	virtual void ExternalCancel() override;
+
+// Internal delegates.
+protected:
+
+	/** Fired when the third-person montage begins blending out. */
+	FOnMontageBlendingOutStarted BlendingOutDelegate;
+
+	/** Fired when the third-person montage finishes playing and finishes blending out. */
+	FOnMontageEnded MontageEndedDelegate;
+
+	/** Fired if another montage is played on the third-person mesh before the third-person montage finishes playing. */
+	FDelegateHandle InterruptedHandle;
+
+	/** Stops ongoing montages when the owning ability ends, if bStopWhenAbilityEnds is true. */
+	virtual void OnDestroy(bool AbilityEnded) override;
 
 
 

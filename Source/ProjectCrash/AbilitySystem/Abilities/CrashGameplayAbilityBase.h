@@ -38,8 +38,6 @@ enum class EAbilityActivationGroup : uint8
 /**
  * Base gameplay ability class for this project. Extends the base gameplay ability class with additional functionality,
  * integration with this project's input system, and various utilities.
- *
- * TODO: Add utilities for FCrashGameplayAbilityActorInfo.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashGameplayAbilityBase : public UGameplayAbility
