@@ -5,7 +5,7 @@
 
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
+#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "AbilitySystemLog.h"
 #include "Characters/PawnCameraManager.h"
 #include "CrashGameplayTags.h"
@@ -165,7 +165,7 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;
 				AbilityMessage.AbilitySpecHandle = Handle;
-				AbilityMessage.ActorInfo = GetActorInfo();
+				AbilityMessage.ActorInfo = *GetCrashActorInfo();
 				const FActiveGameplayEffect* CooldownEffect = GetAbilitySystemComponentFromActorInfo_Checked()->GetActiveGameplayEffect(CooldownEffectHandle);
 				AbilityMessage.OptionalMagnitude = CooldownEffect->GetDuration();
 

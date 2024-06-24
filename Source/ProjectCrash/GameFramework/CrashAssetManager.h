@@ -11,8 +11,8 @@ class UGlobalGameData;
 class UUserInterfaceData;
 
 /**
- * This project's asset manager singleton. Used for loading and unloading data assets and providing global access to
- * certain assets.
+ * The asset manager singleton for this project. Used for manually loading and unloading assets as needed, and
+ * providing global access to certain data.
  */
 UCLASS(Config = Game)
 class PROJECTCRASH_API UCrashAssetManager : public UAssetManager
@@ -35,7 +35,7 @@ public:
 
 protected:
 
-	/** Loads global game data on startup. */
+	/** Loads the global game data on startup. */
 	virtual void StartInitialLoading() override;
 
 
@@ -63,7 +63,7 @@ protected:
 
 	// Asset loading.
 
-// Specific game data loading.
+// Game data.
 protected:
 
 	/** Synchronously loads the global game data at the given path. Throws a fatal exception if we cannot successfully
@@ -93,6 +93,8 @@ public:
 	static void DumpLoadedAssets(UClass* ClassToFilter = nullptr);
 #endif // WITH_EDITOR
 };
+
+
 
 template <typename AssetType>
 AssetType* UCrashAssetManager::GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer)

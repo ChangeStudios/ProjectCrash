@@ -9,6 +9,7 @@
 #include "Misc/ScopedSlowTask.h"
 #include "UnrealEngine.h"
 
+/** Logs every asset currently in memory. Filters for data assets unless specified otherwise. */
 static FAutoConsoleCommandWithWorldAndArgs CVarDumpLoadedAssets
 (
 	TEXT("Crash.DumpLoadedAssets"),
@@ -17,7 +18,7 @@ static FAutoConsoleCommandWithWorldAndArgs CVarDumpLoadedAssets
 		"\nFilterForDataAssets (Optional, Default: 1) - Whether or not to filter for just data assets, instead of logging EVERY asset in memory."),
 	FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& InParams, UWorld* InWorld)
 	{
-		bool bFilterForDataAssets = 1;
+		bool bFilterForDataAssets = true;
 
 		if (InParams.Num() > 0)
 		{
@@ -30,7 +31,8 @@ static FAutoConsoleCommandWithWorldAndArgs CVarDumpLoadedAssets
 
 namespace Crash
 {
-	static bool bLogAssetLoads = false;
+	/** If true, all manual asset loads will be logged. */
+	static bool bLogAssetLoads = true;
 	static FAutoConsoleVariableRef CVarLogAssetLoads
 	(
 		TEXT("Crash.LogAssetLoads"),
@@ -122,13 +124,14 @@ UPrimaryDataAsset* UCrashAssetManager::LoadGlobalGameData(TSubclassOf<UPrimaryDa
 		SCOPE_LOG_TIME_IN_SECONDS(TEXT("		... GlobalGameData loaded!"), nullptr);
 	}
 
+	// Cache the loaded data, so it can be accessed globally.
 	if (Asset)
 	{
 		GlobalGameData = CastChecked<UGlobalGameData>(Asset);
 	}
+	// The game cannot continue without the global game data.
 	else
 	{
-		// The game cannot continue without the global game data.
 		UE_LOG(LogCrash, Fatal, TEXT("Failed to load GlobalGameData asset at [%s], type [%s]. This is not recoverable. Check the config file to ensure you have the correct global game data configured, and make sure you have added the global game data to the asset manager's assets in the project settings."), *DataPath.ToString(), *PrimaryAssetType.ToString());
 	}
 

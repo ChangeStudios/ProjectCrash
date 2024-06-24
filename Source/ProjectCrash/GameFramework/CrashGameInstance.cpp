@@ -4,13 +4,7 @@
 #include "GameFramework/CrashGameInstance.h"
 
 #include "CrashGameplayTags.h"
-
 #include "Components/GameFrameworkComponentManager.h"
-
-UCrashGameInstance::UCrashGameInstance(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-}
 
 void UCrashGameInstance::Init()
 {

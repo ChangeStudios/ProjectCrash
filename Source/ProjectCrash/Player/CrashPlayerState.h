@@ -29,8 +29,8 @@ enum class EPlayerConnectionType : uint8
 
 
 /**
- * Base modular player state for this project. Handles core functionality used regardless of game mode: manages pawn
- * data, an ability system component, the team framework, and runtime player statistics.
+ * Base modular player state for this project. Manages pawn data, an ability system component, the team framework,
+ * and runtime player statistics.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface

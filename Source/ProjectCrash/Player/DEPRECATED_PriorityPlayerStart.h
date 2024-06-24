@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerStart.h"
-#include "PriorityPlayerStart.generated.h"
+#include "DEPRECATED_PriorityPlayerStart.generated.h"
 
 /**
  * 
  */
-UCLASS(NotBlueprintable)
-class PROJECTCRASH_API APriorityPlayerStart : public APlayerStart
+UCLASS(NotBlueprintable, Deprecated)
+class PROJECTCRASH_API ADEPRECATED_PriorityPlayerStart : public APlayerStart
 {
 	GENERATED_BODY()
 
@@ -19,7 +19,7 @@ class PROJECTCRASH_API APriorityPlayerStart : public APlayerStart
 public:
 
 	/** Default constructor. */
-	APriorityPlayerStart(const FObjectInitializer& ObjectInitializer);
+	ADEPRECATED_PriorityPlayerStart(const FObjectInitializer& ObjectInitializer);
 
 
 

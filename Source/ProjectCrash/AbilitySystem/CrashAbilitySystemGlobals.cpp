@@ -5,7 +5,7 @@
 
 #include "CrashGameplayAbilityTypes.h"
 #include "Components/CrashAbilitySystemComponent.h"
-#include "Effects/CrashGameplayEffectContext.h"
+#include "GameplayEffects/CrashGameplayEffectContext.h"
 
 FGameplayEffectContext* UCrashAbilitySystemGlobals::AllocGameplayEffectContext() const
 {

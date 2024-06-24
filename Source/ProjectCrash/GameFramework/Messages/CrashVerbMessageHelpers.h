@@ -13,7 +13,7 @@ class APlayerState;
 class UObject;
 
 /**
- * Utilities for reading and manipulating verb messages.
+ * Utilities for reading verb messages.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashVerbMessageHelpers : public UBlueprintFunctionLibrary

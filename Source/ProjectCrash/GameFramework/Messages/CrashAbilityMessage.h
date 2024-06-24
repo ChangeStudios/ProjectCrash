@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "Abilities/GameplayAbilityTypes.h"
+#include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "CrashAbilityMessage.generated.h"
 
 /**
@@ -19,13 +19,13 @@ struct FCrashAbilityMessage
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayTag MessageType;
 
-	/** The ability referred to by the message. */
+	/** The ability spec referred to by the message. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
 	/** The actor info of this message's ability, with which this message was broadcast. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	FGameplayAbilityActorInfo ActorInfo;
+	FCrashGameplayAbilityActorInfo ActorInfo;
 
 	/** An optional numeric value to pass as a payload, such as the duration of a cooldown applied. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)

@@ -7,11 +7,10 @@
 #include "CrashWorldSettings.generated.h"
 
 class UCrashGameModeData;
-class ULevelSequence;
 
 /**
- * Default world settings for this project. Provides important map-specific data, such as the default game mode data to
- * use, and the maps' intro cinematic.
+ * Default world settings for this project. Provides important map-specific data, such as which game mode data to use by
+ * default.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashWorldSettings : public AWorldSettings

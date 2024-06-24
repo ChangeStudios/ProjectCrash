@@ -165,4 +165,13 @@ protected:
 
 	/** Called when a prediction key that played a first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
+
+
+
+	// Utils.
+
+public:
+
+	/** Retrieves the typed version of this ASC's actor info. */
+	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
 };

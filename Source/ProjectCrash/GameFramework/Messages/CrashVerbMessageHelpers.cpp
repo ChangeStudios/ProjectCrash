@@ -7,6 +7,9 @@
 #include "CrashVerbMessage.h"
 #include "GameFramework/PlayerState.h"
 
+/**
+ * FCrashAbilityMessage
+ */
 FString FCrashAbilityMessage::ToString() const
 {
 	FString HumanReadableMessage;
@@ -14,6 +17,11 @@ FString FCrashAbilityMessage::ToString() const
 	return HumanReadableMessage;
 }
 
+
+
+/**
+ * FCrashVerbMessage
+ */
 FString FCrashVerbMessage::ToString() const
 {
 	FString HumanReadableMessage;
@@ -21,18 +29,26 @@ FString FCrashVerbMessage::ToString() const
 	return HumanReadableMessage;
 }
 
+
+
+/**
+ * UCrashVerbMessageHelpers
+ */
 APlayerState* UCrashVerbMessageHelpers::GetPlayerStateFromObject(UObject* Object)
 {
-	if (const APlayerController* PC = Cast<APlayerController>(Object))
+	// Object is a controller.
+	if (const AController* C = Cast<AController>(Object))
 	{
-		return PC->PlayerState;
+		return C->PlayerState;
 	}
 
+	// Object is a player state.
 	if (APlayerState* TargetPS = Cast<APlayerState>(Object))
 	{
 		return TargetPS;
 	}
-	
+
+	// Object is a pawn.
 	if (const APawn* TargetPawn = Cast<APawn>(Object))
 	{
 		if (APlayerState* TargetPS = TargetPawn->GetPlayerState())
@@ -46,16 +62,19 @@ APlayerState* UCrashVerbMessageHelpers::GetPlayerStateFromObject(UObject* Object
 
 APlayerController* UCrashVerbMessageHelpers::GetPlayerControllerFromObject(UObject* Object)
 {
+	// Object is a player controller.
 	if (APlayerController* PC = Cast<APlayerController>(Object))
 	{
 		return PC;
 	}
 
+	// Object is a player state.
 	if (const APlayerState* TargetPS = Cast<APlayerState>(Object))
 	{
 		return TargetPS->GetPlayerController();
 	}
 
+	// Object is a pawn.
 	if (const APawn* TargetPawn = Cast<APawn>(Object))
 	{
 		return Cast<APlayerController>(TargetPawn->GetController());

@@ -6,7 +6,7 @@
 #include "AbilitySystemLog.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
-#include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
+#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
 
 UDamageExecution::UDamageExecution()
@@ -21,7 +21,6 @@ UDamageExecution::UDamageExecution()
 void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 // Only perform executions on the server.
-// TODO: Finish this function.
 #if WITH_SERVER_CODE
 
 	// Retrieve this execution's owning gameplay effect.
@@ -29,12 +28,9 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const TObjectPtr<const UGameplayEffect> OwningGameplayEffect = Spec.Def;
 
 
-	// Retrieve this execution's gameplay effect context. The owning context contains data that we need to perform the damage execution.
+	// Retrieve this execution's typed effect context.
 	FCrashGameplayEffectContext* CrashContext = FCrashGameplayEffectContext::GetCrashContextFromHandle(Spec.GetContext());
-	if (!CrashContext)
-	{
-		ABILITY_LOG(Fatal, TEXT("UDamageExecution: Effect context failed to cast to FCrashGameplayEffectContext for damage from [%s]. Context must be of type FCrashGameplayEffectContext for damage executions."), *GetPathNameSafe(OwningGameplayEffect));
-	}
+	check(CrashContext);
 
 
 	// Evaluation parameters for capturing attributes.
@@ -45,50 +41,87 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.TargetTags = TargetTags;
 
 
+	// Retrieve the captured base damage value.
+	float DamageToApply = 0.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvaluateParameters, DamageToApply);
+
+
 	// Retrieve information about the source and target.
-	const AActor* OriginalInstigator = CrashContext->GetOriginalInstigator();
 	const AActor* EffectCauser = CrashContext->GetEffectCauser();
-	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
-	const AActor* TargetActor = TargetASC ? TargetASC->GetAvatarActor() : nullptr;
+	UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
 
 
-	// Ensure we have the data we need to continue with the execution.
-	if (!OriginalInstigator)
-	{
-		ABILITY_LOG(Error, TEXT("UDamageExecution: No instigator found for damage from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
-	}
-	if (!EffectCauser)
-	{
-		ABILITY_LOG(Error, TEXT("UDamageExecution: No effect causer found for damage from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
-	}
-	if (!TargetActor)
-	{
-		ABILITY_LOG(Fatal, TEXT("UDamageExecution: No target actor found for damage from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
-	}
+	// Calculate data from the context's hit result, if one was given.
+	const FHitResult* HitActorResult = CrashContext->GetHitResult();
+	AActor* TargetActor = nullptr;
+	FVector ImpactLocation = FVector::ZeroVector;
+	FVector ImpactNormal = FVector::ZeroVector;
+	FVector StartTrace = FVector::ZeroVector;
+	FVector EndTrace = FVector::ZeroVector;
 
-
-	// If this damage execution is targeting the actor that caused it, check if it can damage its source.
-	if (TargetActor == OriginalInstigator || TargetActor == EffectCauser)
+	if (HitActorResult)
 	{
-		if (const UGameplayEffectComponent* AssetTagComp = OwningGameplayEffect->FindComponent(UAssetTagsGameplayEffectComponent::StaticClass()))
+		const FHitResult& HitResult = *HitActorResult;
+		TargetActor = HitResult.HitObjectHandle.FetchActor();
+		if (TargetActor)
 		{
-			// If this effect doesn't have the "CanDamageSelf" tag but is targeting its source, throw out this execution.
-			if (!Cast<UAssetTagsGameplayEffectComponent>(AssetTagComp)->GetConfiguredAssetTagChanges().CombinedTags.HasTagExact(CrashGameplayTags::TAG_Effects_Damage_CanDamageSelf))
-			{
-				return;
-			}
+			ImpactLocation = HitResult.ImpactPoint;
+			ImpactNormal = HitResult.ImpactNormal;
+			StartTrace = HitResult.TraceStart;
+			EndTrace = HitResult.TraceEnd;
 		}
 	}
 
-	// TODO: Add a CanDamage function to check for team damage too.
+	/* If no hit result was given, use the target ASC's avatar as the target actor, and their world location as the
+	 * impact location. */
+	if (!TargetActor)
+	{
+		TargetActor = TargetASC ? TargetASC->GetAvatarActor_Direct() : nullptr;
+		if (TargetActor)
+		{
+			ImpactLocation = TargetActor->GetActorLocation();
+		}
+	}
 
 
-	// Retrieve the captured base damage value.
-	float DamageToApply;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvaluateParameters, DamageToApply);
+	// Apply rules for team-damage and self-damage.
+	float DamageInteractionAllowedMultiplier = 0.0f;
+	if (TargetActor)
+	{
+		// TODO: DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, HitActor) ? 1.0f : 0.0f;
+	}
 
-	/* Round the damage value down to the nearest whole number. This may be necessary in the future if we deal with
-	 * damage multipliers. */
+
+	// Determine distance from causer to target.
+	double Distance = WORLD_MAX;
+
+	// Use distance from context origin.
+	if (CrashContext->HasOrigin())
+	{
+		Distance = FVector::Dist(CrashContext->GetOrigin(), ImpactLocation);
+	}
+	// Use distance from effect causer.
+	else if (EffectCauser)
+	{
+		Distance = FVector::Dist(EffectCauser->GetActorLocation(), ImpactLocation);
+	}
+	else
+	{
+		ensureMsgf(false, TEXT("Damage calculation cannot find a source location for damage from [%s]. Falling back to WORLD_MAX..."), *GetPathNameSafe(Spec.Def));
+	}
+
+
+	/* Apply damage falloff. Any other context multipliers (e.g. penetration through physical materials) should be
+	 * calculated here too. */
+	float DistanceFalloffMultiplier = 1.0f;
+	// TODO: Apply damage falloff via EffectSource interface on EffectCauser. Implement bp-overridable GetDistanceDropoff function.
+	DistanceFalloffMultiplier = FMath::Max(DistanceFalloffMultiplier, 0.0f);
+
+
+	// Calculate and clamp damage.
+	DamageToApply = FMath::Max(DamageToApply * DistanceFalloffMultiplier * DamageInteractionAllowedMultiplier, 0.0f);
+
+	// Round the damage value DOWN to the nearest whole number. We only use whole numbers for health in this project.
 	DamageToApply = FMath::Floor(DamageToApply);
 
 	// Apply the damage by adding it to the target's "Damage" attribute.
@@ -97,5 +130,5 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UHealthAttributeSet::GetDamageAttribute(), EGameplayModOp::Additive, DamageToApply));
 	}
 
-#endif
+#endif // WITH_SERVER_CODE
 }

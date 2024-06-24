@@ -7,7 +7,7 @@
 #include "CrashPlayerController.generated.h"
 
 /**
- * Default player controller for this project.
+ * Base modular player controller for this project.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashPlayerController : public ACommonPlayerController

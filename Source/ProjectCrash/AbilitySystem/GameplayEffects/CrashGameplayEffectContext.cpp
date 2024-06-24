@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
+#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 
 FCrashGameplayEffectContext* FCrashGameplayEffectContext::GetCrashContextFromHandle(FGameplayEffectContextHandle Handle)
 {

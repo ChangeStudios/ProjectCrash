@@ -5,7 +5,7 @@
 
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
-#include "AbilitySystem/Effects/CrashGameplayEffectContext.h"
+#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
 
 UHealingExecution::UHealingExecution()
@@ -20,7 +20,6 @@ UHealingExecution::UHealingExecution()
 void UHealingExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 // Only perform executions on the server.
-// TODO: Finish this function.
 #if WITH_SERVER_CODE
 
 	// Retrieve this execution's owning gameplay effect.
@@ -28,12 +27,9 @@ void UHealingExecution::Execute_Implementation(const FGameplayEffectCustomExecut
 	const TObjectPtr<const UGameplayEffect> OwningGameplayEffect = Spec.Def;
 
 
-	// Retrieve this execution's gameplay effect context. The owning context contains data that we need to perform the damage execution.
+	// Retrieve this execution's typed effect context.
 	FCrashGameplayEffectContext* CrashContext = FCrashGameplayEffectContext::GetCrashContextFromHandle(Spec.GetContext());
-	if (!CrashContext)
-	{
-		ABILITY_LOG(Fatal, TEXT("UHealingExecution: Effect context failed to cast to FCrashGameplayEffectContext for healing from [%s]. Context MUST be of type FCrashGameplayEffectContext for healing executions."), *GetPathNameSafe(OwningGameplayEffect));
-	}
+	check(CrashContext);
 
 
 	// Evaluation parameters for capturing attributes.
@@ -44,43 +40,53 @@ void UHealingExecution::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluateParameters.TargetTags = TargetTags;
 
 
+	// Retrieve the captured base healing value.
+	float HealingToApply = 0.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseHealingDef, EvaluateParameters, HealingToApply);
+
+
+
 	// Retrieve information about the source and target.
-	const AActor* OriginalInstigator = CrashContext->GetOriginalInstigator();
 	const AActor* EffectCauser = CrashContext->GetEffectCauser();
-	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
-	const AActor* TargetActor = TargetASC ? TargetASC->GetAvatarActor() : nullptr;
+	UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
 
 
-	// Ensure we have the data we need to continue with the execution.
-	if (!OriginalInstigator)
+	// Try to retrieve the target actor.
+	const FHitResult* HitActorResult = CrashContext->GetHitResult();
+	AActor* TargetActor = nullptr;
+
+	// Try to get the actor from the hit result.
+	if (HitActorResult)
 	{
-		ABILITY_LOG(Error, TEXT("UHealingExecution: No instigator found for healing from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
+		TargetActor = HitActorResult->HitObjectHandle.FetchActor();
 	}
-	if (!EffectCauser)
-	{
-		ABILITY_LOG(Error, TEXT("UHealingExecution: No effect causer found for healing from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
-	}
+
+	// Fall back to ASC's avatar.
 	if (!TargetActor)
 	{
-		ABILITY_LOG(Fatal, TEXT("UHealingExecution: No target actor found for healing from [%s]."), *GetPathNameSafe(OwningGameplayEffect))
+		TargetActor = TargetASC ? TargetASC->GetAvatarActor_Direct() : nullptr;
 	}
 
 
-	// Retrieve the captured base healing value.
-	float AmountToHeal;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseHealingDef, EvaluateParameters, AmountToHeal);
+	// Apply rules for team/opponent healing and self-healing.
+	float HealingInteractionAllowedMultiplier = 0.0f;
+	if (ensureMsgf(TargetActor, TEXT("Healing calculation cannot find a target actor for healing from [%s]."), *GetPathNameSafe(Spec.Def)))
+	{
+		// TODO: HealingInteractionAllowedMultiplier = TeamSubsystem->CanCauseHealing(EffectCauser, HitActor) ? 1.0f : 0.0f;
+	}
 
 
-	/* Round the healing value down to the nearest whole number. This may be necessary in the future if we deal with
-	 * healing multipliers. */
-	AmountToHeal = FMath::Floor(AmountToHeal);
+	// Calculate and clamp healing.
+	HealingToApply = FMath::Max(HealingToApply * HealingInteractionAllowedMultiplier, 0.0f);
 
+	// Round the healing value DOWN to the nearest whole number. We only use whole numbers for health in this project.
+	HealingToApply = FMath::Floor(HealingToApply);
 
 	// Apply the healing by adding it to the target's "Healing" attribute.
-	if (AmountToHeal > 0.0f)
+	if (HealingToApply > 0.0f)
 	{
-		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UHealthAttributeSet::GetHealingAttribute(), EGameplayModOp::Additive, AmountToHeal));
+		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UHealthAttributeSet::GetHealingAttribute(), EGameplayModOp::Additive, HealingToApply));
 	}
 
-#endif
+#endif // WITH_SERVER_CODE
 }

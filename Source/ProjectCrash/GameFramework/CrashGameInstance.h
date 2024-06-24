@@ -14,15 +14,6 @@ class PROJECTCRASH_API UCrashGameInstance : public UCommonGameInstance
 {
 	GENERATED_BODY()
 
-	// Construction.
-
-public:
-
-	/** Default constructor. */
-	UCrashGameInstance(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-
-
 	// Initialization.
 
 public:

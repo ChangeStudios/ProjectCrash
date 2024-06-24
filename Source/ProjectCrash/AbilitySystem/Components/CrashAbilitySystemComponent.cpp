@@ -3,14 +3,15 @@
 
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 
+#include "AbilitySystem/CrashGameplayAbilityTypes.h"
+#include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
-#include "GameplayCueManager.h"
-#include "CrashGameplayTags.h"
-#include "AbilitySystem/CrashGlobalAbilitySubsystem.h"
 #include "Characters/CrashCharacter.h"
+#include "CrashGameplayTags.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
+#include "GameplayCueManager.h"
 
 UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
@@ -133,7 +134,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbility
 	{
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Activated;
-		AbilityMessage.ActorInfo = *AbilityActorInfo;
+		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
 		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
@@ -150,7 +151,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle
 	{
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Ended;
-		AbilityMessage.ActorInfo = *AbilityActorInfo;
+		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
 		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
@@ -167,7 +168,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 	{
 		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
 		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
-		AbilityMessage.ActorInfo = *AbilityActorInfo;
+		AbilityMessage.ActorInfo = *static_cast<FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
 		AbilityMessage.AbilitySpecHandle = Handle;
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
@@ -313,4 +314,10 @@ void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimM
 			AnimInstance->Montage_Stop(MONTAGE_PREDICTION_REJECT_FADETIME, PredictiveMontage);
 		}
 	}
+}
+
+const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbilityActorInfo() const
+{
+	// Cast to typed actor info.
+	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
 }

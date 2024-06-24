@@ -52,9 +52,7 @@ public:
 
 
 
-/**
- * Enable net serialization.
- */
+/** Enable net serialization. */
 template<>
 struct TStructOpsTypeTraits<FCrashGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FCrashGameplayEffectContext>
 {

@@ -29,7 +29,7 @@ public:
 protected:
 
 	/** Performs the execution logic. Performs calculations required before applying healing, and then applies healing
-	 * to the target's Health attributes. */
+	 * to the target's Healing attribute (HealthAttributeSet). */
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
 
