@@ -5,9 +5,8 @@
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "CrashDeveloperSettings.generated.h"
 
-class UPawnData;
-class UChallengerSkinData;
 class UCrashGameModeData;
+class UPawnData;
 
 /**
  * Developer settings for development and testing.
@@ -31,13 +30,11 @@ public:
 
 	// Initialization.
 
-#if WITH_EDITOR
-
 public:
 
-	/** Notifies the user of any active developer overrides. */
+#if WITH_EDITOR
+	/** Notifies the user of any active developer overrides. TODO: Forcefully loads the pawn data if necessary. */
 	PROJECTCRASH_API void OnPlayInEditorBegin() const;
-
 #endif // WITH_EDITOR
 
 
@@ -47,16 +44,14 @@ public:
 public:
 
 	/** The game mode data is determined by the game options. If set, this data will be used instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = Crash, Meta = (AllowedTypes = "CrashGameModeData"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = "Crash", Meta = (AllowedTypes = "CrashGameModeData"))
 	FPrimaryAssetId GameModeDataOverride;
 
 	/** Each player's pawn data is determined by the game mode, or by an optional character selection screen. If set,
-	 * this data will be used for all players instead. */
+	 * this data will be used for all players instead.
+	 *
+	 * TODO: Make FPrimaryAssetId
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crash)
 	TObjectPtr<UPawnData> PawnDataOverride;
-
-	/** Each player's skin data retrieved through their cloud settings when they join the game. If set, this data will
-	 * be used for all players instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crash)
-	TObjectPtr<UChallengerSkinData> SkinDataOverride;
 };

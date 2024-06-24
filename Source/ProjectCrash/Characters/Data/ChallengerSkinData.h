@@ -82,6 +82,8 @@ public:
 /**
  * Defines a cosmetic Challenger skin. Whenever a player controls a Challenger, they must have a corresponding skin
  * equipped for it, even if it's just the default skin.
+ *
+ * TODO: Deprecate
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Challenger Skin Data", ShortToolTip = "Data used to define a cosmetic Challenger skin."))
 class PROJECTCRASH_API UChallengerSkinData : public UPrimaryDataAsset

@@ -92,7 +92,7 @@ bool ACrashGameState::CanChangeInitState(UGameFrameworkComponentManager* Manager
 		// All game state components must have reached GameplayReady.
 		return Manager->HaveAllFeaturesReachedInitState(const_cast<ACrashGameState*>(this), STATE_GAMEPLAY_READY, GetFeatureName());
 
-		// @Note: We may want to check the player array again to make sure no one has disconnected or gone inactive.
+		// NOTE: We may want to check the player array again to make sure no one has disconnected or gone inactive.
 	}
 
 	return false;

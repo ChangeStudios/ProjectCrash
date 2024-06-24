@@ -1,17 +1,29 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "FX/ContextEffects/AnimNotify_PhysicalMaterialEvent.h"
+#include "Effects/ContextEffects/AnimNotify_PhysicalMaterialEvent.h"
 
 #include "CrashPhysicalMaterial.h"
 
+
+UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent()
+{
+	// Set this notify's default color in the editor.
+#if WITH_EDITORONLY_DATA
+	NotifyColor = FColor(0, 255, 127, 255);
+#endif
+
+	bShouldFireInEditor = true;
+	DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.Get();
+}
 
 void UAnimNotify_PhysicalMaterialEvent::PostLoad()
 {
 	Super::PostLoad();
 
 	// Load the fallback physical material.
-	if (DefaultPhysicalMaterialPath.IsValid())
+	// TODO: Test if this is loading the asset multiple times
+	if (DefaultPhysicalMaterialPath.IsNull() && DefaultPhysicalMaterialPath.ToSoftObjectPath().IsValid())
 	{
 		DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.LoadSynchronous();
 	}
@@ -60,7 +72,8 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 		{
 			if (const APawn* Pawn = Cast<APawn>(OwningActor))
 			{
-				// Don't play effects triggered by invisible meshes.
+				/* Don't play effects triggered by invisible meshes. This prevents anyone from seeing/hearing both
+				 * first-person and third-person effects. */
 				if (!MeshComp->IsVisible())
 				{
 					return;

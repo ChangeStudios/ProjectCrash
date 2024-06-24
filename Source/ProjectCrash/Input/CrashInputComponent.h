@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CrashInputActionMapping.h"
 #include "GameplayTagContainer.h"
 
 #include "CoreMinimal.h"
@@ -58,7 +57,7 @@ private:
 
 
 
-	// Utilities.
+	// Utils.
 
 public:
 
@@ -80,7 +79,6 @@ public:
 		return (Actor ? Actor->FindComponentByClass<UCrashInputComponent>() : nullptr);
 	}
 };
-
 
 template<class UserClass, typename FuncType>
 void UCrashInputComponent::BindNativeInputAction(const UCrashInputActionMapping* ActionMapping, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType HandlerFunc, bool bLogIfFailed)

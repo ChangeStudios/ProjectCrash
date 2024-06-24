@@ -7,14 +7,17 @@
 #include "UserFacingGameModeData.generated.h"
 
 /**
- * User-facing format of a game setting's value.
+ * User-facing format of a game setting's value. All game setting values are stored as floats internally.
  */
 UENUM(BlueprintType)
 enum class EGameSettingValueType : uint8
 {
-	WholeNumber,	// Integer
-	Decimal,		// Float
-	Boolean			// Bool
+	// Integer
+	WholeNumber,
+	// Float
+	Decimal,
+	// Bool
+	Boolean
 };
 
 

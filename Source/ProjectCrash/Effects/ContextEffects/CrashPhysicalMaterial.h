@@ -37,7 +37,7 @@ class PROJECTCRASH_API UCrashPhysicalMaterial : public UPhysicalMaterial
 
 public:
 
-	/** Map of effects that will be spawned for corresponding physical events. */
+	/** Map of effects that will be spawned for corresponding physical material events. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects", Meta = (Categories = "Event.PhysicalMaterial"))
 	TMap<FGameplayTag, FPhysicalMaterialEffect> Effects;
 
@@ -47,8 +47,8 @@ public:
 	 * Triggers effects for the corresponding physical material event.
 	 *
 	 * Effects are spawned at the given socket's location on the given component. If no socket is given, effects will
-	 * be spawned at the hit location. Otherwise, effects will be thrown out. Location and
-	 * rotation will be offset by the given parameters.
+	 * be spawned at the hit location. Otherwise, effects will be thrown out. Location and rotation will be offset by
+	 * the given parameters.
 	 */
 	UFUNCTION(BlueprintCallable, Category = PhysicalMaterial)
 	static void HandlePhysicalMaterialEvent

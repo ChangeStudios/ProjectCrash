@@ -1,10 +1,9 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "FX/ContextEffects/CrashPhysicalMaterial.h"
+#include "Effects/ContextEffects/CrashPhysicalMaterial.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-
 
 void UCrashPhysicalMaterial::HandlePhysicalMaterialEvent(FGameplayTag Event, const FName TriggeringSocket,
 	USceneComponent* TriggeringComponent, const FVector LocationOffset, const FRotator RotationOffset,

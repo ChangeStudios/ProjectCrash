@@ -7,10 +7,10 @@
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "CrashGameState.generated.h"
 
-namespace UE::GameFeatures { struct FResult; }
 class ACrashPlayerState;
 class UCrashGameModeData;
 class UGameModeManagerComponent;
+namespace UE::GameFeatures { struct FResult; }
 
 /**
  * Base modular game state for this project. This is the primary handler for game initialization, responsible for

@@ -6,12 +6,15 @@
 #include "Components/GameStateComponent.h"
 #include "GameModeManagerComponent.generated.h"
 
-namespace UE::GameFeatures { struct FResult; }
 class UCrashGameModeData;
+namespace UE::GameFeatures { struct FResult; }
 
+/** Fired when the game mode is fully loaded. */
 DECLARE_MULTICAST_DELEGATE_OneParam(FCrashGameModeLoadedSignature, const UCrashGameModeData* /* GameModeData */);
 
-/** Tracks the current game mode's loading state. */
+/**
+ * Tracks the current game mode's loading state.
+ */
 enum class ECrashGameModeLoadState
 {
 	// Game mode data has not been yet been set/received, and has not begun loading.
@@ -28,8 +31,12 @@ enum class ECrashGameModeLoadState
 	Deactivating
 };
 
-/** The priority of delegates broadcast when the game mode finishes fully loading. Used to control the order in which
- * game mode loading responses execute. */
+
+
+/**
+ * The priority of delegates broadcast when the game mode finishes fully loading. Used to control the order in which
+ * game mode loading responses execute.
+ */
 enum class ECrashGameModeLoadedResponsePriority
 {
 	// Broadcast first when the game mode finishes fully loading.
@@ -46,7 +53,7 @@ enum class ECrashGameModeLoadedResponsePriority
  * Game state component responsible for managing the active game mode: loading the game mode data, loading and
  * activating its plugins, and executing its actions.
  *
- * @note In this framework "loading game mode data" refers to loading the game mode data asset into memory. "Loading
+ * NOTE: In this framework "loading game mode data" refers to loading the game mode data asset into memory. "Loading
  * the game mode" refers to loading the data and features that comprise the current game mode (actions, game features,
  * etc.), as defined in the game mode data asset, as opposed to loading an actual AGameMode actor.
  *

@@ -79,6 +79,9 @@ class PROJECTCRASH_API UAnimNotify_PhysicalMaterialEvent : public UAnimNotify
 
 public:
 
+	/** Default constructor. */
+	UAnimNotify_PhysicalMaterialEvent();
+
 	/** Loads the default physical material when this notify is loaded. */
 	virtual void PostLoad() override;
 

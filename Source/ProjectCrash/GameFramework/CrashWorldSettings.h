@@ -33,15 +33,10 @@ protected:
 
 	/** The default game mode data used for this level. This is used for levels that don't have another means of
 	 * determining their game mode data, such as standalone levels (main menu, practice range, etc.). */
-	UPROPERTY(EditDefaultsOnly, Category = GameMode)
+	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
 	TSoftObjectPtr<UCrashGameModeData> DefaultGameModeData;
 
 public:
-
-	/** The intro cinematic played by the player controller when entering this level. Can be left empty to avoid
-	 * playing an intro cinematic on levels that shouldn't have one. */
-	UPROPERTY(EditDefaultsOnly, Category = GameMode)
-	TObjectPtr<ULevelSequence> IntroCinematic;
 
 #if WITH_EDITORONLY_DATA
 	/** Forces standalone net mode when playing in the editor. Useful for testing levels that should always be played

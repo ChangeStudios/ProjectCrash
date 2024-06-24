@@ -3,7 +3,6 @@
 
 #include "Development/CrashDeveloperSettings.h"
 
-#include "Characters/Data/ChallengerSkinData.h"
 #include "Characters/Data/PawnData.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
@@ -41,17 +40,6 @@ void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 		FNotificationInfo Info(FText::Format(
 			LOCTEXT("PawnDataOverrideActive", "Developer Settings Override\nPawn Data: {0}"),
 			FText::FromString(GetNameSafe(PawnDataOverride))
-		));
-		Info.ExpireDuration = 5.0f;
-		FSlateNotificationManager::Get().AddNotification(Info);
-	}
-
-	// Notify user of an active skin override.
-	if (SkinDataOverride)
-	{
-		FNotificationInfo Info(FText::Format(
-			LOCTEXT("SkinDataOverrideActive", "Developer Settings Override\nSkin Data: {0}"),
-			FText::FromString(GetNameSafe(SkinDataOverride))
 		));
 		Info.ExpireDuration = 5.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);

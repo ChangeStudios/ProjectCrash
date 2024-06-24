@@ -3,11 +3,12 @@
 
 #include "CrashInputComponent.h"
 
+#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
+#include "CrashInputActionMapping.h"
 #include "GameplayAbilitySpec.h"
-#include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 
 void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMapping* ActionMapping)
 {
@@ -16,7 +17,7 @@ void UCrashInputComponent::BindAbilityInputActions(const UCrashInputActionMappin
 	// Cache the new action mapping.
 	CurrentActionMappings.AddUnique(ActionMapping);
 
-	// Bind each ability input action in the given mapping to ability handler functions using their input tags.
+	// Bind each ability input action in the given mapping to the ability handler functions using their input tags.
 	for (const FCrashInputAction& AbilityInputAction : ActionMapping->AbilityInputActions)
 	{
 		BindAction(AbilityInputAction.InputAction, ETriggerEvent::Triggered, this, &ThisClass::Input_AbilityInputTagPressed, AbilityInputAction.InputTag);
@@ -40,7 +41,7 @@ void UCrashInputComponent::RemoveAbilityInputActions(const UCrashInputActionMapp
 			}
 		}
 
-		// Remove the action mapping, since it's no longer bound.
+		// Remove the cached action mapping.
 		CurrentActionMappings.Remove(ActionMapping);
 	}
 }

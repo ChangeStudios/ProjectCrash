@@ -14,6 +14,8 @@ class UEquipmentSetDefinition;
 /**
  * Grants a character access to the equipment system. Acts as an interface between the character and the equipment
  * system, allowing them to equip and unequip equipment sets.
+ *
+ * TODO: Deprecate
  */
 UCLASS()
 class PROJECTCRASH_API UEquipmentComponent : public UActorComponent

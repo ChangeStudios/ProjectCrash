@@ -13,6 +13,8 @@ class UEquipmentComponent;
 
 /**
  * Visually represents a single piece of an equipment set (a sword, a shield, a gun, etc.). Contains a single mesh
+ *
+ * TODO: Deprecate
  */
 UCLASS(NotBlueprintable)
 class PROJECTCRASH_API AEquipmentPieceActor : public AActor

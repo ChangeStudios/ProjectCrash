@@ -311,6 +311,8 @@ void UGameModeManagerComponent::StartGameModeUnload()
 	UE_LOG(LogCrashGameMode, Log, TEXT("Crash Game Mode: Started game mode unload. (%s)"),
 		*GetClientServerContextString(this));
 
+
+
 	// Deactivate any game feature plugins loaded by this game mode in FILO.
 	for (int32 i = GameFeaturePluginURLs.Num(); i > 0; i--)
 	{
@@ -327,6 +329,8 @@ void UGameModeManagerComponent::StartGameModeUnload()
 			UGameFeaturesSubsystem::Get().DeactivateGameFeaturePlugin(PluginURL);
 		}
 	}
+
+
 
 	// Deactivate and unregister game feature actions loaded by this game mode.
 	if (LoadState == ECrashGameModeLoadState::Loaded)

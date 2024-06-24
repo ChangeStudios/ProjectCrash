@@ -11,7 +11,7 @@ class UPawnData;
 
 /**
  * Base modular game mode for this project. Responsible for finding the "game mode data" asset to use for the current
- * game, and sending it to the game state for initialization.
+ * game and sending it to the game state for initialization.
  */
 UCLASS()
 class PROJECTCRASH_API ACrashGameMode : public AModularGameModeBase

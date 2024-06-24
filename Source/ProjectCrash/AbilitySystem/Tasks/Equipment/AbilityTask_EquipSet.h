@@ -82,7 +82,7 @@ private:
 	/**
 	 * If this task's outer ability fails, we revert our predictive equip.
 	 *
-	 * Note: I'm not sure if this works; it's never executing when the outer ability fails, but the prediction is still
+	 * NOTE: I'm not sure if this works; it's never executing when the outer ability fails, but the prediction is still
 	 * getting correctly reverted somehow.
 	 */
 	UFUNCTION()

@@ -387,15 +387,8 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 
 		for (AActor* HitActor : HitActors)
 		{
-			// Check for line-of-sight.
-			const bool bHasLOS = UAbilitySystemUtilitiesLibrary::Actor_HasLineOfSight
-			(
-				this,
-				GetAvatarActorFromActorInfo(),
-				HitActor,
-				UEngineTypes::ConvertToTraceType(ECC_Camera),
-				true
-			);
+			// TODO: Check for line-of-sight.
+			const bool bHasLOS = true;
 
 			if (bHasLOS)
 			{

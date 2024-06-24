@@ -3,7 +3,6 @@
 
 #include "GameFramework/GameModes/CrashGameMode.h"
 
-#include "CrashGameplayTags.h"
 #include "GameModeManagerComponent.h"
 #include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
@@ -172,6 +171,8 @@ const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Playe
 	 *		- Session/game settings, if a pawn has been assigned to the specific controller.
 	 *		- Developer settings, if in PIE.
 	 *		- Game mode's default pawn as defined in the GM data.
+	 *
+	 * TODO: Make pawn data FPrimaryAssetId. Load it here when found.
 	 */
 
 	const UPawnData* NewPawnData = nullptr;

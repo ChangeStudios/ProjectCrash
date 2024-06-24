@@ -46,6 +46,8 @@ public:
  * A set of equipment that can be collectively "equipped" by an actor with an EquipmentComponent. Characters can only
  * have one equipment set equipped at any time. Equipment sets drive character animation, grant abilities, and spawn
  * actors to visually represent themselves.
+ *
+ * TODO: Deprecate
  */
 UCLASS(BlueprintType, Const, Meta = (ShortToolTip = "A set of equipment that can be equipped by any actor with an EquipmentComponent. Intended for use with CrashCharacters."))
 class PROJECTCRASH_API UEquipmentSetDefinition : public UDataAsset
