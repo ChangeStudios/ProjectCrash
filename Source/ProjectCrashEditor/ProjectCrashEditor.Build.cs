@@ -24,6 +24,7 @@ public class ProjectCrashEditor : ModuleRules
 				"Core",
 				"CoreUObject",
 				"EditorFramework",
+				"EnhancedInput",
 				"Engine",
 				"ProjectCrash",
 				"UnrealEd"
@@ -33,6 +34,7 @@ public class ProjectCrashEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"AssetTools",
+				"InputEditor",
 				"Slate",
 				"SlateCore"
 			}

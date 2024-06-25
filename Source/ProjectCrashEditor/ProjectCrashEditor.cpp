@@ -8,6 +8,7 @@
 #include "AssetTypes/AssetTypeActions_CrashAbilitySet.h"
 #include "AssetTypes/AssetTypeActions_CrashCameraMode.h"
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
+#include "AssetTypes/AssetTypeActions_InputActionMapping.h"
 #include "AssetTypes/AssetTypeActions_PawnData.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
@@ -60,6 +61,9 @@ void FProjectCrashEditorModule::StartupModule()
 	AssetType_GameModeData = MakeShared<FAssetTypeActions_GameModeData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 
+	AssetType_InputActionMapping = MakeShared<FAssetTypeActions_InputActionMapping>();
+	AssetTools.RegisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
+
 	AssetType_PawnData = MakeShared<FAssetTypeActions_PawnData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
 
@@ -80,7 +84,9 @@ void FProjectCrashEditorModule::StartupModule()
 		{"CrashCameraModeBase", "CrashCameraModeBase"},
 		{"CrashGameModeData", "CrashGameModeData"},
 		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
+		{"CrashInputActionMapping", "InputActionMapping"},
 		{"GameFeatureAction_AddAbilities", "CrashGameplayAbilityBase"},
+		{"GameFeatureAction_AddComponents", "ActorComponent"},
 		{"GameFeatureActionSet", "GameFeatureActionSet"},
 		{"GameplayCueNotify_Actor", "GameplayCue"},
 		{"GameplayCueNotify_Static", "GameplayCue"},
@@ -130,6 +136,7 @@ void FProjectCrashEditorModule::ShutdownModule()
 	AssetTools.UnregisterAssetTypeActions(AssetType_ActionSet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());

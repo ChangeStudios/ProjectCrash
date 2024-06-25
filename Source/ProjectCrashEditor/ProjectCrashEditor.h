@@ -9,6 +9,7 @@ class FAssetTypeActions_ActionSet;
 class FAssetTypeActions_CrashAbilitySet;
 class FAssetTypeActions_CrashCameraMode;
 class FAssetTypeActions_GameModeData;
+class FAssetTypeActions_InputActionMapping;
 class FAssetTypeActions_PawnData;
 class FAssetTypeActions_UserFacingGameModeData;
 
@@ -54,6 +55,7 @@ protected:
 	TSharedPtr<FAssetTypeActions_CrashCameraMode> AssetType_CrashCameraMode;
 	TSharedPtr<FAssetTypeActions_CrashAbilitySet> AssetType_CrashAbilitySet;
 	TSharedPtr<FAssetTypeActions_GameModeData> AssetType_GameModeData;
+	TSharedPtr<FAssetTypeActions_InputActionMapping> AssetType_InputActionMapping;
 	TSharedPtr<FAssetTypeActions_PawnData> AssetType_PawnData;
 	TSharedPtr<FAssetTypeActions_UserFacingGameModeData> AssetType_UserFacingGameModeData;
 
