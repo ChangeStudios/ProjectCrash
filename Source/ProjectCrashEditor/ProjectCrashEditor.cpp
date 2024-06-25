@@ -8,10 +8,27 @@
 #include "AssetTypes/UAssetTypeActions_PawnData.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
+#include "Styling/SlateStyle.h"
+#include "Styling/SlateStyleRegistry.h"
 
 #define LOCTEXT_NAMESPACE "ProjectCrashEditorModule"
 
+#define IMAGE_BRUSH_SVG( RelativePath, ... ) FSlateVectorImageBrush(StyleSetInstance->RootToContentDir(RelativePath, TEXT(".svg")), __VA_ARGS__)
+
 DEFINE_LOG_CATEGORY(LogProjectCrashEditor);
+
+struct FClassIconInfo
+{
+	FClassIconInfo(const char* InType, const char* InIconName) :
+		Type(InType),
+		IconName(InIconName)
+	{}
+
+	/** The name of the class to set an icon and thumbnail for. */
+	const char* Type;
+	/** The name of the SVG file to use as the class icon and thumbnail. */
+	const char* IconName;
+};
 
 void FProjectCrashEditorModule::StartupModule()
 {
@@ -33,6 +50,44 @@ void FProjectCrashEditorModule::StartupModule()
 
 	AssetType_PawnData = MakeShared<FAssetTypeActions_PawnData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
+
+
+	// Create a new style set for custom icons.
+	StyleSetInstance = MakeShareable(new FSlateStyleSet("ProjectCrashEditorStyle"));
+
+	// Assign the content root of the style set.
+	StyleSetInstance->SetContentRoot(FPaths::ProjectContentDir() / TEXT("Editor/Slate"));
+
+	// Set icons and thumbnails.
+	const FClassIconInfo AssetTypesSVG[] = {
+		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
+		{"CrashGameModeData", "CrashGameModeData"},
+		{"UserFacingGameModeData", "UserFacingGameModeData"},
+		{"PawnData", "PawnData"},
+		{"GameplayEffect", "GameplayEffect"},
+		{"GameplayCueNotify_Actor", "GameplayCue"},
+		{"GameplayCueNotify_Static", "GameplayCue"},
+	};
+
+	for (int32 TypeIndex = 0; TypeIndex < UE_ARRAY_COUNT(AssetTypesSVG); ++TypeIndex)
+	{
+		const FClassIconInfo& Info = AssetTypesSVG[TypeIndex];
+
+		// Look up if the brush already exists to audit old vs new icons during development.
+		FString ClassIconName = FString::Printf(TEXT("ClassIcon.%hs"), Info.Type);
+		if (StyleSetInstance->GetOptionalBrush(*ClassIconName, nullptr, nullptr))
+		{
+			UE_LOG(LogSlate, Log, TEXT("%s already found."), *ClassIconName);
+		}
+
+		// Set the class icon.
+		StyleSetInstance->Set(*FString::Printf(TEXT("ClassIcon.%hs"), Info.Type), new IMAGE_BRUSH_SVG(FString::Printf(TEXT("/%hs"), Info.IconName), Icon16x16));
+		// Set the class thumbnail.
+		StyleSetInstance->Set(*FString::Printf(TEXT("ClassThumbnail.%hs"), Info.Type), new IMAGE_BRUSH_SVG(FString::Printf(TEXT("/%hs"), Info.IconName), Icon64x64));
+	}
+
+	// Register the style set.
+	FSlateStyleRegistry::RegisterSlateStyle(*StyleSetInstance);
 }
 
 void FProjectCrashEditorModule::OnBeginPIE(bool bIsSimulating)
@@ -54,6 +109,10 @@ void FProjectCrashEditorModule::ShutdownModule()
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
+
+	// Unregister the style set.
+	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleSetInstance.Get());
+	StyleSetInstance.Reset();
 }
 
 IMPLEMENT_MODULE(FProjectCrashEditorModule, ProjectCrashEditor);

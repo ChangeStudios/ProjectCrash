@@ -50,4 +50,15 @@ protected:
 	TSharedPtr<FAssetTypeActions_GameModeData> AssetType_GameModeData;
 	TSharedPtr<FAssetTypeActions_UserFacingGameModeData> AssetType_UserFacingGameModeData;
 	TSharedPtr<FAssetTypeActions_PawnData> AssetType_PawnData;
+
+
+
+	// Custom asset type icons.
+
+protected:
+
+	static inline TSharedPtr<FSlateStyleSet> StyleSetInstance = nullptr;
+
+	const FVector2D Icon16x16 = FVector2D(16.0f, 16.0f);
+	const FVector2D Icon64x64 = FVector2D(64.0f, 64.0f);
 };
