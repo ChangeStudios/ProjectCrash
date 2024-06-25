@@ -4,8 +4,9 @@
 
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "AssetTypes/AssetTypeActions_CrashCameraMode.h"
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
-#include "AssetTypes/UAssetTypeActions_PawnData.h"
+#include "AssetTypes/AssetTypeActions_PawnData.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
@@ -38,18 +39,24 @@ void FProjectCrashEditorModule::StartupModule()
 		FEditorDelegates::BeginPIE.AddRaw(this, &ThisClass::OnBeginPIE);
 	}
 
+
 	// Register asset categories.
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	GameDataAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("GameData")), LOCTEXT("GameDataAssetCategory", "Game Data"));
 
+
 	// Register asset types.
+	AssetType_CrashCameraMode = MakeShared<FAssetTypeActions_CrashCameraMode>();
+	AssetTools.RegisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
+
 	AssetType_GameModeData = MakeShared<FAssetTypeActions_GameModeData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
-	AssetType_UserFacingGameModeData = MakeShared<FAssetTypeActions_UserFacingGameModeData>();
-	AssetTools.RegisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 
 	AssetType_PawnData = MakeShared<FAssetTypeActions_PawnData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
+
+	AssetType_UserFacingGameModeData = MakeShared<FAssetTypeActions_UserFacingGameModeData>();
+	AssetTools.RegisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 
 
 	// Create a new style set for custom icons.
@@ -60,13 +67,14 @@ void FProjectCrashEditorModule::StartupModule()
 
 	// Set icons and thumbnails.
 	const FClassIconInfo AssetTypesSVG[] = {
-		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
+		{"CrashCameraModeBase", "CrashCameraModeBase"},
 		{"CrashGameModeData", "CrashGameModeData"},
-		{"UserFacingGameModeData", "UserFacingGameModeData"},
-		{"PawnData", "PawnData"},
-		{"GameplayEffect", "GameplayEffect"},
+		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
 		{"GameplayCueNotify_Actor", "GameplayCue"},
 		{"GameplayCueNotify_Static", "GameplayCue"},
+		{"GameplayEffect", "GameplayEffect"},
+		{"PawnData", "PawnData"},
+		{"UserFacingGameModeData", "UserFacingGameModeData"},
 	};
 
 	for (int32 TypeIndex = 0; TypeIndex < UE_ARRAY_COUNT(AssetTypesSVG); ++TypeIndex)
@@ -103,12 +111,15 @@ void FProjectCrashEditorModule::ShutdownModule()
 	// Unbind callbacks from when PIE starts.
     FEditorDelegates::BeginPIE.RemoveAll(this);
 
+
 	// Unregister asset types.
 	if (!FModuleManager::Get().IsModuleLoaded("AssetTools")) return;
 	IAssetTools& AssetTools = IAssetTools::Get();
+	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
-	AssetTools.UnregisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
+
 
 	// Unregister the style set.
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleSetInstance.Get());

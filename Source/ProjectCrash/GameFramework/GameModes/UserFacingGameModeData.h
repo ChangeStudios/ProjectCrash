@@ -58,7 +58,7 @@ struct FUserFacingGameModeSetting
 
 
 /**
- * Static game mode metadata displayed to users in places like custom game lobbies.
+ * Immutable game mode metadata displayed to users in places like custom game lobbies.
  */
 UCLASS(BlueprintType, NotBlueprintable, Const, DisplayName = "User-Facing Game Mode Data")
 class PROJECTCRASH_API UUserFacingGameModeData : public UPrimaryDataAsset

@@ -5,6 +5,7 @@
 #include "AssetTypeCategories.h"
 #include "Logging/LogMacros.h"
 
+class FAssetTypeActions_CrashCameraMode;
 class FAssetTypeActions_GameModeData;
 class FAssetTypeActions_PawnData;
 class FAssetTypeActions_UserFacingGameModeData;
@@ -47,9 +48,10 @@ protected:
 
 protected:
 
+	TSharedPtr<FAssetTypeActions_CrashCameraMode> AssetType_CrashCameraMode;
 	TSharedPtr<FAssetTypeActions_GameModeData> AssetType_GameModeData;
-	TSharedPtr<FAssetTypeActions_UserFacingGameModeData> AssetType_UserFacingGameModeData;
 	TSharedPtr<FAssetTypeActions_PawnData> AssetType_PawnData;
+	TSharedPtr<FAssetTypeActions_UserFacingGameModeData> AssetType_UserFacingGameModeData;
 
 
 

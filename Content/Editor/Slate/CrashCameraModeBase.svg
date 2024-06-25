@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: url(#New_Gradient_Swatch_1);
+      }
+
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke-miterlimit: 50;
+        stroke-width: 8px;
+      }
+
+      .cls-2 {
+        stroke: url(#New_Gradient_Swatch_1-2);
+      }
+    </style>
+    <linearGradient id="New_Gradient_Swatch_1" data-name="New Gradient Swatch 1" x1="10" y1="64" x2="118" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="New_Gradient_Swatch_1-2" data-name="New Gradient Swatch 1" x1="42.5" y1="68.1" x2="85.5" y2="68.1" xlink:href="#New_Gradient_Swatch_1"/>
+  </defs>
+  <path class="cls-1" d="M109.9,101.6H18.1c-2.3,0-4.1-1.9-4.1-4.1v-54.5c0-2.3,1.8-2.1,4.1-2.1h15.6c.6,0,1.2-.3,1.6-.7l8.5-12.3c.8-.9,1.9-1.5,3.2-1.5h33.6c1.2,0,2.3.5,3.1,1.5l8.5,12.3c.4.5,1,.7,1.6.7h16c2.3,0,4.1-.2,4.1,2.1v54.5c0,2.3-1.9,4.1-4.1,4.1Z"/>
+  <circle class="cls-2" cx="64" cy="68.1" r="17.5"/>
+</svg>

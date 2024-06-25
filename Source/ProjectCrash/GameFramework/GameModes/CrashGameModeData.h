@@ -11,7 +11,7 @@ class UGameFeatureAction;
 class UGameFeatureActionSet;
 
 /**
- * Static data defining a game mode. Can be an in-game game mode or a menu game mode.
+ * Immutable data defining a game mode. Can be an in-game game mode or a menu game mode.
  */
 UCLASS(BlueprintType, NotBlueprintable, Const, DisplayName = "Game Mode Data")
 class PROJECTCRASH_API UCrashGameModeData : public UPrimaryDataAsset

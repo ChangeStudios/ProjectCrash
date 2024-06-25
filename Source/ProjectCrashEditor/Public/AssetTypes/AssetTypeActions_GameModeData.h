@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "AssetTypeActions_Base.h"
 
+/**
+ * UCrashGameModeData asset type.
+ */
 class FAssetTypeActions_GameModeData : public FAssetTypeActions_Base
 {
 public:
@@ -16,6 +19,11 @@ public:
 	// End IAssetTypeActions Implementation
 };
 
+
+
+/**
+ * UUserFacingGameModeData asset type.
+ */
 class FAssetTypeActions_UserFacingGameModeData : public FAssetTypeActions_Base
 {
 public:
