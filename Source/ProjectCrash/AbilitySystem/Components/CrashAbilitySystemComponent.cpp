@@ -59,6 +59,163 @@ void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& Ability
 	AbilityRemovedDelegate.Broadcast(AbilitySpec);
 }
 
+void UCrashAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
+{
+	if (InputTag.IsValid())
+	{
+		// Search for any abilities with an input tag matching the pressed tag.
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+		{
+			// Queue any ability with matching input to be processed for this frame.
+			if (AbilitySpec.Ability && (Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability)->GetInputTag().MatchesTagExact(InputTag)))
+			{
+				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
+				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
+			}
+		}
+	}
+}
+
+void UCrashAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
+{
+	if (InputTag.IsValid())
+	{
+		// Search for any abilities with an input tag matching the released tag.
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+		{
+			// Queue any ability with matching input to be processed for this frame.
+			if (AbilitySpec.Ability && (Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability)->GetInputTag().MatchesTagExact(InputTag)))
+			{
+				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
+				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
+			}
+		}
+	}
+}
+
+void UCrashAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
+{
+	// Check if ability input is blocked.
+	if (HasMatchingGameplayTag(CrashGameplayTags::TAG_Gameplay_AbilityInputBlocked))
+	{
+		ClearAbilityInput();
+		return;
+	}
+
+
+	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
+	AbilitiesToActivate.Reset();
+
+
+	// Process abilities that activate while their input is held.
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)
+	{
+		if (const FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability && !AbilitySpec->IsActive())
+			{
+				const UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability);
+				if (AbilityCDO && AbilityCDO->GetActivationMethod() == EAbilityActivationMethod::WhileInputActive)
+				{
+					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+				}
+			}
+		}
+	}
+
+
+	// Process abilities that activate when their input is pressed.
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)
+	{
+		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability)
+			{
+				AbilitySpec->InputPressed = true;
+
+				// If the ability is active, route the input event to it.
+				if (AbilitySpec->IsActive())
+				{
+					AbilitySpecInputPressed(*AbilitySpec);
+				}
+				// If the ability is not active, try to activate it.
+				else
+				{
+					const UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability);
+					if (AbilityCDO && AbilityCDO->GetActivationMethod() == EAbilityActivationMethod::OnInputTriggered)
+					{
+						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					}
+				}
+			}
+		}
+	}
+
+
+	// Activate all triggered abilities.
+	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
+	{
+		TryActivateAbility(AbilitySpecHandle);
+	}
+
+
+	// Process abilities whose input was released.
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputReleasedSpecHandles)
+	{
+		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
+		{
+			if (AbilitySpec->Ability)
+			{
+				AbilitySpec->InputPressed = false;
+
+				// If the ability was active, route the input event to it.
+				if (AbilitySpec->IsActive())
+				{
+					AbilitySpecInputReleased(*AbilitySpec);
+				}
+			}
+		}
+	}
+
+
+	// Clear cached ability handles.
+	InputPressedSpecHandles.Reset();
+	InputReleasedSpecHandles.Reset();
+}
+
+void UCrashAbilitySystemComponent::ClearAbilityInput()
+{
+	InputPressedSpecHandles.Reset();
+	InputReleasedSpecHandles.Reset();
+	InputHeldSpecHandles.Reset();
+}
+
+void UCrashAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputPressed(Spec);
+
+	// We don't support UGameplayAbility::bReplicateInputDirectly.
+	// Use replicated events instead so that the WaitInputPress ability task works.
+	if (Spec.IsActive())
+	{
+		// Invoke the InputPressed event. This is not replicated here. If someone is listening, they may replicate the InputPressed event to the server.
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle, Spec.ActivationInfo.GetActivationPredictionKey());
+	}
+}
+
+void UCrashAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputReleased(Spec);
+
+	// We don't support UGameplayAbility::bReplicateInputDirectly.
+	// Use replicated events instead so that the WaitInputRelease ability task works.
+	if (Spec.IsActive())
+	{
+		// Invoke the InputReleased event. This is not replicated here. If someone is listening, they may replicate the InputReleased event to the server.
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, Spec.ActivationInfo.GetActivationPredictionKey());
+	}
+}
+
 bool UCrashAbilitySystemComponent::IsActivationGroupBlocked(EAbilityActivationGroup ActivationGroup) const
 {
 	// Independent abilities are never blocked.
