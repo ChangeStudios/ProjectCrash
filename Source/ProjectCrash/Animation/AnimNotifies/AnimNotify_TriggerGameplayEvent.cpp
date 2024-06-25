@@ -12,7 +12,7 @@ UAnimNotify_TriggerGameplayEvent::UAnimNotify_TriggerGameplayEvent()
 {
 	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
-		NotifyColor = FColor(0, 127, 0, 255);
+		NotifyColor = FColor(0, 128, 0, 255);
 #endif
 }
 

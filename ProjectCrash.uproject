@@ -15,7 +15,8 @@
 				"CommonGame",
 				"ModularGameplay",
 				"GameFeatures",
-				"CoreUObject"
+				"CoreUObject",
+				"UnrealEd"
 			]
 		},
 		{

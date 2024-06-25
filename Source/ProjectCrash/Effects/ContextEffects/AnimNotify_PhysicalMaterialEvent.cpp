@@ -10,7 +10,7 @@ UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent()
 {
 	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
-	NotifyColor = FColor(0, 255, 127, 255);
+	NotifyColor = FColor(0, 255, 128, 255);
 #endif
 
 	bShouldFireInEditor = true;

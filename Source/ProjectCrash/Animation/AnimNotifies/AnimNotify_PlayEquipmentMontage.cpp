@@ -11,7 +11,7 @@ UAnimNotify_PlayEquipmentMontage::UAnimNotify_PlayEquipmentMontage()
 {
 	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
-	NotifyColor = FColor(0, 127, 255, 255);
+	NotifyColor = FColor(0, 128, 255, 255);
 #endif
 
 	// We won't have valid equipment in the editor, so there's not point in firing this notify.
