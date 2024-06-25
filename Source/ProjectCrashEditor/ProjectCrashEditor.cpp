@@ -87,6 +87,8 @@ void FProjectCrashEditorModule::StartupModule()
 		{"CrashInputActionMapping", "InputActionMapping"},
 		{"GameFeatureAction_AddAbilities", "CrashGameplayAbilityBase"},
 		{"GameFeatureAction_AddComponents", "ActorComponent"},
+		{"GameFeatureAction_AddInputActionMapping", "InputActionMapping"},
+		{"GameFeatureAction_AddInputMappingContext", "InputMappingContext"},
 		{"GameFeatureActionSet", "GameFeatureActionSet"},
 		{"GameplayCueNotify_Actor", "GameplayCue"},
 		{"GameplayCueNotify_Static", "GameplayCue"},

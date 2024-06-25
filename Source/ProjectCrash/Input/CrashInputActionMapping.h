@@ -67,11 +67,11 @@ public:
 
 	/** A mapping of input tags to native input actions. Native actions must be manually bound to handler functions.
 	 * See UInputHandlerComponentBase. */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Meta = (TitleProperty = "{InputTag} -> {InputAction}"))
 	TArray<FCrashInputAction> NativeInputActions;
 
 	/** A mapping of input tags to ability input actions. Ability actions are automatically bound to abilities with
 	 * matching input tags. */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Meta = (TitleProperty = "{InputTag} -> {InputAction}"))
 	TArray<FCrashInputAction> AbilityInputActions;
 };
