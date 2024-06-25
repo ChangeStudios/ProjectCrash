@@ -4,6 +4,7 @@
 
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "AssetTypes/AssetTypeActions_ActionSet.h"
 #include "AssetTypes/AssetTypeActions_CrashAbilitySet.h"
 #include "AssetTypes/AssetTypeActions_CrashCameraMode.h"
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
@@ -47,6 +48,9 @@ void FProjectCrashEditorModule::StartupModule()
 
 
 	// Register asset types.
+	AssetType_ActionSet = MakeShared<FAssetTypeActions_ActionSet>();
+	AssetTools.RegisterAssetTypeActions(AssetType_ActionSet.ToSharedRef());
+
 	AssetType_CrashAbilitySet = MakeShared<FAssetTypeActions_CrashAbilitySet>();
 	AssetTools.RegisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 
@@ -76,6 +80,8 @@ void FProjectCrashEditorModule::StartupModule()
 		{"CrashCameraModeBase", "CrashCameraModeBase"},
 		{"CrashGameModeData", "CrashGameModeData"},
 		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
+		{"GameFeatureAction_AddAbilities", "CrashGameplayAbilityBase"},
+		{"GameFeatureActionSet", "GameFeatureActionSet"},
 		{"GameplayCueNotify_Actor", "GameplayCue"},
 		{"GameplayCueNotify_Static", "GameplayCue"},
 		{"GameplayEffect", "GameplayEffect"},
@@ -121,6 +127,7 @@ void FProjectCrashEditorModule::ShutdownModule()
 	// Unregister asset types.
 	if (!FModuleManager::Get().IsModuleLoaded("AssetTools")) return;
 	IAssetTools& AssetTools = IAssetTools::Get();
+	AssetTools.UnregisterAssetTypeActions(AssetType_ActionSet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
