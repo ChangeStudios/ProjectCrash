@@ -4,6 +4,7 @@
 
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "AssetTypes/AssetTypeActions_CrashAbilitySet.h"
 #include "AssetTypes/AssetTypeActions_CrashCameraMode.h"
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
 #include "AssetTypes/AssetTypeActions_PawnData.h"
@@ -46,6 +47,9 @@ void FProjectCrashEditorModule::StartupModule()
 
 
 	// Register asset types.
+	AssetType_CrashAbilitySet = MakeShared<FAssetTypeActions_CrashAbilitySet>();
+	AssetTools.RegisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
+
 	AssetType_CrashCameraMode = MakeShared<FAssetTypeActions_CrashCameraMode>();
 	AssetTools.RegisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
 
@@ -67,6 +71,8 @@ void FProjectCrashEditorModule::StartupModule()
 
 	// Set icons and thumbnails.
 	const FClassIconInfo AssetTypesSVG[] = {
+		{"CrashAbilitySet", "CrashAbilitySet"},
+		{"CrashAttributeSet", "CrashAttributeSet"},
 		{"CrashCameraModeBase", "CrashCameraModeBase"},
 		{"CrashGameModeData", "CrashGameModeData"},
 		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
@@ -115,6 +121,7 @@ void FProjectCrashEditorModule::ShutdownModule()
 	// Unregister asset types.
 	if (!FModuleManager::Get().IsModuleLoaded("AssetTools")) return;
 	IAssetTools& AssetTools = IAssetTools::Get();
+	AssetTools.UnregisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());

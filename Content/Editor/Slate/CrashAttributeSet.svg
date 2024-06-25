@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: url(#New_Gradient_Swatch_1);
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4 {
+        stroke-miterlimit: 333.3;
+        stroke-width: 63.7px;
+      }
+
+      .cls-1, .cls-3, .cls-4 {
+        fill: none;
+      }
+
+      .cls-2 {
+        fill: url(#linear-gradient);
+        stroke: url(#linear-gradient-2);
+      }
+
+      .cls-3 {
+        stroke: #fff;
+      }
+
+      .cls-4 {
+        stroke: url(#linear-gradient-3);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="50.3" y1="350.1" x2="751.4" y2="350.1" gradientTransform="translate(0 800) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="18.4" y1="340.3" x2="783.2" y2="340.3" gradientTransform="translate(0 800) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="New_Gradient_Swatch_1" data-name="New Gradient Swatch 1" x1="18.1" y1="193.3" x2="368.5" y2="193.3" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="145.5" y1="606.7" x2="241.2" y2="606.7" gradientTransform="translate(0 800) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-3" d="M182.7,336c24.5,69.1,62.2,132.7,111,187.3"/>
+  <path class="cls-2" d="M56.3,150.7h0c-3.9,9.4-5.9,19.5-6,29.7v155c0,127.3,95.3,413.7,191,413.7,183.3,0,316.7-164.7,377.7-257,86.6-14.7,144.8-96.8,130.1-183.4s-96.8-144.8-183.4-130.1c-76.8,13.1-132.9,79.9-132.3,157.8-34.8,17.1-67.4,38.5-97,63.7-30.7,33.4-46.2,78.1-42.7,123.3.9,22.6,4.5,45,11,66.7"/>
+  <circle class="cls-1" cx="193.3" cy="193.3" r="143.3"/>
+  <circle class="cls-4" cx="193.3" cy="193.3" r="16"/>
+</svg>

@@ -6,7 +6,7 @@
 #include "Characters/Data/PawnData.h"
 
 UPawnDataFactory::UPawnDataFactory(const FObjectInitializer& ObjectInitializer)
-: Super(ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SupportedClass = UPawnData::StaticClass();
 	bCreateNew = true;
