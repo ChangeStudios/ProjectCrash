@@ -5,10 +5,9 @@
 #include "GameplayTagContainer.h"
 
 #include "CoreMinimal.h"
+#include "CrashInputActionMapping.h"
 #include "EnhancedInputComponent.h"
 #include "CrashInputComponent.generated.h"
-
-class UCrashInputActionMapping;
 
 /**
  * An input component that uses input action mappings to bind handler functions or abilities to input actions.
