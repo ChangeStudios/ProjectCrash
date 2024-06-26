@@ -20,16 +20,54 @@ UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 
 void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
+	FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+	check(ActorInfo);
+	check(InOwnerActor);
+
+	// Whether this ASC (A) has a valid avatar and (B) that avatar is not the same as the previous avatar.
+	const bool bHasValidNewAvatar = ((InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
+
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+
+	// Notify each ability if a valid new avatar was set.
+	if (bHasValidNewAvatar)
+	{
+		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+		{
+			UCrashGameplayAbilityBase* CrashAbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+
+			if (!CrashAbilityCDO)
+			{
+				continue;
+			}
+
+			// Notify non-instanced abilities' CDO.
+			if (CrashAbilityCDO->GetInstancingPolicy() == EGameplayAbilityInstancingPolicy::NonInstanced)
+			{
+				CrashAbilityCDO->OnNewAvatarSet();
+			}
+			// Notify each instance of instanced abilities.
+			else
+			{
+				for (UGameplayAbility* AbilityInstance : AbilitySpec.GetAbilityInstances())
+				{
+					if (UCrashGameplayAbilityBase* CrashAbilityInstance = Cast<UCrashGameplayAbilityBase>(AbilityInstance))
+					{
+						CrashAbilityInstance->OnNewAvatarSet();
+					}
+				}
+			}
+		}
+
+		// Attempt to activate any passive abilities when a valid new avatar is set.
+		TryActivatePassiveAbilities();
+	}
 
 	// Register this ASC with the global ability subsystem.
 	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
 		GlobalAbilitySubsystem->RegisterASC(this);
 	}
-
-	// Broadcast that this ASC was initialized.
-	InitDelegate.Broadcast(InOwnerActor, InAvatarActor);
 }
 
 void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -41,6 +79,21 @@ void UCrashAbilitySystemComponent::EndPlay(const EEndPlayReason::Type EndPlayRea
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void UCrashAbilitySystemComponent::TryActivatePassiveAbilities()
+{
+	ABILITYLIST_SCOPE_LOCK();
+
+	/* Try to activate each of this ASC's abilities as a "passive ability." TryActivatePassiveAbility will check on its
+	 * own whether the ability can actually be activated this way. */
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (const UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+		{
+			AbilityCDO->TryActivatePassiveAbility(AbilityActorInfo.Get(), AbilitySpec);
+		}
+	}
 }
 
 void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)

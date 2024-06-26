@@ -45,15 +45,18 @@ public:
 
 public:
 
-	/** Registers this ASC with the global ability subsystem and broadcasts InitDelegate. */
+	/** Registers this ASC with the global ability subsystem and attempts to activate passive abilities. If a new, valid
+	 * avatar was set for this ASC, informs all abilities of the avatar change. */
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
-
-	/** Broadcast when this ASC is initialized with a new owner and/or avatar (e.g. after respawning). */
-	UPROPERTY()
-	FASCInitSignature InitDelegate;
 
 	/** Unregisters this ASC from the global ability subsystem. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+protected:
+
+	/** Attempts to activate each of this ASC's abilities as a "passive ability." Called when this ASC is initialized
+	 * with a new avatar. */
+	void TryActivatePassiveAbilities();
 
 
 

@@ -16,8 +16,6 @@ void UAbilityBarWidget::OnASCReady()
 {
 	Super::OnASCReady();
 
-	// Bind to relevant ASC events.
-	OwningASC->InitDelegate.AddDynamic(this, &UAbilityBarWidget::OnASCInit);
 	// OwningASC->DeathEventDelegate.AddDynamic(this, &UAbilityBarWidget::OnDeath);
 	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
 
