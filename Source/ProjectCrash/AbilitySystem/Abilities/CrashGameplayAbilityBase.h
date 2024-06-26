@@ -15,6 +15,25 @@ class UCrashCameraModeBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
 
 /**
+ * Defines how an ability's activation is triggered, usually with respect to user input.
+ */
+UENUM(BlueprintType)
+enum class EAbilityActivationMethod : uint8
+{
+	// Activate this ability once when its input is triggered.
+	OnInputTriggered,
+
+	/* Repeatedly activate this ability while its input is held. Note that a "Pressed" modifier in an input action will
+	 * prevent abilities of this type from behaving as expected. */
+	WhileInputActive,
+
+	// Activate this ability when a new avatar is assigned to its owning ASC. I.e. a "passive ability."
+	OnSpawn
+};
+
+
+
+/**
  * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
  * abilities cannot be activated simultaneously.
  */
@@ -72,6 +91,19 @@ protected:
 
 
 	// Activation.
+
+// Activation method.
+public:
+
+	/** Getter for this ability's activation method. */
+	UFUNCTION(BlueprintPure, Category = "Ability|Activation", Meta = (ToolTip = "How this ability's activation is triggered."))
+	EAbilityActivationMethod GetActivationMethod() const { return ActivationMethod; }
+
+protected:
+
+	/** How this ability's activation is triggered. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Method")
+	EAbilityActivationMethod ActivationMethod;
 
 // Activation group.
 public:
@@ -240,4 +272,13 @@ public:
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO??"))
 	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
+
+
+
+	// Validation.
+
+protected:
+
+	/** Disables support for bReplicateInputDirectly. */
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 };

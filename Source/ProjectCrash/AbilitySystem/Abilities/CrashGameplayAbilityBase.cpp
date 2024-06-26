@@ -16,6 +16,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerState.h"
 
+#if WITH_EDITOR
+#include "Misc/DataValidation.h"
+#endif
+
+#define LOCTEXT_NAMESPACE "GameplayAbility"
+
 // Helper for functions that require an instantiated ability.
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
 {																																							\
@@ -28,8 +34,14 @@
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+	
+	ActivationMethod = EAbilityActivationMethod::OnInputTriggered;
 	ActivationGroup = EAbilityActivationGroup::Independent;
+
 	bIsUserFacingAbility = false;
 	AbilityIcon = nullptr;
 }
@@ -301,3 +313,20 @@ ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo()
 	// Retrieve the actor info's typed PS.
 	return GetCrashActorInfo()->GetCrashPlayerState();
 }
+
+#if WITH_EDITOR
+EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationContext& Context) const
+{
+	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
+
+	if (bReplicateInputDirectly)
+	{
+		Context.AddError(LOCTEXT("ReplicateInputDirectlyNotSupported", "This project does not support directly replicating ability input. Use a WaitInputPress or WaitInputRelease task instead."));
+		Result = EDataValidationResult::Invalid;
+	}
+
+	return Result;
+}
+#endif
+
+#undef LOCTEXT_NAMESPACE

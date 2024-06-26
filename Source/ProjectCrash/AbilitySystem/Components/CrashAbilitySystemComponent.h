@@ -79,6 +79,46 @@ protected:
 
 
 
+	// Input processing.
+
+public:
+
+	/** Called when an input action that corresponds to an ability's input tag is pressed. Queues an appropriate
+	* response for when input is processed this frame. */
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);
+
+	/** Called when an input action that corresponds to an ability's input tag is released. Queues an appropriate
+	* response for when input is processed this frame. */
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+
+	/** Processes all ability input for this frame. This is called by the player controller after processing input. */
+	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
+
+	/** Clears the ability input that occurred this frame. */
+	void ClearAbilityInput();
+
+// Internals.
+public:
+
+	/** Invokes an "input pressed" event to an ability spec. */
+	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
+
+	/** Invokes an "input released" event to an ability spec. */
+	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+
+protected:
+
+	/** Abilities whose input was pressed this frame. */
+	TArray<FGameplayAbilitySpecHandle> InputPressedSpecHandles;
+
+	/** Abilities whose input was released this frame. */
+	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
+
+	/** Abilities whose input is currently held. */
+	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
+
+
+
 	// Ability activation groups.
 
 public:
