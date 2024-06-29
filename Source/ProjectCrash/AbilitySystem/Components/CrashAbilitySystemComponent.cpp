@@ -178,7 +178,7 @@ void UCrashAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGa
 
 
 	// Process abilities that activate when their input is pressed.
-	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)
+	for (const FGameplayAbilitySpecHandle& SpecHandle : InputPressedSpecHandles)
 	{
 		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
 		{
