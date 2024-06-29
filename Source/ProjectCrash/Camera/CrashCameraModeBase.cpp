@@ -57,7 +57,6 @@ void FCrashCameraModeView::Blend(const FCrashCameraModeView& Other, float Weight
  * UCrashCameraModeBase
  */
 UCrashCameraModeBase::UCrashCameraModeBase() :
-	bIsFirstPersonCamera(false),
 	FieldOfView(CAMERA_DEFAULT_FOV),
 	ViewPitchMin(-90.0f),
 	ViewPitchMax(90.0f),
@@ -263,7 +262,7 @@ void UCrashCameraModeBase::DrawDebug(UCanvas* Canvas) const
 
 	// Display this camera mode's name and current weight.
 	DisplayDebugManager.SetDrawColor(FColor::White);
-	DisplayDebugManager.DrawString(FString::Printf(TEXT("			Camera Mode: %s (%f)"), *GetName(), BlendWeight));
+	DisplayDebugManager.DrawString(FString::Printf(TEXT("			Camera Mode: %s (Weight: %f, Type: %s)"), *GetName(), BlendWeight, *CameraTypeTag.ToString()));
 }
 
 #if WITH_EDITOR
@@ -438,6 +437,24 @@ bool UCrashCameraModeStack::EvaluateStack(float DeltaTime, FCrashCameraModeView&
 	BlendStack(OutCameraModeView);
 
 	return true;
+}
+
+void UCrashCameraModeStack::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const
+{
+	// Make sure there is at least one active camera mode.
+	if (CameraModeStack.Num())
+	{
+		const UCrashCameraModeBase* TopCamera = CameraModeStack.Last();
+		check(TopCamera)
+		OutTopCameraWeight = TopCamera->GetBlendWeight();
+		OutTopCameraTag = TopCamera->GetCameraTypeTag();
+	}
+	// Generic data for active camera modes.
+	else
+	{
+		OutTopCameraWeight = 1.0f;
+		OutTopCameraTag = FGameplayTag();
+	}
 }
 
 void UCrashCameraModeStack::DrawDebug(UCanvas* Canvas) const

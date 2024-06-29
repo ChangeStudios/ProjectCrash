@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Camera/CameraComponent.h"
+#include "GameplayTagContainer.h"
 #include "CrashCameraComponent.generated.h"
 
 class AActor;
@@ -43,6 +44,9 @@ public:
 
 	/** The actor that this camera is looking at. Usually the pawn that owns this component. */
 	virtual AActor* GetTargetActor() const { return GetOwner(); }
+
+	/** Gets the current blend weight and identifying tag of the current stack's top camera. */
+	void GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
 	/** Delegate used to query for the desired camera mode. Bind to this to push camera modes. */
 	FDetermineCameraModeSignature DetermineCameraModeDelegate;
