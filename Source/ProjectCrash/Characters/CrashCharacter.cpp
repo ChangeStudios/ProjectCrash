@@ -3,11 +3,13 @@
 
 #include "Characters/CrashCharacter.h"
 
+#include "CrashGameplayTags.h"
 #include "PawnExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 #include "Camera/CrashCameraComponent.h"
+#include "Camera/CrashCameraModeBase.h"
 #include "Components/CapsuleComponent.h"
 
 
@@ -42,6 +44,7 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	check(FirstPersonMesh);
 	FirstPersonMesh->bReceivesDecals = false;
 	FirstPersonMesh->CastShadow = false;
+	FirstPersonMesh->SetVisibility(false, true);
 	FirstPersonMesh->SetupAttachment(CameraComponent);
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f));
@@ -52,6 +55,7 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	check(ThirdPersonMesh);
 	ThirdPersonMesh->bReceivesDecals = false;
 	ThirdPersonMesh->bCastHiddenShadow = true;
+	ThirdPersonMesh->SetVisibility(true, true);
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
@@ -111,6 +115,26 @@ void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	// Notify the pawn extension component that the pawn's input component has been been set up.
 	PawnExtComp->HandleInputComponentSetUp();
+}
+
+void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
+{
+	// When blending out of a first-person camera, immediately switch to third-person.
+	if (NewCameraMode && NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_CameraType_FirstPerson)
+	{
+		FirstPersonMesh->SetVisibility(false, true);
+		ThirdPersonMesh->SetVisibility(true, true);
+	}
+}
+
+void ACrashCharacter::OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
+{
+	// When blending into a first-person camera, switch to third-person when fully blended.
+	if (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_CameraType_FirstPerson)
+	{
+		FirstPersonMesh->SetVisibility(true, true);
+		ThirdPersonMesh->SetVisibility(false, true);
+	}
 }
 
 UCrashAbilitySystemComponent* ACrashCharacter::GetCrashAbilitySystemComponent() const
