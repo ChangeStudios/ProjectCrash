@@ -59,11 +59,6 @@ void UCrashCharacterMovementComponent::InitializeWithAbilitySystem(UCrashAbility
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpVelocityChanged);
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpCountChanged);
 
-	// Initialize the attributes with this movement component's default values.
-	AbilitySystemComponent->SetNumericAttributeBase(UMovementAttributeSet::GetMaxWalkSpeedAttribute(), MaxWalkSpeed);
-	AbilitySystemComponent->SetNumericAttributeBase(UMovementAttributeSet::GetJumpVelocityAttribute(), JumpZVelocity);
-	AbilitySystemComponent->SetNumericAttributeBase(UMovementAttributeSet::GetJumpCountAttribute(), CharacterOwner->JumpMaxCount);
-
 	// Initialize movement properties.
 	MaxWalkSpeed = MovementSet->GetMaxWalkSpeed();
 	JumpZVelocity = MovementSet->GetJumpVelocity();
