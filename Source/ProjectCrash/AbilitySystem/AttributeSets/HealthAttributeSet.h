@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "AbilitySystemComponent.h"
-
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSets/CrashAttributeSet.h"
 #include "HealthAttributeSet.generated.h"
 
@@ -27,7 +26,7 @@ class PROJECTCRASH_API UHealthAttributeSet : public UCrashAttributeSet
 
 public:
 
-	/** Default constructor. Initializes default attribute values. */
+	/** Default constructor. */
 	UHealthAttributeSet();
 
 
@@ -77,7 +76,7 @@ private:
 
 	/** Current health, defaulted to and capped at MaximumHealth (usually 100). Hidden from modifiers as to only be
 	 * modified by executions. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Health;
 
 		// Tracks when Health reaches 0.
@@ -87,7 +86,7 @@ private:
 		float HealthBeforeAttributeChange;
 
 	/** Maximum value that the Health attribute can have at any time. Usually the same as Health's default value. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability System|Attributes|Health", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
 		// Caches MaxHealth before it is updated to determine whether attribute-change delegates should be broadcast.
@@ -98,11 +97,11 @@ private:
 private:
 
 	/** Incoming damage. This is mapped directly to -Health. Positive Damage will remove health. */
-	UPROPERTY(BlueprintReadOnly, Category="Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Damage;
 
 	/** Incoming healing. This mapped directly to +Health. Positive healing will add health. */
-	UPROPERTY(BlueprintReadOnly, Category="Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Healing;
 
 

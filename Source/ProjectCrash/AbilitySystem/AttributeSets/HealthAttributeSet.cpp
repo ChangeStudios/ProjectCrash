@@ -15,17 +15,15 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HealthAttributeSet)
 
-UHealthAttributeSet::UHealthAttributeSet()
-	: Health(100.0f)
-	, MaxHealth(100.0f)
+UHealthAttributeSet::UHealthAttributeSet() :
+	Health(100.0f),
+	bOutOfHealth(false),
+	HealthBeforeAttributeChange(0.0f),
+	MaxHealth(100.0f),
+	MaxHealthBeforeAttributeChange(0.0f)
 {
-	/* Initialize our attributes. These values will be overridden when we initialize the health component with an
-	 * ASC. */
 	InitHealth(100.0f);
 	InitMaxHealth(100.0f);
-	bOutOfHealth = false;
-	HealthBeforeAttributeChange = 0.0f;
-	MaxHealthBeforeAttributeChange = 0.0f;
 }
 
 bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)

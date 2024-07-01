@@ -6,7 +6,7 @@
 #include "CrashGameplayTags.h"
 #include "PawnExtensionComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "AbilitySystem/Components/CrashCharacterMovementComponent.h"
+#include "Characters/CrashCharacterMovementComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 #include "Camera/CrashCameraComponent.h"
 #include "Camera/CrashCameraModeBase.h"
