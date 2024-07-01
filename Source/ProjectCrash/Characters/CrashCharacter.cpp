@@ -156,6 +156,9 @@ void ACrashCharacter::OnAbilitySystemInitialized()
 {
 	// Register the health component with the ASC.
 	HealthComponent->InitializeWithAbilitySystem(GetCrashAbilitySystemComponent());
+
+	// Register the character movement component with the ASC.
+	CastChecked<UCrashCharacterMovementComponent>(GetMovementComponent())->InitializeWithAbilitySystem(GetCrashAbilitySystemComponent());
 }
 
 void ACrashCharacter::OnAbilitySystemUninitialized()

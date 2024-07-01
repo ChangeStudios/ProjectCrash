@@ -44,10 +44,10 @@ protected:
 	 * attribute values. Performs value clamping and broadcasts attribute-change delegates. */
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
-	/** Called before an attribute's base value is modified. Clamps base attribute values. */
+	/** Called before an attribute's base value is modified. Clamps the new base value. */
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 
-	/** Called before an attribute is modified. Clamps attribute values. */
+	/** Called before an attribute is modified. Clamps the new value. */
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
 	/** Called after an attribute is modified. Applies effects of attribute changes, like MaxHealth falling below
@@ -110,13 +110,13 @@ private:
 
 public:
 
-	/** Delegate broadcast when Health attribute changes. */
+	/** Delegate broadcast when the Health attribute changes. */
 	mutable FAttributeChangedSignature HealthAttributeChangedDelegate;
 
-	/** Delegate broadcast when MaxHealth attribute changes. */
+	/** Delegate broadcast when the MaxHealth attribute changes. */
 	mutable FAttributeChangedSignature MaxHealthAttributeChangedDelegate;
 
-	/** Delegate broadcast when health reaches 0. */
+	/** Delegate broadcast when the Health attribute reaches 0. */
 	mutable FAttributeEventSignature OutOfHealthAttributeDelegate;
 
 

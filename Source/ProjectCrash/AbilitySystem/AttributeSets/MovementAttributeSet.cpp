@@ -18,32 +18,49 @@ UMovementAttributeSet::UMovementAttributeSet() :
 void UMovementAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
 {
 	Super::PreAttributeBaseChange(Attribute, NewValue);
+
+	ClampAttribute(Attribute, NewValue);
 }
 
 void UMovementAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	Super::PreAttributeChange(Attribute, NewValue);
-}
 
-void UMovementAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
-{
-	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+	ClampAttribute(Attribute, NewValue);
 }
 
 void UMovementAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, float& NewValue) const
 {
+	// Clamp MaxWalkSpeed to safe values.
+	if (Attribute == GetMaxWalkSpeedAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 150.0f, 1200.0f);
+	}
+	// Clamp JumpVelocity to safe values.
+	else if (Attribute == GetJumpVelocityAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 500.0f, 2000.0f);
+	}
+	// Clamp JumpCount to safe values. Round it down to the nearest whole number.
+	else if (Attribute == GetJumpCountAttribute())
+	{
+		NewValue = FMath::Clamp(FMath::Floor(NewValue), 1.0f, 10.0f);
+	}
 }
 
 void UMovementAttributeSet::OnRep_MaxWalkSpeed(const FGameplayAttributeData& OldValue)
 {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, MaxWalkSpeed, OldValue);
 }
 
 void UMovementAttributeSet::OnRep_JumpVelocity(const FGameplayAttributeData& OldValue)
 {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, JumpVelocity, OldValue);
 }
 
 void UMovementAttributeSet::OnRep_JumpCount(const FGameplayAttributeData& OldValue)
 {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, JumpCount, OldValue);
 }
 
 void UMovementAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
