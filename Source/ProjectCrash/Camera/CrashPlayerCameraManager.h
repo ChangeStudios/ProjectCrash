@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Camera/PlayerCameraManager.h"
+#include "GameplayTagContainer.h"
 #include "CrashPlayerCameraManager.generated.h"
 
 #define CAMERA_DEFAULT_FOV			(90.0f)
@@ -14,6 +15,12 @@ UCLASS(NotPlaceable, MinimalAPI)
 class ACrashPlayerCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()
+
+public:
+
+	/** Gets the current camera component's top-most camera mode's weight and identifying tag. Useful for determining
+	 * the local player's current camera type, e.g. "First-Person." */
+	void GetCameraBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
 protected:
 

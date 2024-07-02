@@ -81,6 +81,7 @@ void UHealthComponent::UninitializeFromAbilitySystem()
 		HealthSet->OutOfHealthAttributeDelegate.RemoveAll(this);
 	}
 
+	// Clear cached variables.
 	HealthSet = nullptr;
 	AbilitySystemComponent = nullptr;
 }

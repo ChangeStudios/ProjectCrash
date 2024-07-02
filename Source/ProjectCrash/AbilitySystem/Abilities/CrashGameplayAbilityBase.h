@@ -15,6 +15,32 @@ class UCrashCameraModeBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDynamicGameplayAbilityDelegate, UGameplayAbility*, Ability);
 
 /**
+ * Defines how an ability's activation is triggered, usually with respect to user input.
+ */
+UENUM(BlueprintType)
+enum class EAbilityActivationMethod : uint8
+{
+	// Activate this ability once when its input is triggered.
+	OnInputTriggered,
+
+	/* Repeatedly activate this ability while its input is held. Note that a "Pressed" modifier in an input action will
+	 * prevent abilities of this type from behaving as expected. */
+	WhileInputActive,
+
+	/*
+	 * Immediately activate this ability when (A) this ability is given to an ASC or (B) a new avatar is assigned to the
+	 * owning ASC.
+	 *
+	 * Passive abilities are not automatically deactivated or removed.
+	 *
+	 * Activation of passive abilities is not predicted.
+	 */
+	Passive
+};
+
+
+
+/**
  * Defines how an ability's activation relates to that of other abilities. This is used to ensure certain types of
  * abilities cannot be activated simultaneously.
  */
@@ -72,6 +98,23 @@ protected:
 
 
 	// Activation.
+
+// Activation method.
+public:
+
+	/** Getter for this ability's activation method. */
+	UFUNCTION(BlueprintPure, Category = "Ability|Activation", Meta = (ToolTip = "How this ability's activation is triggered."))
+	EAbilityActivationMethod GetActivationMethod() const { return ActivationMethod; }
+
+	/** Attempts to activate this ability as a "passive ability." Does not activate if Activation Method is not
+	 * Passive. */
+	void TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
+
+protected:
+
+	/** How this ability's activation is triggered. */
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Activation", DisplayName = "Ability Activation Method")
+	EAbilityActivationMethod ActivationMethod;
 
 // Activation group.
 public:
@@ -141,13 +184,20 @@ protected:
 	// Ability event callbacks.
 
 // Internals.
-protected:
+public:
 
-	/** Fires the associated blueprint event. */
+	/** Called when this ability is given to an ASC. Fires the associated blueprint event. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Fires the associated blueprint event. */
+	/** Called when this ability is removed from an ASC. Fires the associated blueprint event. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+
+	/** Called when a valid new avatar is set for this ability's owning ASC. Fires the associated blueprint event. */
+	virtual void OnNewAvatarSet();
+
+	/** Do not use; Use OnNewAvatarSet instead. OnNewAvatarSet is called for instanced abilities (OnAvatarSet is not)
+	 * and is NOT called when the avatar is set to null (OnAvatarSet is). */
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override final {}
 
 // Blueprint-exposed event callbacks.
 protected:
@@ -159,6 +209,10 @@ protected:
 	/** Called when this ability is removed from an ASC. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability")
 	void K2_OnRemoveAbility();
+
+	/** Called when a valid new avatar is set for this ability's owning ASC. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On New Avatar Set")
+	void K2_OnNewAvatarSet();
 
 
 
@@ -240,4 +294,13 @@ public:
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO??"))
 	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
+
+
+
+	// Validation.
+
+protected:
+
+	/** Disables support for bReplicateInputDirectly. */
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 };

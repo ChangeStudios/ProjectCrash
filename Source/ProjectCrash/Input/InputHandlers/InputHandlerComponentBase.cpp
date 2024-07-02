@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Characters/PawnExtensionComponent.h"
+#include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameFeatures/GameFeatureAction_AddInputActionMapping.h"
 #include "GameFramework/GameFeatures/GameFeatureAction_AddInputMappingContext.h"
@@ -43,12 +44,33 @@ void UInputHandlerComponentBase::OnRegister()
 			FMessageLog(InputHandlerMessageLogName).Open();
 		}
 #endif
+
+		return;
 	}
-	else
+
+	// Make sure the owner has a pawn extension component.
+	if (!GetOwner()->FindComponentByClass<UPawnExtensionComponent>())
 	{
-		// Register this component as a feature with the initialization state framework.
-		RegisterInitStateFeature();
+		UE_LOG(LogCrash, Error, TEXT("An input handler component was added to [%s], which does not have a pawn extension component. Actors using input handler components must also have a pawn extension component."), *GetNameSafe(GetOwner()))
+#if WITH_EDITOR
+		if (GIsEditor)
+		{
+			static const FText Message = NSLOCTEXT("InputHandlerComponent", "NoPawnExtCompError", "was added to a pawn that does not have a pawn extension component. Actors using input handler components must also have a pawn extension component. The input handler will not function properly if you PIE.");
+			static const FName InputHandlerMessageLogName = TEXT("InputHandlerComponent");
+
+			FMessageLog(InputHandlerMessageLogName).Error()
+				->AddToken(FUObjectToken::Create(this, FText::FromString(GetNameSafe(this))))
+				->AddToken(FTextToken::Create(Message));
+
+			FMessageLog(InputHandlerMessageLogName).Open();
+		}
+#endif
+
+		return;
 	}
+
+	// Register this component as a feature with the initialization state framework.
+	RegisterInitStateFeature();
 }
 
 void UInputHandlerComponentBase::BeginPlay()

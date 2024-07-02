@@ -16,6 +16,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerState.h"
 
+#if WITH_EDITOR
+#include "Misc/DataValidation.h"
+#endif
+
+#define LOCTEXT_NAMESPACE "GameplayAbility"
+
 // Helper for functions that require an instantiated ability.
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
 {																																							\
@@ -28,10 +34,52 @@
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
+	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
+	
+	ActivationMethod = EAbilityActivationMethod::OnInputTriggered;
 	ActivationGroup = EAbilityActivationGroup::Independent;
+
 	bIsUserFacingAbility = false;
 	AbilityIcon = nullptr;
+}
+
+void UCrashGameplayAbilityBase::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
+{
+	if (ActivationMethod != EAbilityActivationMethod::Passive)
+	{
+		return;
+	}
+
+	// Do not predict the activation of passive abilities.
+	const bool bIsPredicting = (Spec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+
+	// Ensure we have valid actor info, the ability is not already active, and we are not predicting the activation.
+	if (ActorInfo && !Spec.IsActive() && !bIsPredicting)
+	{
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		const AActor* Avatar = ActorInfo->AvatarActor.Get();
+
+		// Don't activate the passive ability if the avatar has been torn off or is about to die.
+		if (ASC && Avatar && !Avatar->GetTearOff() && (Avatar->GetLifeSpan() <= 0.0f))
+		{
+			// Whether this ability should be activated from the client and/or server.
+			const bool bExecutesOnClient = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalOnly);
+			const bool bExecutesOnServer = (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerOnly) || (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::ServerInitiated);
+
+			// Whether we can activate this ability from this machine, depending on our net mode.
+			const bool bClientShouldActivate = ActorInfo->IsLocallyControlled() && bExecutesOnClient;
+			const bool bServerShouldActivate = ActorInfo->IsNetAuthority() && bExecutesOnServer;
+
+			// Activate the ability on this machine, if we can.
+			if (bClientShouldActivate || bServerShouldActivate)
+			{
+				ASC->TryActivateAbility(Spec.Handle);
+			}
+		}
+	}
 }
 
 bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -188,6 +236,9 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 
 	// Trigger the blueprint-exposed version of this callback.
 	K2_OnGiveAbility();
+
+	// Try to activate passive abilities when they are given to an ASC.
+	TryActivatePassiveAbility(ActorInfo, Spec);
 }
 
 void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -196,6 +247,12 @@ void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo*
 
 	// Trigger the blueprint-exposed version of this callback.
 	K2_OnRemoveAbility();
+}
+
+void UCrashGameplayAbilityBase::OnNewAvatarSet()
+{
+	// Trigger the blueprint-exposed version of this callback.
+	K2_OnNewAvatarSet();
 }
 
 void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)
@@ -301,3 +358,20 @@ ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo()
 	// Retrieve the actor info's typed PS.
 	return GetCrashActorInfo()->GetCrashPlayerState();
 }
+
+#if WITH_EDITOR
+EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationContext& Context) const
+{
+	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
+
+	if (bReplicateInputDirectly)
+	{
+		Context.AddError(LOCTEXT("ReplicateInputDirectlyNotSupported", "This project does not support directly replicating ability input. Use a WaitInputPress or WaitInputRelease task instead."));
+		Result = EDataValidationResult::Invalid;
+	}
+
+	return Result;
+}
+#endif
+
+#undef LOCTEXT_NAMESPACE

@@ -4,8 +4,8 @@
 #include "CrashInputComponent.h"
 
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "CrashInputActionMapping.h"
 #include "GameplayAbilitySpec.h"
@@ -48,49 +48,18 @@ void UCrashInputComponent::RemoveAbilityInputActions(const UCrashInputActionMapp
 
 void UCrashInputComponent::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	ABILITY_LOG(Verbose, TEXT("Attempting to activate ability with tag [%s]."), *InputTag.ToString());
-
-	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	// Notify the owner's ASC that an ability input was pressed.
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 	{
-		// Search the ASC's list of activatable abilities for one with a matching input tag.
-		FScopedAbilityListLock ActiveScopeLock(*ASC);
-		for (const FGameplayAbilitySpec& AbilitySpec : ASC->GetActivatableAbilities())
-		{
-			if (AbilitySpec.Ability)
-			{
-				if (const UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
-				{
-					// Activate any ability with the matching input tag.
-					if (Ability->GetInputTag().MatchesTagExact(InputTag))
-					{
-						ASC->TryActivateAbility(AbilitySpec.Handle);
-					}
-				}
-			}
-		}
+		CrashASC->AbilityInputTagPressed(InputTag);
 	}
 }
 
 void UCrashInputComponent::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	// Notify the owner's ASC that an ability input was released.
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetOwner()))
 	{
-		// Search the ASC's list of activatable abilities for one with a matching input tag.
-		FScopedAbilityListLock ActiveScopeLock(*ASC);
-		for (const FGameplayAbilitySpec& AbilitySpec : ASC->GetActivatableAbilities())
-		{
-			if (AbilitySpec.Ability)
-			{
-				if (const UCrashGameplayAbilityBase* Ability = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
-				{
-					if (Ability->GetInputTag().MatchesTagExact(InputTag))
-					{
-						/* Broadcast that the input for this ability was released. This is commonly used to end
-						 * abilities when their input is released, such as an automatic shooting ability. */
-						ASC->AbilitySpecInputReleased(const_cast<FGameplayAbilitySpec&>(AbilitySpec));
-					}
-				}
-			}
-		}
+		CrashASC->AbilityInputTagReleased(InputTag);
 	}
 }

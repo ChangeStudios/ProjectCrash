@@ -7,11 +7,12 @@
 #include "GA_Jump.generated.h"
 
 /**
- * The default character jump ability. This uses the built-in character jump method, meaning its properties (e.g.
- * jump height) can be altered in the owning character's class and movement component, including the implementation of
- * multiple jumps.
+ * The default "jump" ability. Avatar must be of the Character class, as this ability uses the built-in character jump
+ * method.
+ *
+ * This ability's properties are determined by the avatar's Character properties and movement component.
  */
-UCLASS()
+UCLASS(Abstract)
 class PROJECTCRASH_API UGA_Jump : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameplayTagContainer.h"
 #include "Engine/World.h"
 #include "CrashCameraModeBase.generated.h"
 
@@ -134,11 +135,6 @@ protected:
 	/** This camera mode's current view data. */
 	FCrashCameraModeView View;
 
-	/** Whether this camera is used as in a first-person view. When this camera mode is active, this determines the
-	 * visibility of first-person meshes and visual effects.  */
-	UPROPERTY(EditDefaultsOnly, Category = "View", DisplayName = "First-Person Camera?")
-	bool bIsFirstPersonCamera;
-
 	/** Horizontal field of view. */
 	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170.0", ClampMin = "5.0", ClampMax = "170.0", Units = "Degrees"))
 	float FieldOfView;
@@ -216,6 +212,22 @@ protected:
 
 
 
+	// Camera type.
+
+public:
+
+	/** Returns this camera's identifying camera type gameplay tag. E.g. "CameraType.FirstPerson". */
+	FGameplayTag GetCameraTypeTag() const { return CameraTypeTag; }
+
+protected:
+
+	/** A tag that can be used to categorize this camera's type. Can be queried for type-specific logic. E.g.
+	 * first-person cameras use a "FirstPerson" tag, which is used to determine mesh and effect visibility. */
+	UPROPERTY(EditDefaultsOnly, Category = "Camera Type", Meta = (Categories = "CameraType"))
+	FGameplayTag CameraTypeTag;
+
+
+
 	// Utils.
 
 public:
@@ -287,6 +299,9 @@ public:
 
 	/** Continuously called to update this stack's current camera mode and any active blending. */
 	bool EvaluateStack(float DeltaTime, FCrashCameraModeView& OutCameraModeView);
+
+	/** Gets the current blend weight and identifying tag of this stack's top camera. */
+	void GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
 	/** Draws debug information about this camera stack's current camera modes. */
 	void DrawDebug(UCanvas* Canvas) const;

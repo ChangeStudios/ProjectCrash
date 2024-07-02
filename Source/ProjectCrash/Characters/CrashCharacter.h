@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "ModularCharacter.h"
+#include "Camera/ViewTargetInterface.h"
 #include "CrashCharacter.generated.h"
 
 class UCrashCameraComponent;
@@ -20,7 +21,7 @@ class UPawnExtensionComponent;
  * New behavior should be implemented modularly via actor components; specifically, UPawnComponent. 
  */
 UCLASS()
-class PROJECTCRASH_API ACrashCharacter : public AModularCharacter, public IAbilitySystemInterface
+class PROJECTCRASH_API ACrashCharacter : public AModularCharacter, public IAbilitySystemInterface, public IViewTargetInterface
 {
 	GENERATED_BODY()
 
@@ -78,6 +79,12 @@ private:
 
 	// Camera.
 
+public:
+
+	virtual void OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
+
+	virtual void OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
+	
 protected:
 
 	/** This character's camera. Requires a pawn camera manager component to manage its camera modes. */

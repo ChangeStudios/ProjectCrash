@@ -37,6 +37,12 @@ namespace CrashGameplayTags
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Identifier_Generic_Jump);
 
 
+
+	// Camera
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_CameraType_FirstPerson);
+
+
+
 	// Effects
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_SelfDestruct);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Effects_Damage_CanDamageSelf);
