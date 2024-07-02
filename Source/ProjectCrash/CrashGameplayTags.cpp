@@ -24,6 +24,10 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Identifier_Generic_Jump, "Ability.Identifier.Generic.Jump", "Identifier for the generic character jump ability. Includes abilities like double-jump.");
 
 
+	// Camera
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CameraType_FirstPerson, "CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
+
+
 	// Effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides any damage invulnerabilities.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageSelf, "Effects.Damage.CanDamageSelf", "Specifies that damage caused by this gameplay effect can affect the source actor.");

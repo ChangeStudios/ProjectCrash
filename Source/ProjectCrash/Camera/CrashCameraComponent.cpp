@@ -25,6 +25,12 @@ void UCrashCameraComponent::OnRegister()
 	}
 }
 
+void UCrashCameraComponent::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const
+{
+	check(CameraModeStack);
+	CameraModeStack->GetBlendInfo(OutTopCameraWeight, OutTopCameraTag);
+}
+
 void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
 {
 	check(CameraModeStack);

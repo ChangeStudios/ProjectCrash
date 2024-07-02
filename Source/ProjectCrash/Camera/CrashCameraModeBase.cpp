@@ -5,6 +5,7 @@
 
 #include "CrashCameraComponent.h"
 #include "CrashPlayerCameraManager.h"
+#include "ViewTargetInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/Character.h"
@@ -57,7 +58,6 @@ void FCrashCameraModeView::Blend(const FCrashCameraModeView& Other, float Weight
  * UCrashCameraModeBase
  */
 UCrashCameraModeBase::UCrashCameraModeBase() :
-	bIsFirstPersonCamera(false),
 	FieldOfView(CAMERA_DEFAULT_FOV),
 	ViewPitchMin(-90.0f),
 	ViewPitchMax(90.0f),
@@ -263,7 +263,7 @@ void UCrashCameraModeBase::DrawDebug(UCanvas* Canvas) const
 
 	// Display this camera mode's name and current weight.
 	DisplayDebugManager.SetDrawColor(FColor::White);
-	DisplayDebugManager.DrawString(FString::Printf(TEXT("			Camera Mode: %s (%f)"), *GetName(), BlendWeight));
+	DisplayDebugManager.DrawString(FString::Printf(TEXT("			Camera Mode: %s (Weight: %f, Type: %s)"), *GetName(), BlendWeight, *CameraTypeTag.ToString()));
 }
 
 #if WITH_EDITOR
@@ -413,7 +413,25 @@ void UCrashCameraModeStack::PushCameraMode(TSubclassOf<UCrashCameraModeBase> Cam
 	// Add the camera mode to the top of the stack.
 	CameraModeStack.Insert(CameraMode, 0);
 
-	// Make sure the bottom of the stack is always weight to 1.0.
+	// Notify the new camera's target that it is blending in.  
+	if (AActor* TargetActor = CameraMode->GetTargetActor())
+	{
+		if (IViewTargetInterface* ViewTargetInterface = Cast<IViewTargetInterface>(TargetActor))
+		{
+			UCrashCameraModeBase* PreviousCameraMode = ((CameraModeStack.Num() > 1 && CameraModeStack[1]->GetBlendWeight() > 0.0f) ? CameraModeStack[1] : nullptr);
+			
+			ViewTargetInterface->OnStartCameraModeBlendIn(PreviousCameraMode, CameraMode);
+
+			// If this is the first camera mode, then it skips blending in, and can immediately finish.
+			if (CameraModeStack.Last() == CameraMode)
+			{
+				ViewTargetInterface->OnFinishCameraModeBlendIn(PreviousCameraMode, CameraMode);
+			}
+		}
+	}
+
+	/* Make sure the bottom of the stack is always weight to 1.0. If the new camera mode is the first camera in the
+	 * stack, this causes it to skip blending, and immediately cut to it. */
 	CameraModeStack.Last()->SetBlendWeight(1.0f);
 
 	// Notify the camera mode that it was added to the stack, if it wasn't already in it.
@@ -438,6 +456,24 @@ bool UCrashCameraModeStack::EvaluateStack(float DeltaTime, FCrashCameraModeView&
 	BlendStack(OutCameraModeView);
 
 	return true;
+}
+
+void UCrashCameraModeStack::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const
+{
+	// Make sure there is at least one active camera mode.
+	if (CameraModeStack.Num())
+	{
+		const UCrashCameraModeBase* TopCamera = CameraModeStack.Last();
+		check(TopCamera)
+		OutTopCameraWeight = TopCamera->GetBlendWeight();
+		OutTopCameraTag = TopCamera->GetCameraTypeTag();
+	}
+	// Generic data for active camera modes.
+	else
+	{
+		OutTopCameraWeight = 1.0f;
+		OutTopCameraTag = FGameplayTag();
+	}
 }
 
 void UCrashCameraModeStack::DrawDebug(UCanvas* Canvas) const
@@ -501,6 +537,7 @@ void UCrashCameraModeStack::UpdateStack(float DeltaTime)
 	{
 		UCrashCameraModeBase* CameraMode = CameraModeStack[StackIndex];
 		check(CameraMode);
+		const float PreviousWeight = CameraMode->GetBlendWeight();
 
 		CameraMode->UpdateCameraMode(DeltaTime);
 
@@ -510,6 +547,18 @@ void UCrashCameraModeStack::UpdateStack(float DeltaTime)
 		{
 			RemoveIndex = (StackIndex + 1);
 			RemoveCount = (StackSize - RemoveIndex);
+
+			// If we've just finished blending in, notify the camera's target.  
+			if (PreviousWeight < 1.0f)
+			{
+				if (AActor* TargetActor = CameraMode->GetTargetActor())
+				{
+					if (IViewTargetInterface* ViewTargetInterface = Cast<IViewTargetInterface>(TargetActor))
+					{
+						ViewTargetInterface->OnFinishCameraModeBlendIn((CameraModeStack.Num() > 1 && CameraModeStack[1]->GetBlendWeight() > 0.0f) ? CameraModeStack[1] : nullptr, CameraMode);
+					}
+				}
+			}
 		}
 	}
 

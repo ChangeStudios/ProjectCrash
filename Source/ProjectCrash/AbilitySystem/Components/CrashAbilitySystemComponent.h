@@ -45,15 +45,18 @@ public:
 
 public:
 
-	/** Registers this ASC with the global ability subsystem and broadcasts InitDelegate. */
+	/** Registers this ASC with the global ability subsystem and attempts to activate passive abilities. If a new, valid
+	 * avatar was set for this ASC, informs all abilities of the avatar change. */
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
-
-	/** Broadcast when this ASC is initialized with a new owner and/or avatar (e.g. after respawning). */
-	UPROPERTY()
-	FASCInitSignature InitDelegate;
 
 	/** Unregisters this ASC from the global ability subsystem. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+protected:
+
+	/** Attempts to activate each of this ASC's abilities as a "passive ability." Called when this ASC is initialized
+	 * with a new avatar. */
+	void TryActivatePassiveAbilities();
 
 
 
@@ -76,6 +79,46 @@ protected:
 
 	/** Broadcasts AbilityRemovedDelegate when an ability is removed from this ASC. */
 	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+
+
+
+	// Input processing.
+
+public:
+
+	/** Called when an input action that corresponds to an ability's input tag is pressed. Queues an appropriate
+	* response for when input is processed this frame. */
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);
+
+	/** Called when an input action that corresponds to an ability's input tag is released. Queues an appropriate
+	* response for when input is processed this frame. */
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+
+	/** Processes all ability input for this frame. This is called by the player controller after processing input. */
+	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
+
+	/** Clears the ability input that occurred this frame. */
+	void ClearAbilityInput();
+
+// Internals.
+public:
+
+	/** Invokes an "input pressed" event to an ability spec. */
+	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
+
+	/** Invokes an "input released" event to an ability spec. */
+	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+
+protected:
+
+	/** Abilities whose input was pressed this frame. */
+	TArray<FGameplayAbilitySpecHandle> InputPressedSpecHandles;
+
+	/** Abilities whose input was released this frame. */
+	TArray<FGameplayAbilitySpecHandle> InputReleasedSpecHandles;
+
+	/** Abilities whose input is currently held. */
+	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 
 
 

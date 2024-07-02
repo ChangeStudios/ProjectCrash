@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "AbilitySystemComponent.h"
-
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSets/CrashAttributeSet.h"
 #include "HealthAttributeSet.generated.h"
 
@@ -27,7 +26,7 @@ class PROJECTCRASH_API UHealthAttributeSet : public UCrashAttributeSet
 
 public:
 
-	/** Default constructor. Initializes default attribute values. */
+	/** Default constructor. */
 	UHealthAttributeSet();
 
 
@@ -45,10 +44,10 @@ protected:
 	 * attribute values. Performs value clamping and broadcasts attribute-change delegates. */
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
-	/** Called before an attribute's base value is modified. Clamps base attribute values. */
+	/** Called before an attribute's base value is modified. Clamps the new base value. */
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 
-	/** Called before an attribute is modified. Clamps attribute values. */
+	/** Called before an attribute is modified. Clamps the new value. */
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
 	/** Called after an attribute is modified. Applies effects of attribute changes, like MaxHealth falling below
@@ -77,7 +76,7 @@ private:
 
 	/** Current health, defaulted to and capped at MaximumHealth (usually 100). Hidden from modifiers as to only be
 	 * modified by executions. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Health;
 
 		// Tracks when Health reaches 0.
@@ -87,7 +86,7 @@ private:
 		float HealthBeforeAttributeChange;
 
 	/** Maximum value that the Health attribute can have at any time. Usually the same as Health's default value. */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability System|Attributes|Health", Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
 		// Caches MaxHealth before it is updated to determine whether attribute-change delegates should be broadcast.
@@ -98,11 +97,11 @@ private:
 private:
 
 	/** Incoming damage. This is mapped directly to -Health. Positive Damage will remove health. */
-	UPROPERTY(BlueprintReadOnly, Category="Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Damage;
 
 	/** Incoming healing. This mapped directly to +Health. Positive healing will add health. */
-	UPROPERTY(BlueprintReadOnly, Category="Ability System|Attributes|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Healing;
 
 
@@ -111,13 +110,13 @@ private:
 
 public:
 
-	/** Delegate broadcast when Health attribute changes. */
+	/** Delegate broadcast when the Health attribute changes. */
 	mutable FAttributeChangedSignature HealthAttributeChangedDelegate;
 
-	/** Delegate broadcast when MaxHealth attribute changes. */
+	/** Delegate broadcast when the MaxHealth attribute changes. */
 	mutable FAttributeChangedSignature MaxHealthAttributeChangedDelegate;
 
-	/** Delegate broadcast when health reaches 0. */
+	/** Delegate broadcast when the Health attribute reaches 0. */
 	mutable FAttributeEventSignature OutOfHealthAttributeDelegate;
 
 
