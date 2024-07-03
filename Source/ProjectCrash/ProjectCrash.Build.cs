@@ -38,6 +38,7 @@ public class ProjectCrash : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"AIModule",
+			"AnimGraphRuntime",
 			"CommonGame",
 			"CommonInput",
 			"CommonUI",

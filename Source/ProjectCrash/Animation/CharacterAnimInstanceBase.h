@@ -9,6 +9,9 @@
 /**
  * Base animation instance for character animation blueprints. Collects relevant character data used for animation
  * blueprints.
+ *
+ * Technically, this animation instance can be used on non-characters, but some of its data will not be valid,
+ * especially if not used on a pawn.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCharacterAnimInstanceBase : public UAnimInstance
@@ -32,20 +35,20 @@ public:
 
 private:
 
-	/** Updates data about this character's current transform. */
-	void UpdateTransformData();
+	/** Updates data about this character's current location and rotation. */
+	virtual void UpdateTransformData(float DeltaSeconds);
 
 	/** Updates data about this character's current velocity. */
-	void UpdateVelocityData();
+	virtual void UpdateVelocityData(float DeltaSeconds);
 
 	/** Updates data about the owning player's aim. */
-	void UpdateAimData();
+	virtual void UpdateAimData(float DeltaSeconds);
 
 	/** Updates data about this character's current movement states. */
-	void UpdateCharacterStateData();
+	virtual void UpdateCharacterStateData(float DeltaSeconds);
 
 	/** Updates data used to blend this character's animations. */
-	void UpdateBlendData();
+	virtual void UpdateBlendData(float DeltaSeconds);
 
 
 
@@ -58,12 +61,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
 	FVector WorldLocation;
 
-	/** Current rotation of this character, in world space. Usually the same as the owning controller's rotation. */
+	/** Current rotation of this character, in world space. Usually the same as the owning controller's rotation,
+	 * excluding pitch. */
 	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
 	FRotator WorldRotation;
 
 	/** The rate at which this character is turning. Usually the same as the X value of AimVelocity, since characters
-	 * usually turn with their owning controller's rotation. */
+	 * often turn with their owning controller's rotation. */
 	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
 	float YawDeltaSpeed;
 
@@ -78,37 +82,28 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector WorldVelocity;
 
-	/** This character's current signed forward/backward speed, relative to its current rotation (i.e. local space). */
+	/** This character's current velocity, relative to its world rotation. Vertical velocity (Z) is masked out. Not a
+	 * Vector2D just to make math operations easier. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
-	float ForwardBackwardSpeed;
+	FVector LocalVelocity2D;
 
-	/** This character's current signed right/left speed, relative to its current rotation (i.e. local space). */
+	/** The direction, in local space, in which this character is moving. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
-	float RightLeftSpeed;
+	float LocalVelocityDirectionAngle;
 
 	/** Whether this character's absolute speed is greater than 0. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	bool bHasVelocity;
 
 // Aim data.
+protected:
 
-	/** The controller's current aim rotation pitch. */
+	/** The owning controller's current base aim rotation. */
 	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
-	float AimPitch;
-
-	/** The controller's current aim rotation yaw. */
-	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
-	float AimYaw;
-
-	/** The rate at which the controller is changing its pitch, in degrees/second. */
-	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
-	float UpDownAimSpeed;
-
-	/** The rate at which the controller is changing its yaw, in degrees/second. */
-	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
-	float RightLeftAimSpeed;
+	FRotator AimRotation;
 
 // Character state data.
+protected:
 
 	/** Whether this character is currently on the ground. */
 	UPROPERTY(BlueprintReadOnly, Category = "Character State Data")
@@ -127,9 +122,23 @@ protected:
 	float TimeToJumpApex;
 
 // Blend data.
+protected:
 
 	/** The weight with which additive upper-body animations will be blended. Used to smoothly blend additives. Set to
 	 * 1.0 while montages are playing, and smoothly lerped back to 0.0 when they stop. */
 	UPROPERTY(BlueprintReadOnly, Category = "Blend Data")
 	float UpperBodyAdditiveWeight;
+
+	/** The rate at which we blend out the additive upper body slot (i.e. the speed at which UpperBodyAdditiveWeight is
+	 * lerped back to 0). */
+	const float UpperBodyBlendOutWeight = 6.0f;
+
+
+
+	// Utils.
+
+protected:
+
+	/** Returns the inverse of DeltaSeconds, making sure not to divide by 0. Returns 0 if DeltaSeconds is 0. */
+	FORCEINLINE static float SafeInvertDeltaSeconds(float DeltaSeconds) { return (DeltaSeconds > 0.0f ? (1.0f / DeltaSeconds) : (0.0f)); }
 };
