@@ -6,6 +6,9 @@
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+/** The rate at which we blend out the additive upper body slot. I.e. the speed at which UpperBodyAdditiveWeight is
+ * lerped back to 0 when montages end. */
+#define UPPER_BODY_BLEND_OUT_RATE 6.0f
 
 UCharacterAnimInstanceBase::UCharacterAnimInstanceBase() :
 	WorldLocation(FVector::ZeroVector),
@@ -57,7 +60,7 @@ void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
 	WorldRotation = PawnOwner->GetActorRotation();
 
 	// Yaw delta speed.
-	const float YawDelta = WorldRotation.Yaw - PreviousYaw;
+	const float YawDelta = (WorldRotation.Yaw - PreviousYaw);
 	YawDeltaSpeed = (YawDelta * SafeInvertDeltaSeconds(DeltaSeconds));
 }
 
@@ -131,6 +134,6 @@ void UCharacterAnimInstanceBase::UpdateBlendData(float DeltaSeconds)
 	// Smoothly blend out the upper body slot when montages end.
 	else
 	{
-		UpperBodyAdditiveWeight = FMath::FInterpTo(UpperBodyAdditiveWeight, 0.0f, DeltaSeconds, UpperBodyBlendOutWeight);
+		UpperBodyAdditiveWeight = FMath::FInterpTo(UpperBodyAdditiveWeight, 0.0f, DeltaSeconds, UPPER_BODY_BLEND_OUT_RATE);
 	}
 }

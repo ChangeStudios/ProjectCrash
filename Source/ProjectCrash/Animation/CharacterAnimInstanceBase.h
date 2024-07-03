@@ -33,7 +33,7 @@ public:
 	/** Updates this character's animation data each frame. */
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
-private:
+protected:
 
 	/** Updates data about this character's current location and rotation. */
 	virtual void UpdateTransformData(float DeltaSeconds);
@@ -98,7 +98,7 @@ protected:
 // Aim data.
 protected:
 
-	/** The owning controller's current base aim rotation. */
+	/** This character's current base aim rotation. */
 	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
 	FRotator AimRotation;
 
@@ -128,10 +128,6 @@ protected:
 	 * 1.0 while montages are playing, and smoothly lerped back to 0.0 when they stop. */
 	UPROPERTY(BlueprintReadOnly, Category = "Blend Data")
 	float UpperBodyAdditiveWeight;
-
-	/** The rate at which we blend out the additive upper body slot (i.e. the speed at which UpperBodyAdditiveWeight is
-	 * lerped back to 0). */
-	const float UpperBodyBlendOutWeight = 6.0f;
 
 
 
