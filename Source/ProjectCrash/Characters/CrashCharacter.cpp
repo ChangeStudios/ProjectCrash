@@ -37,6 +37,7 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	check(CameraComponent);
 	CameraComponent->SetupAttachment(CapsuleComp);
 	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight));
+	CameraComponent->SetFieldOfView(100.0f);
 
 
 	// First-person mesh.
