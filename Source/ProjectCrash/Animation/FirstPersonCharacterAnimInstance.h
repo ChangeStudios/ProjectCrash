@@ -31,7 +31,7 @@ struct FFloatSpringModelData
 
 	/** A multiplier that behaves like mass on the spring, affecting the amount of force required to change its
 	 * position. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model", Meta = (ClampMin = 0.0f, UIMin = 0.0f, ClampMax = 100.0f, UIMax = 100.0f))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spring Model", Meta = (ClampMin = 1.0f, UIMin = 1.0f, ClampMax = 100.0f, UIMax = 100.0f))
 	float Mass = 10.0f;
 };
 
@@ -100,10 +100,6 @@ protected:
 	/** The rate at which the owning character's aim pitch is changing, in degrees/second. */
 	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
 	float AimSpeedUpDown;
-
-	/* The maximum absolute speed, in degrees/second, with which aim sway will be calculated. This acts as a bound for
-	 * scaling sway with speed, preventing issues like arms completely flying away when turning too quickly. */
-	const float MaxAimSpeed = 360.0f;
 
 
 

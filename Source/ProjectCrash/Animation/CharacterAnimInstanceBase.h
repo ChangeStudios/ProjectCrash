@@ -135,6 +135,7 @@ protected:
 
 protected:
 
-	/** Returns the inverse of DeltaSeconds, making sure not to divide by 0. Returns 0 if DeltaSeconds is 0. */
+	/** Returns the inverse (frames/second) of DeltaSeconds, making sure not to divide by 0. Returns 0 if DeltaSeconds
+	 * is 0. */
 	FORCEINLINE static float SafeInvertDeltaSeconds(float DeltaSeconds) { return (DeltaSeconds > 0.0f ? (1.0f / DeltaSeconds) : (0.0f)); }
 };

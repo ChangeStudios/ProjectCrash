@@ -5,8 +5,21 @@
 
 #include "GameFramework/PawnMovementComponent.h"
 
+/*
+ * The maximum absolute speed, in degrees/second, with which aim sway will be calculated. This acts as a bound for
+ * scaling aim sway with speed, preventing issues like arms completely flying away when turning too quickly.
+ *
+ * This also acts as the range to which aim speed will be normalized.
+ */
+#define MAX_AIM_SPEED 720.0f
+
+/** The maximum aim speed for up/down aiming is halved because characters' pitch has half the range of their yaw:
+ * (-90 -> 90) vs. (0 -> 360). */
+#define MAX_AIM_SPEED_UP_DOWN (MAX_AIM_SPEED / 2.0f)
+
 // Inverse of the minimum framerate required to perform spring calculations.
 #define MIN_DELTA_TIME_FOR_SPRING_CALCULATIONS 0.1f /* 10 FPS */
+
 /* Universal multiplier applied to spring model stiffness. Used to scale stiffness values to a more intuitive range for
  * designers. */
 #define GLOBAL_SPRING_STIFFNESS_SCALE 35.0f
@@ -32,29 +45,26 @@ void UFirstPersonCharacterAnimInstance::UpdateAimData(float DeltaSeconds)
 
 	Super::UpdateAimData(DeltaSeconds);
 
-	const FRotator RotationDelta = (AimRotation - PreviousAimRotation);
+	// Use a normalized delta to account for winding (e.g. 359.0 -> 1.0 should be 2.0, not -358.0).
+	const FRotator RotationDelta = UKismetMathLibrary::NormalizedDeltaRotator(AimRotation, PreviousAimRotation);
 
-	// Aim speed.
-	AimSpeedRightLeft = FMath::Clamp((RotationDelta.Yaw * SafeInvertDeltaSeconds(DeltaSeconds)), -MaxAimSpeed, MaxAimSpeed);
-	AimSpeedUpDown = FMath::Clamp((RotationDelta.Pitch * SafeInvertDeltaSeconds(DeltaSeconds)), -MaxAimSpeed, MaxAimSpeed);
+	/* Aim speed in degrees/second:
+	 *		Degrees/1 Second = (Degrees/1 Frame) * (Frames/1 Second)
+	 */
+	AimSpeedRightLeft = FMath::Clamp((RotationDelta.Yaw * SafeInvertDeltaSeconds(DeltaSeconds)), -MAX_AIM_SPEED, MAX_AIM_SPEED);
+	AimSpeedUpDown = FMath::Clamp((RotationDelta.Pitch * SafeInvertDeltaSeconds(DeltaSeconds)), -MAX_AIM_SPEED_UP_DOWN, MAX_AIM_SPEED_UP_DOWN);
 }
 
 void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 {
 	APawn* OwningPawn = TryGetPawnOwner();
 
-	/* MaxAimSpeed is used to bound speed used for aim sway. For movement sway, we instead use the pawn's maximum
-	 * movement speed as the bound. */
+	// Use the owning pawn's maximum movement speed as the bound for movement sway.
 	const float MaxMovementSpeed = OwningPawn->GetMovementComponent()->GetMaxSpeed();
 
-	// Calculate the target values for the movement sway springs: the current speed normalized to the maximum speed.
-	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
-	SpringTargetForwardBackward *= MovementSwayForwardBackwardData.InterpSpeed;
+	// Calculate the forward/backward movement spring.
+	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MovementSwayForwardBackwardData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
-	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
-	SpringTargetRightLeft *= MovementSwayRightLeftData.InterpSpeed;
-
-	// Calculate the new spring values.
 	CurrentSpringMoveForwardBackward = UpdateFloatSpringInterp
 	(
 		CurrentSpringMoveForwardBackward,
@@ -62,6 +72,9 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 		SpringStateMoveForwardBackward,
 		MovementSwayForwardBackwardData
 	);
+
+	// Calculate the right/left movement spring.
+	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.Y * MovementSwayRightLeftData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
 	CurrentSpringMoveRightLeft = UpdateFloatSpringInterp
 	(
@@ -74,14 +87,9 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 
 void UFirstPersonCharacterAnimInstance::UpdateAimSwayData()
 {
-	// Calculate the target values for the aim sway springs: the current aim speed normalized to the maximum aim speed.
-	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange(AimSpeedRightLeft, 0.0f, MaxAimSpeed);
-	SpringTargetRightLeft *= AimSwayRightLeftData.InterpSpeed;
+	// Calculate the right/left aim sway spring.
+	const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((AimSpeedRightLeft * AimSwayRightLeftData.InterpSpeed), 0.0f, MAX_AIM_SPEED);
 
-	float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange(AimSpeedUpDown, 0.0f, MaxAimSpeed);
-	SpringTargetUpDown *= AimSwayUpDownData.InterpSpeed;
-
-	// Calculate the new spring values.
 	CurrentSpringAimRightLeft = UpdateFloatSpringInterp
 	(
 		CurrentSpringAimRightLeft,
@@ -89,6 +97,9 @@ void UFirstPersonCharacterAnimInstance::UpdateAimSwayData()
 		SpringStateAimRightLeft,
 		AimSwayRightLeftData
 	);
+
+	// Calculate the up/down aim sway spring.
+	const float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((AimSpeedUpDown * AimSwayUpDownData.InterpSpeed), 0.0f, MAX_AIM_SPEED_UP_DOWN);
 
 	CurrentSpringAimUpDown = UpdateFloatSpringInterp
 	(
@@ -110,7 +121,7 @@ float UFirstPersonCharacterAnimInstance::UpdateFloatSpringInterp(float SpringCur
 	}
 
 	/** Apply an arbitrary multiplier to the spring's stiffness value. This scales viable spring stiffness values to a
-	 * more intuitive range of 0-100 when adjusting spring model data. */
+	 * more intuitive range of (0 -> 100) when adjusting spring model data. */
 	const float EffectiveStiffness = SpringData.Stiffness * GLOBAL_SPRING_STIFFNESS_SCALE;
 
 	// Perform the spring calculation with the given data.
