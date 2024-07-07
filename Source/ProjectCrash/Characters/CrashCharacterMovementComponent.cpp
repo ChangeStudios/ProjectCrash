@@ -6,7 +6,11 @@
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/AttributeSets/MovementAttributeSet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+
+/** The maximum distance with which we'll perform traces for retrieving ground information. */
+#define MAX_GROUND_TRACE_DISTANCE 100000.0f
 
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 {
@@ -121,4 +125,38 @@ void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previ
 
 	// Disable separate braking friction while airborne.
 	bUseSeparateBrakingFriction = (MovementMode != MOVE_Falling);
+}
+
+float UCrashCharacterMovementComponent::GetGroundDistance() const
+{
+	// This character is already on the ground. 
+	if (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking)
+	{
+		return 0.0f;
+	}
+
+	// Collect trace parameters.
+	const UCapsuleComponent* CapsuleComp = CharacterOwner->GetCapsuleComponent();
+	check(CapsuleComp);
+
+	const float CapsuleHalfHeight = CapsuleComp->GetUnscaledCapsuleHalfHeight();
+	const ECollisionChannel CollisionChannel = (UpdatedComponent ? UpdatedComponent->GetCollisionObjectType() : ECC_Pawn);
+	const FVector TraceStart = GetActorLocation();
+	const FVector TraceEnd = FVector(TraceStart.X, TraceStart.Y, TraceStart.Z - MAX_GROUND_TRACE_DISTANCE - CapsuleHalfHeight);
+
+	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(UCrashCharacterMovementComponent_GetGroundDistance), false, CharacterOwner);
+	FCollisionResponseParams ResponseParams;
+	InitCollisionParams(QueryParams, ResponseParams);
+
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel, QueryParams, ResponseParams);
+
+	// If the ground was hit, return the distance to it from the bottom of the character's capsule.
+	if (HitResult.bBlockingHit)
+	{
+		return FMath::Max((HitResult.Distance - CapsuleHalfHeight), 0.0f);
+	}
+
+	// If no ground was hit, and we're helplessly dangling over a bottomless void, return the maximum trace distance.
+	return MAX_GROUND_TRACE_DISTANCE;
 }

@@ -65,6 +65,9 @@ void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
 	// Yaw delta speed.
 	const float YawDelta = (WorldRotation.Yaw - PreviousYaw);
 	YawDeltaSpeed = (YawDelta * SafeInvertDeltaSeconds(DeltaSeconds));
+
+	// Ground distance.
+	GroundDistance = GetCrashCharacterMovementComponent()->GetGroundDistance();
 }
 
 void UCharacterAnimInstanceBase::UpdateVelocityData(float DeltaSeconds)

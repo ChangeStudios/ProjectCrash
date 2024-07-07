@@ -5,7 +5,7 @@
 
 #include "GameFramework/PawnMovementComponent.h"
 
-/*
+/**
  * The maximum absolute speed, in degrees/second, with which aim sway will be calculated. This acts as a bound for
  * scaling aim sway with speed, preventing issues like arms completely flying away when turning too quickly.
  *
@@ -17,12 +17,14 @@
  * (-90 -> 90) vs. (0 -> 360). */
 #define MAX_AIM_SPEED_UP_DOWN (MAX_AIM_SPEED / 2.0f)
 
-// Inverse of the minimum framerate required to perform spring calculations.
+/** Inverse of the minimum framerate required to perform spring calculations. */
 #define MIN_DELTA_TIME_FOR_SPRING_CALCULATIONS 0.1f /* 10 FPS */
 
-/* Universal multiplier applied to spring model stiffness. Used to scale stiffness values to a more intuitive range for
- * designers. */
+/** Universal multiplier applied to spring model stiffness. Used to scale stiffness values to a more intuitive
+ * range for designers. */
 #define GLOBAL_SPRING_STIFFNESS_SCALE 35.0f
+
+
 
 void UFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
