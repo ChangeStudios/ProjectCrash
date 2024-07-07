@@ -67,50 +67,50 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 	const float MaxMovementSpeed = GetCrashCharacterMovementComponent()->GetMaxSpeed();
 
 	// Calculate the forward/backward movement spring.
-	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MovementSwayForwardBackwardData.InterpSpeed), 0.0f, MaxMovementSpeed);
+	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MoveSwayForwardBackwardSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
 	CurrentSpringMoveForwardBackward = UpdateFloatSpringInterp
 	(
 		CurrentSpringMoveForwardBackward,
 		SpringTargetForwardBackward,
 		SpringStateMoveForwardBackward,
-		MovementSwayForwardBackwardData
+		MoveSwayForwardBackwardSpringModelData
 	);
 
 	// Calculate the right/left movement spring.
-	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.Y * MovementSwayRightLeftData.InterpSpeed), 0.0f, MaxMovementSpeed);
+	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.Y * MoveSwayRightLeftSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
 	CurrentSpringMoveRightLeft = UpdateFloatSpringInterp
 	(
 		CurrentSpringMoveRightLeft,
 		SpringTargetRightLeft,
 		SpringStateMoveRightLeft,
-		MovementSwayRightLeftData
+		MoveSwayRightLeftSpringModelData
 	);
 }
 
 void UFirstPersonCharacterAnimInstance::UpdateAimSwayData()
 {
 	// Calculate the right/left aim sway spring.
-	const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((AimSpeedRightLeft * AimSwayRightLeftData.InterpSpeed), 0.0f, MAX_AIM_SPEED);
+	const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((AimSpeedRightLeft * AimSwayRightLeftSpringModelData.InterpSpeed), 0.0f, MAX_AIM_SPEED);
 
 	CurrentSpringAimRightLeft = UpdateFloatSpringInterp
 	(
 		CurrentSpringAimRightLeft,
 		SpringTargetRightLeft,
 		SpringStateAimRightLeft,
-		AimSwayRightLeftData
+		AimSwayRightLeftSpringModelData
 	);
 
 	// Calculate the up/down aim sway spring.
-	const float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((AimSpeedUpDown * AimSwayUpDownData.InterpSpeed), 0.0f, MAX_AIM_SPEED_UP_DOWN);
+	const float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((AimSpeedUpDown * AimSwayUpDownSpringModelData.InterpSpeed), 0.0f, MAX_AIM_SPEED_UP_DOWN);
 
 	CurrentSpringAimUpDown = UpdateFloatSpringInterp
 	(
 		CurrentSpringAimUpDown,
 		SpringTargetUpDown,
 		SpringStateAimUpDown,
-		AimSwayUpDownData
+		AimSwayUpDownSpringModelData
 	);
 }
 
@@ -120,14 +120,14 @@ void UFirstPersonCharacterAnimInstance::UpdateFallingOffsetData()
 	const float MaxVerticalSpeed = GetCrashCharacterMovementComponent()->JumpZVelocity;
 
 	// Calculate the falling offset spring.
-	float SpringTargetFalling = UKismetMathLibrary::NormalizeToRange((WorldVelocity.Z), 0.0f, MaxVerticalSpeed);
+	float SpringTargetFalling = UKismetMathLibrary::NormalizeToRange(LocalVelocity.Z, 0.0f, MaxVerticalSpeed);
 
 	CurrentSpringFalling = UpdateFloatSpringInterp
 	(
 		CurrentSpringFalling,
 		SpringTargetFalling,
 		SpringStateFalling,
-		FallingOffsetData
+		FallingOffsetSpringModelData
 	);
 }
 

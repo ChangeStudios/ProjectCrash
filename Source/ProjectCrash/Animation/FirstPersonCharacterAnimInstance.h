@@ -74,24 +74,24 @@ protected:
 protected:
 
 	/** The spring model used to drive forward/backward movement sway for this animation instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Movement Sway")
-	FFloatSpringModelData MovementSwayForwardBackwardData;
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Movement Sway", DisplayName = "Forward/Backward Sway Spring Model")
+	FFloatSpringModelData MoveSwayForwardBackwardSpringModelData;
 
 	/** The spring model used to drive right/left movement sway for this animation instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Movement Sway")
-	FFloatSpringModelData MovementSwayRightLeftData;
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Movement Sway", DisplayName = "Right/Left Sway Spring Model")
+	FFloatSpringModelData MoveSwayRightLeftSpringModelData;
 
 	/** The spring model used to drive right/left aim sway for this animation instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Aim Sway")
-	FFloatSpringModelData AimSwayRightLeftData;
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Aim Sway", DisplayName = "Right/Left Sway Spring Model")
+	FFloatSpringModelData AimSwayRightLeftSpringModelData;
 
 	/** The spring model used to drive up/down aim sway for this animation instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Aim Sway")
-	FFloatSpringModelData AimSwayUpDownData;
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Aim Sway", DisplayName = "Up/Down Sway Spring Model")
+	FFloatSpringModelData AimSwayUpDownSpringModelData;
 
 	/** The spring model used to drive the falling (vertical movement) offset for this animation instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Falling Offset")
-	FFloatSpringModelData FallingOffsetData;
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Falling Offset", DisplayName = "Falling Offset Spring Model")
+	FFloatSpringModelData FallingOffsetSpringModelData;
 
 
 
