@@ -3,8 +3,8 @@
 
 #include "Animation/CharacterAnimInstanceBase.h"
 
+#include "Characters/CrashCharacterMovementComponent.h"
 #include "KismetAnimationLibrary.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 /** The rate at which we blend out the additive upper body slot. I.e. the speed at which UpperBodyAdditiveWeight is
@@ -15,7 +15,9 @@ UCharacterAnimInstanceBase::UCharacterAnimInstanceBase() :
 	WorldLocation(FVector::ZeroVector),
 	WorldRotation(FRotator::ZeroRotator),
 	YawDeltaSpeed(0.0f),
+	GroundDistance(-1.0f),
 	WorldVelocity(FVector::ZeroVector),
+	VerticalAcceleration(0.0f),
 	LocalVelocity2D(FVector::ZeroVector),
 	LocalVelocity2DNormalized(FVector::ZeroVector),
 	LocalVelocityDirectionAngle(0.0f),
@@ -68,17 +70,23 @@ void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
 void UCharacterAnimInstanceBase::UpdateVelocityData(float DeltaSeconds)
 {
 	APawn* PawnOwner = TryGetPawnOwner();
+	UCrashCharacterMovementComponent* CharMovementComp = GetCrashCharacterMovementComponent();
 
 	// World velocity.
+	const FVector PreviousVelocity = WorldVelocity;
 	WorldVelocity = PawnOwner->GetVelocity();
-	FVector WorldVelocity2D = WorldVelocity * FVector(1.0f, 1.0f, 0.0f);
+	const FVector WorldVelocity2D = WorldVelocity * FVector(1.0f, 1.0f, 0.0f);
+
+	// World acceleration.
+	const FVector LocalVelocityDelta = (WorldRotation.UnrotateVector(WorldVelocity) - WorldRotation.UnrotateVector(PreviousVelocity));
+	VerticalAcceleration = LocalVelocityDelta.Z;
 
 	// Local velocity.
 	LocalVelocity2D = WorldRotation.UnrotateVector(WorldVelocity2D);
 	LocalVelocityDirectionAngle = UKismetAnimationLibrary::CalculateDirection(WorldVelocity2D, WorldRotation);
 
 	// Normalized local velocity.
-	const float MaxMovementSpeed = PawnOwner->GetMovementComponent()->GetMaxSpeed();
+	const float MaxMovementSpeed = CharMovementComp->GetMaxSpeed();
 	const float NormalizedX = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
 	const float NormalizedY = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
 	LocalVelocity2DNormalized = FVector(NormalizedX, NormalizedY, 0.0f);
@@ -140,4 +148,20 @@ void UCharacterAnimInstanceBase::UpdateBlendData(float DeltaSeconds)
 	{
 		UpperBodyAdditiveWeight = FMath::FInterpTo(UpperBodyAdditiveWeight, 0.0f, DeltaSeconds, UPPER_BODY_BLEND_OUT_RATE);
 	}
+}
+
+UCrashCharacterMovementComponent* UCharacterAnimInstanceBase::GetCrashCharacterMovementComponent() const
+{
+	if (APawn* PawnOwner = TryGetPawnOwner())
+	{
+		if (UPawnMovementComponent* MovementComp = PawnOwner->GetMovementComponent())
+		{
+			if (UCrashCharacterMovementComponent* CharMovementComp = Cast<UCrashCharacterMovementComponent>(MovementComp))
+			{
+				return CharMovementComp;
+			}
+		}
+	}
+
+	return nullptr;
 }

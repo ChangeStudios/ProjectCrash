@@ -6,6 +6,8 @@
 #include "Animation/AnimInstance.h"
 #include "CharacterAnimInstanceBase.generated.h"
 
+class UCrashCharacterMovementComponent;
+
 /**
  * Base animation instance for character animation blueprints. Collects relevant character data used for animation
  * blueprints.
@@ -71,12 +73,22 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
 	float YawDeltaSpeed;
 
+	/** This character's current distance from the ground beneath them. Calculated each frame with a simple downward
+	 * line trace from the bottom of the character's capsule. */
+	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
+	float GroundDistance;
+
 // Velocity data.
 protected:
 
 	/** This character's current velocity, relative to world space. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector WorldVelocity;
+
+	/** This character's current acceleration along their local Z axis. Represents the character's velocity delta this
+	 * frame. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	float VerticalAcceleration;
 
 	/** This character's current velocity, relative to its world rotation. Vertical velocity (Z) is masked out. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
@@ -138,4 +150,7 @@ protected:
 	/** Returns the inverse (frames/second) of DeltaSeconds, making sure not to divide by 0. Returns 0 if DeltaSeconds
 	 * is 0. */
 	FORCEINLINE static float SafeInvertDeltaSeconds(float DeltaSeconds) { return (DeltaSeconds > 0.0f ? (1.0f / DeltaSeconds) : (0.0f)); }
+
+	/** Returns this animation instance's owning pawn's movement component has a CrashCharacterMovementComponent. */
+	UCrashCharacterMovementComponent* GetCrashCharacterMovementComponent() const;
 };
