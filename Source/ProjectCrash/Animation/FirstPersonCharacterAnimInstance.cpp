@@ -40,6 +40,9 @@ void UFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float De
 	// Update sway data.
 	UpdateMovementSwayData();
 	UpdateAimSwayData();
+
+	// Update offset data.
+	UpdateFallingOffsetData();
 }
 
 void UFirstPersonCharacterAnimInstance::UpdateAimData(float DeltaSeconds)
@@ -60,11 +63,8 @@ void UFirstPersonCharacterAnimInstance::UpdateAimData(float DeltaSeconds)
 
 void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 {
-	APawn* OwningPawn = TryGetPawnOwner();
-
 	// Use the owning pawn's maximum movement speed as the bound for movement sway.
-	const float MaxMovementSpeed = OwningPawn->GetMovementComponent()->GetMaxSpeed();
-	const float MaxVerticalSpeed = GetCrashCharacterMovementComponent()->JumpZVelocity;
+	const float MaxMovementSpeed = GetCrashCharacterMovementComponent()->GetMaxSpeed();
 
 	// Calculate the forward/backward movement spring.
 	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MovementSwayForwardBackwardData.InterpSpeed), 0.0f, MaxMovementSpeed);
@@ -85,17 +85,6 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 		CurrentSpringMoveRightLeft,
 		SpringTargetRightLeft,
 		SpringStateMoveRightLeft,
-		MovementSwayRightLeftData
-	);
-
-	// Calculate the up/down movement spring.
-	float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((WorldVelocity.Z), 0.0f, MaxVerticalSpeed);
-
-	CurrentSpringMoveUpDown = UpdateFloatSpringInterp
-	(
-		CurrentSpringMoveUpDown,
-		SpringTargetUpDown,
-		SpringStateMoveUpDown,
 		MovementSwayRightLeftData
 	);
 }
@@ -122,6 +111,23 @@ void UFirstPersonCharacterAnimInstance::UpdateAimSwayData()
 		SpringTargetUpDown,
 		SpringStateAimUpDown,
 		AimSwayUpDownData
+	);
+}
+
+void UFirstPersonCharacterAnimInstance::UpdateFallingOffsetData()
+{
+	// Use the owning pawn's jump velocity as the bound for the falling offset.
+	const float MaxVerticalSpeed = GetCrashCharacterMovementComponent()->JumpZVelocity;
+
+	// Calculate the falling offset spring.
+	float SpringTargetFalling = UKismetMathLibrary::NormalizeToRange((WorldVelocity.Z), 0.0f, MaxVerticalSpeed);
+
+	CurrentSpringFalling = UpdateFloatSpringInterp
+	(
+		CurrentSpringFalling,
+		SpringTargetFalling,
+		SpringStateFalling,
+		FallingOffsetData
 	);
 }
 

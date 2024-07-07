@@ -73,11 +73,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
 	float YawDeltaSpeed;
 
-	/** This character's current distance from the ground beneath them. Calculated each frame with a simple downward
-	 * line trace from the bottom of the character's capsule. */
-	UPROPERTY(BlueprintReadOnly, Category = "Transform Data")
-	float GroundDistance;
-
 // Velocity data.
 protected:
 
@@ -85,17 +80,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector WorldVelocity;
 
-	/** This character's current acceleration along their local Z axis. Represents the character's velocity delta this
-	 * frame. */
+	/** This character's current velocity, relative to its world rotation. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
-	float VerticalAcceleration;
+	FVector LocalVelocity;
 
-	/** This character's current velocity, relative to its world rotation. Vertical velocity (Z) is masked out. */
+	/** This character's current local velocity with vertical velocity (Z) masked out. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector LocalVelocity2D;
 
-	/** This character's current velocity, relative to its world rotation, normalized to its maximum movement speed.
-	 * Vertical velocity (Z) is masked out. */
+	/** This character's current local velocity, normalized to its maximum movement speed. Vertical velocity (Z) is
+	 * masked out. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector LocalVelocity2DNormalized;
 

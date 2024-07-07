@@ -64,6 +64,9 @@ protected:
 	/** Updates aim sway data using a spring model. */
 	void UpdateAimSwayData();
 
+	/** Updates falling offset data using a spring model. */
+	void UpdateFallingOffsetData();
+
 
 
 	// Properties.
@@ -86,6 +89,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Aim Sway")
 	FFloatSpringModelData AimSwayUpDownData;
 
+	/** The spring model used to drive the falling (vertical movement) offset for this animation instance. */
+	UPROPERTY(EditDefaultsOnly, Category = "Sway Data|Falling Offset")
+	FFloatSpringModelData FallingOffsetData;
+
 
 
 	// Animation data.
@@ -94,11 +101,11 @@ protected:
 protected:
 
 	/** The rate at which the owning character's aim yaw is changing, in degrees/second. */
-	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
+	UPROPERTY(BlueprintReadOnly, Category = "Aim Data", DisplayName = "Aim Speed (Right/Left)")
 	float AimSpeedRightLeft;
 
 	/** The rate at which the owning character's aim pitch is changing, in degrees/second. */
-	UPROPERTY(BlueprintReadOnly, Category = "Aim Data")
+	UPROPERTY(BlueprintReadOnly, Category = "Aim Data", DisplayName = "Aim Speed (Up/Down)")
 	float AimSpeedUpDown;
 
 
@@ -108,16 +115,12 @@ protected:
 protected:
 
 	/** The current spring value of the forward/backward movement sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway")
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway", DisplayName = "Current Movement Sway Value (Forward/Backward)")
 	float CurrentSpringMoveForwardBackward;
 
 	/** The current spring value of the right/left movement sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway")
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway", DisplayName = "Current Movement Sway Value (Right/Left)")
 	float CurrentSpringMoveRightLeft;
-
-	/** The current spring value of the up/down movement sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway")
-	float CurrentSpringMoveUpDown;
 
 private:
 
@@ -127,9 +130,6 @@ private:
 	/** Spring state for the right/left movement sway's spring calculations. */
 	FFloatSpringState SpringStateMoveRightLeft;
 
-	/** Spring state for the up/down movement sway's spring calculations. */
-	FFloatSpringState SpringStateMoveUpDown;
-
 
 
 	// Aim sway.
@@ -137,11 +137,11 @@ private:
 protected:
 
 	/** The current spring value for the right/left aim sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway")
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway", DisplayName = "Current Aim Sway Value (Right/Left)")
 	float CurrentSpringAimRightLeft;
 
 	/** The current spring value for the up/down aim sway spring. */
-	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway")
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway", DisplayName = "Current Aim Sway Value (Up/Down)")
 	float CurrentSpringAimUpDown;
 
 private:
@@ -151,6 +151,21 @@ private:
 
 	/** Spring state for the up/down aim sway's spring calculations. */
 	FFloatSpringState SpringStateAimUpDown;
+
+
+
+	// Falling offset.
+
+protected:
+
+	/** The current spring value of the falling offset spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Falling Offset", DisplayName = "Current Falling Offset Value")
+	float CurrentSpringFalling;
+
+private:
+
+	/** Spring state for the falling offset's spring calculations. */
+	FFloatSpringState SpringStateFalling;
 
 
 
