@@ -3,6 +3,7 @@
 
 #include "Animation/FirstPersonCharacterAnimInstance.h"
 
+#include "Characters/CrashCharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 
 /**
@@ -63,6 +64,7 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 
 	// Use the owning pawn's maximum movement speed as the bound for movement sway.
 	const float MaxMovementSpeed = OwningPawn->GetMovementComponent()->GetMaxSpeed();
+	const float MaxVerticalSpeed = GetCrashCharacterMovementComponent()->JumpZVelocity;
 
 	// Calculate the forward/backward movement spring.
 	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MovementSwayForwardBackwardData.InterpSpeed), 0.0f, MaxMovementSpeed);
@@ -83,6 +85,17 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 		CurrentSpringMoveRightLeft,
 		SpringTargetRightLeft,
 		SpringStateMoveRightLeft,
+		MovementSwayRightLeftData
+	);
+
+	// Calculate the up/down movement spring.
+	float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((WorldVelocity.Z), 0.0f, MaxVerticalSpeed);
+
+	CurrentSpringMoveUpDown = UpdateFloatSpringInterp
+	(
+		CurrentSpringMoveUpDown,
+		SpringTargetUpDown,
+		SpringStateMoveUpDown,
 		MovementSwayRightLeftData
 	);
 }

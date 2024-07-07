@@ -115,6 +115,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway")
 	float CurrentSpringMoveRightLeft;
 
+	/** The current spring value of the up/down movement sway spring. */
+	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Movement Sway")
+	float CurrentSpringMoveUpDown;
+
 private:
 
 	/** Spring state for the forward/backward movement sway's spring calculations. */
@@ -122,6 +126,9 @@ private:
 
 	/** Spring state for the right/left movement sway's spring calculations. */
 	FFloatSpringState SpringStateMoveRightLeft;
+
+	/** Spring state for the up/down movement sway's spring calculations. */
+	FFloatSpringState SpringStateMoveUpDown;
 
 
 
