@@ -74,18 +74,18 @@ protected:
 // Velocity data.
 protected:
 
-	/** The signed vector length of this character's current velocity. */
-	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
-	float SignedSpeed;
-
 	/** This character's current velocity, relative to world space. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector WorldVelocity;
 
-	/** This character's current velocity, relative to its world rotation. Vertical velocity (Z) is masked out. Not a
-	 * Vector2D just to make math operations easier. */
+	/** This character's current velocity, relative to its world rotation. Vertical velocity (Z) is masked out. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	FVector LocalVelocity2D;
+
+	/** This character's current velocity, relative to its world rotation, normalized to its maximum movement speed.
+	 * Vertical velocity (Z) is masked out. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	FVector LocalVelocity2DNormalized;
 
 	/** The direction, in local space, in which this character is moving. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")

@@ -5,6 +5,7 @@
 
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 /** The rate at which we blend out the additive upper body slot. I.e. the speed at which UpperBodyAdditiveWeight is
  * lerped back to 0 when montages end. */
@@ -14,9 +15,9 @@ UCharacterAnimInstanceBase::UCharacterAnimInstanceBase() :
 	WorldLocation(FVector::ZeroVector),
 	WorldRotation(FRotator::ZeroRotator),
 	YawDeltaSpeed(0.0f),
-	SignedSpeed(0.0f),
 	WorldVelocity(FVector::ZeroVector),
 	LocalVelocity2D(FVector::ZeroVector),
+	LocalVelocity2DNormalized(FVector::ZeroVector),
 	LocalVelocityDirectionAngle(0.0f),
 	bHasVelocity(false),
 	AimRotation(FRotator::ZeroRotator),
@@ -72,12 +73,15 @@ void UCharacterAnimInstanceBase::UpdateVelocityData(float DeltaSeconds)
 	WorldVelocity = PawnOwner->GetVelocity();
 	FVector WorldVelocity2D = WorldVelocity * FVector(1.0f, 1.0f, 0.0f);
 
-	// Signed speed.
-	SignedSpeed = WorldVelocity.Length();
-
 	// Local velocity.
 	LocalVelocity2D = WorldRotation.UnrotateVector(WorldVelocity2D);
 	LocalVelocityDirectionAngle = UKismetAnimationLibrary::CalculateDirection(WorldVelocity2D, WorldRotation);
+
+	// Normalized local velocity.
+	const float MaxMovementSpeed = PawnOwner->GetMovementComponent()->GetMaxSpeed();
+	const float NormalizedX = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
+	const float NormalizedY = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
+	LocalVelocity2DNormalized = FVector(NormalizedX, NormalizedY, 0.0f);
 
 	// Has velocity?
 	bHasVelocity = !(FMath::IsNearlyZero(WorldVelocity2D.SquaredLength()));
