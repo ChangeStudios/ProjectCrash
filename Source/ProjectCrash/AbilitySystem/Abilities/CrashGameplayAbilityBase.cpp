@@ -14,6 +14,7 @@
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
 
 #if WITH_EDITOR
@@ -313,7 +314,7 @@ FCrashGameplayAbilityActorInfo UCrashGameplayAbilityBase::K2_GetCrashActorInfo()
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
 {
 	// Retrieve the typed ASC cached by our custom actor info.
-	return GetCrashActorInfo()->GetCrashAbilitySystemComponent();
+	return (CurrentActorInfo ? GetCrashActorInfo()->GetCrashAbilitySystemComponent() : nullptr);
 }
 
 ACrashPlayerController* UCrashGameplayAbilityBase::GetCrashPlayerControllerFromActorInfo() const

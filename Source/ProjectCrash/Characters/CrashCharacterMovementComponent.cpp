@@ -16,6 +16,7 @@ UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObject
 {
 	GravityScale = 1.5;
 	MaxAcceleration = 16384.0f;
+	// TODO: Disable friction (BrakingFriction = 0, BrakingFrictionMultiplier = 0, bUseSeparateBrakingFriction = false)
 	BrakingFriction = 4.0f;
 	bUseSeparateBrakingFriction = true;
 

@@ -23,9 +23,8 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 // Only perform executions on the server.
 #if WITH_SERVER_CODE
 
-	// Retrieve this execution's owning gameplay effect.
+	// Retrieve this execution's owning spec.
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
-	const TObjectPtr<const UGameplayEffect> OwningGameplayEffect = Spec.Def;
 
 
 	// Retrieve this execution's typed effect context.
@@ -85,7 +84,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 
 
 	// Apply rules for team-damage and self-damage.
-	float DamageInteractionAllowedMultiplier = 0.0f;
+	float DamageInteractionAllowedMultiplier = 1.0f;
 	if (TargetActor)
 	{
 		// TODO: DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, HitActor) ? 1.0f : 0.0f;
@@ -114,14 +113,14 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	/* Apply damage falloff. Any other context multipliers (e.g. penetration through physical materials) should be
 	 * calculated here too. */
 	float DistanceFalloffMultiplier = 1.0f;
-	// TODO: Apply damage falloff via EffectSource interface on EffectCauser. Implement bp-overridable GetDistanceDropoff function.
+	// TODO: Apply damage falloff via EffectSourceInterface on EffectCauser for things like grenades. Implement bp-overridable GetDistanceDropoff function that can be overridden by the grenade projectile.
 	DistanceFalloffMultiplier = FMath::Max(DistanceFalloffMultiplier, 0.0f);
 
 
 	// Calculate and clamp damage.
 	DamageToApply = FMath::Max(DamageToApply * DistanceFalloffMultiplier * DamageInteractionAllowedMultiplier, 0.0f);
 
-	// Round the damage value DOWN to the nearest whole number. We only use whole numbers for health in this project.
+	// Round the damage value down to the nearest whole number. We only use whole numbers for health in this project.
 	DamageToApply = FMath::Floor(DamageToApply);
 
 	// Apply the damage by adding it to the target's "Damage" attribute.
