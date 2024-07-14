@@ -61,9 +61,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Meta = (Categories = "EquipmentSet"))
 	FGameplayTag SetID;
 
-	/** Animation data used by the equipping character while this equipment set is equipped. */
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UCharacterAnimData> AnimationData;
+	// /** Animation data used by the equipping character while this equipment set is equipped. */
+	// UPROPERTY(EditDefaultsOnly)
+	// TObjectPtr<UCharacterAnimData> AnimationData;
 
 	/** The ability set granted to an actor when they equip this set, removed when they fully unequip it (as opposed
 	 * to temporarily unequipping it). */
