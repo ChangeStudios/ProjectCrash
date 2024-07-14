@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Animation/AnimNotifies/AnimNotify_PlayEquipmentMontage.h"
+#include "AnimNotify_PlayEquipmentMontage.h"
 
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"

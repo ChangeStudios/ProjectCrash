@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Animation/AnimNotifies/AnimNotify_TriggerGameplayEvent.h"
+#include "AnimNotify_TriggerGameplayEvent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
