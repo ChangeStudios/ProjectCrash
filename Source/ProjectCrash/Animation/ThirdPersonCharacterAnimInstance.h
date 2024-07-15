@@ -6,12 +6,17 @@
 #include "Animation/CharacterAnimInstanceBase.h"
 #include "ThirdPersonCharacterAnimInstance.generated.h"
 
-USTRUCT(BlueprintType)
-struct FCardinalDirection
+/** Represents one of four cardinal directions. Used for selecting 4D locomotion animations. */
+UENUM(BlueprintType)
+enum FCardinalDirection : uint8
 {
-	GENERATED_BODY()
-	
+	North,
+	South,
+	East,
+	West
 };
+
+
 
 /**
  * Base animation instance for third-person animation blueprints. Collects additional data used for animating

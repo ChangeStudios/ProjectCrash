@@ -55,7 +55,6 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonCharacterMesh"));
 	check(ThirdPersonMesh);
 	ThirdPersonMesh->bReceivesDecals = false;
-	ThirdPersonMesh->bCastHiddenShadow = true;
 	ThirdPersonMesh->SetVisibility(true, true);
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
