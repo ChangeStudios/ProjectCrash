@@ -32,14 +32,9 @@ class PROJECTCRASH_API UThirdPersonCharacterAnimInstance : public UCharacterAnim
 
 	// Animation updates.
 
-public:
-
-	/** Collects additional data used to drive third-person animations. */
-	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
-
 protected:
 
-	/** Collects additional character velocity data for third-person animations. */
+	/** Collects additional character velocity data used to drive third-person animations. */
 	virtual void UpdateVelocityData(float DeltaSeconds) override;
 
 
@@ -57,7 +52,7 @@ protected:
 
 	// Utils.
 
-private:
+public:
 
 	/**
 	 * Converts a given direction, represented by an angle, into a cardinal direction.
