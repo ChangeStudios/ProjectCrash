@@ -124,6 +124,10 @@
 		{
 			"Name": "WinterHolidaysEvent",
 			"Enabled": true
+		},
+		{
+			"Name": "AnimationWarping",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
