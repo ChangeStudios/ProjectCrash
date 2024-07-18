@@ -3,10 +3,38 @@
 
 #include "Animation/ThirdPersonCharacterAnimInstance.h"
 
+#if WITH_EDITORONLY_DATA
+#include "KismetAnimationLibrary.h"
+#include "Characters/CrashCharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#endif
+
 /** The dead-zone value used for converting this character's local velocity into a cardinal direction. */
 #define CARDINAL_DEAD_ZONE 10.0f
 
 
+
+UThirdPersonCharacterAnimInstance::UThirdPersonCharacterAnimInstance() :
+	LocalVelocityDirection(EAnimCardinalDirection::Forward)
+{
+#if WITH_EDITORONLY_DATA
+	Debug_WorldVelocity = FVector::ZeroVector;
+	Debug_Pitch = 0.0f;
+#endif
+}
+
+void UThirdPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
+{
+#if WITH_EDITORONLY_DATA
+	// Update the preview instance in the archetype.
+	if (!GetWorld()->IsPlayInEditor())
+	{
+		UpdateDebugData(DeltaSeconds);
+	}
+#endif
+
+	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
+}
 
 void UThirdPersonCharacterAnimInstance::UpdateVelocityData(float DeltaSeconds)
 {
@@ -58,3 +86,32 @@ EAnimCardinalDirection UThirdPersonCharacterAnimInstance::SelectCardinalDirectio
 	}
 }
 
+#if WITH_EDITORONLY_DATA
+void UThirdPersonCharacterAnimInstance::UpdateDebugData(float DeltaSeconds)
+{
+	AActor* PreviewActor = GetOwningActor();
+
+	if (!PreviewActor)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Anim instance [%s] failed to find preview instance in debug."), *GetNameSafe(this));
+		return;
+	}
+
+	// Velocity data.
+	WorldVelocity = Debug_WorldVelocity;
+	const FVector WorldVelocity2D = WorldVelocity * FVector(1.0f, 1.0f, 0.0f);
+	LocalVelocity = WorldRotation.UnrotateVector(WorldVelocity);
+	LocalVelocity2D = LocalVelocity * FVector(1.0f, 1.0f, 0.0f);
+	LocalVelocityDirectionAngle = UKismetAnimationLibrary::CalculateDirection(WorldVelocity2D, WorldRotation);
+	const float MaxMovementSpeed = UCrashCharacterMovementComponent::StaticClass()->GetDefaultObject<UCrashCharacterMovementComponent>()->MaxWalkSpeed;
+	const float NormalizedX = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
+	const float NormalizedY = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
+	LocalVelocity2DNormalized = FVector(NormalizedX, NormalizedY, 0.0f);
+	bHasVelocity = !(FMath::IsNearlyZero(WorldVelocity2D.SquaredLength()));
+	LocalVelocityDirection = SelectCardinalDirectionFromAngle(LocalVelocityDirectionAngle, CARDINAL_DEAD_ZONE, true, LocalVelocityDirection);
+
+	// Aim data.
+	AimRotation = WorldRotation;
+	AimRotation.Pitch = Debug_Pitch;
+}
+#endif

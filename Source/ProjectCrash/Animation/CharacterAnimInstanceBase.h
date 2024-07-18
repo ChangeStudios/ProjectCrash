@@ -28,6 +28,7 @@ public:
 	UCharacterAnimInstanceBase();
 
 
+
 	// Animation updates.
 
 public:

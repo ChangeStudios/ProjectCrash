@@ -30,7 +30,21 @@ class PROJECTCRASH_API UThirdPersonCharacterAnimInstance : public UCharacterAnim
 {
 	GENERATED_BODY()
 
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UThirdPersonCharacterAnimInstance();
+
+
+
 	// Animation updates.
+
+public:
+
+	/** Updates third-person debug data in the editor. */
+	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
 protected:
 
@@ -70,4 +84,26 @@ public:
 	 *									dead-zones.
 	 */
 	static EAnimCardinalDirection SelectCardinalDirectionFromAngle(float LocalAngle, float DeadZone, bool bUseCurrentDirection, EAnimCardinalDirection CurrentDirection);
+
+
+
+	// Debugging.
+
+#if WITH_EDITORONLY_DATA
+
+protected:
+
+	/** Updates this animation instance's preview actor's data with debug properties. */
+	void UpdateDebugData(float DeltaSeconds);
+
+	/** Set to simulate the preview character instance's world velocity. Note that this does not actually change the
+	 * preview actor's velocity, so some features, like orientation warping, won't be simulated properly. */
+	UPROPERTY(EditDefaultsOnly, Category = "Debugging", DisplayName = "Simulated Velocity", Meta = (UIMin = "-600", UIMax = "600"))
+	FVector Debug_WorldVelocity;
+
+	/** Set to simulate the preview character instance's aim pitch. */
+	UPROPERTY(EditDefaultsOnly, Category = "Debugging", DisplayName = "Simulated Pitch", Meta = (UIMin = "-90", UIMax = "90"))
+	float Debug_Pitch;
+
+#endif
 };
