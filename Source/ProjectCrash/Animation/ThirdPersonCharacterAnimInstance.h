@@ -105,5 +105,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Debugging", DisplayName = "Simulated Pitch", Meta = (UIMin = "-90", UIMax = "90"))
 	float Debug_Pitch;
 
-#endif
+#endif // WITH_EDITORONLY_DATA
 };
