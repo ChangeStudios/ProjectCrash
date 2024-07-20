@@ -48,15 +48,29 @@ public:
 
 protected:
 
+	/** Updates this character's current distance from the ground. */
+	virtual void UpdateTransformData(float DeltaSeconds) override;
+
 	/** Collects additional character velocity data used to drive third-person animations. */
 	virtual void UpdateVelocityData(float DeltaSeconds) override;
 
-	/** */
+	/** Initializes the land recovery animation alpha when landing. */
 	virtual void UpdateCharacterStateData(float DeltaSeconds) override;
 
 
 
 	// Animation data.
+
+// Transform data.
+protected:
+
+	/** This character's current distance above the ground beneath them. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	float GroundDistance;
+
+	/** Change in GroundDistance this update. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	float GroundDistanceDelta;
 
 // Velocity data.
 protected:

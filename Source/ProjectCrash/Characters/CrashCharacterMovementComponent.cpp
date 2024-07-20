@@ -158,6 +158,7 @@ float UCrashCharacterMovementComponent::GetGroundDistance() const
 		return FMath::Max((HitResult.Distance - CapsuleHalfHeight), 0.0f);
 	}
 
-	// If no ground was hit, and we're helplessly dangling over a bottomless void, return the maximum trace distance.
+	/* If no ground was hit, and we're helplessly dangling over a bottomless void (which happens a lot in this game),
+	 * return the maximum trace distance. */
 	return MAX_GROUND_TRACE_DISTANCE;
 }

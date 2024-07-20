@@ -96,7 +96,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ability|Attribute|Movement")
 	static UCrashCharacterMovementComponent* FindCrashMovementComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UCrashCharacterMovementComponent>() : nullptr); }
 
-	/** Gets the distance from the bottom of this character's capsule to the ground beneath them. Returns -1.0 if there
-	 * is no ground (i.e. the character is floating above an endless void, which happens a lot in this game). */
+	/** Gets the distance from the bottom of this character's capsule to the ground beneath them. */
 	float GetGroundDistance() const;
 };

@@ -21,6 +21,7 @@
 
 
 UThirdPersonCharacterAnimInstance::UThirdPersonCharacterAnimInstance() :
+	GroundDistance(0.0f),
 	LocalVelocityDirection(EAnimCardinalDirection::Forward),
 	LandRecoveryAlpha(0.0f)
 {
@@ -41,6 +42,17 @@ void UThirdPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float De
 #endif
 
 	Super::NativeThreadSafeUpdateAnimation(DeltaSeconds);
+}
+
+void UThirdPersonCharacterAnimInstance::UpdateTransformData(float DeltaSeconds)
+{
+	Super::UpdateTransformData(DeltaSeconds);
+
+	// Update this character's current distance from the ground.
+	UCrashCharacterMovementComponent* CrashMovementComp = GetCrashCharacterMovementComponent();
+	const float LastGroundDistance = GroundDistance;
+	GroundDistance = CrashMovementComp ? CrashMovementComp->GetGroundDistance() : UCrashCharacterMovementComponent::MAX_FLOOR_DIST;
+	GroundDistanceDelta = (GroundDistance - LastGroundDistance);
 }
 
 void UThirdPersonCharacterAnimInstance::UpdateVelocityData(float DeltaSeconds)
