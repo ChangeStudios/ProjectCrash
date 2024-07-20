@@ -12,10 +12,17 @@
 /** The dead-zone value used for converting this character's local velocity into a cardinal direction. */
 #define CARDINAL_DEAD_ZONE 10.0f
 
+/** The maximum speed with which the additive landing recovery animation will be scaled. When landing, if the vertical
+ * velocity with which the character landed is less than this, the alpha of the recovery animation will be scaled down
+ * against this value. E.g. landing with a vertical velocity of (MAX_FALLING_SPEED / 2) will only apply the recovery
+ * animation with an alpha of 0.5. */
+#define MAX_FALLING_SPEED 5000.0f
+
 
 
 UThirdPersonCharacterAnimInstance::UThirdPersonCharacterAnimInstance() :
-	LocalVelocityDirection(EAnimCardinalDirection::Forward)
+	LocalVelocityDirection(EAnimCardinalDirection::Forward),
+	LandRecoveryAlpha(0.0f)
 {
 #if WITH_EDITORONLY_DATA
 	Debug_WorldVelocity = FVector::ZeroVector;
@@ -38,10 +45,31 @@ void UThirdPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float De
 
 void UThirdPersonCharacterAnimInstance::UpdateVelocityData(float DeltaSeconds)
 {
+	// Cache the current velocity as the previous frame's velocity, before we update it.
+	LastLocalVelocity = LocalVelocity;
+
 	Super::UpdateVelocityData(DeltaSeconds);
 
 	// Update which local cardinal direction this character is currently moving.
 	LocalVelocityDirection = SelectCardinalDirectionFromAngle(LocalVelocityDirectionAngle, CARDINAL_DEAD_ZONE, true, LocalVelocityDirection);
+
+	// Update acceleration.
+	const FVector VelocityDelta = (LocalVelocity - LastLocalVelocity);
+	Acceleration = (VelocityDelta * SafeInvertDeltaSeconds(DeltaSeconds));
+}
+
+void UThirdPersonCharacterAnimInstance::UpdateCharacterStateData(float DeltaSeconds)
+{
+	const bool bWasAirborne = !bIsOnGround;
+
+	Super::UpdateCharacterStateData(DeltaSeconds);
+
+	// When landing, start applying the additive "land recovery" animation.
+	if (bWasAirborne && bIsOnGround)
+	{
+		// Scale the initial recovery alpha using the vertical velocity at which the character landed.
+		LandRecoveryAlpha = UKismetMathLibrary::MapRangeClamped(LastLocalVelocity.Z, 0.0f, -MAX_FALLING_SPEED, 0.1f, 1.0f);
+	}
 }
 
 EAnimCardinalDirection UThirdPersonCharacterAnimInstance::SelectCardinalDirectionFromAngle(float LocalAngle, float DeadZone, bool bUseCurrentDirection, EAnimCardinalDirection CurrentDirection)

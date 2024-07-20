@@ -51,6 +51,9 @@ protected:
 	/** Collects additional character velocity data used to drive third-person animations. */
 	virtual void UpdateVelocityData(float DeltaSeconds) override;
 
+	/** */
+	virtual void UpdateCharacterStateData(float DeltaSeconds) override;
+
 
 
 	// Animation data.
@@ -58,9 +61,25 @@ protected:
 // Velocity data.
 protected:
 
+	/** This character's local velocity at the previous update. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	FVector LastLocalVelocity;
+
+	/** This character's acceleration this frame, in cm/second. */
+	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	FVector Acceleration;
+
 	/** The cardinal direction of this character current local velocity. */
 	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
 	EAnimCardinalDirection LocalVelocityDirection;
+
+// Blend data.
+protected:
+
+	/** Alpha used to blend the additive recovery animation when landing. When hitting the ground, this is set to a
+	 * value between 0.0 and 1.0 to blend the recovery animation, depending on how hard this character landed. */
+	UPROPERTY(BlueprintReadOnly, Category = "Blend Data")
+	float LandRecoveryAlpha;
 
 
 
