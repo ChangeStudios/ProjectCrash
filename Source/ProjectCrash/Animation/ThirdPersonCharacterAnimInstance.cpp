@@ -22,6 +22,7 @@
 
 UThirdPersonCharacterAnimInstance::UThirdPersonCharacterAnimInstance() :
 	GroundDistance(0.0f),
+	GroundDistanceDelta(0.0f),
 	LocalVelocityDirection(EAnimCardinalDirection::Forward),
 	LandRecoveryAlpha(0.0f)
 {

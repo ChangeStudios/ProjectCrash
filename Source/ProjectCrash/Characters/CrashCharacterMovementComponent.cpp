@@ -130,6 +130,11 @@ void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previ
 
 float UCrashCharacterMovementComponent::GetGroundDistance() const
 {
+	if (!CharacterOwner)
+	{
+		return 0.0f;
+	}
+
 	// This character is already on the ground. 
 	if (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking)
 	{
