@@ -4,13 +4,10 @@
 # Documentation
 The codebase of "Project Crash" contains detailed doc comments. But given the complex and intertwining nature of various systems, such as the Gameplay Abilities System (GAS), several external documents have been written to detail these frameworks with greater clarity, from a higher level. These documents can be viewed at the links listed below.
 
-* [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1O7YPWexCDY6cmNgkvG8EtkZL657hN82NOsViu8EdND4/edit?usp=sharing)
-* [Enhanced Input System](https://docs.google.com/document/d/1d1LVg-ehceqX3TdfWAj2qzH34_2PBbfLTI1VFw4oOe8/edit?usp=sharing)
-* [Data-Driven First-Person and Third-Person Character Animation System](https://docs.google.com/document/d/1POn8VdkYRQCWdIatEK0ghMp95gNMywwFNnU8s9nxQ3g/edit?usp=sharing)
-* [Equipment System](https://docs.google.com/document/d/1G91uy_aFNAV72H67d4x7UoH8f-cra3pVtYKrFTbXwKo/edit?usp=sharing)
-* [User Interface](https://docs.google.com/document/d/1ppomGeVG1Og-0oerqsT4-H6jTE1x1-Aqw8Y38JgxVIQ/edit?usp=sharing)
-* [Actor Death](https://docs.google.com/document/d/1oJJhID3H6ibK6JepC2oy4YvH9VOQ4_0VlN0PSSjFWXw/edit?usp=sharing)
+* [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1BSkc9kgwZd3VlKbZSo5VpNGknWj3YKsn9xwcWroMYqA/edit?usp=sharing)
+* [Input System](https://docs.google.com/document/d/1FKrdgqlygmAeED8yWPM5JkIU46k4OLQpI_tIjP9rxyo/edit?usp=sharing)
+* [Game Framework (WIP)](https://docs.google.com/document/d/1aGqGTMlhycm3lr8DFkSRUJVXz3RlMp6ysdWAF8IL7Rc/edit?usp=sharing)
 
-<h6>Copyright Notice:
+<h6>Legal Notice:
 <br></br>
-All contents of this repository are copyright Samuel Reitich. "Project Crash" and related media are a protected IP.</h6>
+© 2024 Change Studios, LLC. All rights reserved. "Project Crash," Cloud Crashers, Change Studios, and the Change Studios logo are registered or unregistered trademarks of Change Studios, LLC in the US and/or other countries. All contents of this repository, including code and game assets, are copyright Change Studios, LCC. "Project Crash," Cloud Crashers, and related media are a protected IP.</h6>
