@@ -13,7 +13,7 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
 #include "AbilitySystem/Tasks/AbilityTask_PlayDualMontageAndWait.h"
-#include "AbilitySystem/Tasks/AbilityTask_WaitReusableTargetData.h"
+#include "AbilitySystem/Tasks/AbilityTask_WaitTargetDataWithReusableActor.h"
 #include "BlueprintLibraries/AbilitySystemUtilitiesLibrary.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/HUD.h"
@@ -494,7 +494,7 @@ void UMeleeAttackAbility::StartTargeting()
 
 	/* Start waiting for target data. This is done predictively, which can trigger a warning like "LogPredictionKey:
 	 * Warning: UnAck'd PredictionKey...". This warning is a bug that should be fixed in future UE versions. */
-	UAbilityTask_WaitReusableTargetData* WaitTargetDataTask = UAbilityTask_WaitReusableTargetData::CreateWaitTargetDataWithReusableActorProxy
+	UAbilityTask_WaitTargetDataWithReusableActor* WaitTargetDataTask = UAbilityTask_WaitTargetDataWithReusableActor::CreateWaitTargetDataWithReusableActorProxy
 	(
 		this,
 		FName("WaitTargetDataTask"),

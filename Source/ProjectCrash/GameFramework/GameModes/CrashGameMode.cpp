@@ -7,6 +7,7 @@
 #include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
 #include "Development/CrashDeveloperSettings.h"
+#include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/CrashWorldSettings.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
@@ -189,9 +190,11 @@ const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Playe
 		if (const UCrashDeveloperSettings* DeveloperSettings = GetDefault<UCrashDeveloperSettings>())
 		{
 			// Only override the pawn data if an overriding pawn data asset has been set.
-			if (DeveloperSettings->PawnDataOverride)
+			if (DeveloperSettings->PawnDataOverride.IsValid())
 			{
-				NewPawnData = DeveloperSettings->PawnDataOverride;
+				UCrashAssetManager& AssetManager = UCrashAssetManager::Get();
+				FSoftObjectPath AssetPath = AssetManager.GetPrimaryAssetPath(DeveloperSettings->PawnDataOverride);
+				NewPawnData = Cast<UPawnData>(AssetPath.TryLoad());
 				PawnDataSource = TEXT("Developer Settings");
 			}
 		}

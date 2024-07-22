@@ -52,6 +52,6 @@ public:
 	 *
 	 * TODO: Make FPrimaryAssetId
 	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crash)
-	TObjectPtr<UPawnData> PawnDataOverride;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = "Crash", Meta = (AllowedTypes = "PawnData"))
+	FPrimaryAssetId PawnDataOverride;
 };
