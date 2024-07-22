@@ -8,6 +8,9 @@
 
 /**
  * A collision shape that detects collision while active. This should be subclassed with custom shapes.
+ *
+ * Subclasses should implement a "Configure" class to initialize this actor's data, and to reconfigure the data between
+ * uses. See GameplayAbilityTargetActor_CollisionDetector_Capsule for reference.
  */
 UCLASS(Abstract, NotPlaceable)
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AGameplayAbilityTargetActor
@@ -53,29 +56,29 @@ protected:
 
 
 
-	// Parameters.
+	// Parameters. Should be initialized by a "Configure" function.
 
 protected:
 
 	/** Whether to ignore the avatar of the gameplay ability using this target actor when checking for targets. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadOnly)
 	bool bIgnoreSelf;
 
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
-	 UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	 UPROPERTY(BlueprintReadOnly)
 	bool bRepeatTargets;
 
 	/** If true, target data will be automatically reset each time targeting starts. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadOnly)
 	bool bResetTargetsOnStart;
 
 	/** Whether to filter for targets with an ability system component. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadOnly)
 	bool bFilterForGASActors;
 
 	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	UPROPERTY(BlueprintReadOnly)
 	FGameplayTagContainer IgnoredTargetTags;
 
 

@@ -33,8 +33,8 @@ public:
 public:
 
 	/**
-	 * Configures this actor with the given parameters. This should be used to initialize this target actor before it
-	 * is used.
+	 * Configures this actor with the given parameters. Must be called at least once to initialize this target actor
+	 * before it is used. Can be used to reconfigure this actor's data between uses.
 	 *
 	 * @param InCapsuleRadius						This actor's detection capsule's radius.
 	 * @param InCapsuleHalfHeight					This actor's detection capsule's half-height.
@@ -48,20 +48,29 @@ public:
 	 * @param InFilter								Optional target data filter used on hit actors.
 	 * @param bInFilterForGASActors					Whether to filter for targets with an ability system component.
 	 * @param IgnoreTargetsWithTags					Ignore any targets with any of these tags.
-	 * @param bInShouldProduceTargetDataOnServer	Whether the server should wait for target data to be produced on
-	 *												the client or if it should produce the data directly.
+	 * @param bInShouldProduceTargetDataOnServer	If true, the server will generate the target data directly (or after
+	 *												receiving a confirmation). If false, the server will wait for the
+	 *												client to produce and send the data.
 	 */
 	UFUNCTION(BlueprintCallable)
 	void Configure
 	(
-		float InCapsuleRadius = 22.0f,
-		float InCapsuleHalfHeight = 44.0f,
+		UPARAM(DisplayName = "Capsule Radius")
+		float InCapsuleRadius = 45.0f,
+		UPARAM(DisplayName = "Capsule Half-Height")
+		float InCapsuleHalfHeight = 90.0f,
+		UPARAM(DisplayName = "Ignore Self?")
 		bool bInIgnoreSelf = true,
+		UPARAM(DisplayName = "Repeat Targets?")
 		bool bInRepeatTargets = false,
+		UPARAM(DisplayName = "Reset Targets on Start?")
 		bool bInResetTargetsOnStart = true,
+		UPARAM(DisplayName = "Filter")
 		FGameplayTargetDataFilterHandle InFilter = FGameplayTargetDataFilterHandle(),
+		UPARAM(DisplayName = "Filter for GAS Actors?")
 		bool bInFilterForGASActors = true,
 		FGameplayTagContainer IgnoreTargetsWithTags = FGameplayTagContainer(),
+		UPARAM(DisplayName = "Produce Taget Data on Server?")
 		bool bInShouldProduceTargetDataOnServer = true
 	);
 
@@ -71,8 +80,12 @@ public:
 
 protected:
 
+	/** The radius of the capsule being used for collision detection. */
+	UPROPERTY(BlueprintReadOnly)
 	float CapsuleRadius;
 
+	/** The half-height of the capsule being used for collision detection. */
+	UPROPERTY(BlueprintReadOnly)
 	float CapsuleHalfHeight;
 
 

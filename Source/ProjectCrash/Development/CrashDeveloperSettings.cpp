@@ -35,11 +35,11 @@ void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 	}
 	
 	// Notify user of an active pawn override.
-	if (PawnDataOverride)
+	if (PawnDataOverride.IsValid())
 	{
 		FNotificationInfo Info(FText::Format(
 			LOCTEXT("PawnDataOverrideActive", "Developer Settings Override\nPawn Data: {0}"),
-			FText::FromString(GetNameSafe(PawnDataOverride))
+			FText::FromName(PawnDataOverride.PrimaryAssetName)
 		));
 		Info.ExpireDuration = 5.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);

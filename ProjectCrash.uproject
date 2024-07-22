@@ -124,6 +124,18 @@
 		{
 			"Name": "WinterHolidaysEvent",
 			"Enabled": true
+		},
+		{
+			"Name": "AnimationWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayInsights",
+			"Enabled": true
+		},
+		{
+			"Name": "AnimationLocomotionLibrary",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

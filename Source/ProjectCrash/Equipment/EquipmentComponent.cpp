@@ -5,7 +5,6 @@
 
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "Animation/ChallengerAnimInstanceBase.h"
 #include "EquipmentPieceActor.h"
 #include "CrashGameplayTags.h"
 #include "Characters/CrashCharacter.h"
@@ -283,38 +282,38 @@ void UEquipmentComponent::EquipSet_Internal(UEquipmentSetDefinition* SetToEquip,
 
 
 
-		// Update the equipping character's animation to use the new set's animations.
-		if (SetToEquip->AnimationData)
-		{
-			// Optional first-person mesh.
-			if (UChallengerAnimInstanceBase* FPPAnimInstance = (EquippingCrashChar && EquippingCrashChar->GetFirstPersonMesh()) ?
-																	Cast<UChallengerAnimInstanceBase>(EquippingCrashChar->GetFirstPersonMesh()->GetAnimInstance()) :
-																	nullptr)
-			{
-				FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
-
-				// Play the first-person "equip" montage.
-				if (EquippingSetSkinData->EquipAnim_FPP)
-				{
-					FPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_FPP);
-				}
-			}
-
-			// Third-person mesh. AttachComponent has already done the work of searching for a mesh component for us.
-			if (const USkeletalMeshComponent* MeshComp = (Cast<USkeletalMeshComponent>(AttachComponent)))
-			{
-				if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(MeshComp->GetAnimInstance()))
-				{
-					TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
-
-					// Play the third-person "equip" montage.
-					if (EquippingSetSkinData->EquipAnim_TPP)
-					{
-						TPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_TPP);
-					}
-				}
-			}
-		}
+		// // Update the equipping character's animation to use the new set's animations.
+		// if (SetToEquip->AnimationData)
+		// {
+		// 	// Optional first-person mesh.
+		// 	if (UChallengerAnimInstanceBase* FPPAnimInstance = (EquippingCrashChar && EquippingCrashChar->GetFirstPersonMesh()) ?
+		// 															Cast<UChallengerAnimInstanceBase>(EquippingCrashChar->GetFirstPersonMesh()->GetAnimInstance()) :
+		// 															nullptr)
+		// 	{
+		// 		FPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
+		//
+		// 		// Play the first-person "equip" montage.
+		// 		if (EquippingSetSkinData->EquipAnim_FPP)
+		// 		{
+		// 			FPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_FPP);
+		// 		}
+		// 	}
+		//
+		// 	// Third-person mesh. AttachComponent has already done the work of searching for a mesh component for us.
+		// 	if (const USkeletalMeshComponent* MeshComp = (Cast<USkeletalMeshComponent>(AttachComponent)))
+		// 	{
+		// 		if (UChallengerAnimInstanceBase* TPPAnimInstance = Cast<UChallengerAnimInstanceBase>(MeshComp->GetAnimInstance()))
+		// 		{
+		// 			TPPAnimInstance->UpdateAnimData(SetToEquip->AnimationData, EquippingSetSkinData);
+		//
+		// 			// Play the third-person "equip" montage.
+		// 			if (EquippingSetSkinData->EquipAnim_TPP)
+		// 			{
+		// 				TPPAnimInstance->Montage_Play(EquippingSetSkinData->EquipAnim_TPP);
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 }
 
