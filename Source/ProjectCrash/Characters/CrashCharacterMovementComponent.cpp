@@ -16,15 +16,17 @@ UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObject
 {
 	GravityScale = 1.5;
 	MaxAcceleration = 16384.0f;
-	// TODO: Disable friction (BrakingFriction = 0, BrakingFrictionMultiplier = 0, bUseSeparateBrakingFriction = false)
-	BrakingFriction = 4.0f;
-	bUseSeparateBrakingFriction = true;
+	BrakingFrictionFactor = 0.0f;
+	BrakingFriction = 0.0f;
+	bUseSeparateBrakingFriction = false;
 
+	SetWalkableFloorAngle(35.01f);
 	GroundFriction = 0.0f;
 	MaxWalkSpeed = 600.0f;
 	MaxWalkSpeedCrouched = 300.0f;
 	MinAnalogWalkSpeed = 50.0f;
 	BrakingDecelerationWalking = 8192.0f;
+	PerchRadiusThreshold = 20.0f;
 
 	JumpZVelocity = 1000.0f;
 	AirControl = 0.5f;
