@@ -28,11 +28,12 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	// Capsule component.
 	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
 	check(CapsuleComp);
-	CapsuleComp->InitCapsuleSize(45.0f, 90.0f);
+	CapsuleComp->InitCapsuleSize(40.0f, 90.0f);
+	CapsuleComp->SetCollisionProfileName(FName("CrashPawnCapsule"));
 
 
 	// Camera.
-	BaseEyeHeight = 76.5f;
+	BaseEyeHeight = 66.85f; // (Character eye height (~76.5) - base third-person animation pelvis offset (7.5) - third-person mesh offset (2.15))
 	CameraComponent = CreateDefaultSubobject<UCrashCameraComponent>(TEXT("CrashCameraComponent"));
 	check(CameraComponent);
 	CameraComponent->SetupAttachment(CapsuleComp);
@@ -48,7 +49,8 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	FirstPersonMesh->SetVisibility(false, true);
 	FirstPersonMesh->SetupAttachment(CameraComponent);
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f));
+	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f)); // - (Character eye height (~76.5) + capsule half-height (90.0))
+	FirstPersonMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName); // Disable collision on first-person mesh.
 
 
 	// Third-person mesh.
@@ -58,7 +60,8 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetVisibility(true, true);
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
+	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -92.15f)); // Unreal leaves ~2.15cm of space between the collision capsule and the ground.
+	ThirdPersonMesh->SetCollisionProfileName(FName("CrashPawnMesh"));
 
 
 	// Input.

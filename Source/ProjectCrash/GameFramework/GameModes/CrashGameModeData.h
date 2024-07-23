@@ -30,10 +30,15 @@ public:
 	// Game mode properties.
 
 public:
-	
-	/** The default pawn for this game mode. In core game modes, where players select their characters beforehand, this
-	 * should be null. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
+
+	/**
+	 * The default pawn for this game mode. Can be left empty in game modes where players select their characters
+	 * beforehand.
+	 *
+	 * This is an object pointer instead of a primary asset ID to ensure it's always loaded while the game mode is
+	 * loaded.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", Meta = (ToolTip = "The default pawn for this game mode. Can be left empty in game modes where players select their characters beforehand."))
 	TObjectPtr<UPawnData> DefaultPawn;
 
 	/** Whether players should be immediately destroyed when they become inactive, or if they should be allowed to

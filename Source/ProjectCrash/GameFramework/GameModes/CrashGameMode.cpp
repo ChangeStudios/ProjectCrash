@@ -172,8 +172,6 @@ const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Playe
 	 *		- Session/game settings, if a pawn has been assigned to the specific controller.
 	 *		- Developer settings, if in PIE.
 	 *		- Game mode's default pawn as defined in the GM data.
-	 *
-	 * TODO: Make pawn data FPrimaryAssetId. Load it here when found.
 	 */
 
 	const UPawnData* NewPawnData = nullptr;
@@ -192,8 +190,11 @@ const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Playe
 			// Only override the pawn data if an overriding pawn data asset has been set.
 			if (DeveloperSettings->PawnDataOverride.IsValid())
 			{
+				/* The pawn data override is stored as a primary asset ID to persist between sessions, so we have to
+				 * load it manually. */
 				UCrashAssetManager& AssetManager = UCrashAssetManager::Get();
 				FSoftObjectPath AssetPath = AssetManager.GetPrimaryAssetPath(DeveloperSettings->PawnDataOverride);
+
 				NewPawnData = Cast<UPawnData>(AssetPath.TryLoad());
 				PawnDataSource = TEXT("Developer Settings");
 			}
