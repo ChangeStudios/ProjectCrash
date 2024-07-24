@@ -11,6 +11,7 @@
 class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
+struct FCrashAbilitySet_GrantedHandles;
 
 /**
  * Defines how a client is connected.
@@ -91,6 +92,12 @@ public:
 	/** Sets this player's current pawn data. Should only be called on the server. */
 	void SetPawnData(const UPawnData* InPawnData);
 
+	/** Updates this player's current pawn data, destroying their current pawn if necessary, and restarts them. Used
+	 * for changing pawns during gameplay via a "Switch Character" menu. For initializing pawn data, use SetPawnData
+	 * instead. */
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|PlayerState")
+	void Server_ChangePawn(const UPawnData* InPawnData);
+
 	/** Templated getter for retrieving current pawn data. */
 	template <class T>
 	const T* GetPawnData() const { return Cast<T>(PawnData); }
@@ -124,4 +131,8 @@ private:
 	/** This player's ability system component. */
 	UPROPERTY(VisibleAnywhere, Category = "Crash|PlayerState")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
+	 * data changes. */
+	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
 };

@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
@@ -126,7 +127,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		return;
 	}
 
-	// Players cannot change pawn data during the game.
+	// Players cannot switch between active pawn data. Use ChangePawn to safely change pawn data during the game.
 	if (PawnData)
 	{
 		UE_LOG(LogCrash, Error, TEXT("Tried to set pawn data [%s] on player state [%s]. This player already has valid pawn data: [%s]."),
@@ -134,8 +135,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 			*GetNameSafe(this),
 			*GetNameSafe(PawnData));
 
-		/* NOTE: If we wanted a game mode where players can switch pawns during a game, we would have to remove the
-		 * current pawn data's added ability sets and input configuration. */
 		return;
 	}
 
@@ -153,7 +152,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	{
 		if (AbilitySet)
 		{
-			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, nullptr);
+			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
 		}
 	}
 
@@ -162,6 +161,38 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
 
 	ForceNetUpdate();
+}
+
+void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawnData)
+{
+	// Remove the ability sets granted by the old pawn data.
+	if (AbilitySystemComponent)
+	{
+		for (auto GrantedAbilitySet : GrantedPawnDataAbilitySets)
+		{
+			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent);
+		}
+	}
+	GrantedPawnDataAbilitySets.Reset();
+
+	// Clear PawnData so SetPawnData works properly.
+	PawnData = nullptr;
+
+	// Destroy the pawn.
+	if (APawn* CurrentPawn = GetPawn())
+	{
+		CurrentPawn->DetachFromControllerPendingDestroy();
+		CurrentPawn->SetLifeSpan(0.1f);
+		CurrentPawn->SetActorHiddenInGame(true);
+	}
+
+	// Update this player's pawn data.
+	SetPawnData(InPawnData);
+
+	// Restart the player, destroying their old pawn and spawning a new one.
+	AController* OwningController = GetPlayerController();
+	ensure(OwningController);
+	GetWorld()->GetAuthGameMode()->RestartPlayer(OwningController);
 }
 
 void ACrashPlayerState::OnRep_PawnData()
