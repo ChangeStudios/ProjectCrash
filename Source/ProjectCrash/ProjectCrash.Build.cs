@@ -19,6 +19,7 @@ public class ProjectCrash : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new string[]
 		{
+			"AIModule",
 			"Core",
 			"CoreOnline",
 			"CoreUObject",
@@ -37,7 +38,6 @@ public class ProjectCrash : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"AIModule",
 			"AnimGraphRuntime",
 			"CommonGame",
 			"CommonInput",

@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "ModularPlayerState.h"
 #include "Characters/Data/PawnData.h"
+#include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashPlayerState.generated.h"
 
 class UCrashAbilitySystemComponent;
@@ -34,7 +35,7 @@ enum class EPlayerConnectionType : uint8
  * and runtime player statistics.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface
+class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface, public ICrashTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -135,4 +136,37 @@ private:
 	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
 	 * data changes. */
 	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
+
+
+
+	// Teams.
+
+public:
+
+	/** Sets this player's current team ID. Can only be called on the server. */
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
+
+	/** Returns this player's current team ID. */
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+
+	/** Returns the delegate fired when this player's team ID changes. */
+	virtual FOnTeamIdChangedSignature* GetOnTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
+
+	/** Blueprint-exposed wrapper for GetGenericTeamId. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
+	int32 GetTeamID() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
+
+private:
+
+	/** Delegate fired when this player's team ID changes. */
+	UPROPERTY()
+	FOnTeamIdChangedSignature OnTeamIdChangedDelegate;
+
+	/** The ID of the team to which this player currently belongs. */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamId)
+	FGenericTeamId TeamId;
+
+	/** Broadcasts OnTeamIdChangedDelegate when this player's team ID changes. */
+	UFUNCTION()
+	void OnRep_TeamId(FGenericTeamId OldTeamId);
 };

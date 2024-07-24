@@ -208,6 +208,32 @@ UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
 	return GetCrashAbilitySystemComponent();
 }
 
+void ACrashPlayerState::SetGenericTeamId(const FGenericTeamId& NewTeamId)
+{
+	// Only set team IDs on the server.
+	if (HasAuthority())
+	{
+		const FGenericTeamId OldTeamId = TeamId;
+
+		// Set this player's team ID.
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
+		TeamId = NewTeamId;
+
+		// Broadcast the change locally. OnRep will handle broadcasting on clients.
+		BroadcastIfTeamChanged(this, OldTeamId, NewTeamId);
+	}
+	else
+	{
+		UE_LOG(LogTeams, Error, TEXT("Cannot set team for [%s] on non-authority."), *GetPathName(this));
+	}
+}
+
+void ACrashPlayerState::OnRep_TeamId(FGenericTeamId OldTeamId)
+{
+	// Broadcast the team change for clients. Server calls this in SetGenericTeamId.
+	BroadcastIfTeamChanged(this, OldTeamId, TeamId);
+}
+
 void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -217,4 +243,5 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ConnectionType, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnData, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, TeamId, SharedParams);
 }

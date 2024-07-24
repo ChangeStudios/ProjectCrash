@@ -48,6 +48,13 @@ PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogEquipment, Log, All);
 
 
 
+	// Team log.
+
+/** Log channel for teams. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogTeams, Log, All);
+
+
+
 	// User interface log.
 
 /** Generic log channel for the user interface. */
