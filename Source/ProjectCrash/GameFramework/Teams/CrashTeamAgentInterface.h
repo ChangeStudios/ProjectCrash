@@ -30,6 +30,9 @@ inline FGenericTeamId IntegerToGenericTeamId(int32 Id)
 /**
  * An interface for actors that can be associated with teams. Can be used to assign actors to a team, like a player
  * state or AI character, and to allow actors to receive team events, like a player's avatar actor.
+ *
+ * Note that NoTeam (255) and INDEX_NONE (-1) are frequently used interchangeably. But INDEX_NONE is also used in
+ * queries to indicate a missing team, rather than an object that has been explicitly assigned to "no team."
  */
 UINTERFACE(Meta = (CannotImplementInterfaceInBlueprint))
 class UCrashTeamAgentInterface : public UGenericTeamAgentInterface

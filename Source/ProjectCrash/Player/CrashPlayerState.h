@@ -152,7 +152,7 @@ public:
 	/** Returns the delegate fired when this player's team ID changes. */
 	virtual FOnTeamIdChangedSignature* GetOnTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
 
-	/** Blueprint-exposed wrapper for GetGenericTeamId. */
+	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
 	int32 GetTeamId() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
 

@@ -24,6 +24,10 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	MinNetUpdateFrequency = 2.0f;
 	NetUpdateFrequency = 100.0f;
+
+	ConnectionType = EPlayerConnectionType::Player;
+
+	TeamId = FGenericTeamId::NoTeam;
 }
 
 void ACrashPlayerState::PostInitializeComponents()

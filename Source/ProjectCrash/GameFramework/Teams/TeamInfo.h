@@ -7,7 +7,9 @@
 #include "GameFramework/Info.h"
 #include "TeamInfo.generated.h"
 
+class UTeamCreationComponent;
 class UTeamSubsystem;
+
 /**
  * The tangible representation of a team during gameplay. Contains an identifying team ID and stores replicated runtime
  * data related to the team with stacks of gameplay tags.
@@ -16,8 +18,9 @@ UCLASS()
 class PROJECTCRASH_API ATeamInfo : public AInfo
 {
 	GENERATED_BODY()
-
-	// friend UTeamCreationComponent; 
+	
+	// The team creation component is the only class that should be setting team info data.
+	friend UTeamCreationComponent;
 
 	// Construction.
 

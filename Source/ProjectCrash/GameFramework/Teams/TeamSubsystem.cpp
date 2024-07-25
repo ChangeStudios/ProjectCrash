@@ -345,7 +345,7 @@ const ACrashPlayerState* UTeamSubsystem::FindPlayerStateFromActor(const AActor* 
 
 bool UTeamSubsystem::DoesTeamExist(int32 TeamId) const
 {
-	return TeamMap.Contains(TeamId);
+	return TeamMap.Contains(IntegerToGenericTeamId(TeamId));
 }
 
 TArray<int32> UTeamSubsystem::GetTeamIds() const
