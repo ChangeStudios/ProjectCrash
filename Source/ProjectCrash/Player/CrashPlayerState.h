@@ -154,7 +154,7 @@ public:
 
 	/** Blueprint-exposed wrapper for GetGenericTeamId. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
-	int32 GetTeamID() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
+	int32 GetTeamId() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
 
 private:
 

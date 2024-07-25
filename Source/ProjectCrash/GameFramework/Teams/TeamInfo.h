@@ -55,7 +55,7 @@ public:
 private:
 
 	/** Sets this team's ID and registers it with the team subsystem on the server. Can only be called once, to
-	 * initialize the ID. Can only be called on the server. */
+	 * initialize the ID. Can only be called with authority. */
 	void SetTeamId(int32 NewTeamId);
 
 	/** This team's internal ID. */
