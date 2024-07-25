@@ -61,14 +61,14 @@ void UTeamCheats::ListTeams()
 		for (const auto& KVP : TeamMembers)
 		{
 			// Special log for players assigned to no team.
-			if ((KVP.Key == FGenericTeamId::NoTeam) || (KVP.Key == INDEX_NONE))
+			if ((KVP.Key == INDEX_NONE))
 			{
 				UE_LOG(LogConsoleResponse, Log, TEXT("No Team:"));
 			}
 			// Normal log for teams.
 			else
 			{
-				UE_LOG(LogConsoleResponse, Log, TEXT("Team %d:"), KVP.Key);
+				UE_LOG(LogConsoleResponse, Log, TEXT("Team %d:"), GenericTeamIdToInteger(KVP.Key));
 			}
 
 			// Log all members of the team or category and their current pawn.

@@ -13,13 +13,13 @@ template <typename InterfaceType> class TScriptInterface;
 /** Delegate for broadcasting when an object changes teams. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTeamIdChangedSignature, UObject*, ObjectChangingTeam, int32, OldTeamId, int32, NewTeamId);
 
-/** Converts a team ID into an integer. Returns INDEX_NONE for NoTeam. */
+/** Converts a team ID into an integer. Uses INDEX_NONE for NoTeam. */
 inline int32 GenericTeamIdToInteger(FGenericTeamId Id)
 {
 	return (Id == FGenericTeamId::NoTeam) ? INDEX_NONE : (int32)Id;
 }
 
-/** Converts an integer to a team ID. Returns NoTeam for INDEX_NONE. */
+/** Converts an integer to a team ID. Converts INDEX_NONE to NoTeam. */
 inline FGenericTeamId IntegerToGenericTeamId(int32 Id)
 {
 	return (Id == INDEX_NONE) ? FGenericTeamId::NoTeam : FGenericTeamId((uint8)Id);
@@ -31,8 +31,11 @@ inline FGenericTeamId IntegerToGenericTeamId(int32 Id)
  * An interface for actors that can be associated with teams. Can be used to assign actors to a team, like a player
  * state or AI character, and to allow actors to receive team events, like a player's avatar actor.
  *
- * Note that NoTeam (255) and INDEX_NONE (-1) are frequently used interchangeably. But INDEX_NONE is also used in
- * queries to indicate a missing team, rather than an object that has been explicitly assigned to "no team."
+ * Note that NoTeam (255) and INDEX_NONE (-1) are used interchangeably, though it is preferable to use integers (and
+ * thus INDEX_NONE) when handling team IDs for easier number manipulation and blueprint exposure.
+ *
+ * INDEX_NONE is also used in queries for objects that are not associated with the team interface, since they are also
+ * technically on "no team."
  */
 UINTERFACE(Meta = (CannotImplementInterfaceInBlueprint))
 class UCrashTeamAgentInterface : public UGenericTeamAgentInterface
