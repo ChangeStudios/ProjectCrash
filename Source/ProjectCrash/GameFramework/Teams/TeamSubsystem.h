@@ -70,17 +70,55 @@ public:
 
 
 
+	// Team stats.
+
+public:
+
+	/** Adds the specified number of tags to the given team's tags. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Teams")
+	void AddTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count);
+
+	/** Removes the specified number of tags from the given team's tags. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Teams")
+	void RemoveTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count);
+
+	/** Returns how many of the specified tag a given team has. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Teams")
+	int32 GetTeamTagCount(int32 TeamId, FGameplayTag Tag) const;
+
+	/** Returns whether the given team has at least one of the specified tag. Tag must match exactly. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Teams")
+	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
+
+
+
 	// Team interactions.
 
 public:
 
-	//void CompareTeams(const UObject* A, const UObject* B);
+	/** Returns the alignment between the teams of two given objects. */
+	UFUNCTION(BlueprintCallable, BlueprintPure = "false", Category = "Teams", Meta = (ExpandEnumAsExecs = "ReturnValue"))
+	ETeamAlignment CompareTeams(const UObject* A, const UObject* B, int32& TeamA, int32& TeamB) const;
 
-	//void CompareTeams();
+	/** Returns the alignment between the teams of two given objects. */
+	ETeamAlignment CompareTeams(const UObject* A, const UObject* B) const;
 
-	//bool CanCauseDamage();
+	/**
+	 * Returns whether a given instigator can damage a given target. Objects of different teams can always damage
+	 * each other, while objects of the same team cannot. Objects with a team can damage objects without a team if
+	 * that object has an ASC.
+	 *
+	 * If the instigator and target are the same, or have the same outer player state, bAllowDamageToSelf is returned.
+	 */
+	bool CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf = false) const;
 
-	//bool CanCauseHealing();
+	/**
+	 * Returns whether a given instigator can heal a given target. Objects of the same team can always heal each other,
+	 * while objects of different teams cannot. Objects without a team cannot be healed.
+	 *
+	 * If the instigator and target are the same, or have the same outer player state, bAllowHealSelf is returned.
+	 */
+	bool CanCauseHealing(const UObject* Instigator, const UObject* Target, bool bAllowHealSelf = true) const;
 
 
 
