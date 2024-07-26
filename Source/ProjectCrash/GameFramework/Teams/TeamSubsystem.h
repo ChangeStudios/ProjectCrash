@@ -9,6 +9,9 @@
 class ATeamInfo;
 class ACrashPlayerState;
 
+/** Delegate for when this team's display asset changes. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, const UTeamDisplayAsset*, DisplayAsset);
+
 /**
  * Represents the relationship between two actors' teams.
  */
@@ -23,6 +26,45 @@ enum class ETeamAlignment : uint8
 
 	// At least one actor is invalid or not part of any team.
 	InvalidArgument
+};
+
+
+
+/**
+ * Represents a team present in the team subsystem. Responsible for managing the team's information actor and display
+ * assets.
+ *
+ * This structure is used, rather than a reference to the team info actor itself (which has its own references to all
+ * of this data), to be able to handle and facilitate data before the team info actor has been created or replicated.
+ * For example, this allows other systems to start listening for the replication of team display assets before the team
+ * info actor has actually been created.
+ *
+ * TODO: Replace ATeamInfo in TeamMap with this.
+ */
+USTRUCT()
+struct FTeamTrackingInfo
+{
+	GENERATED_BODY()
+
+public:
+
+	/** */
+	UPROPERTY()
+	TObjectPtr<ATeamInfo> TeamInfo = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTeamDisplayAsset> FriendlyDisplayAsset = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UTeamDisplayAsset> TeamDisplayAsset = nullptr;
+
+	UPROPERTY()
+	FTeamDisplayAssetChangedSignature TeamDisplayAssetChangedDelegate;
+
+public:
+
+	/** Sets this team's info actor. This can also be called after a team's display assets change to refresh them. */
+	void SetTeamInfo(ATeamInfo* NewTeamInfo);
 };
 
 
@@ -122,11 +164,22 @@ public:
 
 
 
-	// Visuals.
+	// Display assets.
 
 public:
 
-	//void GetTeamDisplayAsset(int32 TeamId, int32 ViewerTeamId);
+	/** Returns the display asset that should be used to view the target team from the perspective of the given viewer's
+	 * team. If the viewer and target are on the same team, the team's "friendly display asset" will be used, if one
+	 * exists. Otherwise, the team's normal display asset with be used. */
+	UFUNCTION(BlueprintCallable, Category = "Teams")
+	UTeamDisplayAsset* GetTeamDisplayAsset(int32 TeamId, int32 ViewerTeamId);
+
+	/** Fires the TeamDisplayAssetChangedDelegate for any teams using the given display asset when the asset is
+	 * modified. Used for modifying display assets in PIE. */
+	void NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedAsset);
+
+	/** Returns the TeamDisplayAssetChangedDelegate for the team with the given ID. */
+	FTeamDisplayAssetChangedSignature& GetTeamDisplayAssetChangedDelegate(int32 TeamId);
 
 
 

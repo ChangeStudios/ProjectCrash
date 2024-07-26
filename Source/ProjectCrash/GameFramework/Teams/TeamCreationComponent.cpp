@@ -14,6 +14,8 @@
 #include "Misc/DataValidation.h"
 #endif
 
+#define LOCTEXT_NAMESPACE "TeamCreationComponent"
+
 void UTeamCreationComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -114,8 +116,15 @@ void UTeamCreationComponent::CreateTeam(int32 TeamId, UTeamDisplayAsset* Display
 
 	ATeamInfo* TeamInfo = World->SpawnActor<ATeamInfo>(ATeamInfo::StaticClass(), SpawnInfo);
 	checkf(TeamInfo != nullptr, TEXT("Failed to create team info actor for team %d."), TeamId);
+
+	// Initialize the new team's data.
 	TeamInfo->SetTeamId(TeamId);
-	// TODO: Set display asset.
+	TeamInfo->SetTeamDisplayAsset(DisplayAsset);
+
+	if (bUseFriendlyDisplayAsset)
+	{
+		TeamInfo->SetFriendlyDisplayAsset(FriendlyDisplayAsset);
+	}
 }
 
 int32 UTeamCreationComponent::GetLeastPopulatedTeam() const
@@ -185,7 +194,33 @@ int32 UTeamCreationComponent::GetLeastPopulatedTeam() const
 #if WITH_EDITOR
 EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext& Context) const
 {
+	EDataValidationResult Result = Super::IsDataValid(Context);
+
+	if (bUseFriendlyDisplayAsset)
+	{
+		// If a friendly display asset is requested, make sure one is set.
+		if (FriendlyDisplayAsset == nullptr)
+		{
+			Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotFound", "[%s] requested to use friendly display assets, but the friendly display asset was not set."), FText::FromString(GetPathNameSafe(this))));
+			Result = EDataValidationResult::Invalid;
+		}
+		// Make sure the friendly display asset is not used for any enemy teams.
+		else
+		{
+			TArray<TObjectPtr<UTeamDisplayAsset>> TeamDisplayAssets;
+			TeamsToCreate.GenerateValueArray(TeamDisplayAssets);
+
+			if (TeamDisplayAssets.Contains(FriendlyDisplayAsset))
+			{
+				Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotUnique", "[%s] uses a display asset in its team map which is used as the friendly display asset. This will cause cause some enemy teams to appear as friendly to some players. Use a unique display asset as the friendly display asset."), FText::FromString(GetPathNameSafe(this))));
+				Result = EDataValidationResult::Invalid;
+			}
+		}
+	}
+
 	// TODO: Validate display assets.
-	return Super::IsDataValid(Context);
+	return Result;
 }
 #endif // WITH_EDITOR
+
+#undef LOCTEXT_NAMESPACE

@@ -70,10 +70,56 @@ void ATeamInfo::OnRep_TeamId()
 	TryRegisterWithTeamSubsystem();
 }
 
+void ATeamInfo::SetFriendlyDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset)
+{
+	check(HasAuthority());
+	check(FriendlyDisplayAsset == nullptr);
+
+	UTeamDisplayAsset* OldDisplayAsset = FriendlyDisplayAsset;
+	FriendlyDisplayAsset = NewDisplayAsset;
+
+	if (FriendlyDisplayAsset != OldDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
+	}
+}
+
+void ATeamInfo::OnRep_FriendlyDisplayAsset(UTeamDisplayAsset* OldDisplayAsset)
+{
+	if (FriendlyDisplayAsset != OldDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
+	}
+}
+
+void ATeamInfo::SetTeamDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset)
+{
+	check(HasAuthority());
+	check(TeamDisplayAsset == nullptr);
+
+	UTeamDisplayAsset* OldDisplayAsset = TeamDisplayAsset;
+	TeamDisplayAsset = NewDisplayAsset;
+
+	if (TeamDisplayAsset != OldDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
+	}
+}
+
+void ATeamInfo::OnRep_TeamDisplayAsset(UTeamDisplayAsset* OldDisplayAsset)
+{
+	if (TeamDisplayAsset != OldDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
+	}
+}
+
 void ATeamInfo::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATeamInfo, TeamTags);
 	DOREPLIFETIME_CONDITION(ATeamInfo, TeamId, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(ATeamInfo, FriendlyDisplayAsset, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(ATeamInfo, TeamDisplayAsset, COND_InitialOnly);
 }

@@ -12,6 +12,38 @@
 #include "GameFramework/CrashLogging.h"
 #include "Player/CrashPlayerState.h"
 
+/*
+ * FTeamTrackingInfo
+ */
+void FTeamTrackingInfo::SetTeamInfo(ATeamInfo* NewTeamInfo)
+{
+	check(NewTeamInfo);
+	ensure((TeamInfo == nullptr) || (TeamInfo == NewTeamInfo));
+
+	TeamInfo = NewTeamInfo;
+
+	UTeamDisplayAsset* OldFriendlyDisplayAsset = FriendlyDisplayAsset;
+	UTeamDisplayAsset* OldTeamDisplayAsset = TeamDisplayAsset;
+
+	FriendlyDisplayAsset = NewTeamInfo->GetFriendlyDisplayAsset();
+	TeamDisplayAsset = NewTeamInfo->GetTeamDisplayAsset();
+
+	if (OldTeamDisplayAsset != TeamDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
+	}
+
+	if (OldFriendlyDisplayAsset != FriendlyDisplayAsset)
+	{
+		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
+	}
+}
+
+
+
+/*
+ * UTeamSubsystem
+ */
 void UTeamSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -272,6 +304,47 @@ bool UTeamSubsystem::CanCauseHealing(const UObject* Instigator, const UObject* T
 	}
 
 	return false;
+}
+
+UTeamDisplayAsset* UTeamSubsystem::GetTeamDisplayAsset(int32 TeamId, int32 ViewerTeamId)
+{
+	ATeamInfo* TeamInfo = *TeamMap.Find(TeamId);
+	if (ensure(TeamInfo))
+	{
+		// If the viewer is on the same (valid) team as the target, return the "friendly" display asset, if one exists.
+		if ((TeamId != INDEX_NONE) && (TeamId == ViewerTeamId))
+		{
+			if (TeamInfo->GetFriendlyDisplayAsset() != nullptr)
+			{
+				return TeamInfo->GetFriendlyDisplayAsset();
+			}
+		}
+
+		/* If the viewer and target are on different teams, or if friendly display assets aren't being used in this
+		 * mode, use the team's normal display asset. */
+		return TeamInfo->GetTeamDisplayAsset();
+	}
+
+	return nullptr;
+}
+
+void UTeamSubsystem::NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedAsset)
+{
+	// Broadcast TeamDisplayAssetChangedDelegate for any teams using the modified asset.
+	for (const auto& KVP : TeamMap)
+	{
+		if ((KVP.Value->GetTeamDisplayAsset() == ModifiedAsset) || (KVP.Value->GetFriendlyDisplayAsset() == ModifiedAsset))
+		{
+			KVP.Value->TeamDisplayAssetChangedDelegate.Broadcast(ModifiedAsset);
+		}
+	}
+}
+
+FTeamDisplayAssetChangedSignature& UTeamSubsystem::GetTeamDisplayAssetChangedDelegate(int32 TeamId)
+{
+	ATeamInfo* TeamInfo = *TeamMap.Find(TeamId);
+	check(TeamInfo);
+	return TeamInfo->TeamDisplayAssetChangedDelegate;
 }
 
 int32 UTeamSubsystem::FindTeamFromObject(const UObject* Object) const

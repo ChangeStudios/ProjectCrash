@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagStack.h"
+#include "TeamSubsystem.h"
 #include "GameFramework/Info.h"
 #include "TeamInfo.generated.h"
 
+class UTeamDisplayAsset;
 class UTeamCreationComponent;
 class UTeamSubsystem;
 
@@ -78,4 +80,45 @@ public:
 	/** Collection of gameplay tag stacks that can be used to track runtime team stats (e.g. a team's score). */
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer TeamTags;
+
+
+
+	// Display assets.
+
+public:
+
+	/** Returns the display asset used when a member of this team views it. */
+	UTeamDisplayAsset* GetFriendlyDisplayAsset() const { return TeamDisplayAsset; }
+
+	/** Returns the display asset used by this team when viewed by someone on another team, or by someone without a
+	 * team (e.g. spectators). */
+	UTeamDisplayAsset* GetTeamDisplayAsset() const { return TeamDisplayAsset; }
+
+	/** Fired when */
+	UPROPERTY()
+	FTeamDisplayAssetChangedSignature TeamDisplayAssetChangedDelegate;
+
+protected:
+
+	/** Updates this team's friendly display asset. */
+	void SetFriendlyDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset);
+
+	/** The display asset used by this team when viewed by a member of this team. If unset, TeamDisplayAsset will be
+	 * used instead. */
+	UPROPERTY(ReplicatedUsing = OnRep_FriendlyDisplayAsset)
+	TObjectPtr<UTeamDisplayAsset> FriendlyDisplayAsset;
+
+	UFUNCTION()
+	void OnRep_FriendlyDisplayAsset(UTeamDisplayAsset* OldDisplayAsset);
+
+	/** Updates this team's display asset. */
+	void SetTeamDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset);
+
+	/** The display asset used by this team when viewed by someone on another team or by someone without a team (e.g.
+	 * spectators). */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamDisplayAsset)
+	TObjectPtr<UTeamDisplayAsset> TeamDisplayAsset;
+
+	UFUNCTION()
+	void OnRep_TeamDisplayAsset(UTeamDisplayAsset* OldDisplayAsset);
 };
