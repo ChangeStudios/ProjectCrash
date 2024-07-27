@@ -94,4 +94,14 @@ private:
 
 	/** The last team ID which was broadcast with a team or team color change. */
 	int32 LastBroadcastTeamId = INDEX_NONE;
+
+
+
+	// Utils.
+
+private:
+
+	/** Retrieves the local viewer for this action. Returns the local player controller, if valid, if the bLocalViewer
+	 * is true. Returns nullptr otherwise. */
+	UObject* GetViewer(UObject* WorldContextObject);
 };

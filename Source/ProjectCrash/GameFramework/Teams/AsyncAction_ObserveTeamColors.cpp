@@ -36,7 +36,7 @@ void UAsyncAction_ObserveTeamColors::Activate()
 		{
 			// Get current team info.
 			CurrentTeamIndex = GenericTeamIdToInteger(TeamAgentInterface->GetGenericTeamId());
-			CurrentDisplayAsset = UTeamStatics::GetTeamDisplayAsset(World, CurrentTeamIndex, bLocalViewer ? World->GetFirstLocalPlayerFromController()->PlayerController : nullptr);
+			CurrentDisplayAsset = UTeamStatics::GetTeamDisplayAsset(World, CurrentTeamIndex, GetViewer(TeamAgentPtr.Get()));
 
 			// Start listening for team changes.
 			TeamAgentInterface->GetTeamIdChangedDelegateChecked().AddDynamic(this, &ThisClass::OnAgentChangedTeam);
@@ -81,9 +81,8 @@ void UAsyncAction_ObserveTeamColors::BroadcastChange(int32 NewTeam, const UTeamD
 	}
 
 	// Broadcast the team and/or display asset change.
-	const bool bTeamSet = (bTeamChanged && (NewTeam != INDEX_NONE));
 	LastBroadcastTeamId = NewTeam;
-	TeamColorChangedDelegate.Broadcast(bTeamSet, NewTeam, DisplayAsset);
+	TeamColorChangedDelegate.Broadcast((NewTeam != INDEX_NONE), NewTeam, DisplayAsset);
 
 	// Start listening for changes to the new team's display asset.
 	if ((TeamSubsystem != nullptr) && bTeamChanged && (NewTeam != INDEX_NONE) && TeamSubsystem->DoesTeamExist(NewTeam))
@@ -95,14 +94,7 @@ void UAsyncAction_ObserveTeamColors::BroadcastChange(int32 NewTeam, const UTeamD
 void UAsyncAction_ObserveTeamColors::OnAgentChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam)
 {
 	// Determine the viewer for the new display asset.
-	UObject* Viewer = nullptr;
-	if (bLocalViewer)
-	{
-		if (UWorld* World = GEngine->GetWorldFromContextObject(TeamAgent, EGetWorldErrorMode::LogAndReturnNull))
-		{
-			Viewer = World->GetFirstLocalPlayerFromController()->PlayerController;
-		}
-	}
+	UObject* Viewer = GetViewer(TeamAgent);
 
 	// Retrieve the new team's display asset.
 	UTeamDisplayAsset* DisplayAsset = UTeamStatics::GetTeamDisplayAsset(TeamAgent, NewTeam, Viewer);
@@ -115,4 +107,26 @@ void UAsyncAction_ObserveTeamColors::OnTeamDisplayAssetChanged(const UTeamDispla
 {
 	// When the team's display asset changes, broadcast the change with an unchanged team ID.
 	BroadcastChange(LastBroadcastTeamId, NewDisplayAsset);
+}
+
+UObject* UAsyncAction_ObserveTeamColors::GetViewer(UObject* WorldContextObject)
+{
+	UObject* Viewer = nullptr;
+
+	// No viewer is used if bLocalViewer is false.
+	if (bLocalViewer)
+	{
+		// Retrieve the world to get the local player.
+		if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+		{
+			// Safely retrieve the local player.
+			if (ULocalPlayer* LP = World->GetFirstLocalPlayerFromController())
+			{
+				// If the local player was found with a PC search, then the PC will be valid.
+				Viewer = LP->PlayerController;
+			}
+		}
+	}
+
+	return Viewer;
 }
