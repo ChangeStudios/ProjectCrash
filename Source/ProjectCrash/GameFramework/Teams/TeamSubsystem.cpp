@@ -308,21 +308,23 @@ bool UTeamSubsystem::CanCauseHealing(const UObject* Instigator, const UObject* T
 
 UTeamDisplayAsset* UTeamSubsystem::GetTeamDisplayAsset(int32 TeamId, int32 ViewerTeamId)
 {
-	ATeamInfo* TeamInfo = *TeamMap.Find(TeamId);
-	if (ensure(TeamInfo))
+	if (TeamMap.Contains(TeamId))
 	{
-		// If the viewer is on the same (valid) team as the target, return the "friendly" display asset, if one exists.
-		if ((TeamId != INDEX_NONE) && (TeamId == ViewerTeamId))
+		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
 		{
-			if (TeamInfo->GetFriendlyDisplayAsset() != nullptr)
+			// If the viewer is on the same (valid) team as the target, return the "friendly" display asset, if one exists.
+			if ((TeamId != INDEX_NONE) && (TeamId == ViewerTeamId))
 			{
-				return TeamInfo->GetFriendlyDisplayAsset();
+				if (TeamInfo->GetFriendlyDisplayAsset() != nullptr)
+				{
+					return TeamInfo->GetFriendlyDisplayAsset();
+				}
 			}
-		}
 
-		/* If the viewer and target are on different teams, or if friendly display assets aren't being used in this
-		 * mode, use the team's normal display asset. */
-		return TeamInfo->GetTeamDisplayAsset();
+			/* If the viewer and target are on different teams, or if friendly display assets aren't being used in this
+			 * mode, use the team's normal display asset. */
+			return TeamInfo->GetTeamDisplayAsset();
+		}
 	}
 
 	return nullptr;
@@ -340,11 +342,17 @@ void UTeamSubsystem::NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedA
 	}
 }
 
-FTeamDisplayAssetChangedSignature& UTeamSubsystem::GetTeamDisplayAssetChangedDelegate(int32 TeamId)
+FTeamDisplayAssetChangedSignature* UTeamSubsystem::GetTeamDisplayAssetChangedDelegate(int32 TeamId)
 {
-	ATeamInfo* TeamInfo = *TeamMap.Find(TeamId);
-	check(TeamInfo);
-	return TeamInfo->TeamDisplayAssetChangedDelegate;
+	if (TeamMap.Contains(TeamId))
+	{
+		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+		{
+			return &TeamInfo->TeamDisplayAssetChangedDelegate;
+		}
+	}
+
+	return nullptr;
 }
 
 int32 UTeamSubsystem::FindTeamFromObject(const UObject* Object) const
@@ -377,13 +385,6 @@ int32 UTeamSubsystem::FindTeamFromObject(const UObject* Object) const
 	}
 
 	return INDEX_NONE;
-}
-
-void UTeamSubsystem::FindTeamFromObject(const UObject* Object, bool& bIsOnTeam, int32& TeamId) const
-{
-	// BP wrapper for FindTeamFromObject.
-	TeamId = FindTeamFromObject(Object);
-	bIsOnTeam = (TeamId != INDEX_NONE);
 }
 
 const ACrashPlayerState* UTeamSubsystem::FindPlayerStateFromActor(const AActor* Actor) const

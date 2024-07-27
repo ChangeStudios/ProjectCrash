@@ -179,7 +179,7 @@ public:
 	void NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedAsset);
 
 	/** Returns the TeamDisplayAssetChangedDelegate for the team with the given ID. */
-	FTeamDisplayAssetChangedSignature& GetTeamDisplayAssetChangedDelegate(int32 TeamId);
+	FTeamDisplayAssetChangedSignature* GetTeamDisplayAssetChangedDelegate(int32 TeamId);
 
 
 
@@ -187,14 +187,11 @@ public:
 
 public:
 
-	/** Attempts to find any team associated with the given object. Checks for interfaces, player states, etc. */
+	/** Attempts to find any team associated with the given object. Returns INDEX_NONE if no team could be found, or if
+	 * the object is explicitly assigned to NoTeam. */
 	int32 FindTeamFromObject(const UObject* Object) const;
 
-	/** Blueprint-exposed version of FindTeamFromObject. */
-	UFUNCTION(BlueprintCallable, BlueprintPure = "false", Category = "Teams", Meta = (ToolTip = "Attempts to find any team associated with the given object. Checks for interfaces, player states, etc.", Keywords = "get"))
-	void FindTeamFromObject(const UObject* Object, bool& bIsOnTeam, int32& TeamId) const;
-
-	/** Attempts to find any player state associated with the given actor. Looks for owning actors, pawns, etc. */
+	/** Attempts to find any player state associated with the given actor. */
 	const ACrashPlayerState* FindPlayerStateFromActor(const AActor* Actor) const;
 
 	/** Returns whether a team exists with the specified ID. */

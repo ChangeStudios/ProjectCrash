@@ -150,7 +150,7 @@ public:
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
 	/** Returns the delegate fired when this player's team ID changes. */
-	virtual FOnTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
+	virtual FTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
 
 	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer (NoTeam ->
 	 * INDEX_NONE). */
@@ -161,7 +161,7 @@ private:
 
 	/** Delegate fired when this player's team ID changes. */
 	UPROPERTY()
-	FOnTeamIdChangedSignature OnTeamIdChangedDelegate;
+	FTeamIdChangedSignature OnTeamIdChangedDelegate;
 
 	/** The ID of the team to which this player currently belongs. */
 	UPROPERTY(ReplicatedUsing = OnRep_TeamId)

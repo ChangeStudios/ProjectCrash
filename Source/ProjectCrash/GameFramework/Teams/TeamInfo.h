@@ -88,13 +88,13 @@ public:
 public:
 
 	/** Returns the display asset used when a member of this team views it. */
-	UTeamDisplayAsset* GetFriendlyDisplayAsset() const { return TeamDisplayAsset; }
+	UTeamDisplayAsset* GetFriendlyDisplayAsset() const { return FriendlyDisplayAsset; }
 
 	/** Returns the display asset used by this team when viewed by someone on another team, or by someone without a
 	 * team (e.g. spectators). */
 	UTeamDisplayAsset* GetTeamDisplayAsset() const { return TeamDisplayAsset; }
 
-	/** Fired when */
+	/** Fired when any of this team's display assets are set or changed. */
 	UPROPERTY()
 	FTeamDisplayAssetChangedSignature TeamDisplayAssetChangedDelegate;
 

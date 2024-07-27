@@ -71,14 +71,14 @@ public:
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	/** Returns the delegate fired when this player's team is assigned or changes. */
-	virtual FOnTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &TeamChangedDelegate; }
+	virtual FTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &TeamChangedDelegate; }
 
 private:
 
 	/** Fired when this player changes teams, either because this controller changed player states or because its
 	 * player state changed teams. */
 	UPROPERTY()
-	FOnTeamIdChangedSignature TeamChangedDelegate;
+	FTeamIdChangedSignature TeamChangedDelegate;
 
 	/** The last player state to which this controller bound its team. Used to unbind this controller's team from its
 	 * old player state when the player state changes. */

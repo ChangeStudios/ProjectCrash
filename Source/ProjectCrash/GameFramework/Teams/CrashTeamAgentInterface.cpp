@@ -5,9 +5,9 @@
 
 #include "GameFramework/CrashLogging.h"
 
-FOnTeamIdChangedSignature& ICrashTeamAgentInterface::GetTeamIdChangedDelegateChecked()
+FTeamIdChangedSignature& ICrashTeamAgentInterface::GetTeamIdChangedDelegateChecked()
 {
-	FOnTeamIdChangedSignature* Result = GetOnTeamIdChangedDelegate();
+	FTeamIdChangedSignature* Result = GetTeamIdChangedDelegate();
 	check(Result);
 	return *Result;
 }

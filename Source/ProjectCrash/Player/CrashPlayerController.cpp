@@ -80,7 +80,7 @@ void ACrashPlayerController::OnPlayerStateChanged()
 void ACrashPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 {
 	// This controller's team cannot be set directly. Its team is driven by the player state.
-	UE_LOG(LogTeams, Error, TEXT("Attempted to set team on player controller [%s]. Teams cannot be set directly on the player controller: player controller's teams are driven by the player state."), *GetPathNameSafe(this));
+	UE_LOG(LogTeams, Error, TEXT("Attempted to set team on player controller [%s]. Teams cannot be set directly on the player controller: player controllers' teams are driven by the player state."), *GetPathNameSafe(this));
 }
 
 FGenericTeamId ACrashPlayerController::GetGenericTeamId() const

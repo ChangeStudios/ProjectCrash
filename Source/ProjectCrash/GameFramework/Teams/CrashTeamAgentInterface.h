@@ -11,7 +11,7 @@
 template <typename InterfaceType> class TScriptInterface;
 
 /** Delegate for broadcasting when an object changes teams. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTeamIdChangedSignature, UObject*, ObjectChangingTeam, int32, OldTeamId, int32, NewTeamId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FTeamIdChangedSignature, UObject*, ObjectChangingTeam, int32, OldTeamId, int32, NewTeamId);
 
 /** Converts a team ID into an integer. Uses INDEX_NONE for NoTeam. */
 inline int32 GenericTeamIdToInteger(FGenericTeamId Id)
@@ -52,10 +52,10 @@ class PROJECTCRASH_API ICrashTeamAgentInterface : public IGenericTeamAgentInterf
 public:
 
 	/** Returns the delegate fired when this object changes teams. */
-	virtual FOnTeamIdChangedSignature* GetOnTeamIdChangedDelegate() { return nullptr; }
+	virtual FTeamIdChangedSignature* GetTeamIdChangedDelegate() { return nullptr; }
 
 	/** Returns the delegate fired when this object changes teams. Performs a check that the delegate is valid. */
-	FOnTeamIdChangedSignature& GetTeamIdChangedDelegateChecked();
+	FTeamIdChangedSignature& GetTeamIdChangedDelegateChecked();
 
 	/** Broadcasts that this interface's implementer changed teams. Only fires if the given team IDs are different. */
 	static void BroadcastIfTeamChanged(TScriptInterface<ICrashTeamAgentInterface> This, FGenericTeamId OldTeamId, FGenericTeamId NewTeamId);
