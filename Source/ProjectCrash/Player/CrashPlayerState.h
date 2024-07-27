@@ -150,7 +150,7 @@ public:
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
 	/** Returns the delegate fired when this player's team ID changes. */
-	virtual FOnTeamIdChangedSignature* GetOnTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
+	virtual FOnTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
 
 	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer (NoTeam ->
 	 * INDEX_NONE). */
