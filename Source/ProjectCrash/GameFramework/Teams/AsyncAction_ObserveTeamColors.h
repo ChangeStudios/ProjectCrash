@@ -16,8 +16,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FTeamColorObservedAsyncSignature,
 /**
  * Listens for team color changes for a specified agent (changes to their team display assets).
  *
- * Also listens for team assignments and changes for the specified agent. This allows the agent to automatically update
- * their colors when changing teams, in addition to when their current team's colors change.
+ * Also listens for changes to the specified agent's team, including initial assignment. This allows the agent to
+ * automatically update their colors when changing teams, in addition to when their current team's colors change.
  */
 UCLASS()
 class PROJECTCRASH_API UAsyncAction_ObserveTeamColors : public UCancellableAsyncAction
@@ -29,11 +29,11 @@ class PROJECTCRASH_API UAsyncAction_ObserveTeamColors : public UCancellableAsync
 public:
 
 	/**
-	 * Listens for changes to the given agent's team and their team's colors.
+	 * Listens for changes to the given agent's team (including initial assignment) and their team's colors.
 	 *
 	 * @param  bLocalViewer		If true, DisplayAsset will be from the perspective of the local player. Otherwise, the
 	 *							team's normal display asset will always be used.
-	 * @return bTeamSet			True if the agent's team was assigned for the first time or if it was changed.
+	 * @return bTeamSet			True if the agent was assigned to a valid team (i.e. not NoTeam).
 	 * @return TeamId			The agent's current team ID. If the agent changed teams, this will be their new team ID.
 	 * @return DisplayAsset		The agent's current team's effective display asset. If the agent changed teams, this
 	 *							will be their new team's display asset.

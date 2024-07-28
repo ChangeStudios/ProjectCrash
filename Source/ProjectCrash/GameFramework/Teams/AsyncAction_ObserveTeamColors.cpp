@@ -34,7 +34,7 @@ void UAsyncAction_ObserveTeamColors::Activate()
 	{
 		if (UWorld* World = GEngine->GetWorldFromContextObject(TeamAgentPtr.Get(), EGetWorldErrorMode::LogAndReturnNull))
 		{
-			// Get current team info.
+			// Get the current team info.
 			CurrentTeamIndex = GenericTeamIdToInteger(TeamAgentInterface->GetGenericTeamId());
 			CurrentDisplayAsset = UTeamStatics::GetTeamDisplayAsset(World, CurrentTeamIndex, GetViewer(TeamAgentPtr.Get()));
 
@@ -45,7 +45,7 @@ void UAsyncAction_ObserveTeamColors::Activate()
 		}
 	}
 
-	// Broadcast initial team.
+	// Broadcast the initial team.
 	BroadcastChange(CurrentTeamIndex, CurrentDisplayAsset);
 
 	// If we couldn't bind to the team changes delegate, we won't be able to receive any updates.
@@ -59,7 +59,7 @@ void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()
 {
 	Super::SetReadyToDestroy();
 
-	// Stop listening for any team changes.
+	// Stop listening for team changes.
 	if (ICrashTeamAgentInterface* TeamAgentInterface = TeamAgentInterfacePtr.Get())
 	{
 		TeamAgentInterface->GetTeamIdChangedDelegateChecked().RemoveAll(this);

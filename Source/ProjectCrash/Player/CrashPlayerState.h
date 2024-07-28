@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "ModularPlayerState.h"
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Characters/Data/PawnData.h"
 #include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashPlayerState.generated.h"
@@ -12,7 +13,6 @@
 class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
-struct FCrashAbilitySet_GrantedHandles;
 
 /**
  * Defines how a client is connected.
