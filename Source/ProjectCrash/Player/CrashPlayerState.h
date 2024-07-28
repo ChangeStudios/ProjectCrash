@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "ModularPlayerState.h"
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Characters/Data/PawnData.h"
+#include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashPlayerState.generated.h"
 
 class UCrashAbilitySystemComponent;
@@ -33,7 +35,7 @@ enum class EPlayerConnectionType : uint8
  * and runtime player statistics.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface
+class PROJECTCRASH_API ACrashPlayerState : public AModularPlayerState, public IAbilitySystemInterface, public ICrashTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -91,6 +93,12 @@ public:
 	/** Sets this player's current pawn data. Should only be called on the server. */
 	void SetPawnData(const UPawnData* InPawnData);
 
+	/** Updates this player's current pawn data, destroying their current pawn if necessary, and restarts them. Used
+	 * for changing pawns during gameplay via a "Switch Character" menu. For initializing pawn data, use SetPawnData
+	 * instead. */
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|PlayerState")
+	void Server_ChangePawn(const UPawnData* InPawnData);
+
 	/** Templated getter for retrieving current pawn data. */
 	template <class T>
 	const T* GetPawnData() const { return Cast<T>(PawnData); }
@@ -124,4 +132,42 @@ private:
 	/** This player's ability system component. */
 	UPROPERTY(VisibleAnywhere, Category = "Crash|PlayerState")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
+	 * data changes. */
+	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
+
+
+
+	// Teams.
+
+public:
+
+	/** Sets this player's current team ID. Can only be called on the server. */
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
+
+	/** Returns this player's current team ID. */
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+
+	/** Returns the delegate fired when this player's team ID changes. */
+	virtual FTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &OnTeamIdChangedDelegate; }
+
+	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer (NoTeam ->
+	 * INDEX_NONE). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
+	int32 GetTeamId() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
+
+private:
+
+	/** Delegate fired when this player's team ID changes. */
+	UPROPERTY()
+	FTeamIdChangedSignature OnTeamIdChangedDelegate;
+
+	/** The ID of the team to which this player currently belongs. */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamId)
+	FGenericTeamId TeamId;
+
+	/** Broadcasts OnTeamIdChangedDelegate when this player's team ID changes. */
+	UFUNCTION()
+	void OnRep_TeamId(FGenericTeamId OldTeamId);
 };

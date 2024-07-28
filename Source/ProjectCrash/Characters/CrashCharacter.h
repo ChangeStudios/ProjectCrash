@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "ModularCharacter.h"
 #include "Camera/ViewTargetInterface.h"
+#include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashCharacter.generated.h"
 
 class UCrashCameraComponent;
@@ -14,14 +15,19 @@ class UHealthComponent;
 class UPawnExtensionComponent;
 
 /**
- * Base modular character class for this project. Provides first- and third-person perspective functionality via
- * dual mesh components; contains a camera component; provides a health component and an interface with the ability
- * system; contains a pawn extension component for coordinating modular actor components.
+ * Base modular character class for this project.
+ *
+ * Provides first-person and third-person perspective functionality via dual mesh components. Contains a camera
+ * component intended for the "camera mode" system. Provides a health component and an interface with the ability
+ * system. Contains a pawn extension component for coordinating modular actor components.
+ *
+ * This character implements the team interface using its controller. Its team can be driven by a player controller or
+ * an AI controller, assuming they implement the team interface.
  *
  * New behavior should be implemented modularly via actor components; specifically, UPawnComponent. 
  */
-UCLASS()
-class PROJECTCRASH_API ACrashCharacter : public AModularCharacter, public IAbilitySystemInterface, public IViewTargetInterface
+UCLASS(Meta = (ShortToolTip = "Base modular character class for this project."))
+class PROJECTCRASH_API ACrashCharacter : public AModularCharacter, public IAbilitySystemInterface, public ICrashTeamAgentInterface, public IViewTargetInterface
 {
 	GENERATED_BODY()
 
@@ -34,15 +40,20 @@ public:
 
 
 
-	// Initialization.
+	// Events.
 
+// Pawn extension routing.
 protected:
 
-	/** Routes this event to the pawn extension component for its initialization. */
+	/** Refreshes this character's team with the new controller and routes this event to the pawn extension component
+	 * for its initialization. */
 	virtual void PossessedBy(AController* NewController) override;
 
 	/** Routes this event to the pawn extension component for its initialization. */
 	virtual void UnPossessed() override;
+
+	/** Updates this character's team when it's assigned a controller, since its controller determines its team. */
+	virtual void NotifyControllerChanged() override;
 
 	/** Routes this event to the pawn extension component for its initialization. */
 	virtual void OnRep_Controller() override;
@@ -127,4 +138,49 @@ private:
 	/** Helper component for routing events from the ability system's health attributes to the character. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crash|Character", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+
+
+	// Teams.
+
+public:
+
+	/** This character's team cannot be set directly. Its team is driven by its controller. */
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamId) override;
+
+	/** Returns this character's team, driven by its controller.  */
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId_Internal; }
+
+	/** Returns the delegate fired when this character's team is assigned or changes. */
+	virtual FTeamIdChangedSignature* GetTeamIdChangedDelegate() override { return &TeamChangedDelegate; }
+
+protected:
+
+	/**
+	 * Determines which team this character is assigned to when it's unpossessed, since its team is driven by its
+	 * controller.
+	 *
+	 * Default implementation keeps this character on the same team (e.g. if a player is temporarily unpossessing their
+	 * pawn), but could be changed to move this character to "NoTeam," a specific "neutral" team, etc.
+	 */
+	virtual FGenericTeamId DetermineNewTeamAfterPossessionEnds(FGenericTeamId OldTeamId) const { return OldTeamId; }
+
+private:
+
+	/** Fired when this character changes teams, either because it changes controllers or because its controller
+	 * changed teams. */
+	UPROPERTY()
+	FTeamIdChangedSignature TeamChangedDelegate;
+
+	/** Updates this character's team with its controller's team when it changes. */
+	UFUNCTION()
+	void OnControllerChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam);
+
+	/** This character's current team, driven by their controller, cached and replicated for convenience. */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamId_Internal)
+	FGenericTeamId TeamId_Internal;
+
+	/** Broadcasts TeamChangedDelegate when this character's team is assigned or changes. */
+	UFUNCTION()
+	void OnRep_TeamId_Internal(FGenericTeamId OldTeamId);
 };

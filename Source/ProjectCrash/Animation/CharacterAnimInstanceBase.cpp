@@ -93,6 +93,7 @@ void UCharacterAnimInstanceBase::UpdateAimData(float DeltaSeconds)
 {
 	// Aim rotation.
 	AimRotation = TryGetPawnOwner()->GetBaseAimRotation();
+	AimRotation.Pitch = FRotator::NormalizeAxis(AimRotation.Pitch); // Replication inconsistency fix.
 }
 
 void UCharacterAnimInstanceBase::UpdateCharacterStateData(float DeltaSeconds)

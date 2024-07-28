@@ -164,6 +164,14 @@ void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* N
 	}
 }
 
+void ACrashGameMode::GenericPlayerInitialization(AController* C)
+{
+	Super::GenericPlayerInitialization(C);
+
+	// Broadcast the player's initialization.
+	OnGameModePlayerInitializeDelegate.Broadcast(this, C);
+}
+
 const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Player)
 {
 	/**
