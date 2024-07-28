@@ -67,22 +67,22 @@ void UGameModeInfoBase::CreatePlayerWidget(APlayerState* TargetPlayer)
 	UDynamicEntryBox* TargetEntryBox = nullptr;
 
 	// Choose which entry box to create the new player widget in.
-	switch (FCrashTeamID::GetAttitude(TargetPlayer, LocalPS))
-	{
-		case Friendly:
-		{
-			TargetEntryBox = TeammateWidgets_EntryBox;
-			break;
-		}
-		case Hostile:
-		{
-			TargetEntryBox = EnemyWidgets_EntryBox;
-			break;
-		}
-		default:
-		{
-		}
-	}
+	// switch (FCrashTeamID::GetAttitude(TargetPlayer, LocalPS))
+	// {
+	// 	case Friendly:
+	// 	{
+	// 		TargetEntryBox = TeammateWidgets_EntryBox;
+	// 		break;
+	// 	}
+	// 	case Hostile:
+	// 	{
+	// 		TargetEntryBox = EnemyWidgets_EntryBox;
+	// 		break;
+	// 	}
+	// 	default:
+	// 	{
+	// 	}
+	// }
 
 	// Create and bind a new widget for the player.
 	if (TargetEntryBox)

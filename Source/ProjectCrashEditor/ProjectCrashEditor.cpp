@@ -10,6 +10,7 @@
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
 #include "AssetTypes/AssetTypeActions_InputActionMapping.h"
 #include "AssetTypes/AssetTypeActions_PawnData.h"
+#include "AssetTypes/AssetTypeActions_Teams.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
@@ -67,6 +68,12 @@ void FProjectCrashEditorModule::StartupModule()
 	AssetType_PawnData = MakeShared<FAssetTypeActions_PawnData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
 
+	AssetType_TeamCreationComponent = MakeShared<FAssetTypeActions_TeamCreationComponent>();
+	AssetTools.RegisterAssetTypeActions(AssetType_TeamCreationComponent.ToSharedRef());
+
+	AssetType_TeamDisplayAsset = MakeShared<FAssetTypeActions_TeamDisplayAsset>();
+	AssetTools.RegisterAssetTypeActions(AssetType_TeamDisplayAsset.ToSharedRef());
+
 	AssetType_UserFacingGameModeData = MakeShared<FAssetTypeActions_UserFacingGameModeData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 
@@ -94,6 +101,8 @@ void FProjectCrashEditorModule::StartupModule()
 		{"GameplayCueNotify_Static", "GameplayCue"},
 		{"GameplayEffect", "GameplayEffect"},
 		{"PawnData", "PawnData"},
+		{"TeamCreationComponent", "TeamCreationComponent"},
+		{"TeamDisplayAsset", "TeamDisplayAsset"},
 		{"UserFacingGameModeData", "UserFacingGameModeData"},
 	};
 
@@ -141,6 +150,8 @@ void FProjectCrashEditorModule::ShutdownModule()
 	AssetTools.UnregisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_TeamCreationComponent.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_TeamDisplayAsset.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_UserFacingGameModeData.ToSharedRef());
 
 

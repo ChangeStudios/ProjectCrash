@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
@@ -23,6 +24,10 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	MinNetUpdateFrequency = 2.0f;
 	NetUpdateFrequency = 100.0f;
+
+	ConnectionType = EPlayerConnectionType::Player;
+
+	TeamId = FGenericTeamId::NoTeam;
 }
 
 void ACrashPlayerState::PostInitializeComponents()
@@ -126,7 +131,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		return;
 	}
 
-	// Players cannot change pawn data during the game.
+	// Players cannot switch between active pawn data. Use ChangePawn to safely change pawn data during the game.
 	if (PawnData)
 	{
 		UE_LOG(LogCrash, Error, TEXT("Tried to set pawn data [%s] on player state [%s]. This player already has valid pawn data: [%s]."),
@@ -134,8 +139,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 			*GetNameSafe(this),
 			*GetNameSafe(PawnData));
 
-		/* NOTE: If we wanted a game mode where players can switch pawns during a game, we would have to remove the
-		 * current pawn data's added ability sets and input configuration. */
 		return;
 	}
 
@@ -153,7 +156,7 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	{
 		if (AbilitySet)
 		{
-			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, nullptr);
+			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
 		}
 	}
 
@@ -162,6 +165,38 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
 
 	ForceNetUpdate();
+}
+
+void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawnData)
+{
+	// Remove the ability sets granted by the old pawn data.
+	if (AbilitySystemComponent)
+	{
+		for (auto GrantedAbilitySet : GrantedPawnDataAbilitySets)
+		{
+			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent);
+		}
+	}
+	GrantedPawnDataAbilitySets.Reset();
+
+	// Clear PawnData so SetPawnData works properly.
+	PawnData = nullptr;
+
+	// Destroy the pawn.
+	if (APawn* CurrentPawn = GetPawn())
+	{
+		CurrentPawn->DetachFromControllerPendingDestroy();
+		CurrentPawn->SetLifeSpan(0.1f);
+		CurrentPawn->SetActorHiddenInGame(true);
+	}
+
+	// Update this player's pawn data.
+	SetPawnData(InPawnData);
+
+	// Restart the player, destroying their old pawn and spawning a new one.
+	AController* OwningController = GetPlayerController();
+	ensure(OwningController);
+	GetWorld()->GetAuthGameMode()->RestartPlayer(OwningController);
 }
 
 void ACrashPlayerState::OnRep_PawnData()
@@ -177,6 +212,32 @@ UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
 	return GetCrashAbilitySystemComponent();
 }
 
+void ACrashPlayerState::SetGenericTeamId(const FGenericTeamId& NewTeamId)
+{
+	// Only set team IDs on the server.
+	if (HasAuthority())
+	{
+		const FGenericTeamId OldTeamId = TeamId;
+
+		// Set this player's team ID.
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
+		TeamId = NewTeamId;
+
+		// Broadcast the change locally. OnRep will handle broadcasting on clients.
+		BroadcastIfTeamChanged(this, OldTeamId, NewTeamId);
+	}
+	else
+	{
+		UE_LOG(LogTeams, Error, TEXT("Cannot set team for [%s] on non-authority."), *GetPathName(this));
+	}
+}
+
+void ACrashPlayerState::OnRep_TeamId(FGenericTeamId OldTeamId)
+{
+	// Broadcast the team change for clients. Server calls this in SetGenericTeamId.
+	BroadcastIfTeamChanged(this, OldTeamId, TeamId);
+}
+
 void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -186,4 +247,5 @@ void ACrashPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ConnectionType, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnData, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, TeamId, SharedParams);
 }
