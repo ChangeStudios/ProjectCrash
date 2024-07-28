@@ -3,6 +3,7 @@
 
 #include "GameFramework/Teams/TeamCreationComponent.h"
 
+#include "TeamDisplayAsset.h"
 #include "TeamInfo.h"
 #include "TeamSubsystem.h"
 #include "GameFramework/CrashLogging.h"
@@ -201,8 +202,8 @@ EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext
 		// If a friendly display asset is requested, make sure one is set.
 		if (FriendlyDisplayAsset == nullptr)
 		{
-			Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotFound", "[%s] requested to use friendly display assets, but the friendly display asset was not set."), FText::FromString(GetPathNameSafe(this))));
-			Result = EDataValidationResult::Invalid;
+			Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotFound", "{0} requested to use friendly display assets, but the friendly display asset was not set."), FText::FromString(GetPathNameSafe(this))));
+			return EDataValidationResult::Invalid;
 		}
 		// Make sure the friendly display asset is not used for any enemy teams.
 		else
@@ -212,13 +213,144 @@ EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext
 
 			if (TeamDisplayAssets.Contains(FriendlyDisplayAsset))
 			{
-				Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotUnique", "[%s] uses a display asset in its team map which is used as the friendly display asset. This will cause cause some enemy teams to appear as friendly to some players. Use a unique display asset as the friendly display asset."), FText::FromString(GetPathNameSafe(this))));
+				Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotUnique", "{0} uses a display asset in its team map which is used as the friendly display asset. This will cause cause some enemy teams to appear as friendly to some players. Use a unique display asset as the friendly display asset."), FText::FromString(GetPathNameSafe(this))));
 				Result = EDataValidationResult::Invalid;
 			}
 		}
 	}
 
-	// TODO: Validate display assets.
+	// Make sure every team display asset has identical properties.
+	TArray<TObjectPtr<UTeamDisplayAsset>> TeamDisplayAssets;
+	TeamsToCreate.GenerateValueArray(TeamDisplayAssets);
+	if (bUseFriendlyDisplayAsset)
+	{
+		TeamDisplayAssets.Add(FriendlyDisplayAsset);
+	}
+	TMap<UTeamDisplayAsset*, FMissingProperties> MissingProps;
+
+	for (UTeamDisplayAsset* TeamDisplayAsset : TeamDisplayAssets)
+	{
+		/* Check every other display asset to make sure they also have each of this asset's properties. Currently, we
+		 * only check texture properties. Scalars and colors will always have default values to fall back on, which we
+		 * may want to use instead of explicitly setting our own. */
+		for (UTeamDisplayAsset* Other : TeamDisplayAssets)
+		{
+			if (TeamDisplayAsset == Other)
+			{
+				continue;
+			}
+
+			// // Check for missing scalar properties.
+			// for (auto ScalarIt = TeamDisplayAsset->Scalars.CreateConstIterator(); ScalarIt; ++ScalarIt)
+			// {
+			// 	/* If the other display asset is missing this asset's scalar, add the scalar to its list of missing
+			// 	 * properties. Add this display asset as a dependency of that property. */
+			// 	if (!(Other->Scalars.Contains(ScalarIt.Key())))
+			// 	{
+			// 		auto& Entry = MissingProps.FindOrAdd(Other).MissingScalars.FindOrAdd(ScalarIt.Key());
+			// 		Entry.AddUnique(TeamDisplayAsset);
+			// 	}
+			// }
+			//
+			// // Check for missing color properties.
+			// for (auto ColorIt = TeamDisplayAsset->Colors.CreateConstIterator(); ColorIt; ++ColorIt)
+			// {
+			// 	/* If the other display asset is missing this asset's color, add the color to its list of missing
+			// 	 * properties. Add this display asset as a dependency of that property. */
+			// 	if (!(Other->Colors.Contains(ColorIt.Key())))
+			// 	{
+			// 		auto& Entry = MissingProps.FindOrAdd(Other).MissingColors.FindOrAdd(ColorIt.Key());
+			// 		Entry.AddUnique(TeamDisplayAsset);
+			// 	}
+			// }
+
+			// Check for missing texture properties.
+			for (auto TextureIt = TeamDisplayAsset->Textures.CreateConstIterator(); TextureIt; ++TextureIt)
+			{
+				/* If the other display asset is missing this asset's texture, add the texture to its list of missing
+				 * properties. Add this display asset as a dependency of that property. */
+				if (!(Other->Textures.Contains(TextureIt.Key())))
+				{
+					auto& Entry = MissingProps.FindOrAdd(Other).MissingTextures.FindOrAdd(TextureIt.Key());
+					Entry.AddUnique(TeamDisplayAsset);
+				}
+			}
+		}
+	}
+
+	// Log any missing properties as errors.
+	for (auto& Entry : MissingProps)
+	{
+		/* Builds a list of asset names in the format:
+		 *		"Used by Team_Blue, Team_Red, and Team_Pink." */
+		auto BuildDependencyString = [](TArray<UTeamDisplayAsset*> Dependencies) -> FString
+		{
+			if (Dependencies.Num() == 0)
+			{
+				return FString();
+			}
+
+			FString DependencyString = "Used by ";
+
+			for (int i = 0; i < Dependencies.Num(); ++i)
+			{
+				// First entry
+				if (i == 0)
+				{
+					DependencyString.Append(GetNameSafe(Dependencies[i]));
+
+					if (Dependencies.Num() == 1)
+					{
+						DependencyString.Append(".");
+					}
+				}
+				// Last entry
+				else if (i == (Dependencies.Num() - 1))
+				{
+					if (Dependencies.Num() == 2)
+					{
+						DependencyString.Append(" and " + GetNameSafe(Dependencies[i]) + ".");
+					}
+					else
+					{
+						DependencyString.Append(", and " + GetNameSafe(Dependencies[i]) + ".");
+					}
+				}
+				// Middle entries
+				else
+				{
+					DependencyString.Append(", " + GetNameSafe(Dependencies[i]));
+				}
+			}
+			
+			return DependencyString;
+		};
+
+		// Missing scalars.
+		for (auto& MissingScalar : Entry.Value.MissingScalars)
+		{
+			FString ScalarDependencyString = BuildDependencyString(MissingScalar.Value);
+			Context.AddError(FText::Format(LOCTEXT("MissingScalar", "{0} is missing scalar property {1}. {2}"), FText::FromString(GetNameSafe(Entry.Key)), FText::FromName(MissingScalar.Key), FText::FromString(ScalarDependencyString)));
+			Result = EDataValidationResult::Invalid;
+		}
+
+		// Missing colors.
+		for (auto& MissingColor : Entry.Value.MissingColors)
+		{
+			FString ColorDependencyString = BuildDependencyString(MissingColor.Value);
+			Context.AddError(FText::Format(LOCTEXT("MissingColor", "{0} is missing color property {1}. {2}"), FText::FromString(GetNameSafe(Entry.Key)), FText::FromName(MissingColor.Key), FText::FromString(ColorDependencyString)));
+			Result = EDataValidationResult::Invalid;
+		}
+
+		// Missing scalars.
+		for (auto& MissingTexture : Entry.Value.MissingTextures)
+		{
+			FString TextureDependencyString = BuildDependencyString(MissingTexture.Value);
+			Context.AddError(FText::Format(LOCTEXT("MissingTexture", "{0} is missing texture property {1}. {2}"), FText::FromString(GetNameSafe(Entry.Key)), FText::FromName(MissingTexture.Key), FText::FromString(TextureDependencyString)));
+			Result = EDataValidationResult::Invalid;
+		}
+	}
+
 	return Result;
 }
 #endif // WITH_EDITOR

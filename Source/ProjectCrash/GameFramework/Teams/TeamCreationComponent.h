@@ -106,9 +106,21 @@ protected:
 public:
 
 #if WITH_EDITOR
+
+	/**
+	 * Struct for tracking missing properties in display assets, and the other display assets which use that property.
+	 */
+	struct FMissingProperties
+	{
+		TMap<FName /* missing property */, TArray<UTeamDisplayAsset*> /* used by */> MissingScalars;
+		TMap<FName, TArray<UTeamDisplayAsset*>> MissingColors;
+		TMap<FName, TArray<UTeamDisplayAsset*>> MissingTextures;
+	};
+
 	/** Validates that every display asset has the same properties set. Ensures FriendlyDisplayAsset is not present in
 	 * TeamsToCreate. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
 #endif // WITH_EDITOR
 
 };
