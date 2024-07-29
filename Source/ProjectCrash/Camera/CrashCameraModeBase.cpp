@@ -463,7 +463,7 @@ void UCrashCameraModeStack::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag
 	// Make sure there is at least one active camera mode.
 	if (CameraModeStack.Num())
 	{
-		const UCrashCameraModeBase* TopCamera = CameraModeStack.Last();
+		UCrashCameraModeBase* TopCamera = CameraModeStack.Last();
 		check(TopCamera)
 		OutTopCameraWeight = TopCamera->GetBlendWeight();
 		OutTopCameraTag = TopCamera->GetCameraTypeTag();
@@ -473,6 +473,24 @@ void UCrashCameraModeStack::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag
 	{
 		OutTopCameraWeight = 1.0f;
 		OutTopCameraTag = FGameplayTag();
+	}
+}
+
+void UCrashCameraModeStack::GetBlendInfoBottom(float& OutBottomCameraWeight, FGameplayTag& OutBottomCameraTag) const
+{
+	// Make sure there is at least one active camera mode.
+	if (CameraModeStack.Num())
+	{
+		UCrashCameraModeBase* TopCamera = *CameraModeStack.GetData();
+		check(TopCamera)
+		OutBottomCameraWeight = TopCamera->GetBlendWeight();
+		OutBottomCameraTag = TopCamera->GetCameraTypeTag();
+	}
+	// Generic data for active camera modes.
+	else
+	{
+		OutBottomCameraWeight = 1.0f;
+		OutBottomCameraTag = FGameplayTag();
 	}
 }
 
@@ -559,6 +577,8 @@ void UCrashCameraModeStack::UpdateStack(float DeltaTime)
 					}
 				}
 			}
+
+			break;
 		}
 	}
 
@@ -595,7 +615,7 @@ void UCrashCameraModeStack::BlendStack(FCrashCameraModeView& OutCameraModeView) 
 	OutCameraModeView = CameraMode->GetCameraModeView();
 
 	// Blend up the stack.
-	for (int32 StackIndex = (StackSize - 2); StackIndex >= 0; StackIndex--)
+	for (int32 StackIndex = (StackSize - 2); StackIndex >= 0; --StackIndex)
 	{
 		CameraMode = CameraModeStack[StackIndex];
 		check(CameraMode);
