@@ -4,6 +4,8 @@
 #include "CrashCameraComponent.h"
 
 #include "CrashCameraModeBase.h"
+#include "CrashGameplayTags.h"
+#include "Characters/CrashCharacter.h"
 #include "Engine/Canvas.h"
 
 
@@ -31,6 +33,14 @@ void UCrashCameraComponent::GetBlendInfo(float& OutTopCameraWeight, FGameplayTag
 	CameraModeStack->GetBlendInfo(OutTopCameraWeight, OutTopCameraTag);
 }
 
+FGameplayTag UCrashCameraComponent::GetCameraTag() const
+{
+	float Weight;
+	FGameplayTag Tag;
+	GetBlendInfo(Weight, Tag);
+	return Tag;
+}
+
 void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView)
 {
 	check(CameraModeStack);
@@ -55,6 +65,20 @@ void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& Des
 		if (APlayerController* PC = OwningPawn->GetController<APlayerController>())
 		{
 			PC->SetControlRotation(CameraModeView.ControlRotation);
+		}
+
+		// If we're in first-person, offset our camera with the "Camera" bone's transform.
+		if (GetCameraTag() == CrashGameplayTags::TAG_CameraType_FirstPerson)
+		{
+			if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(OwningPawn))
+			{
+				if (USkeletalMeshComponent* Mesh_FPP = CrashChar->GetFirstPersonMesh())
+				{
+					FTransform CamBoneTransform = Mesh_FPP->GetBoneTransform("camera", RTS_Component);
+					CameraModeView.Location += CamBoneTransform.GetLocation();
+					CameraModeView.Rotation += CamBoneTransform.Rotator();
+				}
+			}
 		}
 	}
 
