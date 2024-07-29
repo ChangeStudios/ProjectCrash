@@ -74,7 +74,7 @@ void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& Des
 			{
 				if (USkeletalMeshComponent* Mesh_FPP = CrashChar->GetFirstPersonMesh())
 				{
-					FTransform CamBoneTransform = Mesh_FPP->GetBoneTransform("camera", RTS_Component);
+					FTransform CamBoneTransform = Mesh_FPP->GetBoneTransform("camera", RTS_ParentBoneSpace);
 					CameraModeView.Location += CamBoneTransform.GetLocation();
 					CameraModeView.Rotation += CamBoneTransform.Rotator();
 				}
