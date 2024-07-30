@@ -300,8 +300,8 @@ public:
 	/** Continuously called to update this stack's current camera mode and any active blending. */
 	bool EvaluateStack(float DeltaTime, FCrashCameraModeView& OutCameraModeView);
 
-	/** Gets the current blend weight and identifying tag of this stack's top (dominant) camera. When transitioning
-	 * between cameras, this is always the camera we are blending INTO. */
+	/** Gets the current blend weight and identifying tag of this stack's top (dominant) camera. This is preferable to
+	 * checking GetCameraWeightByTag, as it ensures the weighted camera is also the dominant/final camera. */
 	void GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
 	/** Returns the current blend weight of the first camera in this stack with the given camera tag. Returns 0.0 if
