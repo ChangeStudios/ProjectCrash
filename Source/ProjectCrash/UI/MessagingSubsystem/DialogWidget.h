@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CrashUIMessagingSubsystem.h"
-#include "UI/Framework/CrashActivatableWidget.h"
+#include "UI/Deprecated/Framework/CrashActivatableWidget.h"
 #include "DialogWidget.generated.h"
 
 /**
