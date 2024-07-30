@@ -69,19 +69,17 @@ void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& Des
 
 		/* If we're in first-person, offset our camera with the "Camera" bone's transform, multiplied by the
 		 * first-person camera weight for smooth blending. */
-		float CameraWeight;
-		FGameplayTag CameraTag;
-		CameraModeStack->GetBlendInfoBottom(CameraWeight, CameraTag);
-		if (CameraTag == CrashGameplayTags::TAG_CameraType_FirstPerson)
+		float FirstPersonCameraWeight = CameraModeStack->GetCameraWeightByTag(CrashGameplayTags::TAG_CameraType_FirstPerson);
+		if (FirstPersonCameraWeight > 0.0f)
 		{
 			if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(OwningPawn))
 			{
 				if (USkeletalMeshComponent* Mesh_FPP = CrashChar->GetFirstPersonMesh())
 				{
-					FVector CamBoneLoc = Mesh_FPP->GetBoneTransform("camera", RTS_ParentBoneSpace).GetTranslation();
+					FVector CamBoneLoc = Mesh_FPP->GetBoneTransform("camera", RTS_Component).GetTranslation();
 					FRotator CamBoneRot = Mesh_FPP->GetBoneTransform("camera", RTS_ParentBoneSpace).Rotator();
-					CameraModeView.Location += (CamBoneLoc * CameraWeight);
-					CameraModeView.Rotation += (CamBoneRot * CameraWeight);
+					CameraModeView.Rotation += (CamBoneRot * FirstPersonCameraWeight);
+					CameraModeView.Location += (CameraModeView.Rotation.RotateVector(CamBoneLoc) * FirstPersonCameraWeight);
 				}
 			}
 		}

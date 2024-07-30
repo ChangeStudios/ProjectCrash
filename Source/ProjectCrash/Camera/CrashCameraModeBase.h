@@ -301,12 +301,12 @@ public:
 	bool EvaluateStack(float DeltaTime, FCrashCameraModeView& OutCameraModeView);
 
 	/** Gets the current blend weight and identifying tag of this stack's top (dominant) camera. When transitioning
-	 * between cameras, this is the one TO which we are blending. */
+	 * between cameras, this is always the camera we are blending INTO. */
 	void GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
-	/** Gets the current blend weight and identifying tag of this stack's bottom camera. When transitioning between
-	 * cameras, this is the one FROM which we are blending. */
-	void GetBlendInfoBottom(float& OutBottomCameraWeight, FGameplayTag& OutBottomCameraTag) const;
+	/** Returns the current blend weight of the first camera in this stack with the given camera tag. Returns 0.0 if
+	 * a camera with the tag is not found. */
+	float GetCameraWeightByTag(FGameplayTag CameraTag) const;
 
 	/** Draws debug information about this camera stack's current camera modes. */
 	void DrawDebug(UCanvas* Canvas) const;
