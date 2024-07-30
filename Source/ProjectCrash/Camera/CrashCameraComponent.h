@@ -48,6 +48,10 @@ public:
 	/** Gets the current blend weight and identifying tag of the current stack's top camera. */
 	void GetBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;
 
+	/** Returns the identifying tag of the current stack's top camera. Useful for checking if we're in first-person. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Crash|Camera")
+	FGameplayTag GetCameraTag() const;
+
 	/** Delegate used to query for the desired camera mode. Bind to this to push camera modes. */
 	FDetermineCameraModeSignature DetermineCameraModeDelegate;
 

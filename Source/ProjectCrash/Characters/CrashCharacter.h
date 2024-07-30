@@ -92,8 +92,10 @@ private:
 
 public:
 
+	/** Switches to third-person when starting to blend out of a first-person camera. */
 	virtual void OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
 
+	/** Switches to first-person when fully blending into a first-person camera. */
 	virtual void OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
 	
 protected:
