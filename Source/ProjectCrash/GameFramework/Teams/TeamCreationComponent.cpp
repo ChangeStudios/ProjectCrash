@@ -195,7 +195,7 @@ int32 UTeamCreationComponent::GetLeastPopulatedTeam() const
 #if WITH_EDITOR
 EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext& Context) const
 {
-	EDataValidationResult Result = Super::IsDataValid(Context);
+	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 
 	if (bUseFriendlyDisplayAsset)
 	{

@@ -85,7 +85,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Game, "UI.Layer.Game", "The in-game HUD. Displays health, abilities, game mode data, etc.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_GameMenu, "UI.Layer.GameMenu", "Any menus that are brought up without interrupting gameplay, such as an inventory menu.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Menu, "UI.Layer.Menu", "UI serving as the primary element of the game outside of gameplay, such as the main menu, pause menu, etc.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Dialog, "UI.Layer.Dialog", "Dialog prompts to which the user can respond, such as confirmations prompts or error messages.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Layer_Modal, "UI.Layer.Modal", "An auxiliary layer for widgets that should not replace others, such as dialog prompts.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_UI_Action_Escape, "UI.Action.Escape", "Serves as a \"back\" action, and opens the escape menu during gameplay.");
 }
