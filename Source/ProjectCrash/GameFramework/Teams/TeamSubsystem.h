@@ -35,9 +35,9 @@ enum class ETeamAlignment : uint8
  * assets.
  *
  * This structure is used, rather than a reference to the team info actor itself (which has its own references to all
- * of this data), to be able to handle and facilitate data before the team info actor has been created or replicated.
- * For example, this allows other systems to start listening for the replication of team display assets before the team
- * info actor has actually been created.
+ * of this data) to be able to handle and facilitate data before the team info actor has been replicated. For example,
+ * this allows other systems to start listening for team display assets to be set before the team info actor has been
+ * replicated.
  *
  * TODO: Replace ATeamInfo in TeamMap with this.
  */
