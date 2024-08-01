@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/Deprecated/Framework/CrashActivatableWidget.h"
+#include "UI/CrashActivatableWidget.h"
 #include "CrashHUDLayout.generated.h"
 
 /**

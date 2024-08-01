@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
-#include "UI/Deprecated/Framework/CrashActivatableWidget.h"
+#include "UI/CrashActivatableWidget.h"
 #include "AbilitySystemWidget.generated.h"
 
 class UCrashAbilitySystemComponent;

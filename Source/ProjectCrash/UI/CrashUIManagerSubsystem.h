@@ -19,6 +19,5 @@ public:
 	UCrashUIManagerSubsystem();
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-
 	virtual void Deinitialize() override;
 };
