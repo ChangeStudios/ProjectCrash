@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "UI/Foundation/InterpolatedProgressBar.h"
+#include "UI/Components/InterpolatedProgressBar.h"
 
 UInterpolatedProgressBar::UInterpolatedProgressBar(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
