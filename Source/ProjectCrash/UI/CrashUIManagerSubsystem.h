@@ -7,7 +7,8 @@
 #include "CrashUIManagerSubsystem.generated.h"
 
 /**
- * 
+ * Default UI Manager Subsystem for this project. Currently does nothing, besides defining this project's default UI
+ * policy class.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashUIManagerSubsystem : public UGameUIManagerSubsystem
