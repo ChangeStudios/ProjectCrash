@@ -231,7 +231,7 @@ EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext
 	for (UTeamDisplayAsset* TeamDisplayAsset : TeamDisplayAssets)
 	{
 		/* Check every other display asset to make sure they also have each of this asset's properties. Currently, we
-		 * only check texture properties. Scalars and colors will always have default values to fall back on, which we
+		 * only check color and texture properties. Scalars will always have default values to fall back on, which we
 		 * may want to use instead of explicitly setting our own. */
 		for (UTeamDisplayAsset* Other : TeamDisplayAssets)
 		{
@@ -251,18 +251,18 @@ EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext
 			// 		Entry.AddUnique(TeamDisplayAsset);
 			// 	}
 			// }
-			//
-			// // Check for missing color properties.
-			// for (auto ColorIt = TeamDisplayAsset->Colors.CreateConstIterator(); ColorIt; ++ColorIt)
-			// {
-			// 	/* If the other display asset is missing this asset's color, add the color to its list of missing
-			// 	 * properties. Add this display asset as a dependency of that property. */
-			// 	if (!(Other->Colors.Contains(ColorIt.Key())))
-			// 	{
-			// 		auto& Entry = MissingProps.FindOrAdd(Other).MissingColors.FindOrAdd(ColorIt.Key());
-			// 		Entry.AddUnique(TeamDisplayAsset);
-			// 	}
-			// }
+			
+			// Check for missing color properties.
+			for (auto ColorIt = TeamDisplayAsset->Colors.CreateConstIterator(); ColorIt; ++ColorIt)
+			{
+				/* If the other display asset is missing this asset's color, add the color to its list of missing
+				 * properties. Add this display asset as a dependency of that property. */
+				if (!(Other->Colors.Contains(ColorIt.Key())))
+				{
+					auto& Entry = MissingProps.FindOrAdd(Other).MissingColors.FindOrAdd(ColorIt.Key());
+					Entry.AddUnique(TeamDisplayAsset);
+				}
+			}
 
 			// Check for missing texture properties.
 			for (auto TextureIt = TeamDisplayAsset->Textures.CreateConstIterator(); TextureIt; ++TextureIt)
