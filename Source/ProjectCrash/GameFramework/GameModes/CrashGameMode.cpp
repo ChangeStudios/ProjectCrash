@@ -19,6 +19,7 @@
 
 ACrashGameMode::ACrashGameMode()
 {
+	DefaultPawnClass = nullptr;
 	GameStateClass = ACrashGameState::StaticClass();
 	HUDClass = ACrashHUD::StaticClass();
 	PlayerControllerClass = ACrashPlayerController::StaticClass();
