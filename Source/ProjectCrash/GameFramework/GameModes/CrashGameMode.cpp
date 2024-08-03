@@ -15,12 +15,15 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
+#include "UI/CrashHUD.h"
 
 ACrashGameMode::ACrashGameMode()
 {
+	DefaultPawnClass = nullptr;
 	GameStateClass = ACrashGameState::StaticClass();
-	PlayerStateClass = ACrashPlayerState::StaticClass();
+	HUDClass = ACrashHUD::StaticClass();
 	PlayerControllerClass = ACrashPlayerController::StaticClass();
+	PlayerStateClass = ACrashPlayerState::StaticClass();
 }
 
 void ACrashGameMode::InitGameState()

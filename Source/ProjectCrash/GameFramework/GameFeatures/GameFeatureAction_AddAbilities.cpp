@@ -58,7 +58,8 @@ void UGameFeatureAction_AddAbilities::AddToWorld(const FWorldContext& WorldConte
 				if (!Entry.ActorClass.IsNull())
 				{
 					// Create a delegate for when we should grant the abilities and attribute sets.
-					UGameFrameworkComponentManager::FExtensionHandlerDelegate GrantAbilitiesDelegate = UGameFrameworkComponentManager::FExtensionHandlerDelegate::CreateUObject(this, &ThisClass::HandleActorExtension, EntryIndex, ChangeContext);
+					UGameFrameworkComponentManager::FExtensionHandlerDelegate GrantAbilitiesDelegate =
+						UGameFrameworkComponentManager::FExtensionHandlerDelegate::CreateUObject(this, &ThisClass::HandleActorExtension, EntryIndex, ChangeContext);
 
 					/* Bind the delegate to actors of the specified class in the component manager framework. These
 					 * actors have to add the extension request when they are ready to be granted the abilities and
@@ -129,10 +130,10 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 	if (UAbilitySystemComponent* AbilitySystemComponent = Actor->FindComponentByClass<UAbilitySystemComponent>())
 	{
 		// Allocate the memory we'll need to store our granted handles.
-		FActorExtensions AddedExtensions;
-		AddedExtensions.Abilities.Reserve(AbilitiesEntry.GrantedAbilities.Num());
-		AddedExtensions.AttributeSets.Reserve(AbilitiesEntry.GrantedAttributeSets.Num());
-		AddedExtensions.AbilitySetHandles.Reserve(AbilitiesEntry.GrantedAbilitySets.Num());
+		FExtendedActorData ActorData;
+		ActorData.Abilities.Reserve(AbilitiesEntry.GrantedAbilities.Num());
+		ActorData.AttributeSets.Reserve(AbilitiesEntry.GrantedAttributeSets.Num());
+		ActorData.AbilitySetHandles.Reserve(AbilitiesEntry.GrantedAbilitySets.Num());
 
 		// Grant abilities.
 		for (const TSoftClassPtr<UGameplayAbility>& Ability : AbilitiesEntry.GrantedAbilities)
@@ -143,7 +144,7 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 				FGameplayAbilitySpecHandle AbilityHandle = AbilitySystemComponent->GiveAbility(NewAbilitySpec);
 
 				// Cache the granted ability.
-				AddedExtensions.Abilities.Add(AbilityHandle);
+				ActorData.Abilities.Add(AbilityHandle);
 			}
 		}
 
@@ -155,7 +156,7 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 			if (const UCrashAbilitySet* AbilitySet = AbilitySetPtr.Get())
 			{
 				// This grants AND caches the ability set.
-				AbilitySet->GiveToAbilitySystem(CrashASC, &AddedExtensions.AbilitySetHandles.AddDefaulted_GetRef());
+				AbilitySet->GiveToAbilitySystem(CrashASC, &ActorData.AbilitySetHandles.AddDefaulted_GetRef());
 			}
 		}
 
@@ -182,7 +183,7 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 					}
 
 					// Cache the new attribute set.
-					AddedExtensions.AttributeSets.Add(NewSet);
+					ActorData.AttributeSets.Add(NewSet);
 					AbilitySystemComponent->AddAttributeSetSubobject(NewSet);
 				}
 			}
@@ -190,7 +191,7 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 
 
 		// Cache the new extension.
-		ActiveData.ActiveExtensions.Add(Actor, AddedExtensions);
+		ActiveData.ActiveExtensions.Add(Actor, ActorData);
 	}
 	else
 	{
@@ -200,25 +201,25 @@ void UGameFeatureAction_AddAbilities::AddActorAbilities(AActor* Actor, const FGa
 
 void UGameFeatureAction_AddAbilities::RemoveActorAbilities(AActor* Actor, FPerContextData& ActiveData)
 {
-	if (FActorExtensions* ActorExtensions = ActiveData.ActiveExtensions.Find(Actor))
+	if (FExtendedActorData* ActorData = ActiveData.ActiveExtensions.Find(Actor))
 	{
 		if (UAbilitySystemComponent* AbilitySystemComponent = Actor->FindComponentByClass<UAbilitySystemComponent>())
 		{
 			// Remove the granted abilities (allow them to finish).
-			for (FGameplayAbilitySpecHandle AbilityHandle : ActorExtensions->Abilities)
+			for (FGameplayAbilitySpecHandle AbilityHandle : ActorData->Abilities)
 			{
 				AbilitySystemComponent->SetRemoveAbilityOnEnd(AbilityHandle);
 			}
 
 			// Remove the granted ability sets.
 			UCrashAbilitySystemComponent* CrashASC = CastChecked<UCrashAbilitySystemComponent>(AbilitySystemComponent);
-			for (FCrashAbilitySet_GrantedHandles& AbilitySetHandle : ActorExtensions->AbilitySetHandles)
+			for (FCrashAbilitySet_GrantedHandles& AbilitySetHandle : ActorData->AbilitySetHandles)
 			{
 				AbilitySetHandle.RemoveFromAbilitySystem(CrashASC);
 			}
 
 			// Remove the granted attribute sets.
-			for (UAttributeSet* AttributeSetInstance : ActorExtensions->AttributeSets)
+			for (UAttributeSet* AttributeSetInstance : ActorData->AttributeSets)
 			{
 				AbilitySystemComponent->RemoveSpawnedAttribute(AttributeSetInstance);
 			}

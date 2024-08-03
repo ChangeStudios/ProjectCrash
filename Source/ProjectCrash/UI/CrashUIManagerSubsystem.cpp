@@ -1,11 +1,8 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "UI/CrashUIManagerSubsystem.h"
 
-
 UCrashUIManagerSubsystem::UCrashUIManagerSubsystem()
-	: Super()
 {
 }
 
