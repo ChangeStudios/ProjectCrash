@@ -220,6 +220,13 @@ protected:
 
 public:
 
+	/** Applies the desired knockback to the target actor in the direction of the source to the target. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
+	void AddKnockback(float Force, FVector Source, AActor* Target, AActor* Instigator);
+
+	/** Applies the desired knockback to the target actor in the given direction. */
+	void AddKnockback_Internal(FVector Force, AActor* Target, AActor* Instigator);
+
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")

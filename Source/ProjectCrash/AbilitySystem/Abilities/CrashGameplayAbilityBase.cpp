@@ -10,10 +10,13 @@
 #include "Characters/PawnCameraManager.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
 
@@ -254,6 +257,40 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 {
 	// Trigger the blueprint-exposed version of this callback.
 	K2_OnNewAvatarSet();
+}
+
+void UCrashGameplayAbilityBase::AddKnockback(float Force, FVector Source, AActor* Target, AActor* Instigator)
+{
+	if (!ensure(Target))
+	{
+		return;
+	}
+
+	FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(Source, Target->GetActorLocation());
+	FVector Direction = DirectionRot.Vector();
+	AddKnockback_Internal((Force * Direction), Target, Instigator);
+}
+
+void UCrashGameplayAbilityBase::AddKnockback_Internal(FVector Force, AActor* Target, AActor* Instigator)
+{
+	// If the target actor is a character, add the impulse to their movement component.
+	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
+	{
+		if (UCharacterMovementComponent* TargetMovementComp = TargetChar->GetCharacterMovement())
+		{
+			TargetMovementComp->AddImpulse(Force);
+		}
+	}
+	// If the target actor has a primitive root with physics enabled, add the impulse to their root.
+	else if (UPrimitiveComponent* RootScene = Cast<UPrimitiveComponent>(Target->GetRootComponent()))
+	{
+		if (RootScene->IsAnySimulatingPhysics())
+		{
+			RootScene->AddImpulse(Force);
+		}
+	}
+
+	// TODO: Broadcast message to credit upcoming knockback kills, until the target touches the ground again.
 }
 
 void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)
