@@ -26,7 +26,7 @@
 
 #define LOCTEXT_NAMESPACE "GameplayAbility"
 
-// Helper for functions that require an instantiated ability.
+/** Helper for functions that require an instantiated ability. */
 #define ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(FunctionName, ReturnValue)																					\
 {																																							\
 	if (!ensure(IsInstantiated()))																															\
@@ -35,6 +35,10 @@
 		return ReturnValue;																																	\
 	}																																						\
 }
+
+/** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
+ * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
+#define MIN_UPWARD_KNOCKBACK_PCT 0.5
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -259,19 +263,36 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 	K2_OnNewAvatarSet();
 }
 
-void UCrashGameplayAbilityBase::AddKnockback(float Force, FVector Source, AActor* Target, AActor* Instigator)
+void UCrashGameplayAbilityBase::AddKnockbackFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, bool bForceUpwardsVelocity)
 {
 	if (!ensure(Target))
 	{
 		return;
 	}
 
-	FRotator DirectionRot = UKismetMathLibrary::FindLookAtRotation(Source, Target->GetActorLocation());
-	FVector Direction = DirectionRot.Vector();
-	AddKnockback_Internal((Force * Direction), Target, Instigator);
+	// Calculate direction.
+	const FQuat DirectionRot = UKismetMathLibrary::FindLookAtRotation(Source, Target->GetActorLocation()).Quaternion();
+
+	/* Calculate horizontal and vertical force separately. Otherwise, we won't launch the target as far if we aren't at
+	 * exactly the same height. */
+	const FVector Direction2D = DirectionRot.GetAxisX().GetSafeNormal2D();
+	const float DirectionZ = DirectionRot.GetAxisX().Z * Force;
+	FVector ForceVector = (Force * Direction2D);
+	ForceVector.Z = DirectionZ;
+
+	/* If forcing upward velocity is requested, min-clamp the vertical force that will be applied to always knock the
+	 * target upwards. */
+	if (bForceUpwardsVelocity)
+	{
+		const float MinUpwardsVelocity = (Force * MIN_UPWARD_KNOCKBACK_PCT);
+		ForceVector.Z = FMath::Max(ForceVector.Z, MinUpwardsVelocity);
+	}
+
+	// Apply knockback.
+	AddKnockbackInDirection(ForceVector, Target, Instigator);
 }
 
-void UCrashGameplayAbilityBase::AddKnockback_Internal(FVector Force, AActor* Target, AActor* Instigator)
+void UCrashGameplayAbilityBase::AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator)
 {
 	// If the target actor is a character, add the impulse to their movement component.
 	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
