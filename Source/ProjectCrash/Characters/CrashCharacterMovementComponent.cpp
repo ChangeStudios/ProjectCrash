@@ -16,26 +16,19 @@ UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObject
 {
 	GravityScale = 1.5;
 	MaxAcceleration = 16384.0f;
-	BrakingFrictionFactor = 0.0f;
-	// BrakingFrictionFactor = 2.0f;
-	BrakingFriction = 0.0f;
-	// BrakingFriction = 4.0f;
 	bUseSeparateBrakingFriction = false;
-	// bUseSeparateBrakingFriction = true;
 
 	SetWalkableFloorAngle(35.01f);
-	GroundFriction = 0.0f;
-	// GroundFriction = 4.0f;
 	MaxWalkSpeed = 600.0f;
 	MaxWalkSpeedCrouched = 300.0f;
 	MinAnalogWalkSpeed = 50.0f;
 	BrakingDecelerationWalking = 8192.0f;
-	PerchRadiusThreshold = 20.0f;
+	PerchRadiusThreshold = 25.0f;
 
 	JumpZVelocity = 1000.0f;
 	AirControl = 0.5f;
 	AirControlBoostVelocityThreshold = 0.0f;
-	FallingLateralFriction = 0.4;
+	FallingLateralFriction = 0.6;
 }
 
 void UCrashCharacterMovementComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC)
@@ -124,14 +117,6 @@ void UCrashCharacterMovementComponent::OnJumpCountChanged(AActor* EffectInstigat
 	{
 		CharacterOwner->JumpMaxCount = MovementSet->GetJumpCount();
 	}
-}
-
-void UCrashCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
-{
-	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
-
-	// Disable separate braking friction while airborne.
-	bUseSeparateBrakingFriction = (MovementMode != MOVE_Falling);
 }
 
 float UCrashCharacterMovementComponent::GetGroundDistance() const

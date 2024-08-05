@@ -79,15 +79,6 @@ protected:
 
 
 
-	// Movement modes.
-
-protected:
-
-	/** Disables braking friction while airborne. */
-	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
-
-
-
 	// Utils.
 
 public:
