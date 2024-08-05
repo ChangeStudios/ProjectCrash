@@ -75,7 +75,11 @@ private:
 
 	/** Broadcasts changes to the observed agent's team's colors. */
 	UFUNCTION()
-	void OnTeamDisplayAssetChanged(const UTeamDisplayAsset* NewDisplayAsset);
+	void OnTeamDisplayAssetChanged(int32 TeamId);
+
+	/** Refreshes the observed agent's team display asset, relative to the viewer's new team. */
+	UFUNCTION()
+	void OnViewerChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam);
 
 
 
@@ -100,6 +104,10 @@ private:
 	// Utils.
 
 private:
+
+	/** Retrieves the relevant display asset for the observed team. If bLocalViewer is true, uses the local player's
+	 * team to determine which display asset to use. Otherwise, uses the team's normal display asset. */
+	UTeamDisplayAsset* GetRelevantDisplayAsset(int32 TeamId);
 
 	/** Retrieves the local viewer for this action. Returns the local player controller, if valid, if the bLocalViewer
 	 * is true. Returns nullptr otherwise. */

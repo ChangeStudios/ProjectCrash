@@ -94,10 +94,7 @@ public:
 	 * team (e.g. spectators). */
 	UTeamDisplayAsset* GetTeamDisplayAsset() const { return TeamDisplayAsset; }
 
-	/** Fired when any of this team's display assets are set or changed. */
-	UPROPERTY()
-	FTeamDisplayAssetChangedSignature TeamDisplayAssetChangedDelegate;
-
+// Friendly display asset.
 protected:
 
 	/** Updates this team's friendly display asset. */
@@ -108,8 +105,12 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_FriendlyDisplayAsset)
 	TObjectPtr<UTeamDisplayAsset> FriendlyDisplayAsset;
 
+	/** Broadcasts this team's friendly display asset change. */
 	UFUNCTION()
 	void OnRep_FriendlyDisplayAsset(UTeamDisplayAsset* OldDisplayAsset);
+
+// Team display asset.
+protected:
 
 	/** Updates this team's display asset. */
 	void SetTeamDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset);
@@ -119,6 +120,7 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_TeamDisplayAsset)
 	TObjectPtr<UTeamDisplayAsset> TeamDisplayAsset;
 
+	/** Broadcasts this team's display asset change. */
 	UFUNCTION()
 	void OnRep_TeamDisplayAsset(UTeamDisplayAsset* OldDisplayAsset);
 };

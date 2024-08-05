@@ -220,6 +220,19 @@ protected:
 
 public:
 
+	/** Applies the desired knockback to the target actor in the direction of the source to the target.
+	 *
+	 * @param bForceUpwardsVelocity		If true, the target will always be launched upwards. The vertical force will be
+	 *									clamped with a portion of the desired force. This prevents actors from sliding
+	 *									or getting stuck on the ground.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback", Meta = (AdvancedDisplay = "bForceUpwardsVelocity"))
+	void AddKnockbackFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, bool bForceUpwardsVelocity = true);
+
+	/** Applies directional knockback to the target actor. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
+	void AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator);
+
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")

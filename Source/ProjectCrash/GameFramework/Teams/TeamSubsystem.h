@@ -9,8 +9,8 @@
 class ATeamInfo;
 class ACrashPlayerState;
 
-/** Delegate for when this team's display asset changes. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, const UTeamDisplayAsset*, DisplayAsset);
+/** Delegate for when the specified team's display asset changes. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, int32, TeamId);
 
 /**
  * Represents the relationship between two actors' teams.
@@ -36,10 +36,8 @@ enum class ETeamAlignment : uint8
  *
  * This structure is used, rather than a reference to the team info actor itself (which has its own references to all
  * of this data) to be able to handle and facilitate data before the team info actor has been replicated. For example,
- * this allows other systems to start listening for team display assets to be set before the team info actor has been
- * replicated.
- *
- * TODO: Replace ATeamInfo in TeamMap with this.
+ * this allows other systems to start listening for team display assets to be set before the team info actor has
+ * finished replicating.
  */
 USTRUCT()
 struct FTeamTrackingInfo
@@ -48,16 +46,20 @@ struct FTeamTrackingInfo
 
 public:
 
-	/** */
+	/** The info actor that acts as the tangible representation of this team. This may be null on clients if it has not
+	 * been replicated yet. */
 	UPROPERTY()
 	TObjectPtr<ATeamInfo> TeamInfo = nullptr;
 
+	/** This team's current friendly display asset, if it has one. */
 	UPROPERTY()
 	TObjectPtr<UTeamDisplayAsset> FriendlyDisplayAsset = nullptr;
 
+	/** This team's current display asset. */
 	UPROPERTY()
 	TObjectPtr<UTeamDisplayAsset> TeamDisplayAsset = nullptr;
 
+	/** Fired when any of this team's team display assets change. */
 	UPROPERTY()
 	FTeamDisplayAssetChangedSignature TeamDisplayAssetChangedDelegate;
 
@@ -65,6 +67,9 @@ public:
 
 	/** Sets this team's info actor. This can also be called after a team's display assets change to refresh them. */
 	void SetTeamInfo(ATeamInfo* NewTeamInfo);
+
+	/** Removes this team's info actor. Could be used to remove or reset teams during gameplay. */
+	void RemoveTeamInfo(ATeamInfo* InfoToRemove);
 };
 
 
@@ -178,8 +183,8 @@ public:
 	 * modified. Used for modifying display assets in PIE. */
 	void NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedAsset);
 
-	/** Returns the TeamDisplayAssetChangedDelegate for the team with the given ID. */
-	FTeamDisplayAssetChangedSignature* GetTeamDisplayAssetChangedDelegate(int32 TeamId);
+	/** Returns the display asset change delegate for the team with the given ID. */
+	FTeamDisplayAssetChangedSignature& GetTeamDisplayAssetChangedDelegate(int32 TeamId);
 
 
 
@@ -208,9 +213,10 @@ public:
 
 private:
 
-	/** Internal map of registered team's IDs and their info actor. */
+	/** Internal map of registered team's IDs and their corresponding tracking info. May contain entries for teams that
+	 * have not yet been replicated. */
 	UPROPERTY()
-	TMap<int32, ATeamInfo*> TeamMap;
+	TMap<int32, FTeamTrackingInfo> TeamMap;
 
 	/** Delegate fired to create Team Cheats when the cheat managed is created. */
 	FDelegateHandle CheatManagerRegistrationHandle;
