@@ -18,6 +18,11 @@ struct FGameplayTagStack : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
+	// Stack containers have direct access to the stacks that they contain.
+	friend FGameplayTagStackContainer;
+
+public:
+
 	/** Default constructor. */
 	FGameplayTagStack()
 	{}
@@ -30,9 +35,6 @@ struct FGameplayTagStack : public FFastArraySerializerItem
 	FString GetDebugString() const { return FString::Printf(TEXT("%s (x%d)"), *Tag.ToString(), Count); }
 
 private:
-
-	// Stack containers have direct access to the stacks that they contain.
-	friend FGameplayTagStackContainer;
 
 	/** The tag of which this structure is a stack of. */
 	UPROPERTY()
@@ -107,9 +109,10 @@ public:
 // Serialization.
 public:
 
+	/** Performs data serialization on this serializer's items. */
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize(Stacks, DeltaParams, *this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks, DeltaParams, *this);
 	}
 
 
