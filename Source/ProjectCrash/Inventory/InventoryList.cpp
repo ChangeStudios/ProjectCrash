@@ -52,6 +52,9 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 
 void FInventoryList::AddEntry(UInventoryItemInstance* ItemInstance)
 {
+	unimplemented();
+
+/*
 	check(ItemInstance != nullptr);
 	check(OwningComponent);
 
@@ -60,11 +63,11 @@ void FInventoryList::AddEntry(UInventoryItemInstance* ItemInstance)
 
 	// Add a new entry in this inventory for the given item.
 	FInventoryListEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.ItemInstance = ItemInstance;
-	// NOTE: The item instance's outer object will not be the owning component's actor. This might cause ownership problems.
+	// TODO: Create a new item instance and copy ItemInstance's properties. If we don't do this, the item instance will be destroyed its original outer object is destroyed (e.g. a pick-up actor).
 
 	// Mark the new entry for replication.
 	MarkItemDirty(NewEntry);
+*/
 }
 
 void FInventoryList::RemoveEntry(UInventoryItemInstance* ItemInstance)
