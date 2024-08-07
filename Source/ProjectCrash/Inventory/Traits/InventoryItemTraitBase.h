@@ -30,18 +30,18 @@ class PROJECTCRASH_API UInventoryItemTraitBase : public UObject
 public:
 
 	/** Called when a new item instance is spawned. */
-	virtual void OnItemCreated(UInventoryItemInstance* ItemInstance) {}
+	virtual void OnItemCreated(UInventoryItemInstance* ItemInstance) const {}
 
 	/** Called when an item instance is destroyed. */
-	virtual void OnItemDestroyed(UInventoryItemInstance* ItemInstance) {}
+	virtual void OnItemDestroyed(UInventoryItemInstance* ItemInstance) const {}
 
 	/** Called when an item instance is added to an inventory. NOT called when something like a "pick-up actor" takes
 	 * ownership of an item. */
-	virtual void OnItemEnteredInventory(UInventoryItemInstance* ItemInstance) {}
+	virtual void OnItemEnteredInventory(UInventoryItemInstance* ItemInstance) const {}
 
 	/** Called when an item instance is removed from an inventory. The item may have been destroyed, or it may have been
 	 * dropped. */
-	virtual void OnItemLeftInventory(UInventoryItemInstance* ItemInstance) {}
+	virtual void OnItemLeftInventory(UInventoryItemInstance* ItemInstance) const {}
 
 	
 };

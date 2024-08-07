@@ -312,8 +312,12 @@ public:
 
 	// Validation.
 
-protected:
+public:
+
+#if WITH_EDITOR
 
 	/** Disables support for bReplicateInputDirectly. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
+#endif // WITH_EDITOR
 };

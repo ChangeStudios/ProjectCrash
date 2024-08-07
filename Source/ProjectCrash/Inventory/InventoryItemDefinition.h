@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "InventoryItemDefinition.generated.h"
 
 class UInventoryItemTraitBase;
@@ -71,4 +69,17 @@ public:
 
 	/** Returns this item's trait of the specified class. Returns null if this item does not have the given trait. */
 	const UInventoryItemTraitBase* FindTraitByClass(TSubclassOf<UInventoryItemTraitBase> TraitClass) const;
+
+
+
+	// Validation.
+
+public:
+
+#if WITH_EDITOR
+
+	/** Prevents multiple instances of the same trait class from being added to a single item. */
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
+#endif // WITH_EDITOR
 };

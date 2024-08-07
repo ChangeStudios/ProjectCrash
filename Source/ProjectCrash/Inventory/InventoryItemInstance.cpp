@@ -38,7 +38,7 @@ void UInventoryItemInstance::Init(UObject* InOwner, TSubclassOf<UInventoryItemDe
 void UInventoryItemInstance::BeginDestroy()
 {
 	// Uninitialize each of this item's traits.
-	if (ensure(ItemDefinition))
+	if (ItemDefinition)
 	{
 		for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)
 		{
