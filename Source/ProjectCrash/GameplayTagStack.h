@@ -127,6 +127,15 @@ private:
 
 	/** A map that mirrors the Stacks array which can be used for accelerated queries. */
 	TMap<FGameplayTag, int32> TagCountMap;
+
+
+
+	// Utils.
+
+public:
+
+	/** Returns this container's tag stacks as a map of each tag, as a string, to its count. */
+	TMap<FString, int32> Debug_GetTagStacks() const;
 };
 
 

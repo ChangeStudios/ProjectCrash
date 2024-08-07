@@ -111,3 +111,20 @@ void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> Ch
 		TagCountMap[Stack.Tag] = Stack.Count;
 	}
 }
+
+TMap<FString, int32> FGameplayTagStackContainer::Debug_GetTagStacks() const
+{
+	TMap<FString, int32> DebugStacks;
+
+	// Compile every tag stack into the debug map.
+	for (auto It = Stacks.CreateConstIterator(); It; ++It)
+	{
+		const FGameplayTagStack& Stack = *It;
+		if (Stack.Tag.IsValid())
+		{
+			DebugStacks.Add(Stack.Tag.ToString(), Stack.Count);
+		}
+	}
+
+	return DebugStacks;
+}

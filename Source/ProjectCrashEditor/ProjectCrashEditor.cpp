@@ -16,6 +16,14 @@
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 
+#if WITH_GAMEPLAY_DEBUGGER_CORE
+#include "GameplayDebugger.h"
+#endif // WITH_GAMEPLAY_DEBUGGER_CORE
+
+#if WITH_GAMEPLAY_DEBUGGER
+#include "Inventory/GameplayDebuggerCategory_Inventory.h"
+#endif // WITH_GAMEPLAY_DEBUGGER
+
 #define LOCTEXT_NAMESPACE "ProjectCrashEditorModule"
 
 #define IMAGE_BRUSH_SVG( RelativePath, ... ) FSlateVectorImageBrush(StyleSetInstance->RootToContentDir(RelativePath, TEXT(".svg")), __VA_ARGS__)
@@ -126,6 +134,13 @@ void FProjectCrashEditorModule::StartupModule()
 
 	// Register the style set.
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleSetInstance);
+
+	// Register gameplay debugger categories.
+#if WITH_GAMEPLAY_DEBUGGER
+	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
+	GameplayDebuggerModule.RegisterCategory("Inventory", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Inventory::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
+	GameplayDebuggerModule.NotifyCategoriesChanged();
+#endif // WITH_GAMEPLAY_DEBUGGER
 }
 
 void FProjectCrashEditorModule::OnBeginPIE(bool bIsSimulating)
@@ -159,6 +174,17 @@ void FProjectCrashEditorModule::ShutdownModule()
 	// Unregister the style set.
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleSetInstance.Get());
 	StyleSetInstance.Reset();
+
+
+	// Unregister gameplay debugger categories.
+#if WITH_GAMEPLAY_DEBUGGER
+    if (IGameplayDebugger::IsAvailable())
+    {
+    	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
+    	GameplayDebuggerModule.UnregisterCategory("Inventory");
+    	GameplayDebuggerModule.NotifyCategoriesChanged();
+    }
+#endif // WITH_GAMEPLAY_DEBUGGER
 }
 
 IMPLEMENT_MODULE(FProjectCrashEditorModule, ProjectCrashEditor);
