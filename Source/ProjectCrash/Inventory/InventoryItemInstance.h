@@ -3,9 +3,11 @@
 #pragma once
 
 #include "GameplayTagStack.h"
+#include "InventoryItemDefinition.h"
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "InventoryItemInstance.generated.h"
 
+class UInventoryComponent;
 class UInventoryItemDefinition;
 
 class FLifetimeProperty;
@@ -28,6 +30,18 @@ public:
 
 
 
+	// Initialization.
+
+public:
+
+	/** Initializes this object with the given owner and item definition. Initializes each of this item's traits. */
+	void Init(UObject* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition);
+
+	/** Uninitializes each of this item's traits. */
+	virtual void BeginDestroy() override;
+
+
+
 	// Replication.
 
 public:
@@ -37,10 +51,29 @@ public:
 
 private:
 
-#if UE_WITH_IRIS
+#if UE_WITH_IRIS // We currently don't use Iris, but this will be needed if we ever switch to it.
 	/** Registers this object's replication fragments. */
 	virtual void RegisterReplicationFragments(UE::Net::FFragmentRegistrationContext& Context, UE::Net::EFragmentRegistrationFlags RegistrationFlags) override;
 #endif // UE_WITH_IRIS
+
+
+
+	// Ownership.
+
+public:
+
+	/** Returns this item's current owner. */
+	UObject* GetOwner() const { return Owner; }
+
+	/** Sets this inventory item's current owner. */
+	void SetOwner(UObject* InOwner) { Owner = InOwner; }
+
+private:
+
+	/** The current owner of this item. When in an inventory, this is the owning actor of the inventory component
+	 * (usually a player state or a pawn). When in an item pick-up actor, this is that actor. */
+	UPROPERTY(Replicated)
+	UObject* Owner;
 
 
 

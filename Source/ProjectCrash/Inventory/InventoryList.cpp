@@ -5,6 +5,7 @@
 
 #include "InventoryItemDefinition.h"
 #include "InventoryItemInstance.h"
+#include "Traits/InventoryItemTraitBase.h"
 
 /**
  * FInventoryListEntry
@@ -14,7 +15,7 @@ FString FInventoryListEntry::GetDebugString() const
     TSubclassOf<UInventoryItemDefinition> ItemDefinition;
 	if (ItemInstance != nullptr)
 	{
-		// TODO: ItemDefinition = ItemInstance->GetItemDefinition();
+		ItemDefinition = ItemInstance->GetItemDefinition();
 	}
 
     return FString::Printf(TEXT("%s (%s)"), *GetNameSafe(ItemInstance), *GetNameSafe(ItemDefinition));
@@ -39,9 +40,18 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 	FInventoryListEntry& NewEntry = Entries.AddDefaulted_GetRef();
 
 	// Create a new instance of the desired item.
-	NewEntry.ItemInstance = NewObject<UInventoryItemInstance>(OwningComponent->GetOwner());
-	// TODO: NewEntry.ItemInstance->SetItemDefinition(ItemDefinition)
-	// TODO: Fragments -> ForEach -> OnInstanceCreated(NewEntry.Instasnce);
+	NewEntry.ItemInstance = NewObject<UInventoryItemInstance>(OwningComponent->GetWorld()); // Outer object is the UWorld so this item doesn't get auto-destroyed when removed from its current inventory.
+	NewEntry.ItemInstance->Init(OwningActor, ItemDefinition);
+
+	// Notify the new item's traits that it has entered a new inventory.
+	for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)
+	{
+		if (Trait != nullptr)
+		{
+			Trait->OnItemEnteredInventory(NewEntry.ItemInstance);
+		}
+	}
+
 	NewItem = NewEntry.ItemInstance;
 
 	// Mark the new entry for replication.
@@ -52,22 +62,34 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 
 void FInventoryList::AddEntry(UInventoryItemInstance* ItemInstance)
 {
-	unimplemented();
-
-/*
 	check(ItemInstance != nullptr);
 	check(OwningComponent);
 
 	AActor* OwningActor = OwningComponent->GetOwner();
 	check(OwningActor->HasAuthority());
 
+	// The item must have already been initialized with UInventoryItemInstance::Init.
+	TSubclassOf<UInventoryItemDefinition> ItemDefinition = ItemInstance->GetItemDefinition();
+	checkf(ItemDefinition, TEXT("Attempted to add uninitialized item [%s] to [%s]'s inventory."), *GetNameSafe(ItemInstance), *OwningActor->GetName());
+
 	// Add a new entry in this inventory for the given item.
 	FInventoryListEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	// TODO: Create a new item instance and copy ItemInstance's properties. If we don't do this, the item instance will be destroyed its original outer object is destroyed (e.g. a pick-up actor).
+	NewEntry.ItemInstance = ItemInstance;
+
+	// Take ownership of the item.
+	NewEntry.ItemInstance->SetOwner(OwningActor);
+
+	// Notify the item's traits that it has entered a new inventory.
+	for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)
+	{
+		if (Trait != nullptr)
+		{
+			Trait->OnItemEnteredInventory(NewEntry.ItemInstance);
+		}
+	}
 
 	// Mark the new entry for replication.
 	MarkItemDirty(NewEntry);
-*/
 }
 
 void FInventoryList::RemoveEntry(UInventoryItemInstance* ItemInstance)
@@ -79,6 +101,15 @@ void FInventoryList::RemoveEntry(UInventoryItemInstance* ItemInstance)
 		FInventoryListEntry& Entry = *EntryIt;
 		if (Entry.ItemInstance == ItemInstance)
 		{
+			// Notify the removed item's traits that it has left the inventory.
+			if (TSubclassOf<UInventoryItemDefinition> ItemDefinition = Entry.ItemInstance->GetItemDefinition())
+			{
+				for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)
+				{
+					Trait->OnItemLeftInventory(Entry.ItemInstance);
+				}
+			}
+
 			EntryIt.RemoveCurrent();
 			MarkArrayDirty();
 		}

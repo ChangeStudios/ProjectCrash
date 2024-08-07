@@ -30,7 +30,18 @@ public:
 
 
 
-	// Replication.
+	/*
+	 * Replication.
+	 *
+	 * Inventory items are replicated as sub-objects of the inventory component in which they currently reside. This
+	 * means that when an inventory item is NOT in an inventory (e.g. dropped as a "pick-up" actor in the world), its
+	 * data will not be replicated. The object holding the item will need to implement its own logic if it wants to
+	 * continue replicating the item's data.
+	 *
+	 * Even though the item's data will not be actively replicated, it WILL keep its current data, so it can continue
+	 * replication when placed into a new inventory. Items should never change their data when not in an inventory,
+	 * even if they ARE being replicated.
+	 */
 
 public:
 

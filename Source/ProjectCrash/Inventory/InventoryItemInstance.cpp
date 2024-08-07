@@ -4,13 +4,52 @@
 #include "Inventory/InventoryItemInstance.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Traits/InventoryItemTraitBase.h"
 
 #if UE_WITH_IRIS
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #endif // UE_WITH_IRIS
 
-UInventoryItemInstance::UInventoryItemInstance()
+UInventoryItemInstance::UInventoryItemInstance() :
+	Owner(nullptr),
+	ItemDefinition(nullptr)
 {
+}
+
+void UInventoryItemInstance::Init(UObject* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition)
+{
+	check(InOwner);
+	// Item definition should only be set once.
+	check(ItemDefinition == nullptr);
+
+	Owner = InOwner;
+	ItemDefinition = InItemDefinition;
+
+	// Initialize each of this item's traits.
+	for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(InItemDefinition)->Traits)
+	{
+		if (Trait != nullptr)
+		{
+			Trait->OnItemCreated(this);
+		}
+	}
+}
+
+void UInventoryItemInstance::BeginDestroy()
+{
+	// Uninitialize each of this item's traits.
+	if (ensure(ItemDefinition))
+	{
+		for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)
+		{
+			if (Trait != nullptr)
+			{
+				Trait->OnItemDestroyed(this);
+			}
+		}
+	}
+
+	Super::BeginDestroy();
 }
 
 #if UE_WITH_IRIS
@@ -47,6 +86,7 @@ void UInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(UInventoryItemInstance, Owner);
 	DOREPLIFETIME(UInventoryItemInstance, ItemDefinition);
 	DOREPLIFETIME(UInventoryItemInstance, StatTags);
 }
