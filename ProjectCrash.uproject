@@ -16,7 +16,8 @@
 				"ModularGameplay",
 				"GameFeatures",
 				"CoreUObject",
-				"UnrealEd"
+				"UnrealEd",
+				"Blutility"
 			]
 		},
 		{

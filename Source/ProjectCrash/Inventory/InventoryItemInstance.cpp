@@ -62,6 +62,17 @@ void UInventoryItemInstance::RegisterReplicationFragments(UE::Net::FFragmentRegi
 }
 #endif // UE_WITH_IRIS
 
+const UInventoryItemTraitBase* UInventoryItemInstance::FindTraitByClass(TSubclassOf<UInventoryItemTraitBase> TraitClass) const
+{
+	if ((ItemDefinition != nullptr) && (TraitClass != nullptr))
+	{
+		// Get the desired trait through the item definition's CDO.
+		return GetDefault<UInventoryItemDefinition>(ItemDefinition)->FindTraitByClass(TraitClass);
+	}
+
+	return nullptr;
+}
+
 void UInventoryItemInstance::AddStatTags(FGameplayTag Tag, int32 Count)
 {
 	StatTags.AddTags(Tag, Count);

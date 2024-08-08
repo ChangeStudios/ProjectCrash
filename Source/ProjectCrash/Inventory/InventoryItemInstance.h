@@ -85,6 +85,7 @@ private:
 public:
 
 	/** Getter for the item of which this object is an instance. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
 	TSubclassOf<UInventoryItemDefinition> GetItemDefinition() const { return ItemDefinition; }
 
 private:
@@ -99,7 +100,17 @@ private:
 
 public:
 
-	// TODO: FindTraitByClass
+	/** Returns this item's trait of the specified class. Returns null if this item does not have the specified
+	 * trait. */
+	UFUNCTION(BlueprintCallable, BlueprintPure = "false", Meta = (DeterminesOutputType = "TraitClass"))
+	const UInventoryItemTraitBase* FindTraitByClass(TSubclassOf<UInventoryItemTraitBase> TraitClass) const;
+
+	/** Templated version of FindTraitByClass. */
+	template <typename ResultClass>
+	const ResultClass* FindTraitByClass() const
+	{
+		return (ResultClass*)FindTraitByClass(ResultClass::StaticClass());
+	}
 
 
 
