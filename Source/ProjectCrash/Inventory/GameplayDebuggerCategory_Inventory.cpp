@@ -51,24 +51,28 @@ void FGameplayDebuggerCategory_Inventory::CollectData(APlayerController* OwnerPC
 		DataPack.InventoryOwnerName = GetNameSafe(InventoryComp->GetOwner());
 
 		// Convert every item in the observed inventory into debug data before serializing.
-		for (UInventoryItemInstance* Item : InventoryComp->GetAllItems())
+		for (const UInventoryItemInstance* Item : InventoryComp->GetAllItems())
 		{
+			// Include null items for debugging.
+			if (Item == nullptr)
+			{
+				FRepData::FItem& RepItem = DataPack.Items.AddDefaulted_GetRef();
+				continue;
+			}
+
 			FRepData::FItem& RepItem = DataPack.Items.AddDefaulted_GetRef();
 
 			// Name.
 			RepItem.DisplayName = GetNameSafe(Item);
 
 			// Item def.
-			if (Item->GetItemDefinition())
-			{
-				RepItem.ItemDef = GetNameSafe(Item->GetItemDefinition());
-			}
+			RepItem.ItemDef = GetNameSafe(Item->GetItemDefinition());
 
 			// Owner.
-			RepItem.ItemOwnerName = GetNameSafe(InventoryComp->GetOwner());
+			RepItem.ItemOwnerName = GetNameSafe(Item->GetOwner());
 
 			// Stat tags.
-			RepItem.StatTags = Item->StatTags.Debug_GetTagStacks();
+			Item->StatTags.GetDebugStrings(RepItem.StatTags);
 
 			// TODO: Abilities
 			// TODO: Effects
@@ -85,11 +89,13 @@ void FGameplayDebuggerCategory_Inventory::CollectData(APlayerController* OwnerPC
 
 void FGameplayDebuggerCategory_Inventory::DrawData(APlayerController* OwnerPC, FGameplayDebuggerCanvasContext& CanvasContext)
 {
+	// Null inventory case.
 	if (!DataPack.bHasInventory)
 	{
 		CanvasContext.Printf(TEXT("{red}Debug target {yellow}%s{red} does not have an inventory."), *DataPack.InventoryOwnerName);
 		return;
 	}
+
 
 	// Inventory Contents (Owner):
 	CanvasContext.Printf(TEXT("Inventory Contents ({yellow}%s{white}):"), *DataPack.InventoryOwnerName);
@@ -100,35 +106,45 @@ void FGameplayDebuggerCategory_Inventory::DrawData(APlayerController* OwnerPC, F
 		return;
 	}
 
+
 	for (FRepData::FItem& Item : DataPack.Items)
 	{
-		//	⏺ Item Name
-		CanvasContext.Printf(TEXT("\t{black}⏺{green}%s"), *Item.DisplayName);
+		// Spacer between items.
+		CanvasContext.Printf(TEXT(""));
+
+
+		// Null item case.
+		if (Item.DisplayName.IsEmpty())
+		{
+			CanvasContext.Printf(TEXT("\t{red}[Missing item!]"));
+			continue;
+		}
+
+
+		//	Item Name
+		CanvasContext.Printf(TEXT("\t{green}%s"), *Item.DisplayName);
 
 		//		Instance of: Item Definition
-		CanvasContext.Printf(TEXT("\t\tInstance of: %s"), *Item.ItemDef);
+		CanvasContext.Printf(TEXT("\t\tInstance of: {yellow}%s"), *Item.ItemDef);
 
 		//		Owner: Owning Actor
-		CanvasContext.Printf(TEXT("\t\tOwner: %s"), *Item.ItemOwnerName);
+		CanvasContext.Printf(TEXT("\t\tOwner: {yellow}%s"), *Item.ItemOwnerName);
 
 		//		Current Statistics:
 		CanvasContext.Printf(TEXT("\t\tCurrent Statistics:"));
 
-		//			⏺ Tag Name (xCount)
+		//			Tag Name (xCount)
 		if (Item.StatTags.Num() == 0)
 		{
 			CanvasContext.Printf(TEXT("\t\t\t{red}No stats."));
 		}
 		else
 		{
-			for (auto& KVP : Item.StatTags)
+			for (FString& StatTag : Item.StatTags)
 			{
-				CanvasContext.Printf(TEXT("\t{black}⏺{green}%s (x%i)"), *KVP.Key, KVP.Value);
+				CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *StatTag);
 			}
 		}
-
-		// Spacer between items.
-		CanvasContext.Printf(TEXT(""));
 
 		// TODO: Abilities
 		// TODO: Effects

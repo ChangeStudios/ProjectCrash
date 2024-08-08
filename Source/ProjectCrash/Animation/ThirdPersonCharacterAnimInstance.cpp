@@ -134,7 +134,7 @@ void UThirdPersonCharacterAnimInstance::UpdateDebugData(float DeltaSeconds)
 
 	if (!PreviewActor)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Anim instance [%s] failed to find preview instance in debug."), *GetNameSafe(this));
+		UE_LOG(LogAnimation, Error, TEXT("Anim instance [%s] failed to find preview instance in debug."), *GetNameSafe(this));
 		return;
 	}
 

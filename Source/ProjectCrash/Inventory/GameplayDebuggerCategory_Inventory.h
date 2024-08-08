@@ -35,7 +35,7 @@ protected:
 			FString DisplayName;
 			FString ItemDef;
 			FString ItemOwnerName;
-			TMap<FString, int32> StatTags;
+			TArray<FString> StatTags;
 			TArray<FString> GrantedAbilities;
 			TArray<FString> AppliedEffects;
 			TArray<FString> AddedAttributeSets;

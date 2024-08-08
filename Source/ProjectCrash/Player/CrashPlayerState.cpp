@@ -14,6 +14,7 @@
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
 #include "Inventory/InventoryComponent.h"
+#include "Inventory/InventoryItemDefinition.h"
 #include "Net/UnrealNetwork.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -26,10 +27,11 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	MinNetUpdateFrequency = 2.0f;
 	NetUpdateFrequency = 100.0f;
 
-	ConnectionType = EPlayerConnectionType::Player;
-
+	// Construct the inventory.
 	InventoryComponent = ObjectInitializer.CreateDefaultSubobject<UInventoryComponent>(this, TEXT("InventoryComponent"));
 	InventoryComponent->SetIsReplicated(true);
+
+	ConnectionType = EPlayerConnectionType::Player;
 
 	TeamId = FGenericTeamId::NoTeam;
 }
@@ -161,6 +163,15 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		if (AbilitySet)
 		{
 			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
+		}
+	}
+
+	// Add the pawn's default inventory items.
+	for (const TSubclassOf<UInventoryItemDefinition> Item : PawnData->Items)
+	{
+		if (Item)
+		{
+			InventoryComponent->AddItemByDefinition(Item);
 		}
 	}
 

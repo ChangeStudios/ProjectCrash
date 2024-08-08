@@ -28,7 +28,8 @@ public:
 	{}
 
 	/** Constructor that initializes this stack as a quantity of a specified tag. */
-	FGameplayTagStack(FGameplayTag InTag, int32 InCount)
+	FGameplayTagStack(FGameplayTag InTag, int32 InCount) :
+		Tag(InTag), Count(InCount)
 	{}
 
 	/** Formats this stack as "Tag (xCount)". */
@@ -134,8 +135,8 @@ private:
 
 public:
 
-	/** Returns this container's tag stacks as a map of each tag, as a string, to its count. */
-	TMap<FString, int32> Debug_GetTagStacks() const;
+	/** Returns a collection of each tag stack's debug string.  */
+	void GetDebugStrings(TArray<FString>& OutDebugStrings) const;
 };
 
 

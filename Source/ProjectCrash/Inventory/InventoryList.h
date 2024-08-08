@@ -60,7 +60,7 @@ public:
 
 	/** Constructor initializing this inventory's owning component. */
 	FInventoryList(UActorComponent* InOwningComponent)
-		: OwningComponent(nullptr)
+		: OwningComponent(InOwningComponent)
 	{}
 
 
