@@ -13,6 +13,7 @@
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
+#include "Inventory/InventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -26,6 +27,9 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	NetUpdateFrequency = 100.0f;
 
 	ConnectionType = EPlayerConnectionType::Player;
+
+	InventoryComponent = ObjectInitializer.CreateDefaultSubobject<UInventoryComponent>(this, TEXT("InventoryComponent"));
+	InventoryComponent->SetIsReplicated(true);
 
 	TeamId = FGenericTeamId::NoTeam;
 }

@@ -10,6 +10,7 @@
 #include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashPlayerState.generated.h"
 
+class UInventoryComponent;
 class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
@@ -96,7 +97,7 @@ public:
 	/** Updates this player's current pawn data, destroying their current pawn if necessary, and restarts them. Used
 	 * for changing pawns during gameplay via a "Switch Character" menu. For initializing pawn data, use SetPawnData
 	 * instead. */
-	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|PlayerState")
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|Player State")
 	void Server_ChangePawn(const UPawnData* InPawnData);
 
 	/** Templated getter for retrieving current pawn data. */
@@ -121,7 +122,7 @@ protected:
 public:
 
 	/** Typed getter for this player's ASC. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerState")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player State")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	/** Interfaced getter for this player's ASC. */
@@ -130,12 +131,28 @@ public:
 private:
 
 	/** This player's ability system component. */
-	UPROPERTY(VisibleAnywhere, Category = "Crash|PlayerState")
+	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
 
 	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
 	 * data changes. */
 	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
+
+
+
+	// Inventory.
+
+public:
+
+	/** Returns the component responsible for holding and managing this player's inventory. */
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player State")
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+
+private:
+
+	/** This player's persistent inventory component, responsible for holding and managing their inventory. */
+	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
 
 
 
