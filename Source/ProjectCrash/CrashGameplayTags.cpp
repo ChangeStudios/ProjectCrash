@@ -66,6 +66,8 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
+
 
 	// States
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");

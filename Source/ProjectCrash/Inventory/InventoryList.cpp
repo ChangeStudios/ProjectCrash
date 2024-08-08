@@ -3,8 +3,10 @@
 
 #include "Inventory/InventoryList.h"
 
+#include "CrashGameplayTags.h"
 #include "InventoryItemDefinition.h"
 #include "InventoryItemInstance.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "Traits/InventoryItemTraitBase.h"
 
 /**
@@ -52,6 +54,9 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 		}
 	}
 
+	// Broadcast an inventory change message on the server. Handled on clients by PostReplicatedAdd.
+	BroadcastActionMessage(NewEntry, EInventoryChangeType::ItemAdded);
+
 	NewItem = NewEntry.ItemInstance;
 
 	// Mark the new entry for replication.
@@ -88,6 +93,9 @@ void FInventoryList::AddEntry(UInventoryItemInstance* ItemInstance)
 		}
 	}
 
+	// Broadcast an inventory change message on the server. Handled on clients by PostReplicatedAdd.
+	BroadcastActionMessage(NewEntry, EInventoryChangeType::ItemAdded);
+
 	// Mark the new entry for replication.
 	MarkItemDirty(NewEntry);
 }
@@ -101,6 +109,9 @@ void FInventoryList::RemoveEntry(UInventoryItemInstance* ItemInstance)
 		FInventoryListEntry& Entry = *EntryIt;
 		if (Entry.ItemInstance == ItemInstance)
 		{
+			// Broadcast an inventory change message on the server. Handled on clients by PreReplicatedRemove.
+			BroadcastActionMessage(Entry, EInventoryChangeType::ItemRemoved);
+
 			// Notify the removed item's traits that it has left the inventory.
 			if (TSubclassOf<UInventoryItemDefinition> ItemDefinition = Entry.ItemInstance->GetItemDefinition())
 			{
@@ -132,4 +143,37 @@ TArray<UInventoryItemInstance*> FInventoryList::GetAllItems() const
 	}
 
 	return Items;
+}
+
+void FInventoryList::PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize)
+{
+	// Broadcast a client-side inventory change message for each removed item.
+	for (int32 Index : RemovedIndices)
+	{
+		FInventoryListEntry& Entry = Entries[Index];
+		BroadcastActionMessage(Entry, EInventoryChangeType::ItemRemoved);
+	}
+}
+
+void FInventoryList::PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize)
+{
+	// Broadcast a client-side inventory change message for each added item.
+	for (int32 Index : AddedIndices)
+	{
+		FInventoryListEntry& Entry = Entries[Index];
+		BroadcastActionMessage(Entry, EInventoryChangeType::ItemAdded);
+	}
+}
+
+void FInventoryList::BroadcastActionMessage(FInventoryListEntry& Entry, EInventoryChangeType ChangeType)
+{
+	// Construct the message.
+	FInventoryChangeMessage InventoryChangeMessage;
+	InventoryChangeMessage.InventoryComponent = OwningComponent;
+	InventoryChangeMessage.ItemInstance = Entry.ItemInstance;
+	InventoryChangeMessage.ChangeType = ChangeType;
+
+	// Broadcast the message (locally).
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(OwningComponent->GetWorld());
+	MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Inventory_Change, InventoryChangeMessage);
 }
