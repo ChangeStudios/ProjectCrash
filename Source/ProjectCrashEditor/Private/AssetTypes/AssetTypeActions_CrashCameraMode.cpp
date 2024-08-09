@@ -18,15 +18,15 @@ UClass* FAssetTypeActions_CrashCameraMode::GetSupportedClass() const
 	return UCrashCameraModeBase::StaticClass();
 }
 
+uint32 FAssetTypeActions_CrashCameraMode::GetCategories()
+{
+	return EAssetTypeCategories::Gameplay;
+}
+
 UFactory* FAssetTypeActions_CrashCameraMode::GetFactoryForBlueprintType(UBlueprint* InBlueprint) const
 {
 	UCrashCameraModeFactory* CrashCameraModeFactory = NewObject<UCrashCameraModeFactory>();
 	return CrashCameraModeFactory;
-}
-
-uint32 FAssetTypeActions_CrashCameraMode::GetCategories()
-{
-	return EAssetTypeCategories::Gameplay;
 }
 
 #undef LOCTEXT_NAMESPACE

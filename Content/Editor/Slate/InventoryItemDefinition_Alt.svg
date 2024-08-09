@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 350">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: url(#linear-gradient-3);
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="232.2" y1="275.7" x2="289.5" y2="275.7" gradientTransform="translate(0 331.2) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="40.6" y1="156.2" x2="309.4" y2="156.2" gradientTransform="translate(0 331.2) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="132.1" y1="178.4" x2="268.8" y2="178.4" gradientTransform="translate(0 331.2) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.6.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 709)  -->
+  <g>
+    <g id="Layer_1">
+      <g id="Layer_1-2" data-name="Layer_1">
+        <path class="cls-3" d="M239.4,37.8c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7-3.1-4.2-1.7-6.5,4.2-3.1,6.5-1.7ZM267.6,65.1c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7-3.1-4.2-1.7-6.5,4.2-3.1,6.5-1.7ZM258.2,43.2c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7-3.1-4.2-1.7-6.5,4.2-3.1,6.5-1.7ZM287.1,59.9c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7-3.1-4.2-1.7-6.5,4.2-3.1,6.5-1.7ZM244.6,57.4c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7-3.1-4.2-1.7-6.5,4.2-3.1,6.5-1.7Z"/>
+        <path class="cls-1" d="M259.6,126.5l7.1-12.4,4.1,2.4c6.8,3.9,15.6,1.6,19.5-5.2s1.6-15.6-5.2-19.5l-3-1.7,27.3-28.2L224.7,12.9l-10.8,37.8-3-1.7c-6.8-3.9-15.6-1.6-19.5,5.2-3.9,6.8-1.6,15.6,5.2,19.5l4.1,2.4-7.1,12.4c-27.3-15.8-62.3-6.4-78.1,20.9l-73.7,127.8c-2.6,4.5-1.1,10.4,3.5,13l148.5,85.7c4.5,2.6,10.4,1.1,13-3.5l73.8-127.8c15.8-27.3,6.4-62.3-20.9-78.1h-.1ZM258.2,43.2l28.9,16.7,7.1,4.1-20.5,21.2-33.9-19.6-17.4-10,8.1-28.3,27.7,16h0ZM201.4,65.4c-2.3-1.3-3.1-4.2-1.7-6.5s4.2-3.1,6.5-1.7l5,2.9,64.2,37.1,5,2.9c2.3,1.3,3.1,4.2,1.7,6.5s-4.2,3.1-6.5,1.7l-4.1-2.4-66-38.1-4.1-2.4h0ZM198.5,327.7h0L50,242l73.8-127.8c13.1-22.7,42.3-30.6,65-17.4l8.2,4.8,11.9-20.6,49.5,28.6-11.9,20.6,8.2,4.8c22.7,13.1,30.6,42.3,17.4,65l-73.8,127.8h.2Z"/>
+        <path class="cls-2" d="M136.9,110.6l103.1,59.5-4.8,8.2-103.1-59.5s4.8-8.2,4.8-8.2ZM252.3,177.3l16.5,9.5-4.8,8.2-16.5-9.5,4.8-8.2Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -5,14 +5,15 @@
 #include "AssetTypeCategories.h"
 #include "Logging/LogMacros.h"
 
-class FAssetTypeActions_TeamDisplayAsset;
-class FAssetTypeActions_TeamCreationComponent;
 class FAssetTypeActions_ActionSet;
 class FAssetTypeActions_CrashAbilitySet;
 class FAssetTypeActions_CrashCameraMode;
 class FAssetTypeActions_GameModeData;
 class FAssetTypeActions_InputActionMapping;
+class FAssetTypeActions_InventoryItemDefinition;
 class FAssetTypeActions_PawnData;
+class FAssetTypeActions_TeamCreationComponent;
+class FAssetTypeActions_TeamDisplayAsset;
 class FAssetTypeActions_UserFacingGameModeData;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogProjectCrashEditor, Log, All);
@@ -42,10 +43,12 @@ protected:
 public:
 
 	EAssetTypeCategories::Type GetGameDataAssetCategory() const { return GameDataAssetCategory; }
+	EAssetTypeCategories::Type GetInventoryAssetCategory() const { return InventoryAssetCategory; }
 
 protected:
 
 	EAssetTypeCategories::Type GameDataAssetCategory = EAssetTypeCategories::None;
+	EAssetTypeCategories::Type InventoryAssetCategory = EAssetTypeCategories::None;
 
 
 
@@ -58,6 +61,7 @@ protected:
 	TSharedPtr<FAssetTypeActions_CrashAbilitySet> AssetType_CrashAbilitySet;
 	TSharedPtr<FAssetTypeActions_GameModeData> AssetType_GameModeData;
 	TSharedPtr<FAssetTypeActions_InputActionMapping> AssetType_InputActionMapping;
+	TSharedPtr<FAssetTypeActions_InventoryItemDefinition> AssetType_InventoryItemDefinition;
 	TSharedPtr<FAssetTypeActions_PawnData> AssetType_PawnData;
 	TSharedPtr<FAssetTypeActions_TeamCreationComponent> AssetType_TeamCreationComponent;
 	TSharedPtr<FAssetTypeActions_TeamDisplayAsset> AssetType_TeamDisplayAsset;

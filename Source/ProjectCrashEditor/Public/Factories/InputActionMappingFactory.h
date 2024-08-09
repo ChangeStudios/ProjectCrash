@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "InputActionMappingFactory.generated.h"
 
 /**
  * UCrashInputActionMapping factory.
  */
-UCLASS()
-class PROJECTCRASHEDITOR_API UInputActionMappingFactory : public UFactory
+UCLASS(MinimalAPI)
+class UInputActionMappingFactory : public UFactory
 {
 	GENERATED_BODY()
 

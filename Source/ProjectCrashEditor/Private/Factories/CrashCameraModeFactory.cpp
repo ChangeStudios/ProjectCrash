@@ -96,11 +96,11 @@ bool UCrashCameraModeFactory::ConfigureProperties()
 	return bPressedOk;
 }
 
-UObject* UCrashCameraModeFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+UObject* UCrashCameraModeFactory::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
 	if (CameraClass)
 	{
-		return FKismetEditorUtilities::CreateBlueprint(CameraClass, InParent, Name, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext);
+		return FKismetEditorUtilities::CreateBlueprint(CameraClass, InParent, InName, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext);
 	}
 
 	return nullptr;

@@ -11,6 +11,7 @@
 #include "AssetTypes/AssetTypeActions_InputActionMapping.h"
 #include "AssetTypes/AssetTypeActions_PawnData.h"
 #include "AssetTypes/AssetTypeActions_Teams.h"
+#include "AssetTypes/FAssetTypeActions_InventoryItemDefinition.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
@@ -55,6 +56,7 @@ void FProjectCrashEditorModule::StartupModule()
 	// Register asset categories.
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	GameDataAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("GameData")), LOCTEXT("GameDataAssetCategory", "Game Data"));
+	InventoryAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("Inventory")), LOCTEXT("InventoryAssetCategory", "Inventory"));
 
 
 	// Register asset types.
@@ -72,6 +74,9 @@ void FProjectCrashEditorModule::StartupModule()
 
 	AssetType_InputActionMapping = MakeShared<FAssetTypeActions_InputActionMapping>();
 	AssetTools.RegisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
+
+	AssetType_InventoryItemDefinition = MakeShared<FAssetTypeActions_InventoryItemDefinition>();
+	AssetTools.RegisterAssetTypeActions(AssetType_InventoryItemDefinition.ToSharedRef());
 
 	AssetType_PawnData = MakeShared<FAssetTypeActions_PawnData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
@@ -109,6 +114,7 @@ void FProjectCrashEditorModule::StartupModule()
 		{"GameplayCueNotify_Actor", "GameplayCue"},
 		{"GameplayCueNotify_Static", "GameplayCue"},
 		{"GameplayEffect", "GameplayEffect"},
+		{"InventoryItemDefinition", "InventoryItemDefinition"},
 		{"PawnData", "PawnData"},
 		{"TeamCreationComponent", "TeamCreationComponent"},
 		{"TeamDisplayAsset", "TeamDisplayAsset"},
@@ -164,6 +170,7 @@ void FProjectCrashEditorModule::ShutdownModule()
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_InventoryItemDefinition.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_PawnData.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_TeamCreationComponent.ToSharedRef());

@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "CrashAbilitySetFactory.generated.h"
 
 /**
  * UCrashAbilitySet factory.
  */
-UCLASS()
-class PROJECTCRASHEDITOR_API UCrashAbilitySetFactory : public UFactory
+UCLASS(MinimalAPI)
+class UCrashAbilitySetFactory : public UFactory
 {
 	GENERATED_BODY()
 

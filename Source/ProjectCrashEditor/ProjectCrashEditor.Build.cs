@@ -34,6 +34,7 @@ public class ProjectCrashEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"AssetTools",
+				"Kismet",
 				"InputEditor",
 				"Slate",
 				"SlateCore",
