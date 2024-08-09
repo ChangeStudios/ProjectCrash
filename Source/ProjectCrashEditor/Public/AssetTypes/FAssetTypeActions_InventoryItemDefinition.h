@@ -4,8 +4,6 @@
 
 #include "AssetTypeActions/AssetTypeActions_Blueprint.h"
 
-class UFactory;
-
 /**
  * UInventoryItemDefinition asset type.
  */

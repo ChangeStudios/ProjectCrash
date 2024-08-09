@@ -2,14 +2,12 @@
 
 
 #include "Editors/InventoryItemDefinitionEditor.h"
-#include "EditorReimportHandler.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
 #endif
 
 #include "Inventory/InventoryItemDefinitionBlueprint.h"
-#include "Kismet2/BlueprintEditorUtils.h"
 
 #define LOCTEXT_NAMESPACE "FInventoryItemDefinitionEditor"
 

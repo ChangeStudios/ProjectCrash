@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Engine/Blueprint.h"
-#include "InventoryItemDefinitionBlueprint.generated.h"
+#include "CrashCameraModeBlueprint.generated.h"
 
 /**
- * A specialized blueprint specifically for inventory item definitions.
+ * A specialized blueprint specifically for camera modes.
  */
 UCLASS(BlueprintType)
-class PROJECTCRASH_API UInventoryItemDefinitionBlueprint : public UBlueprint
+class PROJECTCRASH_API UCrashCameraModeBlueprint : public UBlueprint
 {
 	GENERATED_BODY()
 
-	UInventoryItemDefinitionBlueprint(const FObjectInitializer& ObjectInitializer);
+	UCrashCameraModeBlueprint(const FObjectInitializer& ObjectInitializer);
 
 #if WITH_EDITOR
 
