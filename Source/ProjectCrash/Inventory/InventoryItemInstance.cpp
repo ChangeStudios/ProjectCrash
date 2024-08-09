@@ -16,7 +16,7 @@ UInventoryItemInstance::UInventoryItemInstance() :
 {
 }
 
-void UInventoryItemInstance::Init(UObject* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition)
+void UInventoryItemInstance::Init(AActor* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition)
 {
 	check(InOwner);
 	// Item definition should only be set once.

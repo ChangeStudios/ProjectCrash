@@ -55,7 +55,7 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 		if (Handle.IsValid())
 		{
 			// Remove the ability.
-			AbilitySystemToRemoveFrom->ClearAbility(Handle);
+			AbilitySystemToRemoveFrom->SetRemoveAbilityOnEnd(Handle);
 		}
 	}
 

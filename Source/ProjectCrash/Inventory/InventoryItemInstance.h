@@ -10,9 +10,7 @@
 class FGameplayDebuggerCategory_Inventory;
 class UInventoryComponent;
 class UInventoryItemDefinition;
-
-class FLifetimeProperty;
-struct FFrame;
+class UItemTrait_AddAbilities;
 
 /**
  * Represents an instance of an item that exists in the game. Item instances are
@@ -38,7 +36,7 @@ public:
 public:
 
 	/** Initializes this object with the given owner and item definition. Initializes each of this item's traits. */
-	void Init(UObject* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition);
+	void Init(AActor* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition);
 
 	/** Uninitializes each of this item's traits. */
 	virtual void BeginDestroy() override;
@@ -66,17 +64,17 @@ private:
 public:
 
 	/** Returns this item's current owner. */
-	UObject* GetOwner() const { return Owner; }
+	AActor* GetOwner() const { return Owner; }
 
 	/** Sets this inventory item's current owner. */
-	void SetOwner(UObject* InOwner) { Owner = InOwner; }
+	void SetOwner(AActor* InOwner) { Owner = InOwner; }
 
 private:
 
 	/** The current owner of this item. When in an inventory, this is the owning actor of the inventory component
 	 * (usually a player state or a pawn). When in an item pick-up actor, this is that actor. */
 	UPROPERTY(Replicated)
-	UObject* Owner;
+	AActor* Owner;
 
 
 
@@ -146,15 +144,20 @@ private:
 
 private:
 
-	// friend ItemTrait_AbilitySystem
+	friend UItemTrait_AddAbilities;
 
 	/**
-	 * Handles to any ability sets currently granted to this item's outer object by the item. These sets were granted
-	 * when this item was added to the inventory, and will be removed when the item is removed. Only populated on the
-	 * server.
+	 * Handles to any abilities, effects, and attribute sets currently granted to this item's owner by the item. These
+	 * were granted when this item was added to the inventory, and will be removed when the item is removed. Only
+	 * populated on the server.
 	 *
-	 * This is contained in the item instance rather than the ability system trait because traits cannot hold runtime
-	 * data. This is a known limitation of the current inventory system.
+	 * This is contained in the item instance rather than the AddAbilities trait because traits cannot hold runtime
+	 * data. This is a known limitation of the inventory system for performance purposes.
 	 */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedAbilitySets;
+	struct FItemAbilityHandles
+	{
+		TArray<FGameplayAbilitySpecHandle> Abilities;
+		TArray<FActiveGameplayEffectHandle> Effects;
+		TArray<UAttributeSet*> AttributeSets;
+	} GrantedItemAbilities;
 };
