@@ -3,8 +3,8 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "Engine/DataAsset.h"
-#include "EquipmentDefinition.generated.h"
+
+#include "EquipmentDefinition_DEP.generated.h"
 
 class UCrashAbilitySet;
 class UEquipmentInstance;
@@ -21,8 +21,8 @@ class UEquipmentSkinData;
  * instance. The EquipmentInstance class should be subclassed to add additional equipment-specific runtime OR static
  * data.
  */
-UCLASS(BlueprintType, Const)
-class PROJECTCRASH_API UEquipmentDefinition : public UDataAsset
+UCLASS(Abstract, Blueprintable, BlueprintType, Const)
+class PROJECTCRASH_API UEquipmentDefinition_DEP : public UObject
 {
 	GENERATED_BODY()
 
@@ -31,7 +31,7 @@ class PROJECTCRASH_API UEquipmentDefinition : public UDataAsset
 public:
 
 	/** Default constructor. */
-	UEquipmentDefinition();
+	UEquipmentDefinition_DEP();
 
 
 

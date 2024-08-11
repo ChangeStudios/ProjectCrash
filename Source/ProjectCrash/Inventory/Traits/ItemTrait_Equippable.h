@@ -28,7 +28,7 @@ protected:
 
 	/** This item's static equipment data. Defines the equipment's appearance, runtime data class, etc. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
-	TSubclassOf<UEquipmentDefinition> EquipmentDefinition;
+	TObjectPtr<UEquipmentDefinition> EquipmentDefinition;
 
 	/** If true, this item will automatically be equipped when it enters a player's inventory. Useful for intrinsic
 	 * character equipment that should not be manually equipped. */
