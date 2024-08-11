@@ -5,6 +5,7 @@
 #include "InventoryItemDefinition.generated.h"
 
 class UInventoryItemTraitBase;
+
 /**
  * Defines an item's behavior when its owner dies or is destroyed. By default, items are destroyed when their owner
  * dies.
