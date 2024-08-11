@@ -171,7 +171,7 @@ public:
 
 	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer (NoTeam ->
 	 * INDEX_NONE). */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
+	UFUNCTION(BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
 	int32 GetTeamId() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
 
 private:

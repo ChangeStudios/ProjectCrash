@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquipmentComponent.h"
+#include "EquipmentComponent_DEP.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "EquipmentPieceActor.generated.h"
 
 struct FEquipmentPiece;
-class UEquipmentComponent;
+class UEquipmentComponent_DEP;
 
 /**
  * Visually represents a single piece of an equipment set (a sword, a shield, a gun, etc.). Contains a single mesh
@@ -35,10 +35,10 @@ public:
 private:
 
 	/* Initializes this equipment piece actor to represent the given equipment piece in the given perspective. */
-	void InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective);
+	void InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent_DEP* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective);
 
 	// Equipment component is the only thing that should ever call InitEquipmentPieceActor.
-	friend UEquipmentComponent;
+	friend UEquipmentComponent_DEP;
 
 
 
@@ -61,7 +61,7 @@ private:
 
 	/** The equipment component through which the owning actor equipped this piece's equipment set. */
 	UPROPERTY()
-	TObjectPtr<UEquipmentComponent> OwningEquipmentComponent;
+	TObjectPtr<UEquipmentComponent_DEP> OwningEquipmentComponent;
 
 	/** The perspective in which this actor represents its equipment piece. Each piece spawns both a first- and a
 	 * third-person actor. */

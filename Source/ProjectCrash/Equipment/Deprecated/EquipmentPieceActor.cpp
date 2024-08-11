@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Equipment/EquipmentPieceActor.h"
+#include "Equipment/Deprecated/EquipmentPieceActor.h"
 
 #include "AbilitySystemGlobals.h"
 #include "CrashGameplayTags.h"
@@ -10,8 +10,7 @@
 
 AEquipmentPieceActor::AEquipmentPieceActor() :
 	EquipmentPiece(nullptr),
-	OwningEquipmentComponent(nullptr),
-	Perspective(THIRD_PERSON)
+	OwningEquipmentComponent(nullptr)
 {
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(FName("MeshComp"));
 	SetRootComponent(MeshComponent);
@@ -20,11 +19,11 @@ AEquipmentPieceActor::AEquipmentPieceActor() :
 	MeshComponent->CastShadow = false;
 }
 
-void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective)
+void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEquipmentPiece, UEquipmentComponent_DEP* InOwningEquipmentComponent, FGameplayTag InEquipmentPerspective)
 {
     // Validate given properties.
     check(InEquipmentPiece);
-    check(InEquipmentPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
+    // check(InEquipmentPerspective.GetGameplayTagParents().HasTagExact(CrashGameplayTags::TAG_State_Perspective));
 
     // Cache given properties.
     EquipmentPiece = InEquipmentPiece;
@@ -42,13 +41,13 @@ void AEquipmentPieceActor::InitEquipmentPieceActor(const FEquipmentPiece* InEqui
 	// Update this equipment piece's mesh and visibility.
 	MeshComponent->SetSkeletalMesh(EquipmentPiece->Mesh);
 	// OnPerspectiveChanged(CrashChar ? CrashChar->GetCurrentPerspective() : THIRD_PERSON);
-	MeshComponent->CastShadow = Perspective == THIRD_PERSON; // Only third-person equipment casts shadows.
+	// MeshComponent->CastShadow = Perspective == THIRD_PERSON; // Only third-person equipment casts shadows.
 
 	// Enable/disable first-person depth rendering.
 	for (int MatIndex = 0; MatIndex < MeshComponent->GetNumMaterials(); MatIndex++)
 	{
 		UMaterialInstanceDynamic* DynamicMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, MeshComponent->GetMaterial(MatIndex));
-		DynamicMat->SetScalarParameterValue("FirstPerson", Perspective == FIRST_PERSON ? 1.0f : 0.0f);
+		// DynamicMat->SetScalarParameterValue("FirstPerson", Perspective == FIRST_PERSON ? 1.0f : 0.0f);
 		MeshComponent->SetMaterial(MatIndex, DynamicMat);
 	}
 }

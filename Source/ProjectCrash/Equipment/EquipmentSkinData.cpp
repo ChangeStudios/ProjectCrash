@@ -1,5 +1,8 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Equipment/EquipmentComponent.h"
+#include "Equipment/EquipmentSkinData.h"
+
+
+
 

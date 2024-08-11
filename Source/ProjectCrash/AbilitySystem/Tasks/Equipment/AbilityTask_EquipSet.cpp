@@ -4,7 +4,7 @@
 #include "AbilitySystem/Tasks/Equipment/AbilityTask_EquipSet.h"
 
 #include "AbilitySystemComponent.h"
-#include "Equipment/EquipmentComponent.h"
+#include "Equipment/Deprecated/EquipmentComponent_DEP.h"
 #include "GameFramework/CrashLogging.h"
 
 
@@ -46,7 +46,7 @@ void UAbilityTask_EquipSet::Activate()
 	Super::Activate();
 
 	const bool bAuthority = IsServerTask();
-	EquipmentComponent = UEquipmentComponent::FindEquipmentComponent(Ability->GetAvatarActorFromActorInfo());
+	EquipmentComponent = UEquipmentComponent_DEP::FindEquipmentComponent(Ability->GetAvatarActorFromActorInfo());
 	if (!EquipmentComponent)
 	{
 		EQUIPMENT_LOG(Error, TEXT("Attempted to activate AbilityTask_EquipSet, but the ability's avatar [%s] does not have an equipment component!"), *GetNameSafe(Ability->GetAvatarActorFromActorInfo()));

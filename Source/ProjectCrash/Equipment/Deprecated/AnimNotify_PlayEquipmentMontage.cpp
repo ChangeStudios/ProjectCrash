@@ -3,7 +3,7 @@
 
 #include "AnimNotify_PlayEquipmentMontage.h"
 
-#include "Equipment/EquipmentComponent.h"
+#include "Equipment/Deprecated/EquipmentComponent_DEP.h"
 #include "GameFramework/CrashLogging.h"
 
 
@@ -47,7 +47,7 @@ void UAnimNotify_PlayEquipmentMontage::Notify(USkeletalMeshComponent* MeshComp, 
 	}
 
 	// Try to find equipment component on the owner of this notify.
-	UEquipmentComponent* EquipmentComp = UEquipmentComponent::FindEquipmentComponent(MeshComp->GetOwner());
+	UEquipmentComponent_DEP* EquipmentComp = UEquipmentComponent_DEP::FindEquipmentComponent(MeshComp->GetOwner());
 
 	// If an equipment component can't be found, we can't play the equipment montage.
 	if (!EquipmentComp)

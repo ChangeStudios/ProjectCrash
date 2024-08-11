@@ -61,7 +61,7 @@ public:
 	void InterpolateToProgressValue(const float TargetValue, float MaximumInterpolationDuration = 3.0f, float MinimumChangeRate = 1.0f, float OutroOffset = 0.0f);
 
 	/** Whether this widget is currently interpolating its progress value. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Progress Bar Interpolation")
+	UFUNCTION(BlueprintPure, Category = "Progress Bar Interpolation")
 	bool IsInterpolating() const;
 
 // Internals.

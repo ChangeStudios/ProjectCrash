@@ -83,7 +83,7 @@ private:
 public:
 
 	/** Getter for the item of which this object is an instance. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	TSubclassOf<UInventoryItemDefinition> GetItemDefinition() const { return ItemDefinition; }
 
 private:
@@ -125,11 +125,11 @@ public:
 	void RemoveStatTags(FGameplayTag Tag, int32 Count);
 
 	/** Returns how many of the specified tag this item has. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	int32 GetStatTagCount(FGameplayTag Tag) const;
 
 	/** Returns whether this item has at least one of the specified tag. Tag must match exactly. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	bool HasStatTag(FGameplayTag Tag) const;
 
 private:

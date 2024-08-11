@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "Equipment/EquipmentSetDefinition.h"
+#include "Equipment/Deprecated/EquipmentSetDefinition.h"
 #include "AbilityTask_EquipSet.generated.h"
 
-class UEquipmentComponent;
+class UEquipmentComponent_DEP;
 
 /**
  * Predictively equips a given equipment set through the owner's equipment component.
@@ -77,7 +77,7 @@ private:
 
 	/** The equipment component temporarily equipping the set. Cached for convenience. */
 	UPROPERTY()
-	UEquipmentComponent* EquipmentComponent;
+	UEquipmentComponent_DEP* EquipmentComponent;
 
 	/**
 	 * If this task's outer ability fails, we revert our predictive equip.

@@ -60,7 +60,7 @@ public:
 public:
 
 	/** Returns whether the given item could be added to this inventory. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, DisplayName = "Can Add Item?", Category = "Inventory")
+	UFUNCTION(BlueprintPure, DisplayName = "Can Add Item?", Category = "Inventory")
 	bool CanAddItem
 	(
 		UPARAM(DisplayName = "Item To Add")
@@ -115,10 +115,10 @@ private:
 public:
 
 	/** Retrieves a list of all items currently in this inventory. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	TArray<UInventoryItemInstance*> GetAllItems() const;
 
 	/** Returns the first instance of the given item in this inventory. Returns null if none can be found. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	UFUNCTION(BlueprintPure, Category = "Inventory")
 	UInventoryItemInstance* FindFirstItemByDefinition(TSubclassOf<UInventoryItemDefinition> ItemToFind) const;
 };
