@@ -186,13 +186,13 @@ protected:
 // Internals.
 public:
 
-	/** Called when this ability is given to an ASC. Fires the associated blueprint event. */
+	/** Called when this ability is given to an ASC. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Called when this ability is removed from an ASC. Fires the associated blueprint event. */
+	/** Called when this ability is removed from an ASC. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Called when a valid new avatar is set for this ability's owning ASC. Fires the associated blueprint event. */
+	/** Called when a valid new avatar is set for this ability's owning ASC. */
 	virtual void OnNewAvatarSet();
 
 	/** Do not use; Use OnNewAvatarSet instead. OnNewAvatarSet is called for instanced abilities (OnAvatarSet is not)
@@ -202,16 +202,16 @@ public:
 // Blueprint-exposed event callbacks.
 protected:
 
-	/** Called when this ability is given to an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Give Ability")
+	/** Blueprint-implementable version of OnGiveAbility. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Give Ability", Meta = (ToolTip = "Called when this ability is given to an ASC."))
 	void K2_OnGiveAbility();
 
-	/** Called when this ability is removed from an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability")
+	/** Blueprint-implementable version of OnRemoveAbility. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability", Meta = (ToolTip = "Called when this ability is removed from an ASC."))
 	void K2_OnRemoveAbility();
 
-	/** Called when a valid new avatar is set for this ability's owning ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On New Avatar Set")
+	/** Blueprint-implementable version of OnAvatarSet. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On New Avatar Set", Meta = (ToolTip = "Called when a valid new avatar is set for this ability's owning ASC."))
 	void K2_OnNewAvatarSet();
 
 
