@@ -34,7 +34,7 @@ void UEquipmentInstance::OnUnequipped()
 {
 }
 
-void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentActorSpawnData>& ActorsToSpawn, bool bSpawnInFirstPerson)
+void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorData>& ActorsToSpawn, bool bSpawnInFirstPerson)
 {
 }
 

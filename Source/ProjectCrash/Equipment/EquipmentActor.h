@@ -21,9 +21,4 @@ class PROJECTCRASH_API AEquipmentActor : public AActor
 
 	/** Whether this is the first-peron or third-person actor for the equipment piece it represents. */
 	bool bFirstPerson = false;
-
-	// /** Skin-specific animations which will be played on this equipment actor (NOT the owning character). Gameplay tags
-	//  * are used to retrieve the skin-specific animation that should be used for each animation. */
-	// UPROPERTY(EditDefaultsOnly, Meta = (Categories = "SkinProperty"))
-	// TMap<FGameplayTag, TObjectPtr<UAnimMontage>> EquipmentAnimations; 
 };

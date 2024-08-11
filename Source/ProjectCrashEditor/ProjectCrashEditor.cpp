@@ -7,11 +7,13 @@
 #include "AssetTypes/AssetTypeActions_ActionSet.h"
 #include "AssetTypes/AssetTypeActions_CrashAbilitySet.h"
 #include "AssetTypes/AssetTypeActions_CrashCameraMode.h"
+#include "AssetTypes/AssetTypeActions_EquipmentDefinition.h"
+#include "AssetTypes/AssetTypeActions_EquipmentSkin.h"
 #include "AssetTypes/AssetTypeActions_GameModeData.h"
 #include "AssetTypes/AssetTypeActions_InputActionMapping.h"
 #include "AssetTypes/AssetTypeActions_PawnData.h"
 #include "AssetTypes/AssetTypeActions_Teams.h"
-#include "AssetTypes/FAssetTypeActions_InventoryItemDefinition.h"
+#include "AssetTypes/AssetTypeActions_InventoryItemDefinition.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
@@ -57,6 +59,7 @@ void FProjectCrashEditorModule::StartupModule()
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 	GameDataAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("GameData")), LOCTEXT("GameDataAssetCategory", "Game Data"));
 	InventoryAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("Inventory")), LOCTEXT("InventoryAssetCategory", "Inventory"));
+	SkinAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("Skins")), LOCTEXT("SkinAssetCategory", "Skins"));
 
 
 	// Register asset types.
@@ -68,6 +71,12 @@ void FProjectCrashEditorModule::StartupModule()
 
 	AssetType_CrashCameraMode = MakeShared<FAssetTypeActions_CrashCameraMode>();
 	AssetTools.RegisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
+
+	AssetType_EquipmentDefinition = MakeShared<FAssetTypeActions_EquipmentDefinition>();
+	AssetTools.RegisterAssetTypeActions(AssetType_EquipmentDefinition.ToSharedRef());
+
+	AssetType_EquipmentSkin = MakeShared<FAssetTypeActions_EquipmentSkin>();
+	AssetTools.RegisterAssetTypeActions(AssetType_EquipmentSkin.ToSharedRef());
 
 	AssetType_GameModeData = MakeShared<FAssetTypeActions_GameModeData>();
 	AssetTools.RegisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());
@@ -106,6 +115,8 @@ void FProjectCrashEditorModule::StartupModule()
 		{"CrashGameModeData", "CrashGameModeData"},
 		{"CrashGameplayAbilityBase", "CrashGameplayAbilityBase"},
 		{"CrashInputActionMapping", "InputActionMapping"},
+		{"EquipmentDefinition", "EquipmentDefinition"},
+		{"EquipmentSkin", "EquipmentSkin"},
 		{"GameFeatureAction_AddAbilities", "CrashGameplayAbilityBase"},
 		{"GameFeatureAction_AddComponents", "ActorComponent"},
 		{"GameFeatureAction_AddInputActionMapping", "InputActionMapping"},
@@ -171,6 +182,8 @@ void FProjectCrashEditorModule::ShutdownModule()
 	AssetTools.UnregisterAssetTypeActions(AssetType_ActionSet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashAbilitySet.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_CrashCameraMode.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_EquipmentDefinition.ToSharedRef());
+	AssetTools.UnregisterAssetTypeActions(AssetType_EquipmentSkin.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_InputActionMapping.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_InventoryItemDefinition.ToSharedRef());
 	AssetTools.UnregisterAssetTypeActions(AssetType_GameModeData.ToSharedRef());

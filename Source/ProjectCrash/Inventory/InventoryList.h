@@ -40,7 +40,7 @@ struct FInventoryChangeMessage
 
 	/** The type of change that occurred. */
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
-	EInventoryChangeType ChangeType;
+	EInventoryChangeType ChangeType = EInventoryChangeType::ItemAdded;
 };
 
 

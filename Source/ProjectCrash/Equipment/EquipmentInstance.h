@@ -5,7 +5,7 @@
 #include "EquipmentInstance.generated.h"
 
 class AEquipmentActor;
-struct FEquipmentActorSpawnData;
+struct FEquipmentSkinActorData;
 
 /**
  * A piece or set of equipment that is currently equipped. This is the tangible representation of equipment in the
@@ -100,7 +100,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	TArray<AEquipmentActor*> GetSpawnedActors() const { return SpawnedActors; }
 
-	void SpawnEquipmentActors(const TArray<FEquipmentActorSpawnData>& ActorsToSpawn, bool bSpawnInFirstPerson);
+	void SpawnEquipmentActors(const TArray<FEquipmentSkinActorData>& ActorsToSpawn, bool bSpawnInFirstPerson);
 
 	void DestroyEquipmentActors();
 

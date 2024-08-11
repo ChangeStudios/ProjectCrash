@@ -8,7 +8,7 @@
 
 class UCrashAbilitySet;
 class UEquipmentInstance;
-class UEquipmentSkinData;
+class UEquipmentSkin;
 
 /**
  * Defines a piece (e.g. a gun) or a set (e.g. a sword and shield) of equipment and its static properties.
@@ -59,7 +59,7 @@ public:
 	/** This equipment's default skin data. Used when the equipping player does not have a skin for this equipment, or
 	 * for equipment that does not support skins. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Skins")
-	TObjectPtr<UEquipmentSkinData> DefaultEquipmentSkin;
+	TObjectPtr<UEquipmentSkin> DefaultEquipmentSkin;
 
 	/**
 	 * The ID for this equipment's skin data. When this equipment is equipped, this ID will be used to retrieve the
@@ -69,18 +69,4 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Skins", Meta = (Categories = "SkinID.Equipment"))
 	FGameplayTag EquipmentSkinID;
-
-
-
-	// Animation.
-
-public:
-
-	/** The animation blueprint to use for first-person meshes while this equipment is equipped. */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Animation", DisplayName = "First-Person Animation Blueprint")
-	TSubclassOf<UAnimInstance> FirstPersonAnimInstance;
-
-	/** The animation blueprint to use for third-person meshes while this equipment is equipped. */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Animation", DisplayName = "Third-Person Animation Blueprint")
-	TSubclassOf<UAnimInstance> ThirdPersonAnimInstance;
 };
