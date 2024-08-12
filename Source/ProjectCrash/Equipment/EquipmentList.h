@@ -6,6 +6,7 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "EquipmentList.generated.h"
 
+class FGameplayDebuggerCategory_Equipment;
 class UEquipmentComponent;
 class UEquipmentDefinition;
 class UEquipmentInstance;
@@ -20,6 +21,9 @@ struct FEquipmentListEntry : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	friend FEquipmentList;
+#if WITH_GAMEPLAY_DEBUGGER
+	friend FGameplayDebuggerCategory_Equipment;
+#endif // WITH_GAMEPLAY_DEBUGGER
 	friend UEquipmentComponent;
 
 public:
@@ -56,6 +60,9 @@ struct FEquipmentList : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
+#if WITH_GAMEPLAY_DEBUGGER
+	friend FGameplayDebuggerCategory_Equipment;
+#endif // WITH_GAMEPLAY_DEBUGGER
 	friend UEquipmentComponent;
 
 	// Construction.

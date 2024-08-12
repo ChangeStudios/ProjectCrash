@@ -24,6 +24,7 @@
 #endif // WITH_GAMEPLAY_DEBUGGER_CORE
 
 #if WITH_GAMEPLAY_DEBUGGER
+#include "Equipment/GameplayDebuggerCategory_Equipment.h"
 #include "Inventory/GameplayDebuggerCategory_Inventory.h"
 #endif // WITH_GAMEPLAY_DEBUGGER
 
@@ -158,6 +159,7 @@ void FProjectCrashEditorModule::StartupModule()
 #if WITH_GAMEPLAY_DEBUGGER
 	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
 	GameplayDebuggerModule.RegisterCategory("Inventory", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Inventory::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
+	GameplayDebuggerModule.RegisterCategory("Equipment", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Equipment::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
 	GameplayDebuggerModule.NotifyCategoriesChanged();
 #endif // WITH_GAMEPLAY_DEBUGGER
 }

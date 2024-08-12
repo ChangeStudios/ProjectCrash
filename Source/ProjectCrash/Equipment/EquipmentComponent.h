@@ -20,6 +20,10 @@ class PROJECTCRASH_API UEquipmentComponent : public UPawnComponent
 {
 	GENERATED_BODY()
 
+#if WITH_GAMEPLAY_DEBUGGER
+	friend FGameplayDebuggerCategory_Equipment;
+#endif // WITH_GAMEPLAY_DEBUGGER
+
 	// Construction.
 
 public:
