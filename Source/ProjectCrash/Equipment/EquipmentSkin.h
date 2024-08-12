@@ -67,4 +67,17 @@ public:
 	/** The animation blueprint to use for third-person meshes while this equipment is equipped with this skin. */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation", DisplayName = "Third-Person Animation Blueprint")
 	TSubclassOf<UAnimInstance> ThirdPersonAnimInstance;
+
+
+
+	// Validation.
+
+public:
+
+#if WITH_EDITOR
+
+	/** Ensures no actor info entries have a null class. */
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
+#endif // WITH_EDITOR
 };
