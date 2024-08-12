@@ -9,7 +9,8 @@
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #include "Net/UnrealNetwork.h"
 
-UEquipmentInstance::UEquipmentInstance()
+UEquipmentInstance::UEquipmentInstance() :
+	Instigator(nullptr)
 {
 }
 
