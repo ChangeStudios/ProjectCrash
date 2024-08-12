@@ -151,7 +151,7 @@ private:
 	UPROPERTY()
 	TArray<FInventoryListEntry> Entries;
 
-	/** The actor component to which this inventory belongs. Usually of type InventoryComponent. */
+	/** The actor component to which this inventory belongs. Should be of type InventoryComponent. */
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwningComponent;
 

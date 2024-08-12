@@ -149,7 +149,7 @@ private:
 	/**
 	 * Handles to any abilities, effects, and attribute sets currently granted to this item's owner by the item. These
 	 * were granted when this item was added to the inventory, and will be removed when the item is removed. Only
-	 * populated on the server.
+	 * populated on authority.
 	 *
 	 * This is contained in the item instance rather than the AddAbilities trait because traits cannot hold runtime
 	 * data. This is a known limitation of the inventory system for performance purposes.

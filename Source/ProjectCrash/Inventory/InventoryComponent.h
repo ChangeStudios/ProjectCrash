@@ -11,10 +11,6 @@ class UInventoryItemInstance;
 
 /**
  * Provides the owning actor with an inventory of items which can be accessed and managed via this component.
- *
- * NOTE: This is a minimal inventory system made to support the needs of this game. If, for whatever reason, a more
- * robust system is required in the future, refer to the framework of System A in the following document:
- *		https://docs.google.com/document/d/1PuXHOFz8QyMReMhMQXe9fVUE5YIxTZyss93cJshK3Qo/edit?usp=sharing
  */
 UCLASS(BlueprintType)
 class PROJECTCRASH_API UInventoryComponent : public UActorComponent
@@ -27,6 +23,14 @@ public:
 
 	/** Default constructor. */
 	UInventoryComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+
+
+	// Initialization.
+
+public:
+
+	// TODO: UninitializeComponent should activate destruction logic for all inventory items.
 
 
 

@@ -6,6 +6,7 @@
 #include "InventoryItemDefinition.h"
 #include "InventoryItemInstance.h"
 #include "Engine/ActorChannel.h"
+#include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 
 UInventoryComponent::UInventoryComponent(const FObjectInitializer& ObjectInitializer) :
@@ -75,31 +76,49 @@ UInventoryItemInstance* UInventoryComponent::AddItemByDefinition(TSubclassOf<UIn
 			AddReplicatedSubObject(NewItem);
 		}
 	}
+	else
+	{
+		INVENTORY_LOG(Error, TEXT("Attempted to add an item without a valid definition to inventory owned by [%s]."), *GetNameSafe(GetOwner()));
+	}
 
 	return NewItem;
 }
 
 void UInventoryComponent::AddItemByInstance(UInventoryItemInstance* ItemInstance)
 {
-	// Add the item instance to the inventory.
-	InventoryList.AddEntry(ItemInstance);
-
-	// Start replicating the item instance as a sub-object.
-	if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
+	if (ItemInstance != nullptr)
 	{
-		AddReplicatedSubObject(ItemInstance);
+		// Add the item instance to the inventory.
+		InventoryList.AddEntry(ItemInstance);
+
+		// Start replicating the item instance as a sub-object.
+		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication() && ItemInstance)
+		{
+			AddReplicatedSubObject(ItemInstance);
+		}
+	}
+	else
+	{
+		INVENTORY_LOG(Error, TEXT("Attempted to add an invalid item to inventory owned by [%s]."), *GetNameSafe(GetOwner()));
 	}
 }
 
 void UInventoryComponent::RemoveItem(UInventoryItemInstance* ItemInstance)
 {
-	// Remove the item instance from the inventory.
-	InventoryList.RemoveEntry(ItemInstance);
-
-	// Stop replicating the item instance as a sub-object.
-	if (IsUsingRegisteredSubObjectList() && ItemInstance)
+	if (ItemInstance != nullptr)
 	{
-		RemoveReplicatedSubObject(ItemInstance);
+		// Stop replicating the item instance as a sub-object.
+		if (IsUsingRegisteredSubObjectList())
+		{
+			RemoveReplicatedSubObject(ItemInstance);
+		}
+
+		// Remove the item instance from the inventory.
+		InventoryList.RemoveEntry(ItemInstance);
+	}
+	else
+	{
+		INVENTORY_LOG(Error, TEXT("Attempted to remove a null item from inventory owned by [%s]."), *GetNameSafe(GetOwner()));
 	}
 }
 
@@ -128,7 +147,10 @@ UInventoryItemInstance* UInventoryComponent::FindFirstItemByDefinition(TSubclass
 
 		if (IsValid(ItemInstance))
 		{
-			// TODO: if (ItemInstance->GetItemDefinition() == ItemToFind) { return ItemInstance; }
+			if (ItemInstance->GetItemDefinition() == ItemToFind)
+			{
+				return ItemInstance;
+			}
 		}
 	}
 
