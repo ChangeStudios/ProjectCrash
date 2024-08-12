@@ -6,6 +6,7 @@
 #include "Inventory/Traits/InventoryItemTraitBase.h"
 #include "ItemTrait_Equippable.generated.h"
 
+class UEquipmentComponent;
 class UEquipmentDefinition;
 
 /**
@@ -27,11 +28,16 @@ public:
 protected:
 
 	/** This item's static equipment data. Defines the equipment's appearance, runtime data class, etc. */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	TObjectPtr<UEquipmentDefinition> EquipmentDefinition;
 
 	/** If true, this item will automatically be equipped when it enters a player's inventory. Useful for intrinsic
 	 * character equipment that should not be manually equipped. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Always Equip on Pick-Up?")
 	bool bAutoEquip = false;
+
+private:
+
+	/** Helper for finding an equipment component associated with the owner of a given item. */
+	static UEquipmentComponent* FindEquipmentCompFromItem(UInventoryItemInstance* ItemInstance);
 };
