@@ -11,6 +11,7 @@
 #include "Camera/CrashCameraComponent.h"
 #include "Camera/CrashCameraModeBase.h"
 #include "Components/CapsuleComponent.h"
+#include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 
@@ -79,6 +80,10 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Health component.
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+
+	// Equipment component.
+	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 void ACrashCharacter::PossessedBy(AController* NewController)

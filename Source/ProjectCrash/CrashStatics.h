@@ -3,20 +3,13 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "CrashVerbMessageHelpers.generated.h"
-
-struct FCrashVerbMessage;
-struct FGameplayCueParameters;
-
-class APlayerController;
-class APlayerState;
-class UObject;
+#include "CrashStatics.generated.h"
 
 /**
- * Utilities for reading verb messages.
+ * Generic static utilities for this project.
  */
 UCLASS()
-class PROJECTCRASH_API UCrashVerbMessageHelpers : public UBlueprintFunctionLibrary
+class PROJECTCRASH_API UCrashStatics : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

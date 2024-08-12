@@ -125,4 +125,8 @@ public:
 	/** Returns the first instance of the given item in this inventory. Returns null if none can be found. */
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	UInventoryItemInstance* FindFirstItemByDefinition(TSubclassOf<UInventoryItemDefinition> ItemToFind) const;
+
+	/** Retrieves the given actor's inventory component, if it has one. Returns null otherwise. */
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	static UInventoryComponent* FindInventoryComponent(AActor* Actor);
 };

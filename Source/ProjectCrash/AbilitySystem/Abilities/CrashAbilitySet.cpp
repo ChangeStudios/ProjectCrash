@@ -83,6 +83,41 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	AddedAttributeSets.Reset();
 }
 
+#if WITH_EDITOR
+void FCrashAbilitySet_GrantedHandles::GetAbilityDebugInfo(TArray<FString>& DebugInfo) const
+{
+	for (const FGameplayAbilitySpecHandle& Handle : GrantedAbilitySpecHandles)
+	{
+		if (Handle.IsValid())
+		{
+			DebugInfo.Add(Handle.ToString());
+		}
+	}
+}
+
+void FCrashAbilitySet_GrantedHandles::GetEffectDebugInfo(TArray<FString>& DebugInfo) const
+{
+	for (const FActiveGameplayEffectHandle& Handle : AppliedEffectHandles)
+	{
+		if (Handle.IsValid())
+		{
+			DebugInfo.Add(Handle.ToString());
+		}
+	}
+}
+
+void FCrashAbilitySet_GrantedHandles::GetAttributeDebugInfo(TArray<FString>& DebugInfo) const
+{
+	for (UAttributeSet* Set : AddedAttributeSets)
+	{
+		if (Set)
+		{
+			DebugInfo.Add(GetNameSafe(Set->GetClass()));
+		}
+	}
+}
+#endif
+
 
 
 /**

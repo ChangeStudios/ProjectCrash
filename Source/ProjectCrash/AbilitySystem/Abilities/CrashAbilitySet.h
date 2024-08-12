@@ -115,6 +115,20 @@ protected:
 	/** Pointers to the added attribute sets. */
 	UPROPERTY()
 	TArray<TObjectPtr<UAttributeSet>> AddedAttributeSets;
+
+
+
+	// Debugging.
+
+#if WITH_EDITOR
+
+public:
+
+	void GetAbilityDebugInfo(TArray<FString>& DebugInfo) const;
+	void GetEffectDebugInfo(TArray<FString>& DebugInfo) const;
+	void GetAttributeDebugInfo(TArray<FString>& DebugInfo) const;
+
+#endif
 };
 
 

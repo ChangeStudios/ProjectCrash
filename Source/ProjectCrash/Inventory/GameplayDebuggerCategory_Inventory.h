@@ -7,8 +7,6 @@
 #if WITH_GAMEPLAY_DEBUGGER
 #include "GameplayDebuggerCategory.h"
 
-class UInventoryItemInstance;
-
 /**
  * Gameplay debugger category for the inventory system.
  */

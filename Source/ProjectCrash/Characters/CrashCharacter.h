@@ -11,6 +11,7 @@
 
 class UCrashCameraComponent;
 class UCrashAbilitySystemComponent;
+class UEquipmentComponent;
 class UHealthComponent;
 class UPawnExtensionComponent;
 
@@ -140,6 +141,16 @@ private:
 	/** Helper component for routing events from the ability system's health attributes to the character. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crash|Character", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+
+
+	// Equipment.
+
+private:
+
+	/** This character's equipment component, responsible for holding and managing equipment. */
+	UPROPERTY(VisibleAnywhere, Category = "Crash|Character")
+	TObjectPtr<UEquipmentComponent> EquipmentComponent;
 
 
 

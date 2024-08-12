@@ -118,4 +118,8 @@ public:
 	{
 		return (T*)GetFirstEquipmentByType(T::StaticClass());
 	}
+
+	/** Retrieves the given pawn's inventory component, if it has one. Returns null otherwise. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	static UEquipmentComponent* FindEquipmentComponent(const APawn* Pawn) { return Pawn->FindComponentByClass<UEquipmentComponent>(); }
 };

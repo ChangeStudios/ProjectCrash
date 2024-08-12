@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Inventory/GameplayDebuggerCategory_Inventory.h"
+#include "GameplayDebuggerCategory_Inventory.h"
 
 #include "InventoryItemInstance.h"
 

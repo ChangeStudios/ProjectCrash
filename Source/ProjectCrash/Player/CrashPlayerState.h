@@ -142,12 +142,6 @@ private:
 
 	// Inventory.
 
-public:
-
-	/** Returns the component responsible for holding and managing this player's inventory. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|Player State")
-	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-
 private:
 
 	/** This player's persistent inventory component, responsible for holding and managing their inventory. */

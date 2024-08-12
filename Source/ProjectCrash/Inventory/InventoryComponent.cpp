@@ -3,10 +3,12 @@
 
 #include "Inventory/InventoryComponent.h"
 
+#include "CrashStatics.h"
 #include "InventoryItemDefinition.h"
 #include "InventoryItemInstance.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 
 UInventoryComponent::UInventoryComponent(const FObjectInitializer& ObjectInitializer) :
@@ -156,6 +158,25 @@ UInventoryItemInstance* UInventoryComponent::FindFirstItemByDefinition(TSubclass
 
 	// An instance of the specified item was not found in this inventory.
 	return nullptr;
+}
+
+UInventoryComponent* UInventoryComponent::FindInventoryComponent(AActor* Actor)
+{
+	UInventoryComponent* InventoryComp = nullptr;
+
+	// Try to get the actor's inventory from their player state.
+	if (APlayerState* PS = UCrashStatics::GetPlayerStateFromObject(Actor))
+	{
+		InventoryComp = PS->GetComponentByClass<UInventoryComponent>();
+	}
+
+	// Try to get the actor's inventory from their components.
+	if (InventoryComp == nullptr)
+	{
+		InventoryComp = Actor->GetComponentByClass<UInventoryComponent>();
+	}
+
+	return InventoryComp;
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

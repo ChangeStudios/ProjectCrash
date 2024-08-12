@@ -6,12 +6,12 @@
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
+#include "CrashStatics.h"
 #include "AbilitySystem/Abilities/Generic/GA_DeathAbility.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
-#include "GameFramework/Messages/CrashVerbMessageHelpers.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -153,7 +153,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
 			DeathMessage.Instigator = DamageInstigator;
 			DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
-			DeathMessage.Target = UCrashVerbMessageHelpers::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
+			DeathMessage.Target = UCrashStatics::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
 			DeathMessage.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
 
 			// Broadcast the message on the server.

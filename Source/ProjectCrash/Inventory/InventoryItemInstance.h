@@ -7,7 +7,7 @@
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "InventoryItemInstance.generated.h"
 
-class FGameplayDebuggerCategory_Equipment;
+class FGameplayDebuggerCategory_Inventory;
 class UInventoryComponent;
 class UInventoryItemDefinition;
 class UItemTrait_AddAbilities;
@@ -20,7 +20,9 @@ class PROJECTCRASH_API UInventoryItemInstance : public UObject
 {
 	GENERATED_BODY()
 
-	friend FGameplayDebuggerCategory_Equipment;
+#if WITH_GAMEPLAY_DEBUGGER
+	friend FGameplayDebuggerCategory_Inventory;
+#endif // WITH_GAMEPLAY_DEBUGGER
 
 	// Construction.
 
