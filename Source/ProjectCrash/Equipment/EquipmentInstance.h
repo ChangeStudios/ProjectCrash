@@ -137,6 +137,25 @@ public:
 
 
 
+	// Equipment skin.
+
+public:
+
+	/** Returns the skin being used for this equipment instance. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	UEquipmentSkin* GetEquipmentSkin() const { return EquipmentSkin; }
+
+	/** Sets the skin being used for this equipment instance. Should only be called once. */
+	void SetEquipmentSkin(UEquipmentSkin* InEquipmentSkin);
+
+protected:
+
+	/** The skin being used for this equipment instance. */
+	UPROPERTY(Replicated)
+	TObjectPtr<UEquipmentSkin> EquipmentSkin;
+
+
+
 	// Equipment actors.
 
 public:

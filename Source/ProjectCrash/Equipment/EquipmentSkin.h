@@ -36,7 +36,7 @@ struct FEquipmentSkinActorInfo
  * to spawn a visual representation of the equipment, in both first- and third-person.
  *
  * Runtime cosmetic data, such as the animations played on each equipment actor, are defined in the equipment actor
- * class itself. 
+ * class itself.
  */
 UCLASS(BlueprintType, Const)
 class PROJECTCRASH_API UEquipmentSkin : public UDataAsset

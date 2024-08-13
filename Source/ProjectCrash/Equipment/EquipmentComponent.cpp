@@ -19,18 +19,21 @@ UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitial
 
 void UEquipmentComponent::UninitializeComponent()
 {
-	TArray<UEquipmentInstance*> EquipmentInstances;
-
-	// Copy the list of equipment instances, so we don't modify the equipment list.
-	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
+	if (HasAuthority())
 	{
-		EquipmentInstances.Add(Entry.EquipmentInstance);
-	}
+		TArray<UEquipmentInstance*> EquipmentInstances;
 
-	// Unequip all equipment when this component is uninitialized.
-	for (UEquipmentInstance* EquipmentInstance : EquipmentInstances)
-	{
-		UnequipItem(EquipmentInstance);
+		// Copy the list of equipment instances, so we don't modify the equipment list.
+		for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
+		{
+			EquipmentInstances.Add(Entry.EquipmentInstance);
+		}
+
+		// Unequip all equipment when this component is uninitialized.
+		for (UEquipmentInstance* EquipmentInstance : EquipmentInstances)
+		{
+			UnequipItem(EquipmentInstance);
+		}
 	}
 
 	Super::UninitializeComponent();

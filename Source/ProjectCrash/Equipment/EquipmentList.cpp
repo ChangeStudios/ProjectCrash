@@ -66,6 +66,9 @@ UEquipmentInstance* FEquipmentList::AddEntry(UEquipmentDefinition* EquipmentDefi
 
 	checkf(EquipmentSkinToSpawn, TEXT("Tried to equip equipment [%s], but it does not have a default equipment skin."), *GetNameSafe(EquipmentDefinition));
 
+	// Set which skin will be used for the new equipment instance.
+	NewEntry.EquipmentInstance->SetEquipmentSkin(EquipmentSkinToSpawn);
+
 	// Spawn the new equipment's first- and third-person equipment actors.
 	NewEquipment->SpawnEquipmentActors(EquipmentSkinToSpawn->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
 	NewEquipment->SpawnEquipmentActors(EquipmentSkinToSpawn->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);

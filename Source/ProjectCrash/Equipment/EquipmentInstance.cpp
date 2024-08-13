@@ -56,11 +56,49 @@ void UEquipmentInstance::SetEquipmentDefinition(UEquipmentDefinition* InEquipmen
 void UEquipmentInstance::OnEquipped()
 {
 	K2_OnEquipped();
+
+	// Determine the meshes on the equipping pawn to update with the new equipment's animations.
+	USkeletalMeshComponent* FirstPersonMesh = nullptr;
+	USkeletalMeshComponent* ThirdPersonMesh = nullptr;
+
+	APawn* Pawn = GetPawn();
+
+	// Try to use the dedicated meshes if the equipping pawn is of type CrashCharacter.
+	if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(Pawn))
+	{
+		FirstPersonMesh = CrashChar->GetFirstPersonMesh();
+		ThirdPersonMesh = CrashChar->GetThirdPersonMesh();
+	}
+	// Try to use the generic skeletal mesh if the equipping pawn is a character.
+	else if (ACharacter* Char = Cast<ACharacter>(Pawn))
+	{
+		ThirdPersonMesh = Char->GetMesh();
+	}
+
+	// Update the equipping pawn's meshes to use the new equipment's skin's animations.
+	if (FirstPersonMesh && EquipmentSkin->FirstPersonAnimInstance)
+	{
+		FirstPersonMesh->SetAnimInstanceClass(EquipmentSkin->FirstPersonAnimInstance);
+	}
+	if (ThirdPersonMesh && EquipmentSkin->ThirdPersonAnimInstance)
+	{
+		ThirdPersonMesh->SetAnimInstanceClass(EquipmentSkin->ThirdPersonAnimInstance);
+	}
 }
 
 void UEquipmentInstance::OnUnequipped()
 {
 	K2_OnUnequipped();
+}
+
+void UEquipmentInstance::SetEquipmentSkin(UEquipmentSkin* InEquipmentSkin)
+{
+	check(InEquipmentSkin != nullptr);
+
+	// Equipment skin should only be set once.
+	check(EquipmentSkin == nullptr);
+
+	EquipmentSkin = InEquipmentSkin;
 }
 
 void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorInfo>& ActorsToSpawn, EEquipmentPerspective Perspective)
@@ -144,5 +182,6 @@ void UEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME(ThisClass, Instigator);
 	DOREPLIFETIME(ThisClass, EquipmentDefinition);
+	DOREPLIFETIME(ThisClass, EquipmentSkin);
 	DOREPLIFETIME(ThisClass, SpawnedActors);
 }
