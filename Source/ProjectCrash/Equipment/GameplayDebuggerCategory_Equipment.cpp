@@ -3,6 +3,7 @@
 
 #include "GameplayDebuggerCategory_Equipment.h"
 
+#include "AbilitySystemGlobals.h"
 #include "EquipmentActor.h"
 #include "EquipmentDefinition.h"
 #include "EquipmentInstance.h"
@@ -75,7 +76,7 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 			}
 
 			// Ability info.
-			EquipmentInstance->GrantedAbilitySetHandles.GetAbilityDebugInfo(RepItem.GrantedAbilities);
+			EquipmentInstance->GrantedAbilitySetHandles.GetAbilityDebugInfo(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(DebugActor), RepItem.GrantedAbilities);
 			EquipmentInstance->GrantedAbilitySetHandles.GetEffectDebugInfo(RepItem.AppliedEffects);
 			EquipmentInstance->GrantedAbilitySetHandles.GetAttributeDebugInfo(RepItem.AddedAttributeSets);
 		}

@@ -20,7 +20,7 @@ void UItemTrait_Equippable::OnItemEnteredInventory(UInventoryItemInstance* ItemI
 		// Missing equipment component.
 		if (EquipmentComp == nullptr)
 		{
-			EQUIPMENT_LOG(Error, TEXT("Attempted to auto-equip equipment [%s] from item [%s], but owner, [%s], does not have an associated equipment component."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(ItemInstance), *GetNameSafe(ItemInstance->GetOwner()));
+			EQUIPMENT_LOG(Warning, TEXT("Attempted to auto-equip equipment [%s] from item [%s], but owner, [%s], does not have an associated equipment component."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(ItemInstance), *GetNameSafe(ItemInstance->GetOwner()));
 			return;
 		}
 
@@ -37,7 +37,7 @@ void UItemTrait_Equippable::OnItemLeftInventory(UInventoryItemInstance* ItemInst
 	// Missing equipment component.
 	if (EquipmentComp == nullptr)
 	{
-		EQUIPMENT_LOG(Error, TEXT("Attempted to unequip equipment [%s] from item [%s], but owner, [%s], does not have an associated equipment component."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(ItemInstance), *GetNameSafe(ItemInstance->GetOwner()));
+		EQUIPMENT_LOG(Warning, TEXT("Attempted to unequip equipment [%s] from item [%s], but owner, [%s], does not have an associated equipment component."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(ItemInstance), *GetNameSafe(ItemInstance->GetOwner()));
 		return;
 	}
 

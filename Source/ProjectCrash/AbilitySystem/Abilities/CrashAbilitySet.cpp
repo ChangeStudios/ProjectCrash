@@ -84,13 +84,16 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 }
 
 #if WITH_EDITOR
-void FCrashAbilitySet_GrantedHandles::GetAbilityDebugInfo(TArray<FString>& DebugInfo) const
+void FCrashAbilitySet_GrantedHandles::GetAbilityDebugInfo(UAbilitySystemComponent* ASC, TArray<FString>& DebugInfo) const
 {
 	for (const FGameplayAbilitySpecHandle& Handle : GrantedAbilitySpecHandles)
 	{
 		if (Handle.IsValid())
 		{
-			DebugInfo.Add(Handle.ToString());
+			if (FGameplayAbilitySpec* AbilitySpec = ASC->FindAbilitySpecFromHandle(Handle))
+			{
+				DebugInfo.Add(GetNameSafe(AbilitySpec->Ability));
+			}
 		}
 	}
 }
@@ -101,7 +104,13 @@ void FCrashAbilitySet_GrantedHandles::GetEffectDebugInfo(TArray<FString>& DebugI
 	{
 		if (Handle.IsValid())
 		{
-			DebugInfo.Add(Handle.ToString());
+			if (UAbilitySystemComponent* ASC = Handle.GetOwningAbilitySystemComponent())
+			{
+				if (const FActiveGameplayEffect* ActiveGE = ASC->GetActiveGameplayEffect(Handle))
+				{
+					DebugInfo.Add(ActiveGE->Spec.ToSimpleString());
+				}
+			}
 		}
 	}
 }

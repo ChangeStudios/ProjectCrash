@@ -124,9 +124,15 @@ protected:
 
 public:
 
-	void GetAbilityDebugInfo(TArray<FString>& DebugInfo) const;
-	void GetEffectDebugInfo(TArray<FString>& DebugInfo) const;
-	void GetAttributeDebugInfo(TArray<FString>& DebugInfo) const;
+	/** Returns a list of the names of the abilities in this handle. Requires a reference to the ASC to which the
+	 * ability is granted, so the actual ability can be found (this struct only contains a handle). */
+	void GetAbilityDebugInfo(UAbilitySystemComponent* ASC, TArray<FString>& OutDebugInfo) const;
+
+	/** Returns a list of the names of the active effects in this handle. Does not include effects that have ended. */
+	void GetEffectDebugInfo(TArray<FString>& OutDebugInfo) const;
+
+	/** Returns a list of the names of the attribute sets in this handle. */
+	void GetAttributeDebugInfo(TArray<FString>& OutDebugInfo) const;
 
 #endif
 };
