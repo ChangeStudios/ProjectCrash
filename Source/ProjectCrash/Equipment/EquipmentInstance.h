@@ -2,10 +2,14 @@
 
 #pragma once
 
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
+#include "EquipmentDefinition.h"
+
 #include "EquipmentInstance.generated.h"
 
 enum class EEquipmentPerspective : uint8;
 class AEquipmentActor;
+class UEquipmentDefinition;
 struct FEquipmentSkinActorInfo;
 
 /**
@@ -83,6 +87,25 @@ public:
 
 
 
+	// Equipment definition.
+
+public:
+
+	/** Returns the equipment of which this object is an instance. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	UEquipmentDefinition* GetEquipmentDefinition() const { return EquipmentDefinition; }
+
+	/** Sets this equipment instance's equipment definition. Should only be called once. */
+	void SetEquipmentDefinition(UEquipmentDefinition* InEquipmentDefinition);
+
+protected:
+
+	/** The equipment of which this object is an instance. */
+	UPROPERTY(Replicated)
+	TObjectPtr<UEquipmentDefinition> EquipmentDefinition;
+
+
+
 	// Equipment logic.
 
 public:
@@ -102,6 +125,15 @@ protected:
 	/** Blueprint-implementable version of OnUnequipped. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Equipment", DisplayName = "OnUnequipped", Meta = (ToolTip = "Called when this equipment instance is unequipped by a pawn, likely immediately before its destruction."))
 	void K2_OnUnequipped();
+
+
+
+	// Ability system.
+
+public:
+
+	/** Handles for the ability sets currently granted by this equipment. Only valid on authority. */
+	FCrashAbilitySet_GrantedHandles GrantedAbilitySetHandles;
 
 
 

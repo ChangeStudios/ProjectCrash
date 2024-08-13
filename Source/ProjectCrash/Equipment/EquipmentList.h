@@ -21,9 +21,6 @@ struct FEquipmentListEntry : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	friend FEquipmentList;
-#if WITH_GAMEPLAY_DEBUGGER
-	friend FGameplayDebuggerCategory_Equipment;
-#endif // WITH_GAMEPLAY_DEBUGGER
 	friend UEquipmentComponent;
 
 public:
@@ -37,17 +34,9 @@ public:
 
 private:
 
-	/** The equipment of which this entry is an instance. */
-	UPROPERTY()
-	TObjectPtr<UEquipmentDefinition> EquipmentDefinition;
-
-	/** The actual equipment represented by this equipment entry. */
+	/** The equipped instance represented by this equipment entry. */
 	UPROPERTY()
 	TObjectPtr<UEquipmentInstance> EquipmentInstance = nullptr;
-
-	/** Handles for the ability sets currently granted by this equipment. Only valid on authority. */
-	UPROPERTY(NotReplicated)
-	FCrashAbilitySet_GrantedHandles GrantedAbilitySetHandles;
 };
 
 
@@ -60,9 +49,6 @@ struct FEquipmentList : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
-#if WITH_GAMEPLAY_DEBUGGER
-	friend FGameplayDebuggerCategory_Equipment;
-#endif // WITH_GAMEPLAY_DEBUGGER
 	friend UEquipmentComponent;
 
 	// Construction.

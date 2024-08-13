@@ -16,7 +16,7 @@
  */
 FString FEquipmentListEntry::GetDebugString() const
 {
-    return FString::Printf(TEXT("%s (%s)"), *GetNameSafe(EquipmentInstance), *GetNameSafe(EquipmentDefinition));
+    return FString::Printf(TEXT("%s (%s)"), *GetNameSafe(EquipmentInstance), *GetNameSafe(EquipmentInstance ? EquipmentInstance->GetEquipmentDefinition() : nullptr));
 }
 
 
@@ -36,8 +36,8 @@ UEquipmentInstance* FEquipmentList::AddEntry(UEquipmentDefinition* EquipmentDefi
 
 	// Add a new entry for the new equipment.
 	FEquipmentListEntry& NewEntry = Entries.AddDefaulted_GetRef();
-	NewEntry.EquipmentDefinition = EquipmentDefinition;
 	NewEntry.EquipmentInstance = NewObject<UEquipmentInstance>(OwningComponent->GetOwner(), EquipmentDefinition->EquipmentInstanceClass); // Outer object is the owning actor because equipment instances only exist while equipped.
+	NewEntry.EquipmentInstance->SetEquipmentDefinition(EquipmentDefinition);
 	NewEquipment = NewEntry.EquipmentInstance;
 
 	// Grant the ability sets that this equipment grants when equipped.
@@ -45,7 +45,7 @@ UEquipmentInstance* FEquipmentList::AddEntry(UEquipmentDefinition* EquipmentDefi
 	{
 		for (const TObjectPtr<const UCrashAbilitySet>& AbilitySet : EquipmentDefinition->AbilitySetsToGrant)
 		{
-			AbilitySet->GiveToAbilitySystem(CrashASC, &NewEntry.GrantedAbilitySetHandles, NewEquipment);
+			AbilitySet->GiveToAbilitySystem(CrashASC, &NewEquipment->GrantedAbilitySetHandles, NewEquipment);
 		}
 	}
 	else if (EquipmentDefinition->AbilitySetsToGrant.Num()) // Only warn if this equipment is supposed to grant ability sets.
@@ -93,7 +93,7 @@ void FEquipmentList::RemoveEntry(UEquipmentInstance* EquipmentInstance)
 			// Remove any granted ability sets when this equipment is unequipped.
 			if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(OwningActor))
 			{
-				Entry.GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
+				Entry.EquipmentInstance->GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
 			}
 
 			// Destroy the equipment's spawned actors.

@@ -40,12 +40,9 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 	{
 		DataPack.bHasEquipment = 1;
 
-		/* Convert all equipped items into debug data before serializing. We grab the list directly because equipment
-		 * stores most of their data in the list entries themselves. */
-		for (const FEquipmentListEntry& Entry : EquipmentComp->EquipmentList.Entries)
+		// Convert all equipped items into debug data before serializing.
+		for (const UEquipmentInstance* EquipmentInstance : EquipmentComp->GetAllEquipment())
 		{
-			const UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
-			
 			// Include null items for debugging.
 			if (EquipmentInstance == nullptr)
 			{
@@ -59,7 +56,7 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 			RepItem.DisplayName = GetNameSafe(EquipmentInstance);
 
 			// Equipment def.
-			RepItem.EquipmentDef = GetNameSafe(Entry.EquipmentDefinition);
+			RepItem.EquipmentDef = GetNameSafe(EquipmentInstance->GetEquipmentDefinition());
 
 			// Instance type.
 			RepItem.EquipmentInstanceType = GetNameSafe(EquipmentInstance->GetClass());
@@ -78,9 +75,9 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 			}
 
 			// Ability info.
-			Entry.GrantedAbilitySetHandles.GetAbilityDebugInfo(RepItem.GrantedAbilities);
-			Entry.GrantedAbilitySetHandles.GetEffectDebugInfo(RepItem.AppliedEffects);
-			Entry.GrantedAbilitySetHandles.GetAttributeDebugInfo(RepItem.AddedAttributeSets);
+			EquipmentInstance->GrantedAbilitySetHandles.GetAbilityDebugInfo(RepItem.GrantedAbilities);
+			EquipmentInstance->GrantedAbilitySetHandles.GetEffectDebugInfo(RepItem.AppliedEffects);
+			EquipmentInstance->GrantedAbilitySetHandles.GetAttributeDebugInfo(RepItem.AddedAttributeSets);
 		}
 	}
 	// Observed actor does not have an equipment component.

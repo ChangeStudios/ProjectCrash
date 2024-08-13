@@ -139,11 +139,13 @@ TArray<UEquipmentInstance*> UEquipmentComponent::GetAllEquipmentOfDefinition(UEq
 	// Collect valid equipment instances with the given definition.
 	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
 	{
-		if (Entry.EquipmentDefinition == EquipmentToFind)
+		UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
+
+		if (IsValid(EquipmentInstance))
 		{
-			if (IsValid(Entry.EquipmentInstance))
+			if (EquipmentInstance->GetEquipmentDefinition() == EquipmentToFind)
 			{
-				EquipmentInstances.Add(Entry.EquipmentInstance);
+				EquipmentInstances.Add(EquipmentInstance);
 			}
 		}
 	}
@@ -171,11 +173,13 @@ UEquipmentInstance* UEquipmentComponent::GetFirstEquipmentByDefinition(UEquipmen
 {
 	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
 	{
-		if (Entry.EquipmentDefinition == EquipmentToFind)
+		UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
+
+		if (IsValid(EquipmentInstance))
 		{
-			if (IsValid(Entry.EquipmentInstance))
+			if (EquipmentInstance->GetEquipmentDefinition() == EquipmentToFind)
 			{
-				return Entry.EquipmentInstance;
+				return EquipmentInstance;
 			}
 		}
 	}

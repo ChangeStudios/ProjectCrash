@@ -43,7 +43,7 @@ UInventoryItemInstance* FInventoryList::AddEntry(TSubclassOf<UInventoryItemDefin
 
 	// Create a new instance of the desired item.
 	NewEntry.ItemInstance = NewObject<UInventoryItemInstance>(OwningComponent->GetWorld()); // Outer object is the UWorld so this item doesn't get auto-destroyed when removed from its current inventory.
-	NewEntry.ItemInstance->Init(OwningActor, ItemDefinition);
+	NewEntry.ItemInstance->InitItem(OwningActor, ItemDefinition);
 
 	// Notify the new item's traits that it has entered a new inventory.
 	for (UInventoryItemTraitBase* Trait : GetDefault<UInventoryItemDefinition>(ItemDefinition)->Traits)

@@ -38,7 +38,7 @@ public:
 public:
 
 	/** Initializes this object with the given owner and item definition. Initializes each of this item's traits. */
-	void Init(AActor* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition);
+	void InitItem(AActor* InOwner, TSubclassOf<UInventoryItemDefinition> InItemDefinition);
 
 	/** Uninitializes each of this item's traits. */
 	virtual void BeginDestroy() override;
@@ -84,7 +84,7 @@ private:
 
 public:
 
-	/** Getter for the item of which this object is an instance. */
+	/** Returns the item of which this object is an instance. */
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	TSubclassOf<UInventoryItemDefinition> GetItemDefinition() const { return ItemDefinition; }
 

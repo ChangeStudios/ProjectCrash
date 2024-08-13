@@ -87,3 +87,5 @@ UBlueprint* FCrashCameraModeEditor::GetBlueprintObj() const
 	}
 	return nullptr;
 }
+
+#undef LOCTEXT_NAMESPACE

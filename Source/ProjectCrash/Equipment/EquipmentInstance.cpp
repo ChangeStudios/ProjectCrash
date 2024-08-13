@@ -10,7 +10,8 @@
 #include "Net/UnrealNetwork.h"
 
 UEquipmentInstance::UEquipmentInstance() :
-	Instigator(nullptr)
+	Instigator(nullptr),
+	EquipmentDefinition(nullptr)
 {
 }
 
@@ -40,6 +41,16 @@ APawn* UEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 	}
 
 	return OutPawn;
+}
+
+void UEquipmentInstance::SetEquipmentDefinition(UEquipmentDefinition* InEquipmentDefinition)
+{
+	check(InEquipmentDefinition != nullptr);
+
+	// Equipment definition should only be set once.
+	check(EquipmentDefinition == nullptr);
+
+	EquipmentDefinition = InEquipmentDefinition;
 }
 
 void UEquipmentInstance::OnEquipped()
@@ -132,5 +143,6 @@ void UEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, Instigator);
+	DOREPLIFETIME(ThisClass, EquipmentDefinition);
 	DOREPLIFETIME(ThisClass, SpawnedActors);
 }
