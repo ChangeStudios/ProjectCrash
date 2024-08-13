@@ -37,41 +37,32 @@ UEquipmentInstance* FEquipmentList::AddEntry(UEquipmentDefinition* EquipmentDefi
 	// Add a new entry for the new equipment.
 	FEquipmentListEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.EquipmentInstance = NewObject<UEquipmentInstance>(OwningComponent->GetOwner(), EquipmentDefinition->EquipmentInstanceClass); // Outer object is the owning actor because equipment instances only exist while equipped.
-	NewEntry.EquipmentInstance->SetEquipmentDefinition(EquipmentDefinition);
 	NewEquipment = NewEntry.EquipmentInstance;
 
-	// Grant the ability sets that this equipment grants when equipped.
-	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(OwningActor))
+	// Determine the skin to use for this equipment.
+	UEquipmentSkin* EquipmentSkin = nullptr;
+		
+	// Retrieve equipping player's skin from the skin subsystem if the equipment supports skins.
+	if (EquipmentDefinition->EquipmentSkinID.IsValid())
 	{
-		for (const TObjectPtr<const UCrashAbilitySet>& AbilitySet : EquipmentDefinition->AbilitySetsToGrant)
-		{
-			AbilitySet->GiveToAbilitySystem(CrashASC, &NewEquipment->GrantedAbilitySetHandles, NewEquipment);
-		}
-	}
-	else if (EquipmentDefinition->AbilitySetsToGrant.Num()) // Only warn if this equipment is supposed to grant ability sets.
-	{
-		UE_LOG(LogEquipment, Warning, TEXT("Equipped equipment [%s] on actor [%s] but failed to grant the equipment's ability sets: could not find an ASC for the equipping actor."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(OwningActor));
+		// TODO: Retrieve the equipping player's skin from the skin subsystem.
 	}
 
-	// Determine which equipment skin will be used to spawn the new equipment's actors.
-	UEquipmentSkin* EquipmentSkinToSpawn = nullptr;
-
-	// TODO: Retrieve equipping player's equipment skin.
-
-	// If the player does not have a skin for this equipment, use the equipment's default skin.
-	if (EquipmentSkinToSpawn == nullptr)
+	/* If the player does not have a skin for this equipment or this equipment does not support skins, use the
+	 * equipment's default skin. */
+	if (EquipmentSkin == nullptr)
 	{
-		EquipmentSkinToSpawn = EquipmentDefinition->DefaultEquipmentSkin;
+		EquipmentSkin = EquipmentDefinition->DefaultEquipmentSkin;
 	}
 
-	checkf(EquipmentSkinToSpawn, TEXT("Tried to equip equipment [%s], but it does not have a default equipment skin."), *GetNameSafe(EquipmentDefinition));
+	// Equipment cannot be spawned without a skin.
+	if (ensureAlwaysMsgf((EquipmentSkin != nullptr), TEXT("Tried to equip equipment [%s], but it does not have a default equipment skin. Equipment cannot be spawned without a skin (the skin itself can be left empty if desired)."), *GetNameSafe(EquipmentDefinition)))
+	{
+		return nullptr;
+	}
 
-	// Set which skin will be used for the new equipment instance.
-	NewEntry.EquipmentInstance->SetEquipmentSkin(EquipmentSkinToSpawn);
-
-	// Spawn the new equipment's first- and third-person equipment actors.
-	NewEquipment->SpawnEquipmentActors(EquipmentSkinToSpawn->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
-	NewEquipment->SpawnEquipmentActors(EquipmentSkinToSpawn->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);
+	// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
+	NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin);
 
 	// Mark the new entry for replication.
 	MarkItemDirty(NewEntry);

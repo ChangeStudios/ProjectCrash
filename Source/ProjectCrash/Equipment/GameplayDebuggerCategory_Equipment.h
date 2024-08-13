@@ -27,24 +27,21 @@ protected:
 
 	struct FRepData
 	{
-		/** Debug info for one equipped item. */
-		struct FEquipment
-		{
-			FString DisplayName;
-			FString EquipmentDef;
-			FString EquipmentInstanceType;
-			FString AssociatedInventoryItem;
-			TArray<FString> SpawnedEquipmentActors;
-			TArray<FString> GrantedAbilities;
-			TArray<FString> AppliedEffects;
-			TArray<FString> AddedAttributeSets;
-		};
+		/** Debug info for the equipped item. */
+		FString EquipmentDisplayName;
+		FString EquipmentDef;
+		FString EquipmentInstanceType;
+		FString AssociatedInventoryItem;
+		TArray<FString> SpawnedEquipmentActors;
+		TArray<FString> GrantedAbilities;
+		TArray<FString> AppliedEffects;
+		TArray<FString> AddedAttributeSets;
 
 		FString DebugActorName;
+		uint32 bHasEquipmentComp : 1;
 		uint32 bHasEquipment : 1;
-		TArray<FEquipment> Equipment;
 
-		FRepData() : bHasEquipment(false)
+		FRepData() : bHasEquipmentComp(false), bHasEquipment(false)
 		{
 		}
 

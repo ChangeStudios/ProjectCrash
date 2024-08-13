@@ -5,14 +5,63 @@
 
 #include "EquipmentActor.h"
 #include "EquipmentSkin.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "Characters/CrashCharacter.h"
+#include "GameFramework/CrashLogging.h"
 #include "Iris/ReplicationSystem/ReplicationFragmentUtil.h"
 #include "Net/UnrealNetwork.h"
 
 UEquipmentInstance::UEquipmentInstance() :
 	Instigator(nullptr),
-	EquipmentDefinition(nullptr)
+	EquipmentDefinition(nullptr),
+	EquipmentSkin(nullptr)
 {
+}
+
+void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin)
+{
+	check(GetPawn()->HasAuthority());
+	check(InEquipmentDefinition);
+	check(InEquipmentSkin);
+
+	// Initialize data.
+	EquipmentDefinition = InEquipmentDefinition;
+	EquipmentSkin = InEquipmentSkin;
+
+	// Manually call equipment skin OnRep on the server so the equipping pawn's character animations are updated.
+	OnRep_EquipmentSkin();
+
+	// Spawn equipment actors.
+	SpawnEquipmentActors(EquipmentSkin->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
+	SpawnEquipmentActors(EquipmentSkin->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);
+
+	// Grant ability sets.
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetPawn()))
+	{
+		for (const TObjectPtr<const UCrashAbilitySet>& AbilitySet : EquipmentDefinition->AbilitySetsToGrant)
+		{
+			AbilitySet->GiveToAbilitySystem(CrashASC, &GrantedAbilitySetHandles, this);
+		}
+	}
+	// Warn if this equipment is supposed to grant ability sets but can't.
+	else if (EquipmentDefinition->AbilitySetsToGrant.Num())
+	{
+		UE_LOG(LogEquipment, Warning, TEXT("Equipped equipment [%s] on actor [%s] but failed to grant the equipment's ability sets: could not find an ASC for the equipping actor."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(GetPawn()));
+	}
+}
+
+void UEquipmentInstance::UninitializeEquipment()
+{
+	check(GetPawn()->HasAuthority());
+
+	// Destroy equipment actors.
+	DestroyEquipmentActors();
+
+	// Remove granted ability sets.
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetPawn()))
+	{
+		GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
+	}
 }
 
 #if UE_WITH_IRIS
@@ -43,19 +92,19 @@ APawn* UEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 	return OutPawn;
 }
 
-void UEquipmentInstance::SetEquipmentDefinition(UEquipmentDefinition* InEquipmentDefinition)
-{
-	check(InEquipmentDefinition != nullptr);
-
-	// Equipment definition should only be set once.
-	check(EquipmentDefinition == nullptr);
-
-	EquipmentDefinition = InEquipmentDefinition;
-}
-
 void UEquipmentInstance::OnEquipped()
 {
 	K2_OnEquipped();
+}
+
+void UEquipmentInstance::OnUnequipped()
+{
+	K2_OnUnequipped();
+}
+
+void UEquipmentInstance::OnRep_EquipmentSkin()
+{
+	check(EquipmentSkin);
 
 	// Determine the meshes on the equipping pawn to update with the new equipment's animations.
 	USkeletalMeshComponent* FirstPersonMesh = nullptr;
@@ -75,7 +124,7 @@ void UEquipmentInstance::OnEquipped()
 		ThirdPersonMesh = Char->GetMesh();
 	}
 
-	// Update the equipping pawn's meshes to use the new equipment's skin's animations.
+	// Update the equipping pawn's meshes to use the new equipment skin's animations.
 	if (FirstPersonMesh && EquipmentSkin->FirstPersonAnimInstance)
 	{
 		FirstPersonMesh->SetAnimInstanceClass(EquipmentSkin->FirstPersonAnimInstance);
@@ -84,21 +133,6 @@ void UEquipmentInstance::OnEquipped()
 	{
 		ThirdPersonMesh->SetAnimInstanceClass(EquipmentSkin->ThirdPersonAnimInstance);
 	}
-}
-
-void UEquipmentInstance::OnUnequipped()
-{
-	K2_OnUnequipped();
-}
-
-void UEquipmentInstance::SetEquipmentSkin(UEquipmentSkin* InEquipmentSkin)
-{
-	check(InEquipmentSkin != nullptr);
-
-	// Equipment skin should only be set once.
-	check(EquipmentSkin == nullptr);
-
-	EquipmentSkin = InEquipmentSkin;
 }
 
 void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorInfo>& ActorsToSpawn, EEquipmentPerspective Perspective)

@@ -3,6 +3,11 @@
 
 #include "Equipment/EquipmentActor.h"
 
+AEquipmentActor::AEquipmentActor()
+{
+	bReplicates = true;
+}
+
 void AEquipmentActor::InitEquipmentPerspective(EEquipmentPerspective InEquipmentPerspective)
 {
 }

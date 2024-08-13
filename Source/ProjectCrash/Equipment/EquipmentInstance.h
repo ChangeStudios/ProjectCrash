@@ -4,6 +4,7 @@
 
 #include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "EquipmentDefinition.h"
+#include "EquipmentSkin.h"
 
 #include "EquipmentInstance.generated.h"
 
@@ -36,6 +37,27 @@ public:
 
 
 
+	// Initialization.
+
+public:
+
+	/**
+	 * Called on the server to initialize this instance when equipped. Initializes data, spawns equipment actors, and
+	 * grants ability sets.
+	 *
+	 * @param InEquipmentDefinition		The equipment of which this is an instance.
+	 * @param InEquipmentSkin			The skin to use for this equipment instance. This will spawn this equipment's
+	 *									actors on the server, and be replicated to clients to play animations and
+	 *									effects.
+	 */
+	void InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin);
+
+	/** Called on the server when this instance is unequipped. Destroys equipment actors and removes granted ability
+	 * sets. */
+	void UninitializeEquipment();
+
+
+
 	// Replication.
 
 public:
@@ -56,8 +78,8 @@ private:
 
 public:
 
-	/** Returns the object responsible for creating this equipment instance (usually its inventory item instance). */
-	UFUNCTION(BlueprintPure, Category = "Equipment", Meta = (ToolTip = "The object responsible for creating this equipment instance. Usually this equipment's inventory item instance."))
+	/** Returns the object responsible for granting this equipment (usually an inventory item instance). */
+	UFUNCTION(BlueprintPure, Category = "Equipment", Meta = (ToolTip = "The object responsible for granting this equipment; e.g. this equipment's inventory item instance, if it has one."))
 	UObject* GetInstigator() const { return Instigator; }
 
 	/** Sets this equipment instance's instigating object. */
@@ -65,8 +87,8 @@ public:
 
 private:
 
-	/** The object directly responsible for creating this equipment instance. This is usually the equipment's inventory
-	 * item instance. */
+	/** The object responsible for granting this equipment. If this equipment was equipped from an inventory item, this
+	 * is the inventory item instance. */
 	UPROPERTY(Replicated)
 	TObjectPtr<UObject> Instigator;
 
@@ -94,9 +116,6 @@ public:
 	/** Returns the equipment of which this object is an instance. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	UEquipmentDefinition* GetEquipmentDefinition() const { return EquipmentDefinition; }
-
-	/** Sets this equipment instance's equipment definition. Should only be called once. */
-	void SetEquipmentDefinition(UEquipmentDefinition* InEquipmentDefinition);
 
 protected:
 
@@ -145,14 +164,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	UEquipmentSkin* GetEquipmentSkin() const { return EquipmentSkin; }
 
-	/** Sets the skin being used for this equipment instance. Should only be called once. */
-	void SetEquipmentSkin(UEquipmentSkin* InEquipmentSkin);
-
 protected:
 
-	/** The skin being used for this equipment instance. */
-	UPROPERTY(Replicated)
+	/** The skin being used for this equipment instance. Determines which equipment actors will be spawned, the
+	 * character animations use by the equipping pawn, and the animations and effects played with this equipment. */
+	UPROPERTY(ReplicatedUsing = "OnRep_EquipmentSkin")
 	TObjectPtr<UEquipmentSkin> EquipmentSkin;
+
+	/** Updates the equipping pawn's character meshes to use the new equipment skin's character animations. This is
+	 * done here instead of OnEquipped in case OnEquipped gets called before the skin gets replicated. */
+	UFUNCTION()
+	void OnRep_EquipmentSkin();
 
 
 

@@ -7,11 +7,13 @@
 #include "EquipmentInstance.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/PlayerState.h"
+#include "Inventory/InventoryItemInstance.h"
 #include "Net/UnrealNetwork.h"
 
 UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
-	EquipmentList(this)
+	CurrentEquipment(nullptr)
 {
 	SetIsReplicatedByDefault(true);
 	bWantsInitializeComponent = true;
@@ -19,21 +21,10 @@ UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitial
 
 void UEquipmentComponent::UninitializeComponent()
 {
-	if (HasAuthority())
+	// Unequip the current item when this component is uninitialized.
+	if (HasAuthority() && CurrentEquipment)
 	{
-		TArray<UEquipmentInstance*> EquipmentInstances;
-
-		// Copy the list of equipment instances, so we don't modify the equipment list.
-		for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
-		{
-			EquipmentInstances.Add(Entry.EquipmentInstance);
-		}
-
-		// Unequip all equipment when this component is uninitialized.
-		for (UEquipmentInstance* EquipmentInstance : EquipmentInstances)
-		{
-			UnequipItem(EquipmentInstance);
-		}
+		UnequipItem();
 	}
 
 	Super::UninitializeComponent();
@@ -43,15 +34,10 @@ bool UEquipmentComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch*
 {
 	bool bWroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
-	// Register each equipment instance equipped by this component as a replicated sub-object.
-	for (FEquipmentListEntry& Entry : EquipmentList.Entries)
+	// Replicate the current equipment instance as a sub-object of this component.
+	if (IsValid(CurrentEquipment))
 	{
-		UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
-
-		if (IsValid(EquipmentInstance))
-		{
-			bWroteSomething |= Channel->ReplicateSubobject(EquipmentInstance, *Bunch, *RepFlags);
-		}
+		bWroteSomething |= Channel->ReplicateSubobject(CurrentEquipment, *Bunch, *RepFlags);
 	}
 
 	return bWroteSomething;
@@ -61,18 +47,13 @@ void UEquipmentComponent::ReadyForReplication()
 {
 	Super::ReadyForReplication();
 
-	/* Register existing equipment instances as replicated sub-objects. This is needed to register equipment instances
-	 * as replicated sub-objects if they were equipped before this equipment component began replicating. */
+	/* Register the existing equipment instance as a replicated sub-object. This is needed to register the current
+	 * equipment if it was equipped before this equipment component began replicating. */
 	if (IsUsingRegisteredSubObjectList())
 	{
-		for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
+		if (IsValid(CurrentEquipment))
 		{
-			UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
-
-			if (IsValid(EquipmentInstance))
-			{
-				AddReplicatedSubObject(EquipmentInstance);
-			}
+			AddReplicatedSubObject(CurrentEquipment);
 		}
 	}
 }
@@ -81,16 +62,52 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 {
 	UEquipmentInstance* NewEquipment = nullptr;
 
+	check(HasAuthority());
+
 	if (EquipmentDefinition != nullptr)
 	{
-		// Create and equip a new instance for the given equipment through the equipment list.
-		NewEquipment = EquipmentList.AddEntry(EquipmentDefinition);
-
-		if (NewEquipment != nullptr)
+		// Automatically unequip the current equipment.
+		if (CurrentEquipment)
 		{
-			/* Notify the new equipment that it's been equipped on the server. The equipment list will handle this for
-			 * clients. */
+			UnequipItem();
+		}
+
+		// Determine the skin to use for this equipment.
+		UEquipmentSkin* EquipmentSkin = nullptr;
+		
+		// Retrieve equipping player's skin from the skin subsystem if the equipment supports skins.
+		if (EquipmentDefinition->EquipmentSkinID.IsValid())
+		{
+			// TODO: Retrieve the equipping player's skin from the skin subsystem.
+		}
+
+		/* If the player does not have a skin for this equipment or this equipment does not support skins, use the
+		 * equipment's default skin. */
+		if (EquipmentSkin == nullptr)
+		{
+			EquipmentSkin = EquipmentDefinition->DefaultEquipmentSkin;
+		}
+
+		// Equipment cannot be spawned without a skin.
+		if (!ensureAlwaysMsgf((EquipmentSkin != nullptr), TEXT("Tried to equip equipment [%s], but it does not have a default equipment skin. Equipment cannot be spawned without a skin (the skin itself can be left empty if desired)."), *GetNameSafe(EquipmentDefinition)))
+		{
+			return nullptr;
+		}
+
+		// Create a new instance for the given equipment.
+		NewEquipment = NewObject<UEquipmentInstance>(GetOwner(), EquipmentDefinition->EquipmentInstanceClass);
+
+		// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
+		NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin);
+
+		if (ensure(NewEquipment != nullptr))
+		{
+			// Notify the new equipment that it's been equipped on the server.
 			NewEquipment->OnEquipped();
+
+			// Update our current equipment. This calls OnEquipped on clients.
+			MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+			CurrentEquipment = NewEquipment;
 
 			// Replicate the new equipment instance as a sub-object.
 			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
@@ -107,22 +124,25 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 	return NewEquipment;
 }
 
-void UEquipmentComponent::UnequipItem(UEquipmentInstance* EquipmentInstance)
+void UEquipmentComponent::UnequipItem()
 {
-	if (EquipmentInstance != nullptr)
+	if (CurrentEquipment != nullptr)
 	{
 		// Stop replicate the equipment instance as a sub-object.
 		if (IsUsingRegisteredSubObjectList())
 		{
-			RemoveReplicatedSubObject(EquipmentInstance);
+			RemoveReplicatedSubObject(CurrentEquipment);
 		}
 
-		/* Notify the equipment that it's being unequipped on the server. The equipment list will handle this for
-		 * clients. */
-		EquipmentInstance->OnUnequipped();
+		// Notify the equipment that it's being unequipped on the server.
+		CurrentEquipment->OnUnequipped();
 
-		// Unequip and destroy the equipment instance.
-		EquipmentList.RemoveEntry(EquipmentInstance);
+		// Uninitialize and destroy the equipment instance.
+		CurrentEquipment->UninitializeEquipment();
+
+		// Clear CurrentEquipment to trigger OnUnequipped on clients.
+		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+		CurrentEquipment = nullptr;
 	}
 	else
 	{
@@ -130,84 +150,65 @@ void UEquipmentComponent::UnequipItem(UEquipmentInstance* EquipmentInstance)
 	}
 }
 
-TArray<UEquipmentInstance*> UEquipmentComponent::GetAllEquipment() const
+void UEquipmentComponent::OnRep_CurrentEquipment(UEquipmentInstance* PreviousEquipment)
 {
-	return EquipmentList.GetAllEquipment();
+	if (PreviousEquipment)
+	{
+		PreviousEquipment->OnUnequipped();
+	}
+
+	if (CurrentEquipment)
+	{
+		CurrentEquipment->OnEquipped();
+	}
 }
 
-TArray<UEquipmentInstance*> UEquipmentComponent::GetAllEquipmentOfDefinition(UEquipmentDefinition* EquipmentToFind) const
+template <typename T>
+T* UEquipmentComponent::GetEquipment()
 {
-	TArray<UEquipmentInstance*> EquipmentInstances;
-
-	// Collect valid equipment instances with the given definition.
-	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
+	if (CurrentEquipment && CurrentEquipment->IsA(T::StaticClass()))
 	{
-		UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
+		return (T*)CurrentEquipment;
+	}
 
-		if (IsValid(EquipmentInstance))
+	return nullptr;
+}
+
+UEquipmentComponent* UEquipmentComponent::FindEquipmentComponentFromItem(UInventoryItemInstance* ItemInstance)
+{
+	UEquipmentComponent* EquipmentComp = nullptr;
+
+	AActor* Owner = ItemInstance->GetOwner();
+	if (ensure(Owner))
+	{
+		// Get equipment component if item owner is a player state.
+		if (APlayerState* OwnerAsPS = Cast<APlayerState>(Owner))
 		{
-			if (EquipmentInstance->GetEquipmentDefinition() == EquipmentToFind)
+			if (APawn* OwnerPawn = OwnerAsPS->GetPawn())
 			{
-				EquipmentInstances.Add(EquipmentInstance);
+				EquipmentComp = FindEquipmentComponent(OwnerPawn);
+			}
+		}
+
+		// Get equipment component if item owner is a pawn.
+		if (EquipmentComp == nullptr)
+		{
+			if (APawn* OwnerAsPawn = Cast<APawn>(Owner))
+			{
+				EquipmentComp = FindEquipmentComponent(OwnerAsPawn);
 			}
 		}
 	}
 
-	return EquipmentInstances;
-}
-
-TArray<UEquipmentInstance*> UEquipmentComponent::GetAllEquipmentOfType(TSubclassOf<UEquipmentInstance> EquipmentInstanceType) const
-{
-	TArray<UEquipmentInstance*> EquipmentInstances;
-
-	// Collect valid equipment instances of the given type.
-	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
-	{
-		if (IsValid(Entry.EquipmentInstance) && (Entry.EquipmentInstance->IsA(EquipmentInstanceType)))
-		{
-			EquipmentInstances.Add(Entry.EquipmentInstance);
-		}
-	}
-
-	return EquipmentInstances;
-}
-
-UEquipmentInstance* UEquipmentComponent::GetFirstEquipmentByDefinition(UEquipmentDefinition* EquipmentToFind) const
-{
-	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
-	{
-		UEquipmentInstance* EquipmentInstance = Entry.EquipmentInstance;
-
-		if (IsValid(EquipmentInstance))
-		{
-			if (EquipmentInstance->GetEquipmentDefinition() == EquipmentToFind)
-			{
-				return EquipmentInstance;
-			}
-		}
-	}
-
-	// An instance of the specified equipment is not equipped.
-	return nullptr;
-}
-
-UEquipmentInstance* UEquipmentComponent::GetFirstEquipmentByType(TSubclassOf<UEquipmentInstance> EquipmentInstanceType) const
-{
-	for (const FEquipmentListEntry& Entry : EquipmentList.Entries)
-	{
-		if (IsValid(Entry.EquipmentInstance) && (Entry.EquipmentInstance->IsA(EquipmentInstanceType)))
-		{
-			return Entry.EquipmentInstance;
-		}
-	}
-
-	// An instance of the specified type is not equipped.
-	return nullptr;
+	return EquipmentComp;
 }
 
 void UEquipmentComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UEquipmentComponent, EquipmentList);
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
+
+	DOREPLIFETIME_WITH_PARAMS_FAST(UEquipmentComponent, CurrentEquipment, SharedParams);
 }

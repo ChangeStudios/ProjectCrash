@@ -60,6 +60,14 @@ public:
 
 public:
 
+	/** Played on the pawn's first-person mesh (if they have one) when equipment is equipped with this skin. */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", DisplayName = "First-Person \"Equip\" Animation")
+	TObjectPtr<UAnimMontage> FirstPersonEquipAnim;
+
+	/** Played on the pawn's third-person mesh (if they have one) when equipment is equipped with this skin. */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", DisplayName = "Third-Person \"Equip\" Animation")
+	TObjectPtr<UAnimMontage> ThirdPersonEquipAnim;
+
 	/** The animation blueprint to use for first-person meshes while this equipment is equipped with this skin. */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation", DisplayName = "First-Person Animation Blueprint")
 	TSubclassOf<UAnimInstance> FirstPersonAnimInstance;

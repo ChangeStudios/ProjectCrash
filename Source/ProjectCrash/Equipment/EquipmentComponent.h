@@ -41,17 +41,17 @@ public:
 
 
 
-	/* Replication. Equipment instances are replicated as sub-objects of the equipment component from which they are
+	/* Replication. The current equipment instance is replicated as a sub-object of the equipment component from it is
 	 * equipped. Because equipment only exists while equipped (spawned on equip, destroyed on unequip), equipment is
 	 * managed and replicated by the same equipment component for its entire lifetime. */
 
 public:
 
-	/** Registers each equipment instance equipped by this component as a replicated sub-object. */
+	/** Registers the equipment instance equipped by this component as a replicated sub-object. */
 	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
-	/** Registers any equipment instances that were equipped before this component began replicating as replicated
-	 * sub-objects when replication starts. */
+	/** Registers the equipped equipment instance as a replicated sub-object when replication starts, if it was equipped
+	 * before this component began replicating. */
 	virtual void ReadyForReplication() override;
 
 
@@ -60,6 +60,7 @@ public:
 
 public:
 
+	/** Equips a specified item. Unequips the current item. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
 	UEquipmentInstance* EquipItem
 	(
@@ -67,12 +68,10 @@ public:
 		UEquipmentDefinition* EquipmentDefinition
 	);
 
+	/** Unequips the current item, leaving the pawn in an "unarmed" state. Do not call this to equip a new item; call
+	 * EquipItem instead, which automatically unequips the current item. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
-	void UnequipItem
-	(
-		UPARAM(DisplayName = "Item to Unequip")
-		UEquipmentInstance* EquipmentInstance
-	);
+	void UnequipItem();
 
 
 
@@ -80,46 +79,34 @@ public:
 
 private:
 
-	/** Current equipment. Equipment only exists while equipped, so all equipment in this list is equipped to this
-	 * component's owning pawn. */
-	UPROPERTY(Replicated)
-	FEquipmentList EquipmentList;
+	/** Current equipment. Only one item can be equipped at a time. When a new item is equipped, the previous item is
+	 * automatically unequipped. */
+	UPROPERTY(ReplicatedUsing = "OnRep_CurrentEquipment")
+	UEquipmentInstance* CurrentEquipment;
+
+	/** Replicates the OnEquipped function to clients. */
+	UFUNCTION()
+	void OnRep_CurrentEquipment(UEquipmentInstance* PreviousEquipment);
 
 
 
-	
 	// Utils.
 
 public:
 
-	/** All equipment currently equipped by this component's owning pawn. */
+	/** Returns the equipment instance currently equipped by this component's owning pawn. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
-	TArray<UEquipmentInstance*> GetAllEquipment() const;
+	UEquipmentInstance* GetEquipment() const { return CurrentEquipment; }
 
-	/** All equipped instances of the given equipment currently equipped by this component's owning pawn. */
-	UFUNCTION(BlueprintPure, Category = "Equipment")
-	TArray<UEquipmentInstance*> GetAllEquipmentOfDefinition(UEquipmentDefinition* EquipmentToFind) const;
-
-	/** All equipped instances of the specified instance type. */
-	UFUNCTION(BlueprintPure, Category = "Equipment")
-	TArray<UEquipmentInstance*> GetAllEquipmentOfType(TSubclassOf<UEquipmentInstance> EquipmentInstanceType) const;
-
-	/** Returns the first equipped instance of the given equipment. Returns null if none can be found. */
-	UFUNCTION(BlueprintPure, Category = "Equipment")
-	UEquipmentInstance* GetFirstEquipmentByDefinition(UEquipmentDefinition* EquipmentToFind) const;
-
-	/** Returns the first equipped instance of the specified instance type. Returns null if none can be found. */
-	UFUNCTION(BlueprintPure, Category = "Equipment", Meta = (DeterminesOutputType = "EquipmentInstanceType"))
-	UEquipmentInstance* GetFirstEquipmentByType(TSubclassOf<UEquipmentInstance> EquipmentInstanceType) const;
-
-	/** Templated version of GetFirstInstanceByType. */
+	/** Templated version of GetEquipment. */
 	template <typename T>
-	T* GetFirstEquipmentInstanceOfType()
-	{
-		return (T*)GetFirstEquipmentByType(T::StaticClass());
-	}
+	T* GetEquipment();
 
 	/** Retrieves the given pawn's inventory component, if it has one. Returns null otherwise. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	static UEquipmentComponent* FindEquipmentComponent(const APawn* Pawn) { return Pawn->FindComponentByClass<UEquipmentComponent>(); }
+
+	/** Tries to retrieve an equipment component associated with the owner of a given item. */
+	UFUNCTION(BlueprintPure, Category = "Equipment")
+	static UEquipmentComponent* FindEquipmentComponentFromItem(UInventoryItemInstance* ItemInstance);
 };

@@ -35,9 +35,4 @@ protected:
 	 * character equipment that should not be manually equipped. */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Always Equip on Pick-Up?")
 	bool bAutoEquip = false;
-
-private:
-
-	/** Helper for finding an equipment component associated with the owner of a given item. */
-	static UEquipmentComponent* FindEquipmentCompFromItem(UInventoryItemInstance* ItemInstance);
 };

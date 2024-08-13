@@ -32,6 +32,15 @@ class PROJECTCRASH_API AEquipmentActor : public AActor
 {
 	GENERATED_BODY()
 
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	AEquipmentActor();
+
+
+
 	// Perspective.
 
 public:

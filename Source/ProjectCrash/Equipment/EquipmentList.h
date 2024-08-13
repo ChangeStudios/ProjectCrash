@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "EquipmentList.generated.h"
 
@@ -43,6 +42,13 @@ private:
 
 /**
  * A list of equipment currently equipped by a pawn.
+ *
+ * NOTE: This class is not used. Our current equipment system only allows one item to be equipped at any given time.
+ * This struct was created for an older equipment system that supported equipping multiple items simultaneously.
+ *
+ * This code has not been removed in case a more sophisticated equipment system is desired in the future; e.g. if we
+ * wanted to add a survival crafting game mode... for some (insane) reason. In this project's current state, however,
+ * our more simplified, streamlined system is preferable.
  */
 USTRUCT(BlueprintType)
 struct FEquipmentList : public FFastArraySerializer

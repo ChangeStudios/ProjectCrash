@@ -7,7 +7,6 @@
 #include "Equipment/EquipmentDefinition.h"
 #include "Equipment/EquipmentInstance.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PlayerState.h"
 #include "Inventory/InventoryItemInstance.h"
 
 void UItemTrait_Equippable::OnItemEnteredInventory(UInventoryItemInstance* ItemInstance) const
@@ -15,7 +14,7 @@ void UItemTrait_Equippable::OnItemEnteredInventory(UInventoryItemInstance* ItemI
 	// Equip this item if it should auto-equip.
 	if (bAutoEquip)
 	{
-		UEquipmentComponent* EquipmentComp = FindEquipmentCompFromItem(ItemInstance);
+		UEquipmentComponent* EquipmentComp = UEquipmentComponent::FindEquipmentComponentFromItem(ItemInstance);
 
 		// Missing equipment component.
 		if (EquipmentComp == nullptr)
@@ -32,7 +31,7 @@ void UItemTrait_Equippable::OnItemEnteredInventory(UInventoryItemInstance* ItemI
 void UItemTrait_Equippable::OnItemLeftInventory(UInventoryItemInstance* ItemInstance) const
 {
 	// Unequip this item if it's currently equipped.
-	UEquipmentComponent* EquipmentComp = FindEquipmentCompFromItem(ItemInstance);
+	UEquipmentComponent* EquipmentComp = UEquipmentComponent::FindEquipmentComponentFromItem(ItemInstance);
 
 	// Missing equipment component.
 	if (EquipmentComp == nullptr)
@@ -42,41 +41,12 @@ void UItemTrait_Equippable::OnItemLeftInventory(UInventoryItemInstance* ItemInst
 	}
 
 	// Check if this item is currently equipped.
-	for (UEquipmentInstance* Equipment : EquipmentComp->GetAllEquipment())
+	if (UEquipmentInstance* Equipment = EquipmentComp->GetEquipment())
 	{
 		if (Equipment->GetInstigator() == ItemInstance)
 		{
 			// Unequip the item.
-			EquipmentComp->UnequipItem(Equipment);
+			EquipmentComp->UnequipItem();
 		}
 	}
-}
-
-UEquipmentComponent* UItemTrait_Equippable::FindEquipmentCompFromItem(UInventoryItemInstance* ItemInstance)
-{
-	UEquipmentComponent* EquipmentComp = nullptr;
-
-	AActor* Owner = ItemInstance->GetOwner();
-	if (ensure(Owner))
-	{
-		// Get equipment component if item owner is a player state.
-		if (APlayerState* OwnerAsPS = Cast<APlayerState>(Owner))
-		{
-			if (APawn* OwnerPawn = OwnerAsPS->GetPawn())
-			{
-				EquipmentComp = UEquipmentComponent::FindEquipmentComponent(OwnerPawn);
-			}
-		}
-
-		// Get equipment component if item owner is a pawn.
-		if (EquipmentComp == nullptr)
-		{
-			if (APawn* OwnerAsPawn = Cast<APawn>(Owner))
-			{
-				EquipmentComp = UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn);
-			}
-		}
-	}
-
-	return EquipmentComp;
 }

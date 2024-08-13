@@ -23,10 +23,6 @@ FGameplayDebuggerCategory_Equipment::FGameplayDebuggerCategory_Equipment()
 void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC, AActor* DebugActor)
 {
 	DataPack.DebugActorName = GetNameSafe(DebugActor);
-	
-	// Reset equipment.
-	DataPack.Equipment.Reset();
-
 
 	// Try to find an equipment component on the debug actor.
 	UEquipmentComponent* EquipmentComp = nullptr;
@@ -36,165 +32,148 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 		EquipmentComp = DebugActorAsPawn->FindComponentByClass<UEquipmentComponent>();
 	}
 
-	// Debug actor has an equipment component.
 	if (EquipmentComp)
 	{
-		DataPack.bHasEquipment = 1;
+		DataPack.bHasEquipmentComp = 1;
 
-		// Convert all equipped items into debug data before serializing.
-		for (const UEquipmentInstance* EquipmentInstance : EquipmentComp->GetAllEquipment())
+		// Convert the current equipment into debug data before serializing.
+		if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
 		{
-			// Include null items for debugging.
-			if (EquipmentInstance == nullptr)
-			{
-				FRepData::FEquipment& RepItem = DataPack.Equipment.AddDefaulted_GetRef();
-				continue;
-			}
-
-			FRepData::FEquipment& RepItem = DataPack.Equipment.AddDefaulted_GetRef();
+			DataPack.bHasEquipment = 1;
 
 			// Name.
-			RepItem.DisplayName = GetNameSafe(EquipmentInstance);
+			DataPack.EquipmentDisplayName = GetNameSafe(EquipmentInstance);
 
 			// Equipment def.
-			RepItem.EquipmentDef = GetNameSafe(EquipmentInstance->GetEquipmentDefinition());
+			DataPack.EquipmentDef = GetNameSafe(EquipmentInstance->GetEquipmentDefinition());
 
 			// Instance type.
-			RepItem.EquipmentInstanceType = GetNameSafe(EquipmentInstance->GetClass());
+			DataPack.EquipmentInstanceType = GetNameSafe(EquipmentInstance->GetClass());
 
 			// Inventory item should be the equipment's instigator.
 			UObject* Instigator = EquipmentInstance->GetInstigator();
-			RepItem.AssociatedInventoryItem = (Instigator && Instigator->IsA(UInventoryItemInstance::StaticClass())) ?
+			DataPack.AssociatedInventoryItem = (Instigator && Instigator->IsA(UInventoryItemInstance::StaticClass())) ?
 												GetNameSafe(Instigator) :
 												FString("None");
 
 			// Spawned equipment actors.
-			RepItem.SpawnedEquipmentActors.Reset();
+			DataPack.SpawnedEquipmentActors.Reset();
 			for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
 			{
-				RepItem.SpawnedEquipmentActors.Add(GetNameSafe(EquipmentActor));
+				DataPack.SpawnedEquipmentActors.Add(GetNameSafe(EquipmentActor));
 			}
 
 			// Ability info.
-			EquipmentInstance->GrantedAbilitySetHandles.GetAbilityDebugInfo(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(DebugActor), RepItem.GrantedAbilities);
-			EquipmentInstance->GrantedAbilitySetHandles.GetEffectDebugInfo(RepItem.AppliedEffects);
-			EquipmentInstance->GrantedAbilitySetHandles.GetAttributeDebugInfo(RepItem.AddedAttributeSets);
+			EquipmentInstance->GrantedAbilitySetHandles.GetAbilityDebugInfo(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(DebugActor), DataPack.GrantedAbilities);
+			EquipmentInstance->GrantedAbilitySetHandles.GetEffectDebugInfo(DataPack.AppliedEffects);
+			EquipmentInstance->GrantedAbilitySetHandles.GetAttributeDebugInfo(DataPack.AddedAttributeSets);
+		}
+		// No current equipment.
+		else
+		{
+			DataPack.bHasEquipment = 0;
 		}
 	}
 	// Observed actor does not have an equipment component.
 	else
 	{
-		DataPack.bHasEquipment = 0;
+		DataPack.bHasEquipmentComp = 0;
 	}
 }
 
 void FGameplayDebuggerCategory_Equipment::DrawData(APlayerController* OwnerPC, FGameplayDebuggerCanvasContext& CanvasContext)
 {
 	// Null equipment component case.
-	if (!DataPack.bHasEquipment)
+	if (!DataPack.bHasEquipmentComp)
 	{
 		CanvasContext.Printf(TEXT("{red}Debug target {yellow}%s{red} cannot use equipment."), *DataPack.DebugActorName);
 		return;
 	}
 
 	// Current Equipment (Owner):
-	CanvasContext.Printf(TEXT("Inventory Contents ({yellow}%s{white}):"), *DataPack.DebugActorName);
+	CanvasContext.Printf(TEXT("Current Equipment ({yellow}%s{white}):"), *DataPack.DebugActorName);
 
-	if (DataPack.Equipment.Num() == 0)
+	if (!DataPack.bHasEquipment)
 	{
-		CanvasContext.Printf(TEXT("\t{red}No equipped items."));
+		CanvasContext.Printf(TEXT("\t{red}No equipped item."));
 		return;
 	}
 
 
-	for (FRepData::FEquipment& Equipment : DataPack.Equipment)
+
+	//	Equipment Name
+	CanvasContext.Printf(TEXT("\t{green}%s"), *DataPack.EquipmentDisplayName);
+
+	//		Instance of: Equipment Definition
+	CanvasContext.Printf(TEXT("\t\tInstance of: {yellow}%s"), *DataPack.EquipmentDef);
+
+	//		Instance Class: Instance Type
+	CanvasContext.Printf(TEXT("\t\tInstance Class: {yellow}%s"), *DataPack.EquipmentInstanceType);
+
+	//		Associated Inventory Item: Item
+	CanvasContext.Printf(TEXT("\t\tAssociated Inventory Item: {yellow}%s"), *DataPack.AssociatedInventoryItem);
+
+	//		Spawned Actors:
+	CanvasContext.Printf(TEXT("\t\tSpawned Actors:"));
+
+	//			Equipment Actor
+	if (DataPack.SpawnedEquipmentActors.Num() == 0)
 	{
-		// Spacer between items.
-		CanvasContext.Printf(TEXT(""));
-
-
-		// Null equipment case.
-		if (Equipment.DisplayName.IsEmpty())
+		CanvasContext.Printf(TEXT("\t\t\t{red}No spawned equipment actors."));
+	}
+	else
+	{
+		for (FString& ActorName : DataPack.SpawnedEquipmentActors)
 		{
-			CanvasContext.Printf(TEXT("\t{red}[Missing equipment!]"));
-			continue;
+			CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *ActorName);
 		}
+	}
 
+	//		Granted Abilities:
+	CanvasContext.Printf(TEXT("\t\tGranted Abilities:"));
 
-		//	Equipment Name
-		CanvasContext.Printf(TEXT("\t{green}%s"), *Equipment.DisplayName);
-
-		//		Instance of: Equipment Definition
-		CanvasContext.Printf(TEXT("\t\tInstance of: {yellow}%s"), *Equipment.EquipmentDef);
-
-		//		Instance Class: Instance Type
-		CanvasContext.Printf(TEXT("\t\tInstance Class: {yellow}%s"), *Equipment.EquipmentInstanceType);
-
-		//		Associated Inventory Item: Item
-		CanvasContext.Printf(TEXT("\t\tAssociated Inventory Item: {yellow}%s"), *Equipment.AssociatedInventoryItem);
-
-		//		Spawned Actors:
-		CanvasContext.Printf(TEXT("\t\tSpawned Actors:"));
-
-		//			Equipment Actor
-		if (Equipment.SpawnedEquipmentActors.Num() == 0)
+	//			Ability
+	if (DataPack.GrantedAbilities.Num() == 0)
+	{
+		CanvasContext.Printf(TEXT("\t\t\t{red}No granted abilities."));
+	}
+	else
+	{
+		for (FString& AbilityName : DataPack.GrantedAbilities)
 		{
-			CanvasContext.Printf(TEXT("\t\t\t{red}No spawned equipment actors."));
+			CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *AbilityName);
 		}
-		else
-		{
-			for (FString& ActorName : Equipment.SpawnedEquipmentActors)
-			{
-				CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *ActorName);
-			}
-		}
+	}
 
-		//		Granted Abilities:
-		CanvasContext.Printf(TEXT("\t\tGranted Abilities:"));
+	//		Applied Effects:
+	CanvasContext.Printf(TEXT("\t\tApplied Effects:"));
 
-		//			Ability
-		if (Equipment.GrantedAbilities.Num() == 0)
+	//			Effect
+	if (DataPack.AppliedEffects.Num() == 0)
+	{
+		CanvasContext.Printf(TEXT("\t\t\t{red}No applied effects."));
+	}
+	else
+	{
+		for (FString& EffectName : DataPack.AppliedEffects)
 		{
-			CanvasContext.Printf(TEXT("\t\t\t{red}No granted abilities."));
+			CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *EffectName);
 		}
-		else
-		{
-			for (FString& AbilityName : Equipment.GrantedAbilities)
-			{
-				CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *AbilityName);
-			}
-		}
+	}
 
-		//		Applied Effects:
-		CanvasContext.Printf(TEXT("\t\tApplied Effects:"));
+	//		Added Attribute Sets:
+	CanvasContext.Printf(TEXT("\t\tAdded Attribute Sets:"));
 
-		//			Effect
-		if (Equipment.AppliedEffects.Num() == 0)
+	//			Attribute Set
+	if (DataPack.AddedAttributeSets.Num() == 0)
+	{
+		CanvasContext.Printf(TEXT("\t\t\t{red}No added attribute sets."));
+	}
+	else
+	{
+		for (FString& AttributeSetName : DataPack.AddedAttributeSets)
 		{
-			CanvasContext.Printf(TEXT("\t\t\t{red}No applied effects."));
-		}
-		else
-		{
-			for (FString& EffectName : Equipment.AppliedEffects)
-			{
-				CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *EffectName);
-			}
-		}
-
-		//		Added Attribute Sets:
-		CanvasContext.Printf(TEXT("\t\tAdded Attribute Sets:"));
-
-		//			Attribute Set
-		if (Equipment.AddedAttributeSets.Num() == 0)
-		{
-			CanvasContext.Printf(TEXT("\t\t\t{red}No added attribute sets."));
-		}
-		else
-		{
-			for (FString& AttributeSetName : Equipment.AddedAttributeSets)
-			{
-				CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *AttributeSetName);
-			}
+			CanvasContext.Printf(TEXT("\t\t\t{yellow}%s"), *AttributeSetName);
 		}
 	}
 }
@@ -206,36 +185,27 @@ TSharedRef<FGameplayDebuggerCategory> FGameplayDebuggerCategory_Equipment::MakeI
 
 void FGameplayDebuggerCategory_Equipment::FRepData::Serialize(FArchive& Ar)
 {
-	// Equipment.
-	int32 NumEquipment = Equipment.Num();
-	Ar << NumEquipment;
-	if (Ar.IsLoading())
-	{
-		Equipment.SetNum(NumEquipment);
-	}
-
-	for (int32 Idx = 0; Idx < NumEquipment; Idx++)
-	{
-		Ar << Equipment[Idx].DisplayName;
-		Ar << Equipment[Idx].EquipmentDef;
-		Ar << Equipment[Idx].EquipmentInstanceType;
-		Ar << Equipment[Idx].AssociatedInventoryItem;
-		Ar << Equipment[Idx].SpawnedEquipmentActors;
-		Ar << Equipment[Idx].GrantedAbilities;
-		Ar << Equipment[Idx].AppliedEffects;
-		Ar << Equipment[Idx].AddedAttributeSets;
-	}
-
 	// Data.
+	Ar << EquipmentDisplayName;
+	Ar << EquipmentDef;
+	Ar << EquipmentInstanceType;
+	Ar << AssociatedInventoryItem;
+	Ar << SpawnedEquipmentActors;
+	Ar << GrantedAbilities;
+	Ar << AppliedEffects;
+	Ar << AddedAttributeSets;
+
 	Ar << DebugActorName;
 
 	// Bit flags.
 	uint32 BitFlags =
-		((bHasEquipment ? 1 : 0) << 0);
+		((bHasEquipmentComp ? 1 : 0) << 0) |
+		((bHasEquipment ? 1 : 0) << 1);
 
 	Ar << BitFlags;
 
-	bHasEquipment = (BitFlags & (1 << 0)) != 0;
+	bHasEquipmentComp = (BitFlags & (1 << 0)) != 0;
+	bHasEquipment = (BitFlags & (1 << 1)) != 0;
 }
 
 #endif // WITH_GAMEPLAY_DEBUGGER
