@@ -144,16 +144,6 @@ private:
 
 
 
-	// Equipment.
-
-private:
-
-	/** This character's equipment component, responsible for holding and managing equipment. */
-	UPROPERTY(VisibleAnywhere, Category = "Crash|Character")
-	TObjectPtr<UEquipmentComponent> EquipmentComponent;
-
-
-
 	// Teams.
 
 public:

@@ -11,7 +11,7 @@ class UCrashInputActionMapping;
 /**
  * Defines input for simple pawn movement.
  */
-UCLASS(Meta = (BlueprintSpawnableComponent, ShortToolTip = "Sets up input for basic pawn movement. Requires a pawn extension component."))
+UCLASS(ClassGroup = "Input", Meta = (BlueprintSpawnableComponent, ShortToolTip = "Sets up input for basic pawn movement. Requires a pawn extension component."))
 class PROJECTCRASH_API UHeroInputHandlerComponent : public UInputHandlerComponentBase
 {
 	GENERATED_BODY()

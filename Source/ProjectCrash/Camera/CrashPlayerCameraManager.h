@@ -11,7 +11,7 @@
 /**
  * Default player camera manager for this project.
  */
-UCLASS(NotPlaceable, MinimalAPI)
+UCLASS(NotPlaceable, MinimalAPI, Meta = (BlueprintSpawnableComponent = "false"))
 class ACrashPlayerCameraManager : public APlayerCameraManager
 {
 	GENERATED_BODY()

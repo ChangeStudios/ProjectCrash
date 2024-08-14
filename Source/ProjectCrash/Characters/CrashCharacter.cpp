@@ -80,10 +80,6 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Health component.
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-
-	// Equipment component.
-	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 void ACrashCharacter::PossessedBy(AController* NewController)

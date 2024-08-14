@@ -21,7 +21,7 @@ DECLARE_DELEGATE_RetVal(TSubclassOf<UCrashCameraModeBase>, FDetermineCameraModeS
  *
  * TODO: Implement first- and third-person camera modes for determining mesh and effects visibility.
  */
-UCLASS(Category = "Camera", Meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "Camera", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCameraComponent : public UCameraComponent
 {
 	GENERATED_BODY()

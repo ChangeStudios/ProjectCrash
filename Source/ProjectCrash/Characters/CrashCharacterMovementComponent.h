@@ -11,7 +11,7 @@ class UMovementAttributeSet;
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
  */
-UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, ClassGroup = "Movement", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()

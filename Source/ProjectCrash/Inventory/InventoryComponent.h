@@ -12,7 +12,7 @@ class UInventoryItemInstance;
 /**
  * Provides the owning actor with an inventory of items which can be accessed and managed via this component.
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, ClassGroup = "Gameplay", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
