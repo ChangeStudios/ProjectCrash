@@ -49,8 +49,10 @@ public:
 	 * @param InEquipmentSkin			The skin to use for this equipment instance. This will spawn this equipment's
 	 *									actors on the server, and be replicated to clients to play animations and
 	 *									effects.
+	 * @param InInstigator				The object responsible for granting this equipment. E.g. if this equipment was
+	 *									equipped from an inventory item, this would be the inventory item instance.
 	 */
-	void InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin);
+	void InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin, UObject* InInstigator = nullptr);
 
 	/** Called on the server when this instance is unequipped. Destroys equipment actors and removes granted ability
 	 * sets. */
@@ -81,10 +83,6 @@ public:
 	/** Returns the object responsible for granting this equipment (usually an inventory item instance). */
 	UFUNCTION(BlueprintPure, Category = "Equipment", Meta = (ToolTip = "The object responsible for granting this equipment; e.g. this equipment's inventory item instance, if it has one."))
 	UObject* GetInstigator() const { return Instigator; }
-
-	/** Sets this equipment instance's instigating object. */
-	UFUNCTION(BlueprintCallable, Category = "Equipment")
-	void SetInstigator(UObject* InInstigator) { Instigator = InInstigator; }
 
 private:
 

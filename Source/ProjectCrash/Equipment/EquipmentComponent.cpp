@@ -79,7 +79,7 @@ void UEquipmentComponent::ReadyForReplication()
 	}
 }
 
-UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* EquipmentDefinition)
+UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* EquipmentDefinition, UObject* Instigator)
 {
 	UEquipmentInstance* NewEquipment = nullptr;
 
@@ -121,7 +121,7 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		if (ensure(NewEquipment != nullptr))
 		{
 			// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
-			NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin);
+			NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin, Instigator);
 
 			// Notify the new equipment that it's been equipped on the server.
 			NewEquipment->OnEquipped();
@@ -235,10 +235,8 @@ void UEquipmentComponent::AutoEquipFirstItem()
 			{
 				if (EquippableTrait->bAutoEquip)
 				{
-					if (EquipItem(EquippableTrait->EquipmentDefinition))
+					if (EquipItem(EquippableTrait->EquipmentDefinition, Item))
 					{
-						CurrentEquipment->SetInstigator(Item);
-
 						// Stop after an item is successfully equipped.
 						break;
 					}

@@ -18,7 +18,7 @@ UEquipmentInstance::UEquipmentInstance() :
 {
 }
 
-void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin)
+void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDefinition, UEquipmentSkin* InEquipmentSkin, UObject* InInstigator)
 {
 	check(GetPawn()->HasAuthority());
 	check(InEquipmentDefinition);
@@ -27,6 +27,7 @@ void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDe
 	// Initialize data.
 	EquipmentDefinition = InEquipmentDefinition;
 	EquipmentSkin = InEquipmentSkin;
+	Instigator = (InInstigator ? InInstigator : nullptr);
 
 	// Spawn equipment actors.
 	SpawnEquipmentActors(EquipmentSkin->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);

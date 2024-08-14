@@ -24,10 +24,7 @@ void UItemTrait_Equippable::OnItemEnteredInventory(UInventoryItemInstance* ItemI
 		}
 
 		// Try to equip the item.
-		if (UEquipmentInstance* EquippedItem = EquipmentComp->EquipItem(EquipmentDefinition))
-		{
-			EquippedItem->SetInstigator(ItemInstance);
-		}
+		EquipmentComp->EquipItem(EquipmentDefinition, ItemInstance);
 	}
 }
 

@@ -64,8 +64,8 @@ public:
 	UEquipmentInstance* EquipItem
 	(
 		UPARAM(DisplayName = "Item to Equip")
-		UEquipmentDefinition* EquipmentDefinition
-		// TODO: Add instigator parameter
+		UEquipmentDefinition* EquipmentDefinition,
+		UObject* Instigator = nullptr
 	);
 
 	/** Unequips the current item, leaving the pawn in an "unarmed" state. Do not call this to equip a new item; call
