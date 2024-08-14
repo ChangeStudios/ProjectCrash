@@ -91,7 +91,7 @@ void FEquipmentList::RemoveEntry(UEquipmentInstance* EquipmentInstance)
 			}
 
 			// Destroy the equipment's spawned actors.
-			EquipmentInstance->DestroyEquipmentActors();
+			// EquipmentInstance->DestroyEquipmentActors();
 
 			EntryIt.RemoveCurrent();
 			MarkArrayDirty();

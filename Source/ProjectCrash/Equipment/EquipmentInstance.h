@@ -83,6 +83,7 @@ public:
 	UObject* GetInstigator() const { return Instigator; }
 
 	/** Sets this equipment instance's instigating object. */
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
 	void SetInstigator(UObject* InInstigator) { Instigator = InInstigator; }
 
 private:
@@ -129,7 +130,9 @@ protected:
 
 public:
 
-	/** Called when this equipment instance spawned and equipped to a pawn. */
+	/** Called when this equipment instance spawned and equipped to a pawn. Default implementation updates the
+	 * equipping pawn's character meshes to use the new equipment's skin's character animations and plays any "equip"
+	 * animations. */
 	virtual void OnEquipped();
 
 	/** Called when this equipment instance is unequipped by a pawn, likely immediately before its destruction. */
@@ -168,13 +171,8 @@ protected:
 
 	/** The skin being used for this equipment instance. Determines which equipment actors will be spawned, the
 	 * character animations use by the equipping pawn, and the animations and effects played with this equipment. */
-	UPROPERTY(ReplicatedUsing = "OnRep_EquipmentSkin")
+	UPROPERTY(Replicated)
 	TObjectPtr<UEquipmentSkin> EquipmentSkin;
-
-	/** Updates the equipping pawn's character meshes to use the new equipment skin's character animations. This is
-	 * done here instead of OnEquipped in case OnEquipped gets called before the skin gets replicated. */
-	UFUNCTION()
-	void OnRep_EquipmentSkin();
 
 
 
@@ -186,6 +184,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	TArray<AEquipmentActor*> GetSpawnedActors() const { return SpawnedActors; }
 
+private:
+
 	/** Spawns the given collection of equipment actors in the given perspective for this equipment. This should
 	 * usually be called twice for each equipment: once to spawn first-person actors and once for third-person
 	 * actors. */
@@ -193,8 +193,6 @@ public:
 
 	/** Destroys all equipment actors currently spawned by this equipment. */
 	void DestroyEquipmentActors();
-
-private:
 
 	/** Equipment actors currently spawned in the world to represent this equipment while it is equipped. */
 	UPROPERTY(Replicated)
@@ -209,4 +207,10 @@ public:
 	/** Tries to retrieve the world through the outer object, if the outer object is an actor (which it should always
 	 * be). */
 	virtual UWorld* GetWorld() const override;
+
+	/** Helper for retrieving a first-person skeletal mesh from the pawn on which this instance is equipped. */
+	USkeletalMeshComponent* GetFirstPersonMeshFromPawn() const;
+
+	/** Helper for retrieving a third-person skeletal mesh from the pawn on which this instance is equipped. */
+	USkeletalMeshComponent* GetThirdPersonMeshFromPawn() const;
 };

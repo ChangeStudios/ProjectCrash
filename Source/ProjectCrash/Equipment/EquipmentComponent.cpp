@@ -97,11 +97,11 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		// Create a new instance for the given equipment.
 		NewEquipment = NewObject<UEquipmentInstance>(GetOwner(), EquipmentDefinition->EquipmentInstanceClass);
 
-		// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
-		NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin);
-
 		if (ensure(NewEquipment != nullptr))
 		{
+			// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
+			NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin);
+
 			// Notify the new equipment that it's been equipped on the server.
 			NewEquipment->OnEquipped();
 

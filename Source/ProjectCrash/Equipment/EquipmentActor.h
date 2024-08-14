@@ -41,6 +41,17 @@ public:
 
 
 
+	// Initialization.
+
+public:
+
+	/** Hides this actor when spawned on clients. It will be revealed once the equipment has been fully replicated.
+	 * This prevents the actor from momentarily appearing before snapping down into the "equip" animation if the actor
+	 * gets replicated before the "OnEquip" function. */
+	virtual void BeginPlay() override;
+
+
+
 	// Perspective.
 
 public:

@@ -50,11 +50,8 @@ void FGameplayDebuggerCategory_Equipment::CollectData(APlayerController* OwnerPC
 			// Instance type.
 			DataPack.EquipmentInstanceType = GetNameSafe(EquipmentInstance->GetClass());
 
-			// Inventory item should be the equipment's instigator.
-			UObject* Instigator = EquipmentInstance->GetInstigator();
-			DataPack.AssociatedInventoryItem = (Instigator && Instigator->IsA(UInventoryItemInstance::StaticClass())) ?
-												GetNameSafe(Instigator) :
-												FString("None");
+			// Instigator.
+			DataPack.EquipmentInstigator = GetNameSafe(EquipmentInstance->GetInstigator());
 
 			// Spawned equipment actors.
 			DataPack.SpawnedEquipmentActors.Reset();
@@ -110,8 +107,8 @@ void FGameplayDebuggerCategory_Equipment::DrawData(APlayerController* OwnerPC, F
 	//		Instance Class: Instance Type
 	CanvasContext.Printf(TEXT("\t\tInstance Class: {yellow}%s"), *DataPack.EquipmentInstanceType);
 
-	//		Associated Inventory Item: Item
-	CanvasContext.Printf(TEXT("\t\tAssociated Inventory Item: {yellow}%s"), *DataPack.AssociatedInventoryItem);
+	//		Instigator: Instigator
+	CanvasContext.Printf(TEXT("\t\tInstigator: {yellow}%s"), *DataPack.EquipmentInstigator);
 
 	//		Spawned Actors:
 	CanvasContext.Printf(TEXT("\t\tSpawned Actors:"));
@@ -189,7 +186,7 @@ void FGameplayDebuggerCategory_Equipment::FRepData::Serialize(FArchive& Ar)
 	Ar << EquipmentDisplayName;
 	Ar << EquipmentDef;
 	Ar << EquipmentInstanceType;
-	Ar << AssociatedInventoryItem;
+	Ar << EquipmentInstigator;
 	Ar << SpawnedEquipmentActors;
 	Ar << GrantedAbilities;
 	Ar << AppliedEffects;

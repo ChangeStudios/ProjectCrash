@@ -28,9 +28,6 @@ void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDe
 	EquipmentDefinition = InEquipmentDefinition;
 	EquipmentSkin = InEquipmentSkin;
 
-	// Manually call equipment skin OnRep on the server so the equipping pawn's character animations are updated.
-	OnRep_EquipmentSkin();
-
 	// Spawn equipment actors.
 	SpawnEquipmentActors(EquipmentSkin->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
 	SpawnEquipmentActors(EquipmentSkin->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);
@@ -94,45 +91,54 @@ APawn* UEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 
 void UEquipmentInstance::OnEquipped()
 {
+	// Reveal the equipment actors once the equipment has been fully replicated.
+	for (AEquipmentActor* EquipmentActor : SpawnedActors)
+	{
+		if (IsValid(EquipmentActor))
+		{
+			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
+			{
+				Root->SetHiddenInGame(false);
+			}
+		}
+	}
+
+	// Update the equipping pawn's meshes to use the new equipment skin's animations, and play any "equip" animations.
+	if (EquipmentSkin->FirstPersonAnimInstance)
+	{
+		if (USkeletalMeshComponent* FirstPersonMesh = GetFirstPersonMeshFromPawn())
+		{
+			// Update animation blueprint.
+			FirstPersonMesh->SetAnimInstanceClass(EquipmentSkin->FirstPersonAnimInstance);
+
+			// Play "equip" animation.
+			if (EquipmentSkin->FirstPersonEquipAnim)
+			{
+				FirstPersonMesh->GetAnimInstance()->Montage_Play(EquipmentSkin->FirstPersonEquipAnim);
+			}
+		}
+	}
+	if (EquipmentSkin->ThirdPersonAnimInstance)
+	{
+		if (USkeletalMeshComponent* ThirdPersonMesh = GetThirdPersonMeshFromPawn())
+		{
+			// Update animation blueprint.
+			ThirdPersonMesh->SetAnimInstanceClass(EquipmentSkin->ThirdPersonAnimInstance);
+
+			// Play "equip" animation.
+			if (EquipmentSkin->ThirdPersonEquipAnim)
+			{
+				ThirdPersonMesh->GetAnimInstance()->Montage_Play(EquipmentSkin->ThirdPersonEquipAnim);
+			}
+		}
+	}
+
 	K2_OnEquipped();
 }
 
 void UEquipmentInstance::OnUnequipped()
 {
 	K2_OnUnequipped();
-}
-
-void UEquipmentInstance::OnRep_EquipmentSkin()
-{
-	check(EquipmentSkin);
-
-	// Determine the meshes on the equipping pawn to update with the new equipment's animations.
-	USkeletalMeshComponent* FirstPersonMesh = nullptr;
-	USkeletalMeshComponent* ThirdPersonMesh = nullptr;
-
-	APawn* Pawn = GetPawn();
-
-	// Try to use the dedicated meshes if the equipping pawn is of type CrashCharacter.
-	if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(Pawn))
-	{
-		FirstPersonMesh = CrashChar->GetFirstPersonMesh();
-		ThirdPersonMesh = CrashChar->GetThirdPersonMesh();
-	}
-	// Try to use the generic skeletal mesh if the equipping pawn is a character.
-	else if (ACharacter* Char = Cast<ACharacter>(Pawn))
-	{
-		ThirdPersonMesh = Char->GetMesh();
-	}
-
-	// Update the equipping pawn's meshes to use the new equipment skin's animations.
-	if (FirstPersonMesh && EquipmentSkin->FirstPersonAnimInstance)
-	{
-		FirstPersonMesh->SetAnimInstanceClass(EquipmentSkin->FirstPersonAnimInstance);
-	}
-	if (ThirdPersonMesh && EquipmentSkin->ThirdPersonAnimInstance)
-	{
-		ThirdPersonMesh->SetAnimInstanceClass(EquipmentSkin->ThirdPersonAnimInstance);
-	}
 }
 
 void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorInfo>& ActorsToSpawn, EEquipmentPerspective Perspective)
@@ -175,7 +181,7 @@ void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorIn
 		for (const FEquipmentSkinActorInfo& ActorInfo : ActorsToSpawn)
 		{
 			// Spawn the new equipment actor. We use deferred spawning just to initialize the actor's owner.
-			AEquipmentActor* NewActor = GetWorld()->SpawnActorDeferred<AEquipmentActor>(ActorInfo.ActorToSpawn, FTransform::Identity, OwningPawn, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+			AEquipmentActor* NewActor = GetWorld()->SpawnActorDeferred<AEquipmentActor>(ActorInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
 			NewActor->FinishSpawning(FTransform::Identity, true);
 			NewActor->SetActorRelativeTransform(ActorInfo.AttachTransform);
 			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, ActorInfo.AttachSocket);
@@ -208,6 +214,41 @@ UWorld* UEquipmentInstance::GetWorld() const
 	{
 		return nullptr;
 	}
+}
+
+USkeletalMeshComponent* UEquipmentInstance::GetFirstPersonMeshFromPawn() const
+{
+	/* We can only use a first-person mesh if this instance is equipped on a pawn of type CrashCharacter, which has a
+	 * dedicated first-person mesh. */
+	if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(GetPawn()))
+	{
+		return CrashChar->GetFirstPersonMesh();
+	}
+
+	return nullptr;
+}
+
+USkeletalMeshComponent* UEquipmentInstance::GetThirdPersonMeshFromPawn() const
+{
+	APawn* Pawn = GetPawn();
+
+	// Try to retrieve the CrashCharacter's dedicated third-person mesh.
+	if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(Pawn))
+	{
+		return CrashChar->GetThirdPersonMesh();
+	}
+	// Try to retrieve the Character's generic mesh.
+	if (ACharacter* Char = Cast<ACharacter>(Pawn))
+	{
+		return Char->GetMesh();
+	}
+	// Try to retrieve any skeletal mesh on the pawn.
+	if (USkeletalMeshComponent* SkelMesh = Pawn->FindComponentByClass<USkeletalMeshComponent>())
+	{
+		return SkelMesh;
+	}
+
+	return nullptr;
 }
 
 void UEquipmentInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -31,7 +31,7 @@ protected:
 		FString EquipmentDisplayName;
 		FString EquipmentDef;
 		FString EquipmentInstanceType;
-		FString AssociatedInventoryItem;
+		FString EquipmentInstigator;
 		TArray<FString> SpawnedEquipmentActors;
 		TArray<FString> GrantedAbilities;
 		TArray<FString> AppliedEffects;
