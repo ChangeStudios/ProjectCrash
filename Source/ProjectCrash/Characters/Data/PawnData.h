@@ -69,16 +69,6 @@ public:
 
 
 
-	// Inventory.
-
-public:
-
-	/** Items granted to this pawn when initialized. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	TArray<TSubclassOf<UInventoryItemDefinition>> Items;
-
-
-
 	// Input.
 
 public:

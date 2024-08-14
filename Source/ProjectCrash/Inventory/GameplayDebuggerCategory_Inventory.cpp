@@ -24,22 +24,11 @@ void FGameplayDebuggerCategory_Inventory::CollectData(APlayerController* OwnerPC
 
 	// Try to find an inventory associated with the debug actor.
 	UInventoryComponent* InventoryComp = nullptr;
-
-	// Inventory is owned by observed actor (e.g. AI character).
-	if (!InventoryComp)
+	if (APawn* DebugActorAsPawn = Cast<APawn>(DebugActor))
 	{
-		InventoryComp = DebugActor->FindComponentByClass<UInventoryComponent>();
-	}
-
-	// Inventory is owned by player state (e.g. player).
-	if (!InventoryComp)
-	{
-		if (APawn* DebugActorAsPawn = Cast<APawn>(DebugActor))
+		if (AController* DebugActorController = DebugActorAsPawn->GetController())
 		{
-			if (APlayerState* PS = DebugActorAsPawn->GetPlayerState())
-			{
-				InventoryComp = PS->FindComponentByClass<UInventoryComponent>();
-			}
+			InventoryComp = UInventoryComponent::FindInventoryComponent(DebugActorController);
 		}
 	}
 

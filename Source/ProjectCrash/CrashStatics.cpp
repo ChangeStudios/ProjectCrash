@@ -53,3 +53,26 @@ APlayerController* UCrashStatics::GetPlayerControllerFromObject(UObject* Object)
 
 	return nullptr;
 }
+
+AController* UCrashStatics::GetControllerFromObject(UObject* Object)
+{
+	// Object is a controller.
+	if (AController* C = Cast<AController>(Object))
+	{
+		return C;
+	}
+
+	// Object is a player state.
+	if (const APlayerState* TargetPS = Cast<APlayerState>(Object))
+	{
+		return TargetPS->GetOwningController();
+	}
+
+	// Object is a pawn.
+	if (const APawn* TargetPawn = Cast<APawn>(Object))
+	{
+		return TargetPawn->GetController();
+	}
+
+	return nullptr;
+}

@@ -17,6 +17,8 @@ class PROJECTCRASH_API UItemTrait_Equippable : public UInventoryItemTraitBase
 {
 	GENERATED_BODY()
 
+	friend UEquipmentComponent;
+
 public:
 
 	/** Automatically equips this item when it enters a pawn's inventory if AutoEquip is true. */

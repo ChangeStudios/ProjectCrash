@@ -3,17 +3,18 @@
 #pragma once
 
 #include "InventoryList.h"
-#include "Components/ActorComponent.h"
+#include "Components/ControllerComponent.h"
 #include "InventoryComponent.generated.h"
 
 class UInventoryItemDefinition;
 class UInventoryItemInstance;
 
 /**
- * Provides the owning actor with an inventory of items which can be accessed and managed via this component.
+ * Provides the owning controller with an inventory of items which can be accessed and managed via this component. Can
+ * be added to player controllers or AI controllers.
  */
 UCLASS(BlueprintType, ClassGroup = "Gameplay", Meta = (BlueprintSpawnableComponent))
-class PROJECTCRASH_API UInventoryComponent : public UActorComponent
+class PROJECTCRASH_API UInventoryComponent : public UControllerComponent
 {
 	GENERATED_BODY()
 
@@ -126,7 +127,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Inventory")
 	UInventoryItemInstance* FindFirstItemByDefinition(TSubclassOf<UInventoryItemDefinition> ItemToFind) const;
 
-	/** Retrieves the given actor's inventory component, if it has one. Returns null otherwise. */
+	/** Retrieves the given controller's inventory component, if it has one. Returns null otherwise. */
 	UFUNCTION(BlueprintPure, Category = "Inventory")
-	static UInventoryComponent* FindInventoryComponent(AActor* Actor);
+	static UInventoryComponent* FindInventoryComponent(const AController* Controller) { return Controller ? Controller->FindComponentByClass<UInventoryComponent>() : nullptr; }
 };

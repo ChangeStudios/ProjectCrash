@@ -15,14 +15,10 @@ class UEquipmentInstance;
  * The pawn (or its player state) does not need an inventory component to use equipment, but they should have on if they
  * want to manage the items from which equipment is created (i.e. inventory items with the "equippable" trait).
  */
-UCLASS(BlueprintType, Const)
+UCLASS(BlueprintType, Const, ClassGroup = "Gameplay", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UEquipmentComponent : public UPawnComponent
 {
 	GENERATED_BODY()
-
-#if WITH_GAMEPLAY_DEBUGGER
-	friend FGameplayDebuggerCategory_Equipment;
-#endif // WITH_GAMEPLAY_DEBUGGER
 
 	// Construction.
 
@@ -35,6 +31,9 @@ public:
 	// Initialization.
 
 public:
+
+	/** Attempts to equip any inventory items with auto-equip enabled. */
+	virtual void InitializeComponent() override;
 
 	/** Unequips all equipment when this component is uninitialized. */
 	virtual void UninitializeComponent() override;
@@ -66,6 +65,7 @@ public:
 	(
 		UPARAM(DisplayName = "Item to Equip")
 		UEquipmentDefinition* EquipmentDefinition
+		// TODO: Add instigator parameter
 	);
 
 	/** Unequips the current item, leaving the pawn in an "unarmed" state. Do not call this to equip a new item; call
@@ -88,6 +88,10 @@ private:
 	UFUNCTION()
 	void OnRep_CurrentEquipment(UEquipmentInstance* PreviousEquipment);
 
+	/** Attempts to auto-equip an equippable item in the new controller's player state's inventory, if it has one. */
+	UFUNCTION()
+	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
 
 
 	// Utils.
@@ -109,4 +113,10 @@ public:
 	/** Tries to retrieve an equipment component associated with the owner of a given item. */
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	static UEquipmentComponent* FindEquipmentComponentFromItem(UInventoryItemInstance* ItemInstance);
+
+private:
+
+	/** Searches for an equippable item in an inventory component associated with this equipment component's owner, and
+	 * equips the first item with "auto-equip" enabled. Does nothing if an item is already equipped. */
+	void AutoEquipFirstItem();
 };

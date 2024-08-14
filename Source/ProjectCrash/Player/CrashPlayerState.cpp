@@ -166,15 +166,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		}
 	}
 
-	// Add the pawn's default inventory items.
-	for (const TSubclassOf<UInventoryItemDefinition> Item : PawnData->Items)
-	{
-		if (Item)
-		{
-			InventoryComponent->AddItemByDefinition(Item);
-		}
-	}
-
 	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
 	 * mode-specific abilities via game feature actions. */
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);

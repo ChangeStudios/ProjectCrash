@@ -73,8 +73,8 @@ public:
 
 private:
 
-	/** The current owner of this item. When in an inventory, this is the owning actor of the inventory component
-	 * (usually a player state or a pawn). When in an item pick-up actor, this is that actor. */
+	/** The current owner of this item. When in an inventory, this is the owning controller of the inventory component.
+	 * When in an item pick-up actor, this is that actor. */
 	UPROPERTY(Replicated)
 	AActor* Owner;
 

@@ -7,8 +7,9 @@
 #include "EquipmentInstance.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PlayerState.h"
+#include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryItemInstance.h"
+#include "Inventory/Traits/ItemTrait_Equippable.h"
 #include "Net/UnrealNetwork.h"
 
 UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +18,26 @@ UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitial
 {
 	SetIsReplicatedByDefault(true);
 	bWantsInitializeComponent = true;
+}
+
+void UEquipmentComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	// Try to auto-equip an item on initialization.
+	if (HasAuthority())
+	{
+		APawn* Pawn = GetPawnChecked<APawn>();
+
+		if (Pawn->GetController())
+		{
+			AutoEquipFirstItem();
+		}
+		else
+		{
+			Pawn->ReceiveControllerChangedDelegate.AddDynamic(this, &UEquipmentComponent::OnControllerChanged);
+		}
+	}
 }
 
 void UEquipmentComponent::UninitializeComponent()
@@ -163,6 +184,11 @@ void UEquipmentComponent::OnRep_CurrentEquipment(UEquipmentInstance* PreviousEqu
 	}
 }
 
+void UEquipmentComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	AutoEquipFirstItem();
+}
+
 template <typename T>
 T* UEquipmentComponent::GetEquipment()
 {
@@ -181,26 +207,45 @@ UEquipmentComponent* UEquipmentComponent::FindEquipmentComponentFromItem(UInvent
 	AActor* Owner = ItemInstance->GetOwner();
 	if (ensure(Owner))
 	{
-		// Get equipment component if item owner is a player state.
-		if (APlayerState* OwnerAsPS = Cast<APlayerState>(Owner))
+		/* Item owner should be a controller when owned by a player (as opposed to being owned by a pick-up actor,
+		 * which will not have an equipment component.) */
+		if (AController* Controller = Cast<AController>(Owner))
 		{
-			if (APawn* OwnerPawn = OwnerAsPS->GetPawn())
-			{
-				EquipmentComp = FindEquipmentComponent(OwnerPawn);
-			}
-		}
-
-		// Get equipment component if item owner is a pawn.
-		if (EquipmentComp == nullptr)
-		{
-			if (APawn* OwnerAsPawn = Cast<APawn>(Owner))
-			{
-				EquipmentComp = FindEquipmentComponent(OwnerAsPawn);
-			}
+			EquipmentComp = FindEquipmentComponent(Controller->GetPawn());
 		}
 	}
 
 	return EquipmentComp;
+}
+
+void UEquipmentComponent::AutoEquipFirstItem()
+{
+	if (CurrentEquipment)
+	{
+		return;
+	}
+
+	// Try to find an inventory component on the owning controller.
+	if (UInventoryComponent* InventoryComp = UInventoryComponent::FindInventoryComponent(GetController<AController>()))
+	{
+		// Search for any equippable items that are set to auto-equip, and try to equip one.
+		for (UInventoryItemInstance* Item : InventoryComp->GetAllItems())
+		{
+			if (const UItemTrait_Equippable* EquippableTrait = Item->FindTraitByClass<UItemTrait_Equippable>())
+			{
+				if (EquippableTrait->bAutoEquip)
+				{
+					if (EquipItem(EquippableTrait->EquipmentDefinition))
+					{
+						CurrentEquipment->SetInstigator(Item);
+
+						// Stop after an item is successfully equipped.
+						break;
+					}
+				}
+			}
+		}
+	}
 }
 
 void UEquipmentComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const

@@ -160,25 +160,6 @@ UInventoryItemInstance* UInventoryComponent::FindFirstItemByDefinition(TSubclass
 	return nullptr;
 }
 
-UInventoryComponent* UInventoryComponent::FindInventoryComponent(AActor* Actor)
-{
-	UInventoryComponent* InventoryComp = nullptr;
-
-	// Try to get the actor's inventory from their player state.
-	if (APlayerState* PS = UCrashStatics::GetPlayerStateFromObject(Actor))
-	{
-		InventoryComp = PS->GetComponentByClass<UInventoryComponent>();
-	}
-
-	// Try to get the actor's inventory from their components.
-	if (InventoryComp == nullptr)
-	{
-		InventoryComp = Actor->GetComponentByClass<UInventoryComponent>();
-	}
-
-	return InventoryComp;
-}
-
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

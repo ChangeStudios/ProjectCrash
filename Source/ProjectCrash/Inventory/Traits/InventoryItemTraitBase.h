@@ -42,6 +42,4 @@ public:
 	/** Called when an item instance is removed from an inventory. The item may have been destroyed, or it may have been
 	 * dropped. */
 	virtual void OnItemLeftInventory(UInventoryItemInstance* ItemInstance) const {}
-
-	
 };
