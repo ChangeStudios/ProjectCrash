@@ -196,7 +196,8 @@ private:
 	UPROPERTY(ReplicatedUsing = "OnRep_SpawnedActors")
 	TArray<TObjectPtr<AEquipmentActor>> SpawnedActors;
 
-	/** Reveals the new equipment actors (which start hidden) once they finish replicating. */
+	/** Reveals the new equipment actors (which start hidden) once they finish replicating. This does not need to be
+	 * called on authority, as equipment actors are never hidden on authority. */
 	UFUNCTION()
 	void OnRep_SpawnedActors(TArray<AEquipmentActor*> OldSpawnedActors);
 

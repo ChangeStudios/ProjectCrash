@@ -46,8 +46,8 @@ public:
 public:
 
 	/** Hides this actor when spawned on clients. It will be revealed once the equipment has been fully replicated.
-	 * This prevents the actor from momentarily appearing before snapping down into the "equip" animation if the actor
-	 * gets replicated before the "OnEquip" function. */
+	 * This prevents artifacts caused by the actor being replicated before "OnEquip" is called on clients, which will
+	 * make the actor appear momentarily before snapping down into an "equip" animation. */
 	virtual void BeginPlay() override;
 
 
@@ -60,20 +60,20 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	EEquipmentPerspective GetEquipmentPerspective() const { return EquipmentPerspective; }
 
-	/** Sets this equipment actor's perspective, which will initialize its visibility via an OnRep. */
+	/** Sets this equipment actor's perspective. */
 	void SetEquipmentPerspective(EEquipmentPerspective InEquipmentPerspective);
 
 protected:
 
 	/** Whether this is the first-peron or third-person actor for the equipment piece it represents. Equipment actors
-	 * are only visible to players with the same perspective as them.
-	 *
-	 * NOTE: May not need this. We can just make the character hide and reveal any actors attached to it when its visibility changes.
-	 */
+	 * are only visible to players with the same perspective as them. */
 	UPROPERTY(ReplicatedUsing = "OnRep_EquipmentPerspective")
 	EEquipmentPerspective EquipmentPerspective = EEquipmentPerspective::ThirdPerson;
 
-	/** Initializes this actor's visibility depending on its perspective. */
+	/** Initializes this actor's visibility to match the visibility of the component to which it's attached (e.g. hiding
+	 * this actor if it's attached to a hidden component). The equipping pawn's camera logic should handle any
+	 * additional visibility logic itself, such as the player's perspective changing during runtime.
+	 * @see CrashCharacter::OnStartCameraModeBlendIn. */
 	UFUNCTION()
 	void OnRep_EquipmentPerspective();
 

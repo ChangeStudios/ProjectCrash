@@ -171,10 +171,10 @@ void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorIn
 		{
 			// Spawn the new equipment actor. We use deferred spawning just to initialize the actor's owner.
 			AEquipmentActor* NewActor = GetWorld()->SpawnActorDeferred<AEquipmentActor>(ActorInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
-			NewActor->SetEquipmentPerspective(Perspective);
 			NewActor->FinishSpawning(FTransform::Identity, true);
 			NewActor->SetActorRelativeTransform(ActorInfo.AttachTransform);
 			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, ActorInfo.AttachSocket);
+			NewActor->SetEquipmentPerspective(Perspective);
 
 			SpawnedActors.Add(NewActor);
 		}
