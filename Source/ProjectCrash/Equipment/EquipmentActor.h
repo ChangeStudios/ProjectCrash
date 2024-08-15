@@ -60,9 +60,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Equipment")
 	EEquipmentPerspective GetEquipmentPerspective() const { return EquipmentPerspective; }
 
-	/** Sets this equipment actor's perspective and uses it to initialize this actor's visibility. Should only be
-	 * called once: when this equipment actor is spawned. */
-	void InitEquipmentPerspective(EEquipmentPerspective InEquipmentPerspective);
+	/** Sets this equipment actor's perspective, which will initialize its visibility via an OnRep. */
+	void SetEquipmentPerspective(EEquipmentPerspective InEquipmentPerspective);
 
 protected:
 
@@ -71,7 +70,12 @@ protected:
 	 *
 	 * NOTE: May not need this. We can just make the character hide and reveal any actors attached to it when its visibility changes.
 	 */
+	UPROPERTY(ReplicatedUsing = "OnRep_EquipmentPerspective")
 	EEquipmentPerspective EquipmentPerspective = EEquipmentPerspective::ThirdPerson;
+
+	/** Initializes this actor's visibility depending on its perspective. */
+	UFUNCTION()
+	void OnRep_EquipmentPerspective();
 
 
 

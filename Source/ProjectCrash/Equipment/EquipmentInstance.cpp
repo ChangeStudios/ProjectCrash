@@ -29,10 +29,6 @@ void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDe
 	EquipmentSkin = InEquipmentSkin;
 	Instigator = (InInstigator ? InInstigator : nullptr);
 
-	// Spawn equipment actors.
-	SpawnEquipmentActors(EquipmentSkin->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
-	SpawnEquipmentActors(EquipmentSkin->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);
-
 	// Grant ability sets.
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetPawn()))
 	{
@@ -46,6 +42,10 @@ void UEquipmentInstance::InitializeEquipment(UEquipmentDefinition* InEquipmentDe
 	{
 		UE_LOG(LogEquipment, Warning, TEXT("Equipped equipment [%s] on actor [%s] but failed to grant the equipment's ability sets: could not find an ASC for the equipping actor."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(GetPawn()));
 	}
+
+	// Spawn equipment actors.
+	SpawnEquipmentActors(EquipmentSkin->FirstPersonActorsToSpawn, EEquipmentPerspective::FirstPerson);
+	SpawnEquipmentActors(EquipmentSkin->ThirdPersonActorsToSpawn, EEquipmentPerspective::ThirdPerson);
 }
 
 void UEquipmentInstance::UninitializeEquipment()
@@ -92,18 +92,6 @@ APawn* UEquipmentInstance::GetTypedPawn(TSubclassOf<APawn> PawnType) const
 
 void UEquipmentInstance::OnEquipped()
 {
-	// Reveal the equipment actors once the equipment has been fully replicated.
-	for (AEquipmentActor* EquipmentActor : SpawnedActors)
-	{
-		if (IsValid(EquipmentActor))
-		{
-			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
-			{
-				Root->SetHiddenInGame(false);
-			}
-		}
-	}
-
 	// Update the equipping pawn's meshes to use the new equipment skin's animations, and play any "equip" animations.
 	if (EquipmentSkin->FirstPersonAnimInstance)
 	{
@@ -183,10 +171,10 @@ void UEquipmentInstance::SpawnEquipmentActors(const TArray<FEquipmentSkinActorIn
 		{
 			// Spawn the new equipment actor. We use deferred spawning just to initialize the actor's owner.
 			AEquipmentActor* NewActor = GetWorld()->SpawnActorDeferred<AEquipmentActor>(ActorInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
+			NewActor->SetEquipmentPerspective(Perspective);
 			NewActor->FinishSpawning(FTransform::Identity, true);
 			NewActor->SetActorRelativeTransform(ActorInfo.AttachTransform);
 			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, ActorInfo.AttachSocket);
-			NewActor->InitEquipmentPerspective(Perspective);
 
 			SpawnedActors.Add(NewActor);
 		}
@@ -200,6 +188,25 @@ void UEquipmentInstance::DestroyEquipmentActors()
 		if (IsValid(Actor))
 		{
 			Actor->Destroy();
+		}
+	}
+}
+
+void UEquipmentInstance::OnRep_SpawnedActors(TArray<AEquipmentActor*> OldSpawnedActors)
+{
+	// Convert to set for faster comparisons.
+	TSet OldActors(OldSpawnedActors);
+	TSet CurrentActors(SpawnedActors);
+
+	// Reveal any spawned actors that have now finished replicating, and can be revealed.
+	for (AEquipmentActor* EquipmentActor : CurrentActors)
+	{
+		if (!OldActors.Contains(EquipmentActor) && IsValid(EquipmentActor))
+		{
+			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
+			{
+				Root->SetHiddenInGame(false);
+			}
 		}
 	}
 }

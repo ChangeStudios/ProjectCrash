@@ -118,23 +118,20 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		// Create a new instance for the given equipment.
 		NewEquipment = NewObject<UEquipmentInstance>(GetOwner(), EquipmentDefinition->EquipmentInstanceClass);
 
-		if (ensure(NewEquipment != nullptr))
+		// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
+		NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin, Instigator);
+
+		// Notify the new equipment that it's been equipped on the server.
+		NewEquipment->OnEquipped();
+
+		// Update our current equipment. This calls OnEquipped on clients.
+		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+		CurrentEquipment = NewEquipment;
+
+		// Replicate the new equipment instance as a sub-object.
+		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
 		{
-			// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
-			NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin, Instigator);
-
-			// Notify the new equipment that it's been equipped on the server.
-			NewEquipment->OnEquipped();
-
-			// Update our current equipment. This calls OnEquipped on clients.
-			MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
-			CurrentEquipment = NewEquipment;
-
-			// Replicate the new equipment instance as a sub-object.
-			if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
-			{
-				AddReplicatedSubObject(NewEquipment);
-			}
+			AddReplicatedSubObject(NewEquipment);
 		}
 	}
 	else
