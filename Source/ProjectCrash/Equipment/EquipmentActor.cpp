@@ -20,6 +20,9 @@ void AEquipmentActor::BeginPlay()
 		RootComponent->SetHiddenInGame(true);
 	}
 
+	// Re-initialize this actor's visibility if its perspective was initialized before it was attached to a mesh.
+	OnRep_EquipmentPerspective();
+
 	Super::BeginPlay();
 }
 
@@ -36,7 +39,10 @@ void AEquipmentActor::OnRep_EquipmentPerspective()
 	/* Initialize this actor's visibility, which is toggled by perspective changes, with the visibility of the actor to
 	 * which it's attached. E.g. if this actor is attached to a first-person mesh, which is hidden because the local
 	 * player is in a third-person perspective, then this actor should also be hidden. */
-	RootComponent->SetVisibility(RootComponent->GetAttachParent()->IsVisible());
+	if (RootComponent && RootComponent->GetAttachParent())
+	{
+		RootComponent->SetVisibility(RootComponent->GetAttachParent()->IsVisible());
+	}
 }
 
 void AEquipmentActor::ProcessEquipmentEvent(FGameplayTag Event)
