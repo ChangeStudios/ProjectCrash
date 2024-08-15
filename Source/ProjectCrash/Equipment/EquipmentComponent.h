@@ -12,8 +12,9 @@ class UEquipmentInstance;
 /**
  * Allows the owning pawn to equip equipment which can be accessed and managed via this component.
  *
- * The pawn (or its player state) does not need an inventory component to use equipment, but they should have on if they
- * want to manage the items from which equipment is created (i.e. inventory items with the "equippable" trait).
+ * The pawn's controller does not need an inventory component to use equipment; equipment is defined with different data
+ * than inventory items. But they do need an inventory if they want to equip items (i.e. inventory items with the
+ * "equippable" trait).
  */
 UCLASS(BlueprintType, Const, ClassGroup = "Gameplay", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UEquipmentComponent : public UPawnComponent

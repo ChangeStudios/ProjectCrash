@@ -134,10 +134,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
 
-	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
-	 * data changes. */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
-
 
 
 	// Inventory.

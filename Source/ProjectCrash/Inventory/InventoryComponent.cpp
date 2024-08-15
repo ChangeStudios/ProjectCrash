@@ -127,8 +127,10 @@ void UInventoryComponent::RemoveItem(UInventoryItemInstance* ItemInstance)
 void UInventoryComponent::ClearInventory()
 {
 	// Remove each item in this inventory.
-	for (FInventoryListEntry& Entry : InventoryList.Entries)
+	for (auto EntryIt = InventoryList.Entries.CreateIterator(); EntryIt; ++EntryIt)
 	{
+		FInventoryListEntry& Entry = *EntryIt;
+
 		if (Entry.ItemInstance != nullptr)
 		{
 			RemoveItem(Entry.ItemInstance);

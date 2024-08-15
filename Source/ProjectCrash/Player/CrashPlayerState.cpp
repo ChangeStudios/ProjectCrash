@@ -157,15 +157,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	PawnData = InPawnData;
 
-	// Grant the pawn's default ability sets.
-	for (const UCrashAbilitySet* AbilitySet : PawnData->AbilitySets)
-	{
-		if (AbilitySet)
-		{
-			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
-		}
-	}
-
 	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
 	 * mode-specific abilities via game feature actions. */
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
@@ -175,16 +166,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 
 void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawnData)
 {
-	// Remove the ability sets granted by the old pawn data.
-	if (AbilitySystemComponent)
-	{
-		for (auto GrantedAbilitySet : GrantedPawnDataAbilitySets)
-		{
-			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent);
-		}
-	}
-	GrantedPawnDataAbilitySets.Reset();
-
 	// Clear PawnData so SetPawnData works properly.
 	PawnData = nullptr;
 

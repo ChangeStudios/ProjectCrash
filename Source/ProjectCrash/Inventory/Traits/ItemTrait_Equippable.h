@@ -33,8 +33,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	TObjectPtr<UEquipmentDefinition> EquipmentDefinition;
 
-	/** If true, this item will automatically be equipped when it enters a player's inventory. Useful for intrinsic
-	 * character equipment that should not be manually equipped. */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Always Equip on Pick-Up?")
+	/** If true, this item will automatically be equipped when it enters a player's inventory, or when the player loses
+	 * their current equipment. Useful for intrinsic character equipment that should not be manually equipped. */
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Auto-Equip?")
 	bool bAutoEquip = false;
 };
