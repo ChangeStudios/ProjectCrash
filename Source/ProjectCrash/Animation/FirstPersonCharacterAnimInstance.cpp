@@ -26,6 +26,16 @@
 #define GLOBAL_SPRING_STIFFNESS_SCALE 35.0f
 
 
+UFirstPersonCharacterAnimInstance::UFirstPersonCharacterAnimInstance() :
+	AimSpeedRightLeft(0.0f),
+	AimSpeedUpDown(0.0f),
+	CurrentSpringMoveForwardBackward(0.0f),
+	CurrentSpringMoveRightLeft(0.0f),
+	CurrentSpringAimRightLeft(0.0f),
+	CurrentSpringAimUpDown(0.0f),
+	CurrentSpringFalling(0.0f)
+{
+}
 
 void UFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {

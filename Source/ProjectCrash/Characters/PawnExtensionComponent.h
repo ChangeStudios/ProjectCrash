@@ -106,7 +106,7 @@ private:
 
 	/** The pawn data corresponding to this component's owning pawn. Can be set in-editor for pawns that are not
 	 * dynamically spawned. */
-	UPROPERTY(EditInstanceOnly, ReplicatedUsing = OnRep_PawnData, Category = "Crash|Pawn")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, ReplicatedUsing = OnRep_PawnData, Category = "Crash|Pawn", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<const UPawnData> PawnData;
 
 	/** Attempts to progress pawn initialization when pawn data is set. */

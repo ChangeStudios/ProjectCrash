@@ -13,6 +13,7 @@
 #define MAX_GROUND_TRACE_DISTANCE 100000.0f
 
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	GravityScale = 1.5;
 	MaxAcceleration = 16384.0f;

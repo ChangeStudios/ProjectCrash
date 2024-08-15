@@ -78,7 +78,7 @@ protected:
 protected:
 
 	/** This character's current velocity, relative to world space. */
-	UPROPERTY(BlueprintReadOnly, Category = "Velocity Data")
+	UPROPERTY(BlueprintReadWrite, Category = "Velocity Data")
 	FVector WorldVelocity;
 
 	/** This character's current velocity, relative to its world rotation. */
