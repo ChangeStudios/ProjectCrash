@@ -8,7 +8,6 @@
 #include "InventoryItemInstance.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 
 UInventoryComponent::UInventoryComponent(const FObjectInitializer& ObjectInitializer) :
