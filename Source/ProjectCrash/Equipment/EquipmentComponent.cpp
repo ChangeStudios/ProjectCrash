@@ -87,7 +87,6 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 
 	if (EquipmentDefinition != nullptr)
 	{
-		// Automatically unequip the current equipment.
 		if (CurrentEquipment)
 		{
 			UnequipItem();
@@ -95,7 +94,7 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 
 		// Determine the skin to use for this equipment.
 		UEquipmentSkin* EquipmentSkin = nullptr;
-		
+
 		// Retrieve equipping player's skin from the skin subsystem if the equipment supports skins.
 		if (EquipmentDefinition->EquipmentSkinID.IsValid())
 		{
@@ -125,8 +124,8 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		NewEquipment->OnEquipped();
 
 		// Update our current equipment. This calls OnEquipped on clients.
-		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
 		CurrentEquipment = NewEquipment;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
 
 		// Replicate the new equipment instance as a sub-object.
 		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
@@ -142,10 +141,13 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 	return NewEquipment;
 }
 
-void UEquipmentComponent::UnequipItem()
+void UEquipmentComponent::UnequipItem(bool bTryAutoEquip)
 {
 	if (CurrentEquipment != nullptr)
 	{
+		// Cache the current equipment's associated item, so it doesn't accidentally get re-equipped from auto-equip.
+		UInventoryItemInstance* LastEquippedItem = Cast<UInventoryItemInstance>(CurrentEquipment->GetInstigator());
+
 		// Stop replicate the equipment instance as a sub-object.
 		if (IsUsingRegisteredSubObjectList())
 		{
@@ -159,8 +161,14 @@ void UEquipmentComponent::UnequipItem()
 		CurrentEquipment->UninitializeEquipment();
 
 		// Clear CurrentEquipment to trigger OnUnequipped on clients.
-		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
 		CurrentEquipment = nullptr;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+
+		// Try to auto-equip a new item, if desired.
+		if (bTryAutoEquip)
+		{
+			AutoEquipFirstItem({ LastEquippedItem });
+		}
 	}
 	else
 	{
@@ -215,7 +223,7 @@ UEquipmentComponent* UEquipmentComponent::FindEquipmentComponentFromItem(UInvent
 	return EquipmentComp;
 }
 
-void UEquipmentComponent::AutoEquipFirstItem()
+void UEquipmentComponent::AutoEquipFirstItem(TArray<UInventoryItemInstance*> ItemsToIgnore)
 {
 	if (CurrentEquipment)
 	{
@@ -228,6 +236,11 @@ void UEquipmentComponent::AutoEquipFirstItem()
 		// Search for any equippable items that are set to auto-equip, and try to equip one.
 		for (UInventoryItemInstance* Item : InventoryComp->GetAllItems())
 		{
+			if (ItemsToIgnore.Contains(Item))
+			{
+				continue;
+			}
+
 			if (const UItemTrait_Equippable* EquippableTrait = Item->FindTraitByClass<UItemTrait_Equippable>())
 			{
 				if (EquippableTrait->bAutoEquip)

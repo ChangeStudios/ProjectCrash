@@ -52,14 +52,14 @@ void UEquipmentInstance::UninitializeEquipment()
 {
 	check(GetPawn()->HasAuthority());
 
-	// Destroy equipment actors.
-	DestroyEquipmentActors();
-
 	// Remove granted ability sets.
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(GetPawn()))
 	{
 		GrantedAbilitySetHandles.RemoveFromAbilitySystem(CrashASC);
 	}
+
+	// Destroy equipment actors.
+	DestroyEquipmentActors();
 }
 
 #if UE_WITH_IRIS

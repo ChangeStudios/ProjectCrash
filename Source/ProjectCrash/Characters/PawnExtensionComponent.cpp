@@ -216,8 +216,8 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 	}
 
 	// Update the pawn data.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	PawnData = InPawnData;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	Pawn->ForceNetUpdate();
 
 	// Try to progress our initialization, now that we have valid pawn data.

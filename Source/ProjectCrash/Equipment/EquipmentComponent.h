@@ -69,10 +69,14 @@ public:
 		UObject* Instigator = nullptr
 	);
 
-	/** Unequips the current item, leaving the pawn in an "unarmed" state. Do not call this to equip a new item; call
-	 * EquipItem instead, which automatically unequips the current item. */
+	/**
+	 * Unequips the current item. To switch items, just use EquipItem, which will automatically unequip the current
+	 * item.
+	 *
+	 * @param bTryAutoEquip		If true, attempts to equip the first equippable item in the inventory.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Equipment")
-	void UnequipItem();
+	void UnequipItem(bool bTryAutoEquip = true);
 
 
 
@@ -119,5 +123,5 @@ private:
 
 	/** Searches for an equippable item in an inventory component associated with this equipment component's owner, and
 	 * equips the first item with "auto-equip" enabled. Does nothing if an item is already equipped. */
-	void AutoEquipFirstItem();
+	void AutoEquipFirstItem(TArray<UInventoryItemInstance*> ItemsToIgnore = TArray<UInventoryItemInstance*>());
 };

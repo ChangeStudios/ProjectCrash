@@ -125,8 +125,8 @@ void ACrashPlayerState::OnReactivated()
 void ACrashPlayerState::SetPlayerConnectionType(EPlayerConnectionType NewConnectionType)
 {
 	// Update this player's current connection type.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ConnectionType, this);
 	ConnectionType = NewConnectionType;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ConnectionType, this);
 }
 
 void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
@@ -154,8 +154,8 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		*GetClientServerContextString(this));
 
 	// Cache and replicate the new pawn data.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	PawnData = InPawnData;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 
 	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
 	 * mode-specific abilities via game feature actions. */
@@ -207,8 +207,8 @@ void ACrashPlayerState::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 		const FGenericTeamId OldTeamId = TeamId;
 
 		// Set this player's team ID.
-		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
 		TeamId = NewTeamId;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
 
 		// Broadcast the change locally. OnRep will handle broadcasting on clients.
 		BroadcastIfTeamChanged(this, OldTeamId, NewTeamId);
