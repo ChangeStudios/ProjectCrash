@@ -12,6 +12,7 @@
 #define UPPER_BODY_BLEND_OUT_RATE 6.0f
 
 UCharacterAnimInstanceBase::UCharacterAnimInstanceBase() :
+	bFirstUpdate(true),
 	WorldLocation(FVector::ZeroVector),
 	WorldRotation(FRotator::ZeroRotator),
 	YawDeltaSpeed(0.0f),
@@ -41,12 +42,25 @@ void UCharacterAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeco
 		return;
 	}
 
+	// Wait for our movement component and movement mode to be initialized.
+	UCrashCharacterMovementComponent* CharMovementComp = GetCrashCharacterMovementComponent();
+	if (!CharMovementComp || (CharMovementComp->MovementMode == MOVE_None))
+	{
+		return;
+	}
+
 	// Update animation data.
 	UpdateTransformData(DeltaSeconds);
 	UpdateVelocityData(DeltaSeconds);
 	UpdateAimData(DeltaSeconds);
 	UpdateCharacterStateData(DeltaSeconds);
 	UpdateBlendData(DeltaSeconds);
+
+	// We've successfully made our first update.
+	if (bFirstUpdate)
+	{
+		bFirstUpdate = false;
+	}
 }
 
 void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
@@ -61,7 +75,7 @@ void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
 	WorldRotation = PawnOwner->GetActorRotation();
 
 	// Yaw delta speed.
-	const float YawDelta = (WorldRotation.Yaw - PreviousYaw);
+	const float YawDelta = (bFirstUpdate ? 0.0f : (WorldRotation.Yaw - PreviousYaw));
 	YawDeltaSpeed = (YawDelta * SafeInvertDeltaSeconds(DeltaSeconds));
 }
 

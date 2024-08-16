@@ -47,6 +47,13 @@ void UFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float De
 		return;
 	}
 
+	// Wait for our movement component and movement mode to be initialized.
+	UCrashCharacterMovementComponent* CharMovementComp = GetCrashCharacterMovementComponent();
+	if (!CharMovementComp || (CharMovementComp->MovementMode == MOVE_None))
+	{
+		return;
+	}
+
 	// Update sway data.
 	UpdateMovementSwayData();
 	UpdateAimSwayData();
@@ -62,7 +69,8 @@ void UFirstPersonCharacterAnimInstance::UpdateAimData(float DeltaSeconds)
 	Super::UpdateAimData(DeltaSeconds);
 
 	// Use a normalized delta to account for winding (e.g. 359.0 -> 1.0 should be 2.0, not -358.0).
-	const FRotator RotationDelta = UKismetMathLibrary::NormalizedDeltaRotator(AimRotation, PreviousAimRotation);
+	const FRotator RotationDelta = (bFirstUpdate ? FRotator::ZeroRotator :
+									UKismetMathLibrary::NormalizedDeltaRotator(AimRotation, PreviousAimRotation));
 
 	/* Aim speed in degrees/second:
 	 *		Degrees/1 Second = (Degrees/1 Frame) * (Frames/1 Second)
