@@ -12,8 +12,8 @@
 #include "Inventory/Traits/ItemTrait_Equippable.h"
 #include "Net/UnrealNetwork.h"
 
-UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer),
+UEquipmentComponent::UEquipmentComponent(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer),
 	CurrentEquipment(nullptr)
 {
 	SetIsReplicatedByDefault(true);
@@ -126,6 +126,7 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		// Update our current equipment. This calls OnEquipped on clients.
 		CurrentEquipment = NewEquipment;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+		GetOwner()->ForceNetUpdate();
 
 		// Replicate the new equipment instance as a sub-object.
 		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())
@@ -163,6 +164,7 @@ void UEquipmentComponent::UnequipItem(bool bTryAutoEquip)
 		// Clear CurrentEquipment to trigger OnUnequipped on clients.
 		CurrentEquipment = nullptr;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
+		GetOwner()->ForceNetUpdate();
 
 		// Try to auto-equip a new item, if desired.
 		if (bTryAutoEquip)
@@ -263,5 +265,5 @@ void UEquipmentComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >
 	FDoRepLifetimeParams SharedParams;
 	SharedParams.bIsPushBased = true;
 
-	DOREPLIFETIME_WITH_PARAMS_FAST(UEquipmentComponent, CurrentEquipment, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, CurrentEquipment, SharedParams);
 }
