@@ -27,10 +27,6 @@ ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer
 	MinNetUpdateFrequency = 2.0f;
 	NetUpdateFrequency = 100.0f;
 
-	// Construct the inventory.
-	InventoryComponent = ObjectInitializer.CreateDefaultSubobject<UInventoryComponent>(this, TEXT("InventoryComponent"));
-	InventoryComponent->SetIsReplicated(true);
-
 	ConnectionType = EPlayerConnectionType::Player;
 
 	TeamId = FGenericTeamId::NoTeam;

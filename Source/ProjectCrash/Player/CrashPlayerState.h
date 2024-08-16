@@ -136,16 +136,6 @@ private:
 
 
 
-	// Inventory.
-
-private:
-
-	/** This player's persistent inventory component, responsible for holding and managing their inventory. */
-	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
-	TObjectPtr<UInventoryComponent> InventoryComponent;
-
-
-
 	// Teams.
 
 public:
