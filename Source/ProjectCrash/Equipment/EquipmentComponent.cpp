@@ -89,7 +89,7 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 	{
 		if (CurrentEquipment)
 		{
-			UnequipItem();
+			UnequipItem(false);
 		}
 
 		// Determine the skin to use for this equipment.
