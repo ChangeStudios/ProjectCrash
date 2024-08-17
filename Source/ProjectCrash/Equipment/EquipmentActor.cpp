@@ -13,13 +13,6 @@ AEquipmentActor::AEquipmentActor()
 
 void AEquipmentActor::BeginPlay()
 {
-	/** Hide this actor; it will be revealed once it's been fully replicated. We don't have to worry about this on
-	 * authority. */
-	if (!HasAuthority() && RootComponent)
-	{
-		RootComponent->SetHiddenInGame(true, true);
-	}
-
 	// Re-initialize this actor's visibility if its perspective was initialized before it was attached to a mesh.
 	OnRep_EquipmentPerspective();
 

@@ -193,13 +193,8 @@ private:
 	void DestroyEquipmentActors();
 
 	/** Equipment actors currently spawned in the world to represent this equipment while it is equipped. */
-	UPROPERTY(ReplicatedUsing = "OnRep_SpawnedActors")
+	UPROPERTY(Replicated)
 	TArray<TObjectPtr<AEquipmentActor>> SpawnedActors;
-
-	/** Reveals the new equipment actors (which start hidden) once they finish replicating. This does not need to be
-	 * called on authority, as equipment actors are never hidden on authority. */
-	UFUNCTION()
-	void OnRep_SpawnedActors(TArray<AEquipmentActor*> OldSpawnedActors);
 
 
 

@@ -120,13 +120,13 @@ UEquipmentInstance* UEquipmentComponent::EquipItem(UEquipmentDefinition* Equipme
 		// Initialize the equipment. This grants the equipment's abilities and spawns its equipment actors.
 		NewEquipment->InitializeEquipment(EquipmentDefinition, EquipmentSkin, Instigator);
 
-		// Notify the new equipment that it's been equipped on the server.
-		NewEquipment->OnEquipped();
-
 		// Update our current equipment. This calls OnEquipped on clients.
 		CurrentEquipment = NewEquipment;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UEquipmentComponent, CurrentEquipment, this);
 		GetOwner()->ForceNetUpdate();
+
+		// Notify the new equipment that it's been equipped on the server.
+		NewEquipment->OnEquipped();
 
 		// Replicate the new equipment instance as a sub-object.
 		if (IsUsingRegisteredSubObjectList() && IsReadyForReplication())

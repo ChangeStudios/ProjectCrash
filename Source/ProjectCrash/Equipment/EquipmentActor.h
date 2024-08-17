@@ -45,9 +45,7 @@ public:
 
 public:
 
-	/** Hides this actor when spawned on clients. It will be revealed once the equipment has been fully replicated.
-	 * This prevents artifacts caused by the actor being replicated before "OnEquip" is called on clients, which will
-	 * make the actor appear momentarily before snapping down into an "equip" animation. */
+	// Re-initializes this actor's visibility if it was initializes before being attached to its parent (a pawn's mesh).
 	virtual void BeginPlay() override;
 
 

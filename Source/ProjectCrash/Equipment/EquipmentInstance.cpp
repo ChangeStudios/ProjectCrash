@@ -192,25 +192,6 @@ void UEquipmentInstance::DestroyEquipmentActors()
 	}
 }
 
-void UEquipmentInstance::OnRep_SpawnedActors(TArray<AEquipmentActor*> OldSpawnedActors)
-{
-	// Convert to set for faster comparisons.
-	TSet OldActors(OldSpawnedActors);
-	TSet CurrentActors(SpawnedActors);
-
-	// Reveal any spawned actors that have now finished replicating, and can be revealed.
-	for (AEquipmentActor* EquipmentActor : CurrentActors)
-	{
-		if (!OldActors.Contains(EquipmentActor) && IsValid(EquipmentActor))
-		{
-			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
-			{
-				Root->SetHiddenInGame(false, true);
-			}
-		}
-	}
-}
-
 UWorld* UEquipmentInstance::GetWorld() const
 {
 	// Retrieve the world through this equipment's outer actor.
