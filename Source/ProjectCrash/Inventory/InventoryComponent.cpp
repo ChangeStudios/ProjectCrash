@@ -3,18 +3,150 @@
 
 #include "Inventory/InventoryComponent.h"
 
-#include "CrashStatics.h"
+#include "CrashGameplayTags.h"
 #include "InventoryItemDefinition.h"
 #include "InventoryItemInstance.h"
+#include "Characters/PawnExtensionComponent.h"
+#include "Characters/Data/PawnData.h"
+#include "Components/GameFrameworkComponentDelegates.h"
 #include "Engine/ActorChannel.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/CrashPlayerState.h"
 
 UInventoryComponent::UInventoryComponent(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer),
 	InventoryList(this)
 {
 	SetIsReplicatedByDefault(true);
+	bWantsInitializeComponent = true;
+}
+
+void UInventoryComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	if (HasAuthority())
+	{
+		// Start listening for pawn possession to add new pawns' default items.
+		AController* Controller = GetControllerChecked<AController>();
+		Controller->OnPossessedPawnChanged.AddDynamic(this, &UInventoryComponent::OnPawnChanged);
+	}
+}
+
+void UInventoryComponent::UninitializeComponent()
+{
+	if (HasAuthority())
+	{
+		// Stop listening for pawn changes.
+		if (AController* Controller = GetController<AController>())
+		{
+			Controller->OnPossessedPawnChanged.RemoveAll(this);
+		}
+
+		// Stop listening for pawn data changes.
+		if (ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>())
+		{
+			CrashPS->PawnDataChangedDelegate.RemoveAll(this);
+		}
+
+		// Clear AddPawnItems callback.
+		ReadyForItems.Clear();
+	}
+
+	Super::UninitializeComponent();
+}
+
+void UInventoryComponent::OnPawnChanged(APawn* OldPawn, APawn* NewPawn)
+{
+	check(HasAuthority());
+
+	// When a new pawn is possessed, grant its pawn data's default items after it's been initialized.
+	if (IsValid(NewPawn) && (NewPawn != OldPawn))
+	{
+		// Pawn data is only used by pawns with an extension component.
+		if (UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(NewPawn))
+		{
+			/* Register AddPawnItems to when the pawn extension component reaches GameplayReady. This it to guarantee
+			 * that its pawn data has been set. */
+			ReadyForItems.BindDynamic(this, &UInventoryComponent::AddPawnItems);
+			PawnExtComp->RegisterAndCallForInitStateChange(CrashGameplayTags::TAG_InitState_GameplayReady, MoveTemp(ReadyForItems), true);
+
+			// TODO: Listen for death from ASC
+		}
+	}
+
+	/* When the inventory's owning player state switches pawns (changes character), treat it as a death. We bind this
+	 * here because we can't guarantee the player state will be valid in InitializeComponent. */
+	if (ACrashPlayerState* CrashPS = GetPlayerState<ACrashPlayerState>())
+	{
+		CrashPS->PawnDataChangedDelegate.AddUniqueDynamic(this, &UInventoryComponent::OnPawnDataChanged);
+	}
+}
+
+void UInventoryComponent::AddPawnItems(const FActorInitStateChangedParams& Params)
+{
+	// Add each default item defined in the pawn data of this inventory's owner's pawn.
+	if (APawn* Pawn = GetPawn<APawn>())
+	{
+		if (UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		{
+			if (const UPawnData* PawnData = PawnExtComp->GetPawnData<UPawnData>())
+			{
+				for (TSubclassOf<UInventoryItemDefinition> Item : PawnData->DefaultItems)
+				{
+					PawnItems.Add(AddItemByDefinition(Item));
+				}
+			}
+		}
+	}
+
+	// Clear callback.
+	ReadyForItems.Clear();
+}
+
+void UInventoryComponent::OnPawnDeath()
+{
+	// Trigger death logic for each item granted by the dying pawn.
+	for (UInventoryItemInstance* Item : PawnItems)
+	{
+		if (const TSubclassOf<UInventoryItemDefinition> ItemDef = Item->GetItemDefinition())
+		{
+			switch (GetDefault<UInventoryItemDefinition>(ItemDef)->DeathBehavior)
+			{
+				// Remove items that should be destroyed when the pawn dies.
+			case EItemDeathBehavior::Destroyed:
+				{
+					RemoveItem(Item);
+					break;
+				}
+				// Drop items that should be dropped, if possible. Otherwise, remove them.
+			case EItemDeathBehavior::Dropped:
+				{
+					if (GetDefault<UInventoryItemDefinition>(ItemDef)->FindTraitByClass(nullptr)) // TODO: implement drop logic.
+					{
+						// Drop item.
+					}
+					else
+					{
+						RemoveItem(Item);
+					}
+
+					break;
+				}
+				// Do nothing for persistent items.
+			case EItemDeathBehavior::Persistent:
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void UInventoryComponent::OnPawnDataChanged(const UPawnData* OldPawnData, const UPawnData* NewPawnData)
+{
+	// Treat changing pawn data (i.e. switching characters) as a death.
+	OnPawnDeath();
 }
 
 bool UInventoryComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)

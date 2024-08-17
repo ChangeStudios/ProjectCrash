@@ -15,6 +15,10 @@ class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
 
+/** Signature for delegate fired when this player's current pawn data changes, as a result of them changing their
+ * current playable character. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPawnDataChangedSignature, const UPawnData*, OldPawnData, const UPawnData*, NewPawnData);
+
 /**
  * Defines how a client is connected.
  */
@@ -104,16 +108,23 @@ public:
 	template <class T>
 	const T* GetPawnData() const { return Cast<T>(PawnData); }
 
+	/** Fired on server and clients when this player's selected pawn data changes, as a result of changing their
+	 * selected playable character. This is not always fired when changing pawns; e.g. temporarily taking control of a
+	 * "drone" pawn will not trigger this. */
+	UPROPERTY(BlueprintAssignable)
+	FPawnDataChangedSignature PawnDataChangedDelegate;
+
 protected:
 
 	/** Data defining which pawn will be used by this player. Used by the game mode when deciding which pawn class to
-	 * spawn for this player. Used by pawns in their initialization; e.g. defines input configurations. */
+	 * spawn for this player. Used by pawns in their initialization; e.g. defines input configurations. This is not
+	 * updated to reflect players temporarily switching pawns, e.g. taking control of a "drone" pawn. */
 	UPROPERTY(ReplicatedUsing = OnRep_PawnData)
 	TObjectPtr<const UPawnData> PawnData;
 
 	/** OnRep for this player's pawn data. Used for debugging purposes. */
 	UFUNCTION()
-	void OnRep_PawnData();
+	void OnRep_PawnData(const UPawnData* OldPawnData);
 
 
 

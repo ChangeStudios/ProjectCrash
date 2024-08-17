@@ -150,8 +150,10 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		*GetClientServerContextString(this));
 
 	// Cache and replicate the new pawn data.
+	const UPawnData* OldPawnData = PawnData;
 	PawnData = InPawnData;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
+	PawnDataChangedDelegate.Broadcast(OldPawnData, PawnData);
 
 	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
 	 * mode-specific abilities via game feature actions. */
@@ -182,12 +184,14 @@ void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawn
 	GetWorld()->GetAuthGameMode()->RestartPlayer(OwningController);
 }
 
-void ACrashPlayerState::OnRep_PawnData()
+void ACrashPlayerState::OnRep_PawnData(const UPawnData* OldPawnData)
 {
 	UE_LOG(LogCrashGameMode, Log, TEXT("Set pawn data [%s] for player [%s]. (%s)"),
 		*GetNameSafe(PawnData),
 		*GetNameSafe(this),
 		*GetClientServerContextString(this));
+
+	PawnDataChangedDelegate.Broadcast(OldPawnData, PawnData);
 }
 
 UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const

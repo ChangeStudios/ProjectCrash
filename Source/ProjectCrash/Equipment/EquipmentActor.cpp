@@ -17,7 +17,7 @@ void AEquipmentActor::BeginPlay()
 	 * authority. */
 	if (!HasAuthority() && RootComponent)
 	{
-		RootComponent->SetHiddenInGame(true);
+		RootComponent->SetHiddenInGame(true, true);
 	}
 
 	// Re-initialize this actor's visibility if its perspective was initialized before it was attached to a mesh.

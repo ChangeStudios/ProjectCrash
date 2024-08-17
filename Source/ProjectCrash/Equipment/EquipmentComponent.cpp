@@ -218,7 +218,10 @@ UEquipmentComponent* UEquipmentComponent::FindEquipmentComponentFromItem(UInvent
 		 * which will not have an equipment component.) */
 		if (AController* Controller = Cast<AController>(Owner))
 		{
-			EquipmentComp = FindEquipmentComponent(Controller->GetPawn());
+			if (Controller->GetPawn())
+			{
+				EquipmentComp = FindEquipmentComponent(Controller->GetPawn());
+			}
 		}
 	}
 

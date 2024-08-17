@@ -205,7 +205,7 @@ void UEquipmentInstance::OnRep_SpawnedActors(TArray<AEquipmentActor*> OldSpawned
 		{
 			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
 			{
-				Root->SetHiddenInGame(false);
+				Root->SetHiddenInGame(false, true);
 			}
 		}
 	}

@@ -4,8 +4,10 @@
 
 #include "InventoryList.h"
 #include "Components/ControllerComponent.h"
+#include "Components/GameFrameworkComponentDelegates.h"
 #include "InventoryComponent.generated.h"
 
+class UPawnData;
 class UInventoryItemDefinition;
 class UInventoryItemInstance;
 
@@ -31,7 +33,33 @@ public:
 
 public:
 
-	// TODO: UninitializeComponent should activate destruction logic for all inventory items.
+	/** Starts listening for pawn changes to add and remove pawn-specific inventory items. */
+	virtual void InitializeComponent() override;
+
+	/** Stops listening for pawn changes. */
+	virtual void UninitializeComponent() override;
+
+private:
+
+	/** Called when the pawn controlled by this inventory's owner changes. Adds the pawn's default items (defined in
+	 * their pawn data) when possessed, and removes them when the pawn is killed. */
+	UFUNCTION()
+	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
+
+	/** Fired when the pawn this inventory's owner is possessing is ready to add inventory items from its pawn data. */
+	FActorInitStateChangedBPDelegate ReadyForItems;
+
+	/** Adds the items in this inventory's owner's pawn's pawn data. */
+	UFUNCTION()
+	void AddPawnItems(const FActorInitStateChangedParams& Params);
+
+	/** TODO: Removes the dying pawn's default items from this inventory. */
+	UFUNCTION()
+	void OnPawnDeath();
+
+	/** Treats switching pawns as a death. */
+	UFUNCTION()
+	void OnPawnDataChanged(const UPawnData* OldPawnData, const UPawnData* NewPawnData);
 
 
 
@@ -112,6 +140,10 @@ private:
 	/** The actual inventory. */
 	UPROPERTY(Replicated)
 	FInventoryList InventoryList;
+
+	/** Items granted to this inventory by its current pawn. Only valid on authority. */
+	UPROPERTY()
+	TArray<TObjectPtr<UInventoryItemInstance>> PawnItems;
 
 
 

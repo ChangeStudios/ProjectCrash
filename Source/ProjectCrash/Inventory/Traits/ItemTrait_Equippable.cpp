@@ -36,6 +36,19 @@ void UItemTrait_Equippable::OnItemLeftInventory(UInventoryItemInstance* ItemInst
 	// Missing equipment component.
 	if (EquipmentComp == nullptr)
 	{
+		/* Our item may have been removed AFTER destroying our pawn. In this case, it will have already been
+		 * automatically unequipped, so we don't need a warning. */
+		if (AActor* Owner = ItemInstance->GetOwner())
+		{
+			if (AController* Controller = Cast<AController>(Owner))
+			{
+				if (!Controller->GetPawn())
+				{
+					return;
+				}
+			}
+		}
+
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to unequip equipment [%s] from item [%s], but owner, [%s], does not have an associated equipment component."), *GetNameSafe(EquipmentDefinition), *GetNameSafe(ItemInstance), *GetNameSafe(ItemInstance->GetOwner()));
 		return;
 	}
