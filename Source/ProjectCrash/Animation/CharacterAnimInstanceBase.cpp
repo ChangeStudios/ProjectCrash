@@ -95,8 +95,8 @@ void UCharacterAnimInstanceBase::UpdateVelocityData(float DeltaSeconds)
 
 	// Normalized local velocity.
 	const float MaxMovementSpeed = CharMovementComp->GetMaxSpeed();
-	const float NormalizedX = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
-	const float NormalizedY = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
+	const float NormalizedX = FMath::Clamp(UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed), -1.0f, 1.0f);
+	const float NormalizedY = FMath::Clamp(UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed), -1.0f, 1.0f);
 	LocalVelocity2DNormalized = FVector(NormalizedX, NormalizedY, 0.0f);
 
 	// Has velocity?
