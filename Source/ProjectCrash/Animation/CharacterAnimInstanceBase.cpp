@@ -12,6 +12,7 @@
 #define UPPER_BODY_BLEND_OUT_RATE 6.0f
 
 UCharacterAnimInstanceBase::UCharacterAnimInstanceBase() :
+	bFirstUpdate(true),
 	WorldLocation(FVector::ZeroVector),
 	WorldRotation(FRotator::ZeroRotator),
 	YawDeltaSpeed(0.0f),
@@ -41,12 +42,25 @@ void UCharacterAnimInstanceBase::NativeThreadSafeUpdateAnimation(float DeltaSeco
 		return;
 	}
 
+	// Wait for our movement component and movement mode to be initialized.
+	UCrashCharacterMovementComponent* CharMovementComp = GetCrashCharacterMovementComponent();
+	if (!CharMovementComp || (CharMovementComp->MovementMode == MOVE_None))
+	{
+		return;
+	}
+
 	// Update animation data.
 	UpdateTransformData(DeltaSeconds);
 	UpdateVelocityData(DeltaSeconds);
 	UpdateAimData(DeltaSeconds);
 	UpdateCharacterStateData(DeltaSeconds);
 	UpdateBlendData(DeltaSeconds);
+
+	// We've successfully made our first update.
+	if (bFirstUpdate)
+	{
+		bFirstUpdate = false;
+	}
 }
 
 void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
@@ -61,7 +75,7 @@ void UCharacterAnimInstanceBase::UpdateTransformData(float DeltaSeconds)
 	WorldRotation = PawnOwner->GetActorRotation();
 
 	// Yaw delta speed.
-	const float YawDelta = (WorldRotation.Yaw - PreviousYaw);
+	const float YawDelta = (bFirstUpdate ? 0.0f : (WorldRotation.Yaw - PreviousYaw));
 	YawDeltaSpeed = (YawDelta * SafeInvertDeltaSeconds(DeltaSeconds));
 }
 
@@ -81,8 +95,8 @@ void UCharacterAnimInstanceBase::UpdateVelocityData(float DeltaSeconds)
 
 	// Normalized local velocity.
 	const float MaxMovementSpeed = CharMovementComp->GetMaxSpeed();
-	const float NormalizedX = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed);
-	const float NormalizedY = UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed);
+	const float NormalizedX = FMath::Clamp(UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.X, 0.0f, MaxMovementSpeed), -1.0f, 1.0f);
+	const float NormalizedY = FMath::Clamp(UKismetMathLibrary::NormalizeToRange(LocalVelocity2D.Y, 0.0f, MaxMovementSpeed), -1.0f, 1.0f);
 	LocalVelocity2DNormalized = FVector(NormalizedX, NormalizedY, 0.0f);
 
 	// Has velocity?

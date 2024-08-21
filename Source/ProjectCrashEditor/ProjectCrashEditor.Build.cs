@@ -27,16 +27,17 @@ public class ProjectCrashEditor : ModuleRules
 				"EnhancedInput",
 				"Engine",
 				"ProjectCrash",
-				"UnrealEd"
+				"UnrealEd",
 			}
 		);
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"AssetTools",
+				"Kismet",
 				"InputEditor",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
 			}
 		);
 
@@ -47,5 +48,7 @@ public class ProjectCrashEditor : ModuleRules
 
 		// Generate compile errors if using DrawDebug functions in test/shipping builds.
 		PublicDefinitions.Add("SHIPPING_DRAW_DEBUG_ERROR=1");
+
+		SetupGameplayDebuggerSupport(Target);
 	}
 }

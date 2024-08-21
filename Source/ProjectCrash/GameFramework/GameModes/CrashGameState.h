@@ -7,6 +7,7 @@
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "CrashGameState.generated.h"
 
+struct FCrashVerbMessage;
 class ACrashPlayerState;
 class UCrashGameModeData;
 class UGameModeManagerComponent;
@@ -80,6 +81,20 @@ public:
 
 	/** Checks if all expected players have joined the game before the game can begin. */
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
+
+
+
+	// Messaging.
+
+public:
+
+	/** Reliably broadcasts a verbal message to all clients. */
+	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Unreliable)")
+	void MulticastUnreliableMessageToClients(const FCrashVerbMessage Message);
+
+	/** Unreliably broadcasts a verbal message to all clients. */
+	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Reliable)")
+	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
 
 
 

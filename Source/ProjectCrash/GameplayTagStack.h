@@ -18,21 +18,24 @@ struct FGameplayTagStack : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
+	// Stack containers have direct access to the stacks that they contain.
+	friend FGameplayTagStackContainer;
+
+public:
+
 	/** Default constructor. */
 	FGameplayTagStack()
 	{}
 
 	/** Constructor that initializes this stack as a quantity of a specified tag. */
-	FGameplayTagStack(FGameplayTag InTag, int32 InCount)
+	FGameplayTagStack(FGameplayTag InTag, int32 InCount) :
+		Tag(InTag), Count(InCount)
 	{}
 
 	/** Formats this stack as "Tag (xCount)". */
 	FString GetDebugString() const { return FString::Printf(TEXT("%s (x%d)"), *Tag.ToString(), Count); }
 
 private:
-
-	// Stack containers have direct access to the stacks that they contain.
-	friend FGameplayTagStackContainer;
 
 	/** The tag of which this structure is a stack of. */
 	UPROPERTY()
@@ -107,9 +110,10 @@ public:
 // Serialization.
 public:
 
+	/** Performs data serialization on this serializer's items. */
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParams)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize(Stacks, DeltaParams, *this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks, DeltaParams, *this);
 	}
 
 
@@ -124,6 +128,15 @@ private:
 
 	/** A map that mirrors the Stacks array which can be used for accelerated queries. */
 	TMap<FGameplayTag, int32> TagCountMap;
+
+
+
+	// Utils.
+
+public:
+
+	/** Returns a collection of each tag stack's debug string.  */
+	void GetDebugStrings(TArray<FString>& OutDebugStrings) const;
 };
 
 

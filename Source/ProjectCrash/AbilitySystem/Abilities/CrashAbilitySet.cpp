@@ -55,7 +55,7 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 		if (Handle.IsValid())
 		{
 			// Remove the ability.
-			AbilitySystemToRemoveFrom->ClearAbility(Handle);
+			AbilitySystemToRemoveFrom->SetRemoveAbilityOnEnd(Handle);
 		}
 	}
 
@@ -82,6 +82,50 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	AppliedEffectHandles.Reset();
 	AddedAttributeSets.Reset();
 }
+
+#if WITH_EDITOR
+void FCrashAbilitySet_GrantedHandles::GetAbilityDebugInfo(UAbilitySystemComponent* ASC, TArray<FString>& DebugInfo) const
+{
+	for (const FGameplayAbilitySpecHandle& Handle : GrantedAbilitySpecHandles)
+	{
+		if (Handle.IsValid())
+		{
+			if (FGameplayAbilitySpec* AbilitySpec = ASC->FindAbilitySpecFromHandle(Handle))
+			{
+				DebugInfo.Add(GetNameSafe(AbilitySpec->Ability));
+			}
+		}
+	}
+}
+
+void FCrashAbilitySet_GrantedHandles::GetEffectDebugInfo(TArray<FString>& DebugInfo) const
+{
+	for (const FActiveGameplayEffectHandle& Handle : AppliedEffectHandles)
+	{
+		if (Handle.IsValid())
+		{
+			if (UAbilitySystemComponent* ASC = Handle.GetOwningAbilitySystemComponent())
+			{
+				if (const FActiveGameplayEffect* ActiveGE = ASC->GetActiveGameplayEffect(Handle))
+				{
+					DebugInfo.Add(ActiveGE->Spec.ToSimpleString());
+				}
+			}
+		}
+	}
+}
+
+void FCrashAbilitySet_GrantedHandles::GetAttributeDebugInfo(TArray<FString>& DebugInfo) const
+{
+	for (UAttributeSet* Set : AddedAttributeSets)
+	{
+		if (Set)
+		{
+			DebugInfo.Add(GetNameSafe(Set->GetClass()));
+		}
+	}
+}
+#endif
 
 
 

@@ -11,6 +11,7 @@
 #include "Camera/CrashCameraComponent.h"
 #include "Camera/CrashCameraModeBase.h"
 #include "Components/CapsuleComponent.h"
+#include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 
@@ -167,7 +168,7 @@ void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
 {
 	// When blending out of a first-person camera, immediately switch to third-person.
-	if (NewCameraMode && NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_CameraType_FirstPerson)
+	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(false, true);
 		ThirdPersonMesh->SetVisibility(true, true);
@@ -177,7 +178,7 @@ void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCam
 void ACrashCharacter::OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
 {
 	// When blending into a first-person camera, switch to third-person when fully blended.
-	if (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_CameraType_FirstPerson)
+	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(true, true);
 		ThirdPersonMesh->SetVisibility(false, true);

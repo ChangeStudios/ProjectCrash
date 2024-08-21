@@ -53,7 +53,7 @@ void UThirdPersonCharacterAnimInstance::UpdateTransformData(float DeltaSeconds)
 	UCrashCharacterMovementComponent* CrashMovementComp = GetCrashCharacterMovementComponent();
 	const float LastGroundDistance = GroundDistance;
 	GroundDistance = CrashMovementComp ? CrashMovementComp->GetGroundDistance() : UCrashCharacterMovementComponent::MAX_FLOOR_DIST;
-	GroundDistanceDelta = (GroundDistance - LastGroundDistance);
+	GroundDistanceDelta = (bFirstUpdate ? 0.0f : (GroundDistance - LastGroundDistance));
 }
 
 void UThirdPersonCharacterAnimInstance::UpdateVelocityData(float DeltaSeconds)
@@ -134,7 +134,7 @@ void UThirdPersonCharacterAnimInstance::UpdateDebugData(float DeltaSeconds)
 
 	if (!PreviewActor)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Anim instance [%s] failed to find preview instance in debug."), *GetNameSafe(this));
+		UE_LOG(LogAnimation, Error, TEXT("Anim instance [%s] failed to find preview instance in debug."), *GetNameSafe(this));
 		return;
 	}
 

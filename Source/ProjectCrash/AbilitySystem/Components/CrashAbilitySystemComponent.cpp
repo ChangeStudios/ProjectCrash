@@ -149,7 +149,7 @@ void UCrashAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& I
 void UCrashAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
 	// Check if ability input is blocked.
-	if (HasMatchingGameplayTag(CrashGameplayTags::TAG_Gameplay_AbilityInputBlocked))
+	if (HasMatchingGameplayTag(CrashGameplayTags::TAG_State_AbilityInputBlocked))
 	{
 		ClearAbilityInput();
 		return;

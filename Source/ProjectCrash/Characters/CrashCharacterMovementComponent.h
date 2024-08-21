@@ -11,7 +11,7 @@ class UMovementAttributeSet;
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
  */
-UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, ClassGroup = "Movement", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
@@ -76,15 +76,6 @@ protected:
 	/** Movement attribute set to which this component is currently bound. Owned by AbilitySystemComponent. */
 	UPROPERTY()
 	TObjectPtr<const UMovementAttributeSet> MovementSet;
-
-
-
-	// Movement modes.
-
-protected:
-
-	/** Disables braking friction while airborne. */
-	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
 
 

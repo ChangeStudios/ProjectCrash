@@ -186,13 +186,13 @@ protected:
 // Internals.
 public:
 
-	/** Called when this ability is given to an ASC. Fires the associated blueprint event. */
+	/** Called when this ability is given to an ASC. */
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Called when this ability is removed from an ASC. Fires the associated blueprint event. */
+	/** Called when this ability is removed from an ASC. */
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
-	/** Called when a valid new avatar is set for this ability's owning ASC. Fires the associated blueprint event. */
+	/** Called when a valid new avatar is set for this ability's owning ASC. */
 	virtual void OnNewAvatarSet();
 
 	/** Do not use; Use OnNewAvatarSet instead. OnNewAvatarSet is called for instanced abilities (OnAvatarSet is not)
@@ -202,16 +202,16 @@ public:
 // Blueprint-exposed event callbacks.
 protected:
 
-	/** Called when this ability is given to an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Give Ability")
+	/** Blueprint-implementable version of OnGiveAbility. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Give Ability", Meta = (ToolTip = "Called when this ability is given to an ASC."))
 	void K2_OnGiveAbility();
 
-	/** Called when this ability is removed from an ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability")
+	/** Blueprint-implementable version of OnRemoveAbility. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On Remove Ability", Meta = (ToolTip = "Called when this ability is removed from an ASC."))
 	void K2_OnRemoveAbility();
 
-	/** Called when a valid new avatar is set for this ability's owning ASC. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On New Avatar Set")
+	/** Blueprint-implementable version of OnAvatarSet. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Ability", DisplayName = "On New Avatar Set", Meta = (ToolTip = "Called when a valid new avatar is set for this ability's owning ASC."))
 	void K2_OnNewAvatarSet();
 
 
@@ -219,6 +219,19 @@ protected:
 	// Gameplay.
 
 public:
+
+	/** Applies the desired knockback to the target actor in the direction of the source to the target.
+	 *
+	 * @param bForceUpwardsVelocity		If true, the target will always be launched upwards. The vertical force will be
+	 *									clamped with a portion of the desired force. This prevents actors from sliding
+	 *									or getting stuck on the ground.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback", Meta = (AdvancedDisplay = "bForceUpwardsVelocity"))
+	void AddKnockbackFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, bool bForceUpwardsVelocity = true);
+
+	/** Applies directional knockback to the target actor. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
+	void AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator);
 
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */
@@ -299,8 +312,12 @@ public:
 
 	// Validation.
 
-protected:
+public:
+
+#if WITH_EDITOR
 
 	/** Disables support for bReplicateInputDirectly. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
+#endif // WITH_EDITOR
 };

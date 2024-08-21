@@ -13,6 +13,8 @@
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
+#include "Inventory/InventoryComponent.h"
+#include "Inventory/InventoryItemDefinition.h"
 #include "Net/UnrealNetwork.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -119,8 +121,8 @@ void ACrashPlayerState::OnReactivated()
 void ACrashPlayerState::SetPlayerConnectionType(EPlayerConnectionType NewConnectionType)
 {
 	// Update this player's current connection type.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ConnectionType, this);
 	ConnectionType = NewConnectionType;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ConnectionType, this);
 }
 
 void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
@@ -148,17 +150,10 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 		*GetClientServerContextString(this));
 
 	// Cache and replicate the new pawn data.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
+	const UPawnData* OldPawnData = PawnData;
 	PawnData = InPawnData;
-
-	// Grant the pawn's default ability sets.
-	for (const UCrashAbilitySet* AbilitySet : PawnData->AbilitySets)
-	{
-		if (AbilitySet)
-		{
-			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
-		}
-	}
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
+	PawnDataChangedDelegate.Broadcast(OldPawnData, PawnData);
 
 	/* Tell the modular game framework that we are ready to add abilities. This is used to add additional game
 	 * mode-specific abilities via game feature actions. */
@@ -169,16 +164,6 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 
 void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawnData)
 {
-	// Remove the ability sets granted by the old pawn data.
-	if (AbilitySystemComponent)
-	{
-		for (auto GrantedAbilitySet : GrantedPawnDataAbilitySets)
-		{
-			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent);
-		}
-	}
-	GrantedPawnDataAbilitySets.Reset();
-
 	// Clear PawnData so SetPawnData works properly.
 	PawnData = nullptr;
 
@@ -199,12 +184,14 @@ void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawn
 	GetWorld()->GetAuthGameMode()->RestartPlayer(OwningController);
 }
 
-void ACrashPlayerState::OnRep_PawnData()
+void ACrashPlayerState::OnRep_PawnData(const UPawnData* OldPawnData)
 {
 	UE_LOG(LogCrashGameMode, Log, TEXT("Set pawn data [%s] for player [%s]. (%s)"),
 		*GetNameSafe(PawnData),
 		*GetNameSafe(this),
 		*GetClientServerContextString(this));
+
+	PawnDataChangedDelegate.Broadcast(OldPawnData, PawnData);
 }
 
 UAbilitySystemComponent* ACrashPlayerState::GetAbilitySystemComponent() const
@@ -220,8 +207,8 @@ void ACrashPlayerState::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 		const FGenericTeamId OldTeamId = TeamId;
 
 		// Set this player's team ID.
-		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
 		TeamId = NewTeamId;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, TeamId, this);
 
 		// Broadcast the change locally. OnRep will handle broadcasting on clients.
 		BroadcastIfTeamChanged(this, OldTeamId, NewTeamId);

@@ -7,6 +7,7 @@
 #include "CrashTeamAgentInterface.h"
 #include "GenericTeamAgentInterface.h"
 #include "TeamCheats.h"
+#include "TeamDisplayAsset.h"
 #include "TeamInfo.h"
 #include "GameFramework/CheatManager.h"
 #include "GameFramework/CrashLogging.h"
@@ -25,18 +26,22 @@ void FTeamTrackingInfo::SetTeamInfo(ATeamInfo* NewTeamInfo)
 	UTeamDisplayAsset* OldFriendlyDisplayAsset = FriendlyDisplayAsset;
 	UTeamDisplayAsset* OldTeamDisplayAsset = TeamDisplayAsset;
 
+	// Cache the team's display assets from its info actor.
 	FriendlyDisplayAsset = NewTeamInfo->GetFriendlyDisplayAsset();
 	TeamDisplayAsset = NewTeamInfo->GetTeamDisplayAsset();
 
-	if (OldTeamDisplayAsset != TeamDisplayAsset)
+	// Broadcast any display asset change.
+	if ((OldFriendlyDisplayAsset != FriendlyDisplayAsset) || (OldTeamDisplayAsset != TeamDisplayAsset))
 	{
-		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
+		TeamDisplayAssetChangedDelegate.Broadcast(TeamInfo->GetTeamId());
 	}
+}
 
-	if (OldFriendlyDisplayAsset != FriendlyDisplayAsset)
-	{
-		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
-	}
+void FTeamTrackingInfo::RemoveTeamInfo(ATeamInfo* InfoToRemove)
+{
+	ensureMsgf(TeamInfo == InfoToRemove, TEXT("Attempted to remove registered team info, but [%s] was given, which is not this tracking info's team info actor."), *GetNameSafe(InfoToRemove));
+
+	TeamInfo = nullptr;
 }
 
 
@@ -74,9 +79,10 @@ bool UTeamSubsystem::RegisterTeam(ATeamInfo* TeamInfo)
 		const int32 TeamId = TeamInfo->GetTeamId();
 		if (ensure(TeamId != INDEX_NONE))
 		{
-			// Register the team by adding it to the TeamMap.
-			TeamMap.FindOrAdd(TeamId);
-			TeamMap[TeamId] = TeamInfo;
+			/* Register the team by inserting it into its team's entry in the TeamMap, or creating a new entry for it
+			 * if needed. */
+			FTeamTrackingInfo& Entry = TeamMap.FindOrAdd(TeamId);
+			Entry.SetTeamInfo(TeamInfo);
 
 			return true;
 		}
@@ -93,11 +99,11 @@ bool UTeamSubsystem::UnregisterTeam(ATeamInfo* TeamInfo)
 		const int32 TeamId = TeamInfo->GetTeamId();
 		if (ensure(TeamId != INDEX_NONE))
 		{
-			/* Unregister the team by clearing its info actor. We don't remove the entry so new teams don't try to re-use
-			 * the unregistered team's ID. */
-			if (TeamMap.Contains(TeamId))
+			/* Unregister the team by removing its info actor. We don't remove the entry so that new teams don't try to
+			 * re-use the unregistered team's ID. */
+			if (FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 			{
-				TeamMap[TeamId] = nullptr;
+				Entry->RemoveTeamInfo(TeamInfo);
 
 				return true;
 			}
@@ -137,9 +143,9 @@ void UTeamSubsystem::AddTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count)
 		UE_LOG(LogTeams, Error, TEXT("AddTeamTags(TeamId: %d, Tag: %s, Count: %d) failed: %s"), TeamId, *Tag.ToString(), Count, *ErrorMessage);
 	};
 
-	if (TeamMap.Contains(TeamId))
+	if (FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 	{
-		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+		if (ATeamInfo* TeamInfo = Entry->TeamInfo)
 		{
 			if (TeamInfo->HasAuthority())
 			{
@@ -170,9 +176,9 @@ void UTeamSubsystem::RemoveTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count)
 		UE_LOG(LogTeams, Error, TEXT("RemoveTeamTags(TeamId: %d, Tag: %s, Count: %d) failed: %s"), TeamId, *Tag.ToString(), Count, *ErrorMessage);
 	};
 
-	if (TeamMap.Contains(TeamId))
+	if (FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 	{
-		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+		if (ATeamInfo* TeamInfo = Entry->TeamInfo)
 		{
 			if (TeamInfo->HasAuthority())
 			{
@@ -198,12 +204,12 @@ void UTeamSubsystem::RemoveTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count)
 int32 UTeamSubsystem::GetTeamTagCount(int32 TeamId, FGameplayTag Tag) const
 {
 	// Return the given team's requested tag count if it exists.
-	if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+	if (const FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 	{
-		return TeamInfo->TeamTags.GetTagCount(Tag);
+		return (Entry->TeamInfo ? Entry->TeamInfo->TeamTags.GetTagCount(Tag) : 0);
 	}
 	// The team cannot be found.
-	else if (!TeamMap.Contains(TeamId))
+	else
 	{
 		UE_LOG(LogTeams, Verbose, TEXT("Requested team tag count on an unknown team (TeamId: %d, Tag: %s)."), TeamId, *Tag.ToString());
 	}
@@ -214,12 +220,12 @@ int32 UTeamSubsystem::GetTeamTagCount(int32 TeamId, FGameplayTag Tag) const
 bool UTeamSubsystem::TeamHasTag(int32 TeamId, FGameplayTag Tag) const
 {
 	// Return if given team has the requested tag, if it exists.
-	if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+	if (const FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 	{
-		return TeamInfo->TeamTags.ContainsTag(Tag);
+		return (Entry->TeamInfo ? Entry->TeamInfo->TeamTags.ContainsTag(Tag) : false);
 	}
 	// The team cannot be found.
-	else if (!TeamMap.Contains(TeamId))
+	else
 	{
 		UE_LOG(LogTeams, Verbose, TEXT("Requested team tag check on an unknown team (TeamId: %d, Tag: %s)."), TeamId, *Tag.ToString());
 	}
@@ -308,23 +314,17 @@ bool UTeamSubsystem::CanCauseHealing(const UObject* Instigator, const UObject* T
 
 UTeamDisplayAsset* UTeamSubsystem::GetTeamDisplayAsset(int32 TeamId, int32 ViewerTeamId)
 {
-	if (TeamMap.Contains(TeamId))
+	if (FTeamTrackingInfo* Entry = TeamMap.Find(TeamId))
 	{
-		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
+		// If the viewer is on the same (valid) team as the target, return the "friendly" display asset, if one exists.
+		if ((TeamId != INDEX_NONE) && (TeamId == ViewerTeamId) && Entry->FriendlyDisplayAsset)
 		{
-			// If the viewer is on the same (valid) team as the target, return the "friendly" display asset, if one exists.
-			if ((TeamId != INDEX_NONE) && (TeamId == ViewerTeamId))
-			{
-				if (TeamInfo->GetFriendlyDisplayAsset() != nullptr)
-				{
-					return TeamInfo->GetFriendlyDisplayAsset();
-				}
-			}
-
-			/* If the viewer and target are on different teams, or if friendly display assets aren't being used in this
-			 * mode, use the team's normal display asset. */
-			return TeamInfo->GetTeamDisplayAsset();
+			return Entry->FriendlyDisplayAsset;
 		}
+
+		/* If the viewer and target are on different teams, or we aren't using friendly display assets, use the team's
+		 * normal display asset. */
+		return Entry->TeamDisplayAsset;
 	}
 
 	return nullptr;
@@ -332,27 +332,23 @@ UTeamDisplayAsset* UTeamSubsystem::GetTeamDisplayAsset(int32 TeamId, int32 Viewe
 
 void UTeamSubsystem::NotifyTeamDisplayAssetModified(UTeamDisplayAsset* ModifiedAsset)
 {
-	// Broadcast TeamDisplayAssetChangedDelegate for any teams using the modified asset.
+	// Broadcast the display asset change delegate for any teams using the modified asset.
 	for (const auto& KVP : TeamMap)
 	{
-		if ((KVP.Value->GetTeamDisplayAsset() == ModifiedAsset) || (KVP.Value->GetFriendlyDisplayAsset() == ModifiedAsset))
+		if ((KVP.Value.FriendlyDisplayAsset == ModifiedAsset) || (KVP.Value.TeamDisplayAsset == ModifiedAsset))
 		{
-			KVP.Value->TeamDisplayAssetChangedDelegate.Broadcast(ModifiedAsset);
+			KVP.Value.TeamDisplayAssetChangedDelegate.Broadcast(KVP.Key);
 		}
 	}
 }
 
-FTeamDisplayAssetChangedSignature* UTeamSubsystem::GetTeamDisplayAssetChangedDelegate(int32 TeamId)
+FTeamDisplayAssetChangedSignature& UTeamSubsystem::GetTeamDisplayAssetChangedDelegate(int32 TeamId)
 {
-	if (TeamMap.Contains(TeamId))
-	{
-		if (ATeamInfo* TeamInfo = *TeamMap.Find(TeamId))
-		{
-			return &TeamInfo->TeamDisplayAssetChangedDelegate;
-		}
-	}
+	/* Add the given team if it does not exist yet to allow listeners to register for team display asset changes before
+	 * the teams finish replicating. */
+	FTeamTrackingInfo& Entry = TeamMap.FindOrAdd(TeamId);
 
-	return nullptr;
+	return Entry.TeamDisplayAssetChangedDelegate;
 }
 
 int32 UTeamSubsystem::FindTeamFromObject(const UObject* Object) const

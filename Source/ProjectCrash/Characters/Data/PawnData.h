@@ -10,6 +10,7 @@ class UCrashCameraModeBase;
 class UCrashAbilitySet;
 class UCrashInputActionMapping;
 class UInputMappingContext;
+class UInventoryItemDefinition;
 
 /**
  * Defines an input mapping context with the priority with which it should be bound.
@@ -62,9 +63,19 @@ public:
 
 public:
 
-	/** Ability sets granted to this pawn when it's initialized. */
+	/** Ability sets granted to this pawn when initialized. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TObjectPtr<UCrashAbilitySet>> AbilitySets;
+
+
+
+	// Inventory.
+
+public:
+
+	/** Inventory items granted to this pawn's controller when initialized. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	TArray<TSubclassOf<UInventoryItemDefinition>> DefaultItems;
 
 
 

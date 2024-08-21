@@ -8,7 +8,7 @@
 #include "CommonTextBlock.h"
 #include "Components/DynamicEntryBox.h"
 #include "ICommonInputModule.h"
-#include "UI/Foundation/CrashButtonBase.h"
+#include "UI/Deprecated/CrashButtonBase.h"
 
 void UConfirmationDialogWidget::SetupDialog(UDialogDefinition* Definition, FUIMessagingResultSignature ResultCallback)
 {

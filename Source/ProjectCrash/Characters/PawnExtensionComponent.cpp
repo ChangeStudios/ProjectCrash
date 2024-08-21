@@ -4,10 +4,10 @@
 #include "Characters/PawnExtensionComponent.h"
 
 #include "AIController.h"
-#include "Characters/Data/PawnData.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
@@ -216,8 +216,8 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 	}
 
 	// Update the pawn data.
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	PawnData = InPawnData;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	Pawn->ForceNetUpdate();
 
 	// Try to progress our initialization, now that we have valid pawn data.
@@ -262,17 +262,31 @@ void UPawnExtensionComponent::InitializeAbilitySystem(UCrashAbilitySystemCompone
 	{
 		/** If the given ASC already has a pawn acting as it's avatar, we need to remove it. This can happen on clients
 		 * when lagging: the new pawn is spawned and possessed before the old one is removed. */
-		ensure(!ExistingAvatar->HasAuthority());
-
-		if (UPawnExtensionComponent* OtherExtensionComponent = FindPawnExtensionComponent(ExistingAvatar))
+		if (!ExistingAvatar->HasAuthority())
 		{
-			OtherExtensionComponent->UninitializeAbilitySystem();
+			if (UPawnExtensionComponent* OtherExtensionComponent = FindPawnExtensionComponent(ExistingAvatar))
+			{
+				OtherExtensionComponent->UninitializeAbilitySystem();
+			}
 		}
 	}
 
 	// Initialize this component's owning pawn as the avatar of the ASC.
 	AbilitySystemComponent = InASC;
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Pawn);
+
+	// Grant the new pawn data's default ability sets on the server.
+	if (HasAuthority())
+	{
+		for (const UCrashAbilitySet* AbilitySet : PawnData->AbilitySets)
+		{
+			if (AbilitySet)
+			{
+				AbilitySet->GiveToAbilitySystem(AbilitySystemComponent.Get(), &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
+			}
+		}
+	}
+
 	OnAbilitySystemInitialized.Broadcast();
 }
 
@@ -281,6 +295,17 @@ void UPawnExtensionComponent::UninitializeAbilitySystem()
 	if (!AbilitySystemComponent.Get())
 	{
 		return;
+	}
+
+	// Remove the current pawn data's ability sets.
+	if (HasAuthority())
+	{
+		for (FCrashAbilitySet_GrantedHandles GrantedAbilitySet : GrantedPawnDataAbilitySets)
+		{
+			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent.Get());
+		}
+
+		GrantedPawnDataAbilitySets.Empty();
 	}
 
 	// Uninitialize this pawn from the ASC if it's the current avatar.

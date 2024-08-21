@@ -6,6 +6,7 @@
 #include "ClassViewerFilter.h"
 #include "ClassViewerModule.h"
 #include "Camera/CrashCameraModeBase.h"
+#include "Camera/CrashCameraModeBlueprint.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/SClassPickerDialog.h"
 
@@ -63,7 +64,8 @@ UCrashCameraModeFactory::UCrashCameraModeFactory(const FObjectInitializer& Objec
 {
 	bCreateNew = true;
 	bEditAfterNew = true;
-	SupportedClass = UCrashCameraModeBase::StaticClass();
+	SupportedClass = UCrashCameraModeBlueprint::StaticClass();
+	CameraClass = UCrashCameraModeBase::StaticClass();
 }
 
 bool UCrashCameraModeFactory::ConfigureProperties()
@@ -96,14 +98,27 @@ bool UCrashCameraModeFactory::ConfigureProperties()
 	return bPressedOk;
 }
 
-UObject* UCrashCameraModeFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+UObject* UCrashCameraModeFactory::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	if (CameraClass)
-	{
-		return FKismetEditorUtilities::CreateBlueprint(CameraClass, InParent, Name, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext);
-	}
+	check(InClass->IsChildOf(UCrashCameraModeBlueprint::StaticClass()));
 
-	return nullptr;
+	if ( ( CameraClass == NULL ) || !FKismetEditorUtilities::CanCreateBlueprintOfClass(CameraClass) || !CameraClass->IsChildOf(UCrashCameraModeBase::StaticClass()) )
+	{
+		FFormatNamedArguments Args;
+		Args.Add( TEXT("ClassName"), (CameraClass != NULL) ? FText::FromString( CameraClass->GetName() ) : LOCTEXT("Null", "(null)") );
+		FMessageDialog::Open( EAppMsgType::Ok, FText::Format( LOCTEXT("CannotCreateCameraMode", "Cannot create a Camera Mode based on the class '{ClassName}'."), Args ) );
+		return NULL;
+	}
+	else
+	{
+		UCrashCameraModeBlueprint* NewBP = CastChecked<UCrashCameraModeBlueprint>(FKismetEditorUtilities::CreateBlueprint(CameraClass, InParent, InName, BPTYPE_Normal, UCrashCameraModeBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext));
+		return NewBP;
+	}
+}
+
+UObject* UCrashCameraModeFactory::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+{
+	return FactoryCreateNew(InClass, InParent, InName, Flags, Context, Warn, NAME_None);
 }
 
 #undef LOCTEXT_NAMESPACE

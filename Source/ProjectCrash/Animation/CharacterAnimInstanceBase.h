@@ -10,7 +10,7 @@ class UCrashCharacterMovementComponent;
 
 /**
  * Base animation instance for character animation blueprints. Collects relevant character data used for animation
- * blueprints.
+ * blueprints. The owning character must have a movement component of type CrashCharacterMovementComponent.
  *
  * Technically, this animation instance can be used on non-characters, but some of its data will not be valid,
  * especially if not used on a pawn.
@@ -52,6 +52,12 @@ protected:
 
 	/** Updates data used to blend this character's animations. */
 	virtual void UpdateBlendData(float DeltaSeconds);
+
+	/** Whether this is our first animation update. Used to avoid initializing deltas to high values (e.g., we
+	 * initialize AimRotation to FRotator(0.0), but the player's aim could be (0.0f, 90.0f, 0.0f), resulting in a high
+	 * RotationDelta value on the first frame this is updated). */
+	UPROPERTY(BlueprintReadOnly, Category = "Animation")
+	bool bFirstUpdate;
 
 
 

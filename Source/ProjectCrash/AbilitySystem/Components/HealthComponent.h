@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealth_AttributeChangedSignature,
  * unique component, while also providing an interface to actors that need to be aware of health events, but may not
  * have the health attribute set itself. E.g. the avatar of an ASC that's owned by the player state.
  */
-UCLASS(BlueprintType, Meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, ClassGroup = "Ability System", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()

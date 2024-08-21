@@ -6,6 +6,7 @@
 #include "CrashTeamAgentInterface.h"
 #include "TeamStatics.h"
 #include "TeamSubsystem.h"
+#include "GameFramework/CrashLogging.h"
 
 UAsyncAction_ObserveTeamColors* UAsyncAction_ObserveTeamColors::ObserveTeamColors(UObject* InTeamAgent, bool bInLocalViewer)
 {
@@ -36,10 +37,20 @@ void UAsyncAction_ObserveTeamColors::Activate()
 		{
 			// Get the current team info.
 			CurrentTeamIndex = GenericTeamIdToInteger(TeamAgentInterface->GetGenericTeamId());
-			CurrentDisplayAsset = UTeamStatics::GetTeamDisplayAsset(World, CurrentTeamIndex, GetViewer(TeamAgentPtr.Get()));
+			CurrentDisplayAsset = GetRelevantDisplayAsset(CurrentTeamIndex);
 
 			// Start listening for team changes.
 			TeamAgentInterface->GetTeamIdChangedDelegateChecked().AddDynamic(this, &ThisClass::OnAgentChangedTeam);
+
+			/* If we're using local viewing, we also need to listen for when the viewer (the local player controller)
+			 * initializes or changes their team, so the effective display asset remains accurate to the viewer. */
+			if (bLocalViewer && TeamAgentPtr.Get())
+			{
+				if (ICrashTeamAgentInterface* ViewerAgentInterface = Cast<ICrashTeamAgentInterface>(GetViewer(TeamAgentPtr.Get())))
+				{
+					ViewerAgentInterface->GetTeamIdChangedDelegateChecked().AddDynamic(this, &ThisClass::OnViewerChangedTeam);
+				}
+			}
 
 			bCouldSucceed = true;
 		}
@@ -64,6 +75,14 @@ void UAsyncAction_ObserveTeamColors::SetReadyToDestroy()
 	{
 		TeamAgentInterface->GetTeamIdChangedDelegateChecked().RemoveAll(this);
 	}
+
+	if (bLocalViewer && TeamAgentPtr.Get())
+	{
+		if (ICrashTeamAgentInterface* ViewerAgentInterface = Cast<ICrashTeamAgentInterface>(GetViewer(TeamAgentPtr.Get())))
+		{
+			ViewerAgentInterface->GetTeamIdChangedDelegateChecked().RemoveAll(this);
+		}
+	}
 }
 
 void UAsyncAction_ObserveTeamColors::BroadcastChange(int32 NewTeam, const UTeamDisplayAsset* DisplayAsset)
@@ -75,9 +94,9 @@ void UAsyncAction_ObserveTeamColors::BroadcastChange(int32 NewTeam, const UTeamD
 	const bool bTeamChanged = (LastBroadcastTeamId != NewTeam);
 
 	// Stop listening for changes to the old team's display asset.
-	if ((TeamSubsystem != nullptr) && bTeamChanged && (LastBroadcastTeamId != INDEX_NONE) && TeamSubsystem->DoesTeamExist(LastBroadcastTeamId))
+	if ((TeamSubsystem != nullptr) && bTeamChanged && (LastBroadcastTeamId != INDEX_NONE))
 	{
-		TeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId)->RemoveAll(this);
+		TeamSubsystem->GetTeamDisplayAssetChangedDelegate(LastBroadcastTeamId).RemoveAll(this);
 	}
 
 	// Broadcast the team and/or display asset change.
@@ -85,28 +104,40 @@ void UAsyncAction_ObserveTeamColors::BroadcastChange(int32 NewTeam, const UTeamD
 	TeamColorChangedDelegate.Broadcast((NewTeam != INDEX_NONE), NewTeam, DisplayAsset);
 
 	// Start listening for changes to the new team's display asset.
-	if ((TeamSubsystem != nullptr) && bTeamChanged && (NewTeam != INDEX_NONE) && TeamSubsystem->DoesTeamExist(NewTeam))
+	if ((TeamSubsystem != nullptr) && bTeamChanged && (NewTeam != INDEX_NONE))
 	{
-		TeamSubsystem->GetTeamDisplayAssetChangedDelegate(NewTeam)->AddDynamic(this, &ThisClass::OnTeamDisplayAssetChanged);
+		TeamSubsystem->GetTeamDisplayAssetChangedDelegate(NewTeam).AddDynamic(this, &ThisClass::OnTeamDisplayAssetChanged);
 	}
 }
 
 void UAsyncAction_ObserveTeamColors::OnAgentChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam)
 {
-	// Determine the viewer for the new display asset.
-	UObject* Viewer = GetViewer(TeamAgent);
-
-	// Retrieve the new team's display asset.
-	UTeamDisplayAsset* DisplayAsset = UTeamStatics::GetTeamDisplayAsset(TeamAgent, NewTeam, Viewer);
-
 	// Broadcast the team change and the new team's display asset.
-	BroadcastChange(NewTeam, DisplayAsset);
+	BroadcastChange(NewTeam, GetRelevantDisplayAsset(NewTeam));
 }
 
-void UAsyncAction_ObserveTeamColors::OnTeamDisplayAssetChanged(const UTeamDisplayAsset* NewDisplayAsset)
+void UAsyncAction_ObserveTeamColors::OnTeamDisplayAssetChanged(int32 TeamId)
 {
 	// When the team's display asset changes, broadcast the change with an unchanged team ID.
-	BroadcastChange(LastBroadcastTeamId, NewDisplayAsset);
+	BroadcastChange(LastBroadcastTeamId, GetRelevantDisplayAsset(LastBroadcastTeamId));
+}
+
+void UAsyncAction_ObserveTeamColors::OnViewerChangedTeam(UObject* TeamAgent, int32 OldTeam, int32 NewTeam)
+{
+	ensure(bLocalViewer);
+
+	// Our observed agent's team hasn't changed, but GetRelevantDisplayAsset will use our viewer's new team.
+	BroadcastChange(LastBroadcastTeamId, GetRelevantDisplayAsset(LastBroadcastTeamId));
+}
+
+UTeamDisplayAsset* UAsyncAction_ObserveTeamColors::GetRelevantDisplayAsset(int32 TeamId)
+{
+	// Get the local player as the viewer.
+	ensure(TeamAgentPtr.Get());
+	UObject* Viewer = GetViewer(TeamAgentPtr.Get());
+
+	// Use the team subsystem to determine the relevant display asset.
+	return UTeamStatics::GetTeamDisplayAsset(TeamAgentPtr.Get(), TeamId, Viewer);
 }
 
 UObject* UAsyncAction_ObserveTeamColors::GetViewer(UObject* WorldContextObject)

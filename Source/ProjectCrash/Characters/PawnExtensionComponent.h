@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "AbilitySystem/Abilities/CrashAbilitySet.h"
 #include "CoreMinimal.h"
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "Components/PawnComponent.h"
@@ -105,7 +106,7 @@ private:
 
 	/** The pawn data corresponding to this component's owning pawn. Can be set in-editor for pawns that are not
 	 * dynamically spawned. */
-	UPROPERTY(EditInstanceOnly, ReplicatedUsing = OnRep_PawnData, Category = "Crash|Pawn")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, ReplicatedUsing = OnRep_PawnData, Category = "Crash|Pawn", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<const UPawnData> PawnData;
 
 	/** Attempts to progress pawn initialization when pawn data is set. */
@@ -140,6 +141,9 @@ private:
 
 	/** Broadcast when the owning pawn removes itself as the avatar of an ASC. */
 	FSimpleMulticastDelegate OnAbilitySystemUninitialized;
+
+	/** Ability sets granted by the current pawn data. */
+	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
 
 // Ability system component.
 public:

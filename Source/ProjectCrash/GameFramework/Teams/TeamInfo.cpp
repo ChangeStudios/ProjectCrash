@@ -75,21 +75,17 @@ void ATeamInfo::SetFriendlyDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplay
 	check(HasAuthority());
 	check(FriendlyDisplayAsset == nullptr);
 
-	UTeamDisplayAsset* OldDisplayAsset = FriendlyDisplayAsset;
 	FriendlyDisplayAsset = NewDisplayAsset;
 
-	if (FriendlyDisplayAsset != OldDisplayAsset)
-	{
-		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
-	}
+	/* Registering with the team subsystem refreshes our team info, which will automatically broadcast our new display
+	 * asset. */
+	TryRegisterWithTeamSubsystem();
 }
 
 void ATeamInfo::OnRep_FriendlyDisplayAsset(UTeamDisplayAsset* OldDisplayAsset)
 {
-	if (FriendlyDisplayAsset != OldDisplayAsset)
-	{
-		TeamDisplayAssetChangedDelegate.Broadcast(FriendlyDisplayAsset);
-	}
+	// Locally refresh the subsystem's team info.
+	TryRegisterWithTeamSubsystem();
 }
 
 void ATeamInfo::SetTeamDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsset)
@@ -97,21 +93,17 @@ void ATeamInfo::SetTeamDisplayAsset(TObjectPtr<UTeamDisplayAsset> NewDisplayAsse
 	check(HasAuthority());
 	check(TeamDisplayAsset == nullptr);
 
-	UTeamDisplayAsset* OldDisplayAsset = TeamDisplayAsset;
 	TeamDisplayAsset = NewDisplayAsset;
 
-	if (TeamDisplayAsset != OldDisplayAsset)
-	{
-		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
-	}
+	/* Registering with the team subsystem refreshes our team info, which will automatically broadcast our new display
+	 * asset. */
+	TryRegisterWithTeamSubsystem();
 }
 
 void ATeamInfo::OnRep_TeamDisplayAsset(UTeamDisplayAsset* OldDisplayAsset)
 {
-	if (TeamDisplayAsset != OldDisplayAsset)
-	{
-		TeamDisplayAssetChangedDelegate.Broadcast(TeamDisplayAsset);
-	}
+	// Locally refresh the subsystem's team info.
+	TryRegisterWithTeamSubsystem();
 }
 
 void ATeamInfo::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -20,11 +20,11 @@ struct FGameFeatureAbilitiesEntry_AttributeSet
 {
 	GENERATED_BODY()
 
-	// Ability set to grant
+	/** Attribute set to grant. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AssetBundles = "Client,Server"))
 	TSoftClassPtr<UAttributeSet> AttributeSetClass;
 
-	// Data table referent to initialize the attributes with, if any (can be left unset)
+	/** Data table with which to initialize the attribute set, if any (can be left unset). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AssetBundles = "Client,Server"))
 	TSoftObjectPtr<UDataTable> InitializationData;
 };
@@ -45,16 +45,16 @@ struct FGameFeatureAbilitiesEntry
 	TSoftClassPtr<AActor> ActorClass;
 
 	/** Abilities to grant to actors of the specified class. */
-	UPROPERTY(EditAnywhere, Category="Abilities", Meta = (AssetBundles = "Client,Server"))
+	UPROPERTY(EditAnywhere, Category="Abilities", DisplayName = "Abilities", Meta = (AssetBundles = "Client,Server"))
 	TArray<TSoftClassPtr<UGameplayAbility>> GrantedAbilities;
 
 	/** Ability sets to grant to actors of the specified class. Target ASC must be of type CrashAbilitySystemComponent
 	 * to receive ability sets. */
-	UPROPERTY(EditAnywhere, Category="Abilities", Meta = (AssetBundles = "Client,Server"))
+	UPROPERTY(EditAnywhere, Category="Abilities", DisplayName = "Ability Sets", Meta = (AssetBundles = "Client,Server"))
 	TArray<TSoftObjectPtr<const UCrashAbilitySet>> GrantedAbilitySets;
 
 	/** Attribute sets to grant to actors of the specified class. */
-	UPROPERTY(EditAnywhere, Category="Attributes")
+	UPROPERTY(EditAnywhere, Category="Attributes", DisplayName = "Attribute Sets")
 	TArray<FGameFeatureAbilitiesEntry_AttributeSet> GrantedAttributeSets;
 };
 
@@ -79,10 +79,6 @@ public:
 	/** Resets the context data for the given context. */
 	virtual void OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context) override;
 
-	/** Abilities, ability sets, and attribute sets that will be granted to actors of a specified class. */
-	UPROPERTY(EditAnywhere, Category="Abilities/Attributes", DisplayName = "Granted Abilities/Attributes List", Meta = (TitleProperty = "ActorClass", ShowOnlyInnerProperties))
-	TArray<FGameFeatureAbilitiesEntry> AbilitiesList;
-
 	/** Extension request name for when this action should grant its abilities. Must be added by the receiving actor
 	 * when they are ready to be granted abilities. */
 	static const FName NAME_AbilitiesReady;
@@ -94,15 +90,25 @@ private:
 
 
 
+	// Action data.
+
+public:
+
+	/** Abilities, ability sets, and attribute sets that will be granted to actors of a specified class. */
+	UPROPERTY(EditAnywhere, Category="Abilities/Attributes", DisplayName = "Granted Abilities/Attributes List", Meta = (TitleProperty = "ActorClass", ShowOnlyInnerProperties))
+	TArray<FGameFeatureAbilitiesEntry> AbilitiesList;
+
+
+
 	// Internals.
 
 // Data.
 private:
 
 	/**
-	 * A handle for the abilities and attribute sets granted by this action from an active extension.
+	 * Handle for the abilities and attribute sets granted by this action to an actor with an active extension.
 	 */
-	struct FActorExtensions
+	struct FExtendedActorData
 	{
 		TArray<FGameplayAbilitySpecHandle> Abilities;
 		TArray<UAttributeSet*> AttributeSets;
@@ -110,14 +116,14 @@ private:
 	};
 
 	/**
-	 * Data mapped to a specific context to cache this action's data in that context.
+	 * Data for a specific context, used to cache this action's data in that context.
 	 */
 	struct FPerContextData
 	{
-		// Delegates to the extension request to grant this action's abilities.
+		// Delegates to the extension requests to grant or remove this action's abilities and attribute sets.
 		TArray<TSharedPtr<FComponentRequestHandle>> ExtensionRequestHandles;
-		// Actors with active extensions granting this action's abilities to them.
-		TMap<AActor*, FActorExtensions> ActiveExtensions;
+		// Actors with an active extension granting this action's abilities and attribute sets to them.
+		TMap<AActor*, FExtendedActorData> ActiveExtensions;
 	};
 
 	/** Context-specific data for each context in which this game feature action is active. */
@@ -129,8 +135,8 @@ private:
 // Granting abilities.
 private:
 
-	/** Adds or removes this action's abilities and attribute sets from an actor when that actor adds or removes their
-	 * extension request. */
+	/** Adds or removes this action's abilities and attribute sets to/from an actor when the corresponding extension
+	 * request is received. */
 	void HandleActorExtension(AActor* Actor, FName EventName, int32 EntryIndex, FGameFeatureStateChangeContext ChangeContext);
 
 	/** Grants the abilities and attribute sets in the specified entry to the given actor. */

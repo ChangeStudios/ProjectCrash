@@ -46,6 +46,15 @@ class PROJECTCRASH_API UFirstPersonCharacterAnimInstance : public UCharacterAnim
 {
 	GENERATED_BODY()
 
+	// Construction.
+
+public:
+
+	/** Default constructor. */
+	UFirstPersonCharacterAnimInstance();
+
+
+
 	// Animation updates.
 
 public:
