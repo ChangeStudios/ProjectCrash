@@ -11,6 +11,7 @@
 
 class UCrashCameraComponent;
 class UCrashAbilitySystemComponent;
+class UEquipmentComponent;
 class UHealthComponent;
 class UPawnExtensionComponent;
 
@@ -92,10 +93,12 @@ private:
 
 public:
 
-	/** Switches to third-person when starting to blend out of a first-person camera. */
+	/** Switches to third-person when starting to blend out of a first-person camera. Propagates new visibility to any
+	 * equipped actors. */
 	virtual void OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
 
-	/** Switches to first-person when fully blending into a first-person camera. */
+	/** Switches to first-person when fully blending into a first-person camera. Propagates new visibility to any
+	 * equipped actors. */
 	virtual void OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode) override;
 	
 protected:

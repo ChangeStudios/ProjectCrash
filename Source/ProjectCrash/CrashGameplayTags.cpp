@@ -21,17 +21,16 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Passive, "Ability.Behavior.UI.Frontend.Passive", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a passive ability.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Ultimate, "Ability.Behavior.UI.Frontend.Ultimate", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as an ultimate ability.");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Identifier_Generic_Jump, "Ability.Identifier.Generic.Jump", "Identifier for the generic character jump ability. Includes abilities like double-jump.");
-
 
 	// Camera
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CameraType_FirstPerson, "CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
 
 
 	// Effects
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides any damage invulnerabilities.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageSelf, "Effects.Damage.CanDamageSelf", "Specifies that damage caused by this gameplay effect can affect the source actor.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageTeam, "Effects.Damage.CanDamageTeam", "Specifies that damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_FellOutOfWorld, "Effects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. This overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides damage invulnerabilities.");
 
 
 	// Events
@@ -44,10 +43,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_WaitingForData, "InitState.WaitingForData", "We are entering the map and waiting to load and replicate all of the data we need for initialization: game data, Challenger data, skin data, etc.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_Initializing, "InitState.Initializing", "Actors and their components are being initialized for game play.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
-
-
-	// Gameplay.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputBlocked", "Ability activation via input is disabled on any ASC with this tag.");
 
 
 	// Input
@@ -66,19 +61,13 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
+
 
 	// States
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_AbilityInputBlocked, "State.AbilityInputBlocked", "Ability activation via input is disabled on any ASC with this tag.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The actor is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_TemporarilyUnequipped, "State.TemporarilyUnequipped", "The actor has a current equipment set but it is temporarily unequipped. Actors with an EquipmentComponent will automatically unequip and re-equip their current equipment set when they gain and lose this tag, respectively.");
-
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement, "State.Movement", "(Implicit) Represents a transient movement state. These are always cleared when an ASC is reinitialized.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Falling, "State.Movement.Falling", "The actor is currently airborne with the \"Falling\" movement state. Does not indicate whether the actor jumped or fell. Cleared on land.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Movement_Jumping, "State.Movement.Jumping", "The actor is currently airborne as a result of jumping. Cleared on land.");
-
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective, "State.Perspective", "Overrides a character's current perspective. When a Perspective tag is added for the first time, the character's current perspective is cached, and will be restored once the final Perspective tag is removed.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective_FirstPerson, "State.Perspective.FirstPerson", "Overrides a character's perspective into first-person.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Perspective_ThirdPerson, "State.Perspective.ThirdPerson", "Overrides a character's perspective into third-person.");
 
 
 	// UI

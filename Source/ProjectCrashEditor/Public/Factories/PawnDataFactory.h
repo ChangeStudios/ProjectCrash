@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "PawnDataFactory.generated.h"
 
 /**
  * UPawnData factory.
  */
-UCLASS()
-class PROJECTCRASHEDITOR_API UPawnDataFactory : public UFactory
+UCLASS(MinimalAPI)
+class UPawnDataFactory : public UFactory
 {
 	GENERATED_BODY()
 

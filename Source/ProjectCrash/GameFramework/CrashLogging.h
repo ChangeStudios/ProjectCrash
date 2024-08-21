@@ -48,6 +48,19 @@ PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogEquipment, Log, All);
 
 
 
+	// Inventory log.
+
+/** Log channel for the inventory system. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogInventory, Log, All);
+
+/** Inventory log channel shorthand. */
+#define INVENTORY_LOG(Verbosity, Format, ...) \
+{ \
+	UE_LOG(LogInventory, Verbosity, Format, ##__VA_ARGS__); \
+}
+
+
+
 	// Team log.
 
 /** Log channel for teams. */

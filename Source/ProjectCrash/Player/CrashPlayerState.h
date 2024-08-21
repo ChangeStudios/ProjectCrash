@@ -10,9 +10,14 @@
 #include "GameFramework/Teams/CrashTeamAgentInterface.h"
 #include "CrashPlayerState.generated.h"
 
+class UInventoryComponent;
 class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
+
+/** Signature for delegate fired when this player's current pawn data changes, as a result of them changing their
+ * current playable character. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPawnDataChangedSignature, const UPawnData*, OldPawnData, const UPawnData*, NewPawnData);
 
 /**
  * Defines how a client is connected.
@@ -96,23 +101,30 @@ public:
 	/** Updates this player's current pawn data, destroying their current pawn if necessary, and restarts them. Used
 	 * for changing pawns during gameplay via a "Switch Character" menu. For initializing pawn data, use SetPawnData
 	 * instead. */
-	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|PlayerState")
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|Player State")
 	void Server_ChangePawn(const UPawnData* InPawnData);
 
 	/** Templated getter for retrieving current pawn data. */
 	template <class T>
 	const T* GetPawnData() const { return Cast<T>(PawnData); }
 
+	/** Fired on server and clients when this player's selected pawn data changes, as a result of changing their
+	 * selected playable character. This is not always fired when changing pawns; e.g. temporarily taking control of a
+	 * "drone" pawn will not trigger this. */
+	UPROPERTY(BlueprintAssignable)
+	FPawnDataChangedSignature PawnDataChangedDelegate;
+
 protected:
 
 	/** Data defining which pawn will be used by this player. Used by the game mode when deciding which pawn class to
-	 * spawn for this player. Used by pawns in their initialization; e.g. defines input configurations. */
+	 * spawn for this player. Used by pawns in their initialization; e.g. defines input configurations. This is not
+	 * updated to reflect players temporarily switching pawns, e.g. taking control of a "drone" pawn. */
 	UPROPERTY(ReplicatedUsing = OnRep_PawnData)
 	TObjectPtr<const UPawnData> PawnData;
 
 	/** OnRep for this player's pawn data. Used for debugging purposes. */
 	UFUNCTION()
-	void OnRep_PawnData();
+	void OnRep_PawnData(const UPawnData* OldPawnData);
 
 
 
@@ -121,7 +133,7 @@ protected:
 public:
 
 	/** Typed getter for this player's ASC. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerState")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player State")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	/** Interfaced getter for this player's ASC. */
@@ -130,12 +142,8 @@ public:
 private:
 
 	/** This player's ability system component. */
-	UPROPERTY(VisibleAnywhere, Category = "Crash|PlayerState")
+	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
-
-	/** Handles to the ability sets granted by our current pawn data. Used to remove these ability sets if our pawn
-	 * data changes. */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
 
 
 
@@ -154,7 +162,7 @@ public:
 
 	/** Blueprint-exposed wrapper for GetGenericTeamId that also converts the ID to an integer (NoTeam ->
 	 * INDEX_NONE). */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
+	UFUNCTION(BlueprintPure, Meta = (ToolTip = "The ID of the team to which this player currently belongs."))
 	int32 GetTeamId() const { return GenericTeamIdToInteger(GetGenericTeamId()); }
 
 private:

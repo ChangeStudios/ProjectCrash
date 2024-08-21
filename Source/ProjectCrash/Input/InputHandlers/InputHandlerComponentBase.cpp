@@ -144,7 +144,15 @@ bool UInputHandlerComponentBase::CanChangeInitState(UGameFrameworkComponentManag
 	// Transition to GameplayReady when our input is ready.
 	else if (CurrentState == STATE_INITIALIZING && DesiredState == STATE_GAMEPLAY_READY)
 	{
-		return bReadyToBindInputs;
+		// Input is only bound locally. Remotes don't need to (and can't) wait for it.
+		if ((Pawn->IsLocallyControlled()) && (!Pawn->IsBotControlled()))
+		{
+			return bReadyToBindInputs;
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	return false;

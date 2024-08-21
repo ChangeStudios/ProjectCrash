@@ -111,3 +111,17 @@ void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> Ch
 		TagCountMap[Stack.Tag] = Stack.Count;
 	}
 }
+
+void FGameplayTagStackContainer::GetDebugStrings(TArray<FString>& OutDebugStrings) const
+{
+	OutDebugStrings.Empty(Stacks.Num());
+
+	// Add each tag stack's debug string to the collection.
+	for (auto It = Stacks.CreateConstIterator(); It; ++It)
+	{
+		if (It)
+		{
+			OutDebugStrings.Add(*It->GetDebugString());
+		}
+	}
+}

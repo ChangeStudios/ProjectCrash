@@ -11,6 +11,7 @@
 #include "Camera/CrashCameraComponent.h"
 #include "Camera/CrashCameraModeBase.h"
 #include "Components/CapsuleComponent.h"
+#include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 

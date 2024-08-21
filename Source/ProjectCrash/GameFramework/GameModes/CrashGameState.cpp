@@ -10,6 +10,8 @@
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "Player/CrashPlayerState.h"
 #include "Editor/UnrealEd/Classes/Settings/LevelEditorPlaySettings.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/Messages/CrashVerbMessage.h"
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
@@ -149,6 +151,24 @@ void ACrashGameState::AddPlayerState(APlayerState* PlayerState)
 
 	// Try to progress initialization when a new player joins (potentially the last player we're waiting for).
 	CheckDefaultInitialization();
+}
+
+void ACrashGameState::MulticastUnreliableMessageToClients_Implementation(const FCrashVerbMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
+	}
+}
+
+void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCrashVerbMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
+	}
 }
 
 int32 ACrashGameState::GetNumExpectedPlayers() const

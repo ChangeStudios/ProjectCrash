@@ -54,3 +54,5 @@ uint32 FAssetTypeActions_TeamDisplayAsset::GetCategories()
 {
 	return EAssetTypeCategories::Gameplay;
 }
+
+#undef LOCTEXT_NAMESPACE

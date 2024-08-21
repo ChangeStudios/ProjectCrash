@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "ActionSetFactory.generated.h"
 
 /**
  * UGameFeatureActionSet factory.
  */
-UCLASS()
-class PROJECTCRASHEDITOR_API UActionSetFactory : public UFactory
+UCLASS(MinimalAPI)
+class UActionSetFactory : public UFactory
 {
 	GENERATED_BODY()
 

@@ -423,6 +423,7 @@ EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationCont
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 
+	// Disable support for bReplicateInputDirectly.
 	if (bReplicateInputDirectly)
 	{
 		Context.AddError(LOCTEXT("ReplicateInputDirectlyNotSupported", "This project does not support directly replicating ability input. Use a WaitInputPress or WaitInputRelease task instead."));

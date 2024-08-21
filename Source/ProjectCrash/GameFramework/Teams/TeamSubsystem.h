@@ -130,11 +130,11 @@ public:
 	void RemoveTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count);
 
 	/** Returns how many of the specified tag a given team has. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Teams")
+	UFUNCTION(BlueprintPure, Category = "Teams")
 	int32 GetTeamTagCount(int32 TeamId, FGameplayTag Tag) const;
 
 	/** Returns whether the given team has at least one of the specified tag. Tag must match exactly. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Teams")
+	UFUNCTION(BlueprintPure, Category = "Teams")
 	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
 
 

@@ -20,11 +20,11 @@ struct FGameFeatureAbilitiesEntry_AttributeSet
 {
 	GENERATED_BODY()
 
-	// Ability set to grant
+	/** Attribute set to grant. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AssetBundles = "Client,Server"))
 	TSoftClassPtr<UAttributeSet> AttributeSetClass;
 
-	// Data table referent to initialize the attributes with, if any (can be left unset)
+	/** Data table with which to initialize the attribute set, if any (can be left unset). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AssetBundles = "Client,Server"))
 	TSoftObjectPtr<UDataTable> InitializationData;
 };
@@ -45,16 +45,16 @@ struct FGameFeatureAbilitiesEntry
 	TSoftClassPtr<AActor> ActorClass;
 
 	/** Abilities to grant to actors of the specified class. */
-	UPROPERTY(EditAnywhere, Category="Abilities", Meta = (AssetBundles = "Client,Server"))
+	UPROPERTY(EditAnywhere, Category="Abilities", DisplayName = "Abilities", Meta = (AssetBundles = "Client,Server"))
 	TArray<TSoftClassPtr<UGameplayAbility>> GrantedAbilities;
 
 	/** Ability sets to grant to actors of the specified class. Target ASC must be of type CrashAbilitySystemComponent
 	 * to receive ability sets. */
-	UPROPERTY(EditAnywhere, Category="Abilities", Meta = (AssetBundles = "Client,Server"))
+	UPROPERTY(EditAnywhere, Category="Abilities", DisplayName = "Ability Sets", Meta = (AssetBundles = "Client,Server"))
 	TArray<TSoftObjectPtr<const UCrashAbilitySet>> GrantedAbilitySets;
 
 	/** Attribute sets to grant to actors of the specified class. */
-	UPROPERTY(EditAnywhere, Category="Attributes")
+	UPROPERTY(EditAnywhere, Category="Attributes", DisplayName = "Attribute Sets")
 	TArray<FGameFeatureAbilitiesEntry_AttributeSet> GrantedAttributeSets;
 };
 

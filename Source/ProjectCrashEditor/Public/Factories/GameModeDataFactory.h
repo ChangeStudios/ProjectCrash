@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "GameModeDataFactory.generated.h"
 
 /**
  * UGameModeData factory.
  */
-UCLASS()
-class PROJECTCRASHEDITOR_API UGameModeDataFactory : public UFactory
+UCLASS(MinimalAPI)
+class UGameModeDataFactory : public UFactory
 {
 	GENERATED_BODY()
 
