@@ -83,10 +83,10 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(DamageMessage.Verb, DamageMessage);
 
-			// TODO: Broadcast the message to clients.
+			// Broadcast the message to clients.
 			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
-				// GS->MulticastReliableMessageToClients(DamageMessage);
+				GS->MulticastReliableMessageToClients(DamageMessage);
 			}
 		}
 
