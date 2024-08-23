@@ -45,6 +45,7 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 	}
 
 	AActor* SpawnedActor = nullptr;
+	UMeshComponent* SpawnedMeshComp = nullptr;
 
 	// Spawn a static mesh actor if the mesh to spawn is a static mesh.
 	if (MeshToSpawn->IsA(UStaticMesh::StaticClass()))
@@ -53,6 +54,7 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 		{
 			SpawnedActorStatic->GetStaticMeshComponent()->SetStaticMesh(Cast<UStaticMesh>(MeshToSpawn));
 			SpawnedActor = SpawnedActorStatic;
+			SpawnedMeshComp = SpawnedActorStatic->GetStaticMeshComponent();
 		}
 	}
 	// Spawn a skeletal mesh actor if the mesh to spawn is a skeletal mesh.
@@ -62,6 +64,7 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 		{
 			SpawnedActorSkeletal->GetSkeletalMeshComponent()->SetSkeletalMesh(Cast<USkeletalMesh>(MeshToSpawn));
 			SpawnedActor = SpawnedActorSkeletal;
+			SpawnedMeshComp = SpawnedActorSkeletal->GetSkeletalMeshComponent();
 
 			// Play the optional animation for skeletal meshes.
 			if (SpawnedActorSkeletal)
@@ -78,6 +81,8 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 		SpawnedActor->FinishSpawning(SpawnTransform);
 		SpawnedActor->SetActorEnableCollision(false);
 		SpawnedActor->AttachToComponent(MeshComp, FAttachmentTransformRules::KeepRelativeTransform, AttachSocket);
+		SpawnedMeshComp->SetScalarParameterValueOnMaterials(FName("FirstPerson"), bFirstPerson ? 1.0f : 0.0f);
+		SpawnedMeshComp->bUseAttachParentBound = bFirstPerson;
 
 		SpawnedActors.Add(SpawnedActor);
 	}

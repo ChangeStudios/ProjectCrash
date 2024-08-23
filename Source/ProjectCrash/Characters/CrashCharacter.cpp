@@ -82,6 +82,14 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
+void ACrashCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Enable first-person depth rendering. It would be preferable to do this in construction, but we can't.
+	FirstPersonMesh->SetScalarParameterValueOnMaterials(FName("FirstPerson"), 1.0f);
+}
+
 void ACrashCharacter::PossessedBy(AController* NewController)
 {
 	// Cache our previous team.

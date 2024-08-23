@@ -149,7 +149,7 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 			TargetHit.ImpactPoint = OtherActor->GetActorLocation();
 		}
 
-		// Generate and send target data with the overlapped actor.
+		// Generate and send the generated target data.
 		TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, TargetHit));
 	}
 }

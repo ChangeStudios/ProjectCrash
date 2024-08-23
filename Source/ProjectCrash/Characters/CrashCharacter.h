@@ -41,6 +41,15 @@ public:
 
 
 
+	// Initialization.
+
+public:
+
+	/** Enables first-person depth rendering for the first-person character mesh. */
+	virtual void BeginPlay() override;
+
+
+
 	// Events.
 
 // Pawn extension routing.
