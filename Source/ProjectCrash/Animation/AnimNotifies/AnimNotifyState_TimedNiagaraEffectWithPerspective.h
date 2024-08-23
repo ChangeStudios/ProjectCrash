@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "AnimNotifyState_TimedNiagaraEffect.h"
-#include "AnimNotifyState_TimedEquipmentNiagaraEffect.generated.h"
+#include "AnimNotifyState_TimedNiagaraEffectWithPerspective.generated.h"
 
 /**
  * Timed niagara effect that supports perspective-based visibility. The effect will only be visible if the mesh on which
  * it's being played is visible.
  */
-UCLASS(Blueprintable, Meta = (DisplayName = "Timed Equipment Niagara Effect"), MinimalAPI)
-class UAnimNotifyState_TimedEquipmentNiagaraEffect : public UAnimNotifyState_TimedNiagaraEffect
+UCLASS(Blueprintable, Meta = (DisplayName = "Timed Niagara Effect With Perspective"), MinimalAPI)
+class UAnimNotifyState_TimedNiagaraEffectWithPerspective : public UAnimNotifyState_TimedNiagaraEffect
 {
 	GENERATED_BODY()
 

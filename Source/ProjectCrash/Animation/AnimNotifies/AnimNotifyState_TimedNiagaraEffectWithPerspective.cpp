@@ -1,11 +1,11 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "Equipment/AnimNotifyState_TimedEquipmentNiagaraEffect.h"
+#include "Animation/AnimNotifies/AnimNotifyState_TimedNiagaraEffectWithPerspective.h"
 
 #include "Particles/ParticleSystemComponent.h"
 
-void UAnimNotifyState_TimedEquipmentNiagaraEffect::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UAnimNotifyState_TimedNiagaraEffectWithPerspective::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
