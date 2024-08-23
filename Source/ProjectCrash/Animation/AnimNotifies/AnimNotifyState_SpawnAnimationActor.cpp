@@ -7,6 +7,7 @@
 #include "Engine/StaticMeshActor.h"
 
 UAnimNotifyState_SpawnAnimationActor::UAnimNotifyState_SpawnAnimationActor() :
+	bFirstPerson(false),
 	ActorAnimationLoops(false)
 {
 #if WITH_EDITORONLY_DATA

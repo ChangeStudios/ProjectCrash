@@ -243,7 +243,7 @@ void ACrashCharacter::OnRep_TeamId_Internal(FGenericTeamId OldTeamId)
 	BroadcastIfTeamChanged(this, OldTeamId, TeamId_Internal);
 }
 
-void ACrashCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void ACrashCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
