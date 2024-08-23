@@ -128,10 +128,28 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 			return;
 		}
 
-		// Cache the target.
+		// Cache the target so it doesn't repeat.
 		Targets.Add(OtherActor);
 
-		// Generate and send target data with the overlapped actor.
-		TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromActors( TArray<TWeakObjectPtr<AActor>>({OtherActor}) ));
+		// Generate a hit result for our target data, so it can be used for FX triggers.
+		FHitResult TargetHit;
+		const FVector TraceStart = GetActorLocation();
+		const FVector TraceEnd = OtherActor->GetActorLocation();
+		const float SweepRadius = 50.0f;
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(OwningAbility->GetAvatarActorFromActorInfo());
+		GetWorld()->SweepSingleByChannel(TargetHit, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel1 /** AbilityTarget */, FCollisionShape::MakeSphere(SweepRadius), CollisionParams);
+
+		// Make sure our actor data is always set even if the trace fails.
+		if (!TargetHit.bBlockingHit || (TargetHit.GetActor() != OtherActor))
+		{
+			TargetHit.bBlockingHit = true;
+			TargetHit.HitObjectHandle = FActorInstanceHandle(OtherActor);
+			TargetHit.Component = OtherComp;
+			TargetHit.ImpactPoint = OtherActor->GetActorLocation();
+		}
+
+		// Generate and send the generated target data.
+		TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, TargetHit));
 	}
 }

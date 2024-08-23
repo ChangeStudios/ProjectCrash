@@ -67,6 +67,6 @@ public:
 	 *
 	 * Can be left empty to always use the default equipment skin.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Skins", Meta = (Categories = "SkinID.Equipment"))
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment|Skins", Meta = (Categories = "SkinProperty.Equipment"))
 	FGameplayTag EquipmentSkinID;
 };

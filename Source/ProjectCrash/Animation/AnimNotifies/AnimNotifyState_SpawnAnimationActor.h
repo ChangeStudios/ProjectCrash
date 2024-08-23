@@ -56,6 +56,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Relative Transform")
 	FTransform SpawnTransform;
 
+	/** Whether this actor is being spawned for a first-person animation. Enables first-person depth rendering. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "First-Person?")
+	bool bFirstPerson;
+
 	/** Optional animation to play on the animation actor when spawned, if it's a skeletal mesh. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Actor Animation to Play", Meta = (EditConditionHides = "true"))
 	TObjectPtr<UAnimationAsset> ActorAnimation;
