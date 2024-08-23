@@ -261,7 +261,7 @@ void UEquipmentComponent::AutoEquipFirstItem(TArray<UInventoryItemInstance*> Ite
 	}
 }
 
-void UEquipmentComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void UEquipmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

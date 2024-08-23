@@ -26,6 +26,10 @@ enum class EEquipmentPerspective : uint8
  *
  * Two equipment actors are spawned for any equipment piece: one for first-person and one for third-person. Events are
  * routed to both equipment actors, so they stay in visually synchronized.
+ *
+ * Note that for first-person perspective visibility to function properly, the materials used for this mesh must have a
+ * FirstPersonDepthScale node in its WorldPositionOffset, which can be toggled by a scalar param named "FirstPerson."
+ * This is necessary to prevent clipping in first-person.
  */
 UCLASS(Abstract, HideCategories = ("Actor", "Collision", "DataLayers", "HLOD", "Input", "LevelInstance", "Physics", "Replication", "Rendering", "WorldPartition"), Meta = (PrioritizeCategories = "Equipment Tick Cooking Events")) // we don't care about any of this data
 class PROJECTCRASH_API AEquipmentActor : public AActor
@@ -82,13 +86,15 @@ protected:
 protected:
 
 	/**
-	 * Animations which will be played on this equipment actor (NOT the owning character). Gameplay tags are used to
-	 * retrieve the actor-specific (i.e. skin-specific) animation that should be used for each animation. By default,
-	 * these animations are each played on any skeletal mesh component on this actor.
+	 * Animations which can be played on this equipment actor (NOT the owning character) with a gameplay tag. Equipment
+	 * actors of the same equipment piece (but different skins) should use the same tags with different animations, so
+	 * the skin-specific animation can be triggered with an agnostic gameplay tag, without needing a reference to the
+	 * skin or animation.
 	 *
-	 * These animations are routed through this actor through ProcessEquipmentEvent. To manually handle an animation
-	 * (e.g. playing an animation on multiple meshes) or event, exclude the desired animation/event tag from this list
-	 * and implement ProcessEquipmentEvent.
+	 * By default, these animations are played on any skeletal mesh component on this actor. To manually handle an
+	 * animation instead (e.g. playing different animations on multiple skeletal meshes), exclude the tag from this map,
+	 * and perform the desired logic when the tag is sent as a parameter to ProcessEquipmentAnimation. All equipment
+	 * animations are routed to ProcessEquipmentAnimation, even if they aren't in this map.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment", Meta = (Categories = "SkinProperty"))
 	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> EquipmentAnimations;
@@ -99,13 +105,19 @@ protected:
 
 public:
 
-	/** Processes the given event on this equipment actor. Default implementation attempts to find an animation in
-	 * EquipmentAnimations with a matching tag and plays it on any skeletal mesh components on this actor. */
-	virtual void ProcessEquipmentEvent(FGameplayTag Event);
+	/**
+	 * Processes a given animation on this equipment actor. Can be overridden in code or blueprints to manually handle
+	 * animations.
+	 *
+	 * Default implementation searches for a matching tag in EquipmentAnimations and plays the animation on any
+	 * skeletal meshes on this actor.
+	 */
+	virtual void ProcessEquipmentAnimation(FGameplayTag AnimationTag);
 
 protected:
 
-	/** Blueprint-implementable function for manually handling equipment events. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Equipment", Meta = (ToolTip = "Called when an equipment event is routed to this equipment actor."))
-	void K2_ProcessEquipmentEvent(FGameplayTag Event);
+	/** Blueprint-implementable function for processing equipment animations. Always called by
+	 * ProcessEquipmentAnimation, even if no animation played. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Equipment", DisplayName = "ProcessEquipmentAnimation", Meta = (ToolTip = "Called when an equipment animation request is sent to this equipment actor. This can be used to manually handle equipment animations on a per-animation basis by checking the AnimationTag parameter. To manually handle an equipment animation, exclude it from EquipmentAnimations and implement the desired logic here, after checking the AnimationTag parameter."))
+	void K2_ProcessEquipmentAnimation(FGameplayTag AnimationTag);
 };
