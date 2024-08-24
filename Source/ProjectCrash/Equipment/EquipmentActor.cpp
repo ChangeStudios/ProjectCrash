@@ -59,14 +59,14 @@ void AEquipmentActor::ProcessEquipmentAnimation(FGameplayTag AnimationTag)
 {
 	/* If the animation tag matches a tag in EquipmentAnimations, play that equipment animation on any skeletal mesh
 	 * component on this actor. */
-	if (UAnimMontage* EquipmentAnimation = *EquipmentAnimations.Find(AnimationTag))
+	if (TObjectPtr<UAnimMontage>* EquipmentAnimation = EquipmentAnimations.Find(AnimationTag))
 	{
 		TArray<UActorComponent*> Components;
 		GetComponents(USkeletalMeshComponent::StaticClass(), Components);
 
 		for (UActorComponent* MeshComp : Components)
 		{
-			Cast<USkeletalMeshComponent>(MeshComp)->PlayAnimation(EquipmentAnimation, EquipmentAnimation->bLoop);
+			Cast<USkeletalMeshComponent>(MeshComp)->PlayAnimation(EquipmentAnimation->Get(), EquipmentAnimation->Get()->bLoop);
 		}
 	}
 
