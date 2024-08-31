@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "GA_Jump.generated.h"
+#include "CrashGameplayAbility_Jump.generated.h"
 
 /**
  * The default "jump" ability. Avatar must be of the Character class, as this ability uses the built-in character jump
@@ -13,7 +13,7 @@
  * This ability's properties are determined by the avatar's Character properties and movement component.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API UGA_Jump : public UCrashGameplayAbilityBase
+class PROJECTCRASH_API UCrashGameplayAbility_Jump : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
