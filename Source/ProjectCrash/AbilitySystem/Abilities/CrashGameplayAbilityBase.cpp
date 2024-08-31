@@ -294,6 +294,9 @@ void UCrashGameplayAbilityBase::AddKnockbackFromLocation(float Force, FVector So
 
 void UCrashGameplayAbilityBase::AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator)
 {
+	// Convert force from kilogram km/s to newton-seconds for AddImpulse.
+	Force = Force * 1000.0f;
+
 	// If the target actor is a character, add the impulse to their movement component.
 	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
 	{

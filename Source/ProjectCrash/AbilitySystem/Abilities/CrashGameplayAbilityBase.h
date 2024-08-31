@@ -222,6 +222,7 @@ public:
 
 	/** Applies the desired knockback to the target actor in the direction of the source to the target.
 	 *
+	 * @param Force						Magnitude of force to apply, in kilogram kilometers/second.
 	 * @param bForceUpwardsVelocity		If true, the target will always be launched upwards. The vertical force will be
 	 *									clamped with a portion of the desired force. This prevents actors from sliding
 	 *									or getting stuck on the ground.
@@ -229,7 +230,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback", Meta = (AdvancedDisplay = "bForceUpwardsVelocity"))
 	void AddKnockbackFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, bool bForceUpwardsVelocity = true);
 
-	/** Applies directional knockback to the target actor. */
+	/**
+	 * Applies directional knockback to the target actor.
+	 *
+	 * @param Force						Vector of force to apply, in in kilogram kilometers/second.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
 	void AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator);
 
