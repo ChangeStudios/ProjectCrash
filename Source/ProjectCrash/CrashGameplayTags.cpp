@@ -33,10 +33,10 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides damage invulnerabilities.");
 
 
-	// Events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_Death, "Event.Ability.Death", "Event triggered when an actor dies via running out of health. Activates the Death gameplay ability, defined in the game mode, on the ASC associated with the dying actor.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_MeleeSurfaceImpact, "Event.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_PerformTargeting, "Event.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
+	// Gameplay events
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_Death, "GameplayEvent.Ability.Death", "Event triggered when an actor dies via running out of health. Activates the Death gameplay ability, defined in the game mode, on the ASC associated with the dying actor.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_MeleeSurfaceImpact, "GameplayEvent.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_PerformTargeting, "GameplayEvent.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
 
 
 	// Game framework.

@@ -128,7 +128,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 
 		// Start listening for when we should try to hit a surface.
 		UAbilityTask_WaitGameplayEvent* SurfaceImpactTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-	this,CrashGameplayTags::TAG_Event_Ability_MeleeSurfaceImpact, nullptr, true, true);
+	this,CrashGameplayTags::TAG_GameplayEvent_Ability_MeleeSurfaceImpact, nullptr, true, true);
 		SurfaceImpactTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::TryHitSurface);
 		SurfaceImpactTask->ReadyForActivation();
 	}
@@ -172,7 +172,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		if (IsLocallyControlled())
 		{
 			UAbilityTask_WaitGameplayEvent* PerformTargetingTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-				this, CrashGameplayTags::TAG_Event_Ability_PerformTargeting, nullptr, true, true);
+				this, CrashGameplayTags::TAG_GameplayEvent_Ability_PerformTargeting, nullptr, true, true);
 			PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::PerformInstantTargeting);
 			PerformTargetingTask->ReadyForActivation();
 		}
