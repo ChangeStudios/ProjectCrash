@@ -69,7 +69,7 @@ void UCrashCameraComponent::GetCameraView(float DeltaTime, FMinimalViewInfo& Des
 
 		/* If we're in first-person, offset our camera with the "Camera" bone's transform, multiplied by the
 		 * first-person camera weight for smooth blending. */
-		float FirstPersonCameraWeight = CameraModeStack->GetCameraWeightByTag(CrashGameplayTags::TAG_CameraType_FirstPerson);
+		float FirstPersonCameraWeight = CameraModeStack->GetCameraWeightByTag(CrashGameplayTags::TAG_Effects_CameraType_FirstPerson);
 		if (FirstPersonCameraWeight > 0.0f)
 		{
 			if (ACrashCharacter* CrashChar = Cast<ACrashCharacter>(OwningPawn))

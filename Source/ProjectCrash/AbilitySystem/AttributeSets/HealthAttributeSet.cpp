@@ -37,7 +37,7 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute() && Data.EvaluatedData.Magnitude > 0.0f)
 	{
 		// The self-destruction state overrides any damage invulnerabilities.
-		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(CrashGameplayTags::TAG_Effects_Damage_SelfDestruct);
+		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_SelfDestruct);
 		if (Data.Target.HasMatchingGameplayTag(CrashGameplayTags::TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
 		{
 			// Throw out any damage executions on targets that are immune to damage.
