@@ -80,6 +80,8 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Health component.
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->DeathStartedDelegate.AddDynamic(this, &ThisClass::OnDeathStarted);
+	HealthComponent->DeathFinishedDelegate.AddDynamic(this, &ThisClass::OnDeathFinished);
 }
 
 void ACrashCharacter::BeginPlay()
@@ -223,6 +225,21 @@ void ACrashCharacter::OnAbilitySystemUninitialized()
 	HealthComponent->UninitializeFromAbilitySystem();
 }
 
+void ACrashCharacter::OnDeathStarted(AActor* OwningActor)
+{
+	// Disable movement and collision on this actor.
+	DisableMovementAndCollision();
+} 
+
+void ACrashCharacter::OnDeathFinished(AActor* OwningActor)
+{
+	// Destroy this character next frame.
+	GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+	{
+		UninitAndDestroy();
+	});
+}
+
 void ACrashCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 {
 	// This character's team cannot be set directly. Its team is driven by its controller.
@@ -241,6 +258,48 @@ void ACrashCharacter::OnRep_TeamId_Internal(FGenericTeamId OldTeamId)
 {
 	// Broadcast the team change when this character's team is assigned or changes.
 	BroadcastIfTeamChanged(this, OldTeamId, TeamId_Internal);
+}
+
+void ACrashCharacter::DisableMovementAndCollision()
+{
+	// Disable movement input.
+	if (Controller)
+	{
+		Controller->SetIgnoreMoveInput(true);
+	}
+
+	// Disable movement processing.
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->StopMovementImmediately();
+	MovementComp->DisableMovement();
+
+	// Disable collision on capsule. Meshes may still be used (e.g. ragdolling).
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	check(CapsuleComp);
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+}
+
+void ACrashCharacter::UninitAndDestroy()
+{
+	// Unpossess and destroy this actor.
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(0.1f); // Small delay to give things time to clean up.
+	}
+
+	// Uninitialize the ASC.
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if (ASC->GetAvatarActor() == this)
+		{
+			PawnExtComp->UninitializeAbilitySystem();
+		}
+	}
+
+	// Hide this actor until it's fully destroyed.
+	SetActorHiddenInGame(true);
 }
 
 void ACrashCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -313,7 +313,7 @@ void UPawnExtensionComponent::UninitializeAbilitySystem()
 	{
 		// Add any other abilities to keep past avatar destruction here.
 		FGameplayTagContainer AbilityTypesToIgnore;
-		AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
+		AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_SurvivesDeath);
 
 		// Cancel ongoing abilities.
 		AbilitySystemComponent->CancelAbilities(nullptr, &AbilityTypesToIgnore);

@@ -9,14 +9,10 @@
 
 /** A generic delegate signature that passes a single gameplay ability pointer. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGenericAbilitySignature, UGameplayAbility*, Ability);
-/** Delegate used to broadcast when this ability system is initialized. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FASCInitSignature, AActor*, OwnerActor, AActor*, AvatarActor);
 /** Delegate used to broadcast when this ASC is granted a new ability. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityGrantedSignature, const FGameplayAbilitySpec&, GrantedAbilitySpec);
 /** Delegate used to broadcast when an ability is removed from this ASC. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityRemovedSignature, const FGameplayAbilitySpec&, RemovedAbilitySpec);
-/** Delegate used to broadcast the Death event and communicate in important information. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathData&, DeathData);
 
 /**
  * The ability system component used for this project.

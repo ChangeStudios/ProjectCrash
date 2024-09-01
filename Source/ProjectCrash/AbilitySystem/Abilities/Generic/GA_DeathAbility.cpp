@@ -46,7 +46,7 @@ void UGA_DeathAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, 
 
 	// Cancel ongoing abilities, unless they shouldn't be cancelled by avatar death.
 	FGameplayTagContainer IgnoreAbilitiesWithTags;
-	IgnoreAbilitiesWithTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_PersistsThroughAvatarDestruction);
+	IgnoreAbilitiesWithTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_SurvivesDeath);
 	ASC->CancelAbilities(nullptr, &IgnoreAbilitiesWithTags, this);
 
 	// Unpossess the player from the dying actor.

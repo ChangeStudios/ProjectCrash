@@ -14,6 +14,7 @@
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -25,6 +26,8 @@ UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 
 	AbilitySystemComponent = nullptr;
 	HealthSet = nullptr;
+
+	DeathState = EDeathState::NotDead;
 }
 
 void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent* InASC)
@@ -54,6 +57,9 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 		ABILITY_LOG(Error, TEXT("Failed to initialize health component on [%s] with ASC owned by [%s]. The ASC does not have an attribute set of type HealthAttributeSet."), *GetNameSafe(Owner), *GetNameSafe(AbilitySystemComponent->GetOwnerActor()));
 		return;
 	}
+
+	// Clear any leftover health tags ("Dying," "Dead," etc.). 
+	ClearGameplayTags();
 
 	// Register to listen for health attribute events.
 	HealthSet->HealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
@@ -177,4 +183,113 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 	}
 
 #endif // #if WITH_SERVER_CODE
+}
+
+void UHealthComponent::StartDeath()
+{
+	// Ensure valid transition order.
+	if (DeathState != EDeathState::NotDead)
+	{
+		return;
+	}
+
+	// Locally update the current DeathState. This gets synced on clients by OnRep_DeathState.
+	DeathState = EDeathState::DeathStarted;
+
+	AActor* Owner = GetOwner();
+	check(Owner);
+
+	// Broadcast the death.
+	DeathStartedDelegate.Broadcast(Owner);
+	Owner->ForceNetUpdate();
+}
+
+void UHealthComponent::FinishDeath()
+{
+	// Ensure valid transition order.
+	if (DeathState != EDeathState::DeathStarted)
+	{
+		return;
+	}
+
+	// Locally update the current DeathState. This gets synced on clients by OnRep_DeathState.
+	DeathState = EDeathState::DeathFinished;
+
+	// Add a "Dead" tag to the owner. This will be cleared when the ASC is re-initialized with a new health component.
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dead, 1);
+	}
+
+	AActor* Owner = GetOwner();
+	check(Owner);
+
+	// Broadcast the death.
+	DeathFinishedDelegate.Broadcast(Owner);
+	Owner->ForceNetUpdate();
+}
+
+void UHealthComponent::OnRep_DeathState(EDeathState OldDeathState)
+{
+	const EDeathState NewDeathState = DeathState;
+
+	/* StartDeath and FinishDeath predictively change the death state from the Death gameplay ability. When the server
+	 * updates it, we revert it back to the local death state here before we try to catch up. */
+	DeathState = OldDeathState;
+
+	if (OldDeathState > NewDeathState)
+	{
+		// The server is trying to set us back, but we've already predicted past the server state.
+		ABILITY_LOG(Warning, TEXT("HealthComponent on actor [%s] predicted past server death state [%d] -> [%d]."), *GetNameSafe(GetOwner()), (uint8)OldDeathState, (uint8)NewDeathState);
+		return;
+	}
+
+	if (OldDeathState == EDeathState::NotDead)
+	{
+		// If the server reached Dying before we start our death, catch up by starting the death.
+		if (NewDeathState == EDeathState::DeathStarted)
+		{
+			StartDeath();
+		}
+		// If the server reached Dead before we started our death, catch up by starting AND finishing the death.
+		else if (NewDeathState == EDeathState::DeathFinished)
+		{
+			StartDeath();
+			FinishDeath();
+		}
+		else
+		{
+			ABILITY_LOG(Error, TEXT("HealthComponent on actor [%s] attempted invalid death transition [%d] -> [%d]."), *GetNameSafe(GetOwner()), (uint8)OldDeathState, (uint8)NewDeathState);
+		}
+	}
+	else if (OldDeathState == EDeathState::DeathStarted)
+	{
+		// If the server reached Dead before we finished our death, catch up by finishing the death.
+		if (NewDeathState == EDeathState::DeathFinished)
+		{
+			FinishDeath();
+		}
+		else
+		{
+			ABILITY_LOG(Error, TEXT("HealthComponent on actor [%s] attempted invalid death transition [%d] -> [%d]."), *GetNameSafe(GetOwner()), (uint8)OldDeathState, (uint8)NewDeathState);
+		}
+	}
+
+	ensureMsgf((DeathState == NewDeathState), TEXT("HealthComponent on actor [%s] failed death transition [%d] -> [%d]."), *GetNameSafe(GetOwner()), (uint8)OldDeathState, (uint8)NewDeathState);
+}
+
+void UHealthComponent::ClearGameplayTags()
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 0);
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dead, 0);
+	}
+}
+
+void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UHealthComponent, DeathState);
 }
