@@ -30,7 +30,7 @@ struct PROJECTCRASH_API FPhysicalMaterialEffect
 /**
  * Extends physical material to provide data for triggering material-specific visual and audio effects.
  */
-UCLASS()
+UCLASS(Config = Game)
 class PROJECTCRASH_API UCrashPhysicalMaterial : public UPhysicalMaterial
 {
 	GENERATED_BODY()
@@ -38,10 +38,8 @@ class PROJECTCRASH_API UCrashPhysicalMaterial : public UPhysicalMaterial
 public:
 
 	/** Map of effects that will be spawned for corresponding physical material events. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects", Meta = (Categories = "Event.PhysicalMaterial"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects", Meta = (Categories = "GameplayEvent.PhysicalMaterial"))
 	TMap<FGameplayTag, FPhysicalMaterialEffect> Effects;
-
-public:
 
 	/**
 	 * Triggers effects for the corresponding physical material event.
@@ -53,7 +51,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = PhysicalMaterial)
 	static void HandlePhysicalMaterialEvent
 	(
-		UPARAM(Meta = (Categories = "Event.PhysicalMaterial"))
+		UPARAM(Meta = (Categories = "GameplayEvent.PhysicalMaterial"))
 		FGameplayTag Event,
 		const FName TriggeringSocket,
 		USceneComponent* TriggeringComponent,
