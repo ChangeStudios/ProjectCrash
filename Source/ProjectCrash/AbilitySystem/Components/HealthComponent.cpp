@@ -117,37 +117,41 @@ float UHealthComponent::GetHealthNormalized() const
 	return 0.0f;
 }
 
-void UHealthComponent::OnHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+void UHealthComponent::OnHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	HealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
 }
 
-void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	MaxHealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
 }
 
-void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
+void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
 #if WITH_SERVER_CODE
 
 	if (AbilitySystemComponent)
 	{
-		// Send a "Death" event through the dying actor's ASC. This can be used to trigger a death ability.
-		const FDeathData DeathData = FDeathData
-		(
-			AbilitySystemComponent->GetAvatarActor(),
-			AbilitySystemComponent->AbilityActorInfo->PlayerController.Get(),
-			AbilitySystemComponent,
-			DamageInstigator,
-			DamageCauser,
-			DamageEffectSpec,
-			DamageMagnitude
-		);
+		// Send a "Death" event to the dying actor's ASC. This can be used to trigger a death ability.
+		{
+			FGameplayEventData Payload;
+			Payload.EventTag = CrashGameplayTags::TAG_GameplayEvent_Ability_Death;
+			Payload.Instigator = DamageInstigator;
+			Payload.Target = AbilitySystemComponent->GetAvatarActor();
+			Payload.OptionalObject2 = DamageEffectSpec.Def; // Optional object is the damage effect definition.
+			Payload.ContextHandle = DamageEffectSpec.GetEffectContext();
+			Payload.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
+			Payload.TargetTags = *DamageEffectSpec.CapturedTargetTags.GetAggregatedTags();
+			Payload.EventMagnitude = DamageMagnitude;
+
+			FScopedPredictionWindow NewScopedPredictionWindow(AbilitySystemComponent, true);
+			AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
+		}
 
 		/* Broadcast a message communicating the death that other systems can observe. This is used for things like
 		 * updating the kill-feed. */
-		if (AbilitySystemComponent && UGameplayMessageSubsystem::HasInstance(GetWorld()))
+		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DeathMessage;
 			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
@@ -160,10 +164,10 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCau
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
 
-			// TODO: Broadcast the message to clients.
+			// Broadcast the message to clients. TODO: Do we need this?
 			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
-				// GS->MulticastReliableMessageToClients(DeathMessage);
+				GS->MulticastReliableMessageToClients(DeathMessage);
 			}
 		}
 	}

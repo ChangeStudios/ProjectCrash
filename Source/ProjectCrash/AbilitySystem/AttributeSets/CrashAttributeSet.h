@@ -30,9 +30,9 @@ struct FGameplayEffectSpec;
 
 /** Delegate used to broadcast attribute events, such as running out of health. Some of these parameters may be null on
  * clients. */
-DECLARE_MULTICAST_DELEGATE_FourParams(FAttributeEventSignature, AActor* /* EffectInstigator */, AActor* /* EffectCauser */, const FGameplayEffectSpec& /* EffectSpec */, float /* EffectMagnitude */);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FAttributeEventSignature, AActor* /* EffectInstigator */, const FGameplayEffectSpec& /* EffectSpec */, float /* EffectMagnitude */);
 /** Delegate used to broadcast attribute value changes. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FAttributeChangedSignature, AActor*, EffectInstigator, AActor*, EffectCauser, const FGameplayEffectSpec&, EffectSpec, float, OldValue, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FAttributeChangedSignature, AActor*, EffectInstigator, const FGameplayEffectSpec&, EffectSpec, float, OldValue, float, NewValue);
 
 /**
  * Base class for attribute sets in this project. Provides utilities and helpers for defining common attribute

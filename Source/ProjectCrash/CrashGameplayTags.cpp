@@ -34,7 +34,7 @@ namespace CrashGameplayTags
 
 
 	// Gameplay events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_Death, "GameplayEvent.Ability.Death", "Event triggered when an actor dies via running out of health. Activates the Death gameplay ability, defined in the game mode, on the ASC associated with the dying actor.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_Death, "GameplayEvent.Ability.Death", "Event triggered when an actor dies via running out of health. Can be used to trigger a \"Death\" gameplay ability.\n\nEvent payload's first optional object should be the effect causer. The second should be the damage effect's definition.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_MeleeSurfaceImpact, "GameplayEvent.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_PerformTargeting, "GameplayEvent.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
 

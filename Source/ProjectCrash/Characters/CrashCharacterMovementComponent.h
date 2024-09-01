@@ -53,15 +53,15 @@ protected:
 
 	/** Updates this movement component's MaxWalkSpeed property. */
 	UFUNCTION()
-	void OnMaxWalkSpeedChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnMaxWalkSpeedChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Updates this movement component's JumpZVelocity property. */
 	UFUNCTION()
-	void OnJumpVelocityChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnJumpVelocityChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Updates this component's owning character's JumpCount property. */
 	UFUNCTION()
-	void OnJumpCountChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnJumpCountChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 
 

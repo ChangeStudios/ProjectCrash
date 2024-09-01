@@ -80,15 +80,15 @@ protected:
 
 	/** Broadcasts HealthChangedDelegate when the Health attribute changes. */
 	UFUNCTION()
-	void OnHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Broadcasts MaxHealthChangedDelegate when the MaxHealth attribute changes. */
 	UFUNCTION()
-	void OnMaxHealthChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnMaxHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Broadcasts OutOfHealthDelegate when the Health attribute reaches 0. */
 	UFUNCTION()
-	void OnOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
+	void OnOutOfHealth(AActor* DamageInstigator, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
 
 /* Attribute change delegates. */
 public:

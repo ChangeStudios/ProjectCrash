@@ -93,7 +93,7 @@ void UCrashCharacterMovementComponent::OnUnregister()
 	Super::OnUnregister();
 }
 
-void UCrashCharacterMovementComponent::OnMaxWalkSpeedChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+void UCrashCharacterMovementComponent::OnMaxWalkSpeedChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	// Copy the change into this component.
 	if (MovementSet)
@@ -102,7 +102,7 @@ void UCrashCharacterMovementComponent::OnMaxWalkSpeedChanged(AActor* EffectInsti
 	}
 }
 
-void UCrashCharacterMovementComponent::OnJumpVelocityChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+void UCrashCharacterMovementComponent::OnJumpVelocityChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	// Copy the change into this component.
 	if (MovementSet)
@@ -111,7 +111,7 @@ void UCrashCharacterMovementComponent::OnJumpVelocityChanged(AActor* EffectInsti
 	}
 }
 
-void UCrashCharacterMovementComponent::OnJumpCountChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+void UCrashCharacterMovementComponent::OnJumpCountChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	// Copy the change into the owning character.
 	if (CharacterOwner)
