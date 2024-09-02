@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CrashGameplayAbility_WeaponAbilityBase.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbility_WeaponAbilityBase.h"
 #include "MeleeAttackAbilityDEP.generated.h"
 
 class AGameplayAbilityTargetActor_Trace;

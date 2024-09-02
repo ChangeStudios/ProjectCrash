@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "CrashGameplayAbility_DeathBase.generated.h"
+#include "CrashGameplayAbility_Death.generated.h"
 
 /**
  * The base class for "Death" abilities. This is triggered for the ASC of dying actors with the
@@ -13,14 +13,14 @@
  * This should be subclassed to handle user-facing death logic, such as changing camera modes or playing VFX.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API UCrashGameplayAbility_DeathBase : public UCrashGameplayAbilityBase
+class PROJECTCRASH_API UCrashGameplayAbility_Death : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
 public:
 
 	/** Default constructor. */
-	UCrashGameplayAbility_DeathBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UCrashGameplayAbility_Death(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 
