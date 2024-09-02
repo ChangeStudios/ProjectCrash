@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponGameplayAbility.h"
-#include "MeleeAttackAbility.generated.h"
+#include "CrashGameplayAbility_WeaponAbilityBase.h"
+#include "MeleeAttackAbilityDEP.generated.h"
 
 class AGameplayAbilityTargetActor_Trace;
 class AGameplayAbilityTargetActor_SingleLineTrace;
@@ -57,7 +57,7 @@ enum class EMeleeTargetingType : uint8
  * which will use a target actor to continuously perform hit detection while the ability is active.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API UMeleeAttackAbility : public UWeaponGameplayAbility
+class PROJECTCRASH_API UMeleeAttackAbilityDEP : public UCrashGameplayAbility_WeaponAbilityBase
 {
 	GENERATED_BODY()
 
@@ -66,7 +66,7 @@ class PROJECTCRASH_API UMeleeAttackAbility : public UWeaponGameplayAbility
 public:
 
 	/** Default constructor. */
-	UMeleeAttackAbility(const FObjectInitializer& ObjectInitializer);
+	UMeleeAttackAbilityDEP(const FObjectInitializer& ObjectInitializer);
 
 
 

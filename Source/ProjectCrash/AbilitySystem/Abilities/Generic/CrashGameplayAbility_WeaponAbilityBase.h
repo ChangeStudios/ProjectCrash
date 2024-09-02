@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "WeaponGameplayAbility.generated.h"
+#include "CrashGameplayAbility_WeaponAbilityBase.generated.h"
 
 /**
  * A gameplay ability that represents an attack with a weapon. Provides functionality for limited ammo and reloading.
- *
- * TODO: Implement
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API UWeaponGameplayAbility : public UCrashGameplayAbilityBase
+class PROJECTCRASH_API UCrashGameplayAbility_WeaponAbilityBase : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 

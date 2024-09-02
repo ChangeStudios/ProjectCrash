@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/MeleeAttackAbility.h"
+#include "AbilitySystem/Abilities/Generic/MeleeAttackAbilityDEP.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
@@ -20,7 +20,7 @@
 
 #define USING_DURATION_TARGETING TargetingType == EMeleeTargetingType::EventDuration || TargetingType == EMeleeTargetingType::EntireDuration
 
-UMeleeAttackAbility::UMeleeAttackAbility(const FObjectInitializer& ObjectInitializer) :
+UMeleeAttackAbilityDEP::UMeleeAttackAbilityDEP(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer),
 	AttackRange(150.0f),
 	AttackRadius(25.0f),
@@ -36,7 +36,7 @@ UMeleeAttackAbility::UMeleeAttackAbility(const FObjectInitializer& ObjectInitial
 {
 }
 
-void UMeleeAttackAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UMeleeAttackAbilityDEP::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
@@ -49,7 +49,7 @@ void UMeleeAttackAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorIn
 #endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
 }
 
-void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UMeleeAttackAbilityDEP::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	// This ability requires at least one first- and third-person attack montage.
 	if (AttackMontages_FPP.Num() == 0 || AttackMontages_TPP.Num() == 0)
@@ -129,7 +129,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		// Start listening for when we should try to hit a surface.
 		UAbilityTask_WaitGameplayEvent* SurfaceImpactTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 	this,CrashGameplayTags::TAG_GameplayEvent_Ability_MeleeSurfaceImpact, nullptr, true, true);
-		SurfaceImpactTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::TryHitSurface);
+		SurfaceImpactTask->EventReceived.AddDynamic(this, &UMeleeAttackAbilityDEP::TryHitSurface);
 		SurfaceImpactTask->ReadyForActivation();
 	}
 
@@ -159,9 +159,9 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		false
 	);
 
-	AnimTask->BlendOutDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
-	AnimTask->InterruptedDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
-	AnimTask->CancelledDelegate.AddDynamic(this, &UMeleeAttackAbility::K2_EndAbility);
+	AnimTask->BlendOutDelegate.AddDynamic(this, &UMeleeAttackAbilityDEP::K2_EndAbility);
+	AnimTask->InterruptedDelegate.AddDynamic(this, &UMeleeAttackAbilityDEP::K2_EndAbility);
+	AnimTask->CancelledDelegate.AddDynamic(this, &UMeleeAttackAbilityDEP::K2_EndAbility);
 	AnimTask->ReadyForActivation();
 
 
@@ -173,7 +173,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		{
 			UAbilityTask_WaitGameplayEvent* PerformTargetingTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 				this, CrashGameplayTags::TAG_GameplayEvent_Ability_PerformTargeting, nullptr, true, true);
-			PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbility::PerformInstantTargeting);
+			PerformTargetingTask->EventReceived.AddDynamic(this, &UMeleeAttackAbilityDEP::PerformInstantTargeting);
 			PerformTargetingTask->ReadyForActivation();
 		}
 	}
@@ -190,7 +190,7 @@ void UMeleeAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	CurrentAttackAnim_TPP = CurrentAttackAnim_TPP >= (AttackMontages_TPP.Num() - 1) ? 0 : CurrentAttackAnim_TPP + 1;
 }
 
-void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+void UMeleeAttackAbilityDEP::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	// Consume target data and remove the delegate for instant targeting when this ability ends.
 	if (TargetingType == EMeleeTargetingType::Instant)
@@ -221,7 +221,7 @@ void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UMeleeAttackAbility::PerformInstantTargeting(FGameplayEventData Payload)
+void UMeleeAttackAbilityDEP::PerformInstantTargeting(FGameplayEventData Payload)
 {
 	check(CurrentActorInfo);
 
@@ -248,7 +248,7 @@ void UMeleeAttackAbility::PerformInstantTargeting(FGameplayEventData Payload)
 	OnTargetDataReady(TargetData, FGameplayTag());
 }
 
-bool UMeleeAttackAbility::PerformTrace(TArray<FHitResult>& OutHitResults) const
+bool UMeleeAttackAbilityDEP::PerformTrace(TArray<FHitResult>& OutHitResults) const
 {
 	/* There won't be a target actor if we're doing a trace, but we can calculate where the target actor's capsule
 	 * would be if we had one. This makes instant targeting and duration-based targeting behave identically, and
@@ -328,7 +328,7 @@ bool UMeleeAttackAbility::PerformTrace(TArray<FHitResult>& OutHitResults) const
 	return OutHitResults.Num() > 0;
 }
 
-void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+void UMeleeAttackAbilityDEP::OnTargetDataReady(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* ASC = CurrentActorInfo->AbilitySystemComponent.Get();
 	check(ASC);
@@ -362,7 +362,7 @@ void UMeleeAttackAbility::OnTargetDataReady(const FGameplayAbilityTargetDataHand
 	ASC->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 }
 
-void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData)
+void UMeleeAttackAbilityDEP::OnTargetDataReceived(const FGameplayAbilityTargetDataHandle& InData)
 {
 	// Perform ability logic on each hit target.
 	for (TSharedPtr<FGameplayAbilityTargetData> TargetData : InData.Data)
@@ -483,7 +483,7 @@ void UMeleeAttackAbility::OnTargetDataReceived(const FGameplayAbilityTargetDataH
 	}
 }
 
-void UMeleeAttackAbility::StartTargeting()
+void UMeleeAttackAbilityDEP::StartTargeting()
 {
 	if (!TargetActor)
 	{
@@ -500,11 +500,11 @@ void UMeleeAttackAbility::StartTargeting()
 		EGameplayTargetingConfirmation::CustomMulti,
 		TargetActor
 	);
-	WaitTargetDataTask->TargetDataReadyDelegate.AddDynamic(this, &UMeleeAttackAbility::OnTargetDataReceived);
+	WaitTargetDataTask->TargetDataReadyDelegate.AddDynamic(this, &UMeleeAttackAbilityDEP::OnTargetDataReceived);
 	WaitTargetDataTask->ReadyForActivation();
 }
 
-void UMeleeAttackAbility::EndTargeting()
+void UMeleeAttackAbilityDEP::EndTargeting()
 {
 	if (!TargetActor)
 	{
@@ -517,7 +517,7 @@ void UMeleeAttackAbility::EndTargeting()
 	CancelTaskByInstanceName(FName("WaitTargetDataTask"));
 }
 
-void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
+void UMeleeAttackAbilityDEP::TryHitSurface(FGameplayEventData Payload)
 {
 	if (DefaultSurfaceImpactCue.IsValid())
 	{
@@ -547,7 +547,7 @@ void UMeleeAttackAbility::TryHitSurface(FGameplayEventData Payload)
 	}
 }
 
-void UMeleeAttackAbility::GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const
+void UMeleeAttackAbilityDEP::GetCapsulePosition(bool bIncludeRadius, FVector& Base, FVector& Top) const
 {
 	const UAbilitySystemComponent* OwningASC = GetAbilitySystemComponentFromActorInfo();
 

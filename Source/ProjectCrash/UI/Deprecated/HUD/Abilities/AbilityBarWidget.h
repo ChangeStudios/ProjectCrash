@@ -39,7 +39,7 @@ protected:
 
 	/** Deactivates this widget when its owning player dies. */
 	UFUNCTION()
-	void OnDeath(const FDeathData& DeathData);
+	void OnDeath();
 
 
 
