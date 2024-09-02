@@ -172,7 +172,7 @@ void ACrashGameMode::GenericPlayerInitialization(AController* C)
 	Super::GenericPlayerInitialization(C);
 
 	// Broadcast the player's initialization.
-	OnGameModePlayerInitializeDelegate.Broadcast(this, C);
+	GameModePlayerInitializedDelegate.Broadcast(this, C);
 }
 
 const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Player)

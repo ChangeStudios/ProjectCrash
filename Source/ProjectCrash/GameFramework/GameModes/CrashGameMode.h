@@ -10,7 +10,7 @@ class UCrashGameModeData;
 class UPawnData;
 
 /** Delegate for when a player or bot joins the game and after traveling. */
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGameModePlayerInitializedSignature, AGameModeBase* /* GameMode */, AController* /* NewPlayer */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FGameModePlayerInitializedSignature, AGameModeBase* /* GameMode */, AController* /* NewPlayer */);
 
 /**
  * Base modular game mode for this project. Responsible for finding the "game mode data" asset to use for the current
@@ -76,7 +76,7 @@ public:
 
 	/** Post-login event fired when a player or bot joins the game, after they finish initialization. Also fired after
 	 * traveling. */
-	FOnGameModePlayerInitializedSignature OnGameModePlayerInitializeDelegate;
+	FGameModePlayerInitializedSignature GameModePlayerInitializedDelegate;
 
 // Pawns.
 public:
