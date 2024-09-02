@@ -130,7 +130,7 @@ public:
 	EDeathState GetDeathState() const { return DeathState; }
 
 	/** Whether this component's owning actor is currently dying. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability|Attribute|Health", Meta = (ExpandBoolAsExecs = "ReturnValue"))
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Ability|Attribute|Health", Meta = (ExpandBoolAsExecs = "ReturnValue"))
 	bool IsDeadOrDying() const { return (DeathState > EDeathState::NotDead); }
 
 	/** Starts the death sequence by broadcasting DeathStartedDelegate. */
