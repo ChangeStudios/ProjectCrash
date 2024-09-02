@@ -4,23 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
-#include "CrashGameplayAbility_Death.generated.h"
+#include "CrashGameplayAbility_DeathBase.generated.h"
 
 /**
  * The base class for "Death" abilities. This is triggered for the ASC of dying actors with the
  * "GameplayEvent.Ability.Death" event. This is activated automatically by the HealthAttributeSet and HealthComponent.
  *
- * This should be subclassed to handle user-facing death logic, such as changing camera modes or playing VFX.
+ * This should be subclassed to handle user-facing death logic, such as changing camera modes or playing VFX. This
+ * ability must also be manually ended (usually by a timer) to trigger the end of death logic.
  */
 UCLASS(Abstract)
-class PROJECTCRASH_API UCrashGameplayAbility_Death : public UCrashGameplayAbilityBase
+class PROJECTCRASH_API UCrashGameplayAbility_DeathBase : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
 
 public:
 
 	/** Default constructor. */
-	UCrashGameplayAbility_Death(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UCrashGameplayAbility_DeathBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 

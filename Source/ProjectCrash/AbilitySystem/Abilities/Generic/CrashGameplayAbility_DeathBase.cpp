@@ -1,13 +1,13 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/Generic/CrashGameplayAbility_Death.h"
+#include "AbilitySystem/Abilities/Generic/CrashGameplayAbility_DeathBase.h"
 
 #include "AbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 
-UCrashGameplayAbility_Death::UCrashGameplayAbility_Death(const FObjectInitializer& ObjectInitializer)
+UCrashGameplayAbility_DeathBase::UCrashGameplayAbility_DeathBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bServerRespectsRemoteAbilityCancellation = false;
@@ -28,10 +28,9 @@ UCrashGameplayAbility_Death::UCrashGameplayAbility_Death(const FObjectInitialize
 	// This ability cannot be canceled and should always be blocking.
 	UGameplayAbility::SetCanBeCanceled(false);
 	ActivationGroup = EAbilityActivationGroup::Exclusive_Blocking;
-
 }
 
-void UCrashGameplayAbility_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+void UCrashGameplayAbility_DeathBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	check(ActorInfo);
 
@@ -48,7 +47,7 @@ void UCrashGameplayAbility_Death::ActivateAbility(const FGameplayAbilitySpecHand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UCrashGameplayAbility_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+void UCrashGameplayAbility_DeathBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	check(ActorInfo);
 
