@@ -63,6 +63,24 @@ public:
 
 
 
+	// Player spawning.
+
+public:
+
+	/**
+	 * Tries to restart (respawn) the specified player or bot the next tick.
+	 *
+	 * @param Controller		The player to restart.
+	 * @param bForceReset		If true, resets the controller this frame, abandoning its current pawn.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void RequestPlayerRestartNextTick(AController* Controller, bool bForceReset = false);
+
+	/** Continuously tries to restart the player until they're spawned successfully. */
+	virtual void FailedToRestartPlayer(AController* NewPlayer) override;
+
+
+
 	// Player initialization.
 
 public:
