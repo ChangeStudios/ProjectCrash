@@ -10,6 +10,8 @@
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameModes/GameModeManagerComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "Player/CrashPlayerState.h"
@@ -52,6 +54,22 @@ void UPawnExtensionComponent::BeginPlay()
 	/* Start listening for initialization state changes on this component's owning actor. I.e. changes to its other
 	 * components. */
 	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
+
+	/* Try to progress initialization when the game mode is loaded, since some components require a loaded game mode.
+	 * This only affects bots placed in the level, since players aren't spawned until the game mode is loaded. */
+	if (AGameStateBase* GS = UGameplayStatics::GetGameState(this))
+	{
+		if (UGameModeManagerComponent* GameModeManager = GS->FindComponentByClass<UGameModeManagerComponent>())
+		{
+			if (!GameModeManager->IsGameModeLoaded())
+			{
+				GameModeManager->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateWeakLambda(this, [this](const UCrashGameModeData* CrashGameModeData)
+				{
+					CheckDefaultInitialization();
+				}));
+			}
+		}
+	}
 
 	// Initialize this component's initialization state.
 	ensure(TryToChangeInitState(STATE_WAITING_FOR_DATA));
@@ -102,6 +120,15 @@ bool UPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager*
 
 		// Check for valid pawn data.
 		if (!PawnData)
+		{
+			return false;
+		}
+
+		/* Make sure the game mode data has been loaded. This will only ever fail for bots placed in the level, since
+		 * players aren't spawned until the game mode is loaded. */
+		AGameStateBase* GS = UGameplayStatics::GetGameState(this);
+		UGameModeManagerComponent* GameModeManager = GS->FindComponentByClass<UGameModeManagerComponent>();
+		if (!GameModeManager->IsGameModeLoaded())
 		{
 			return false;
 		}
