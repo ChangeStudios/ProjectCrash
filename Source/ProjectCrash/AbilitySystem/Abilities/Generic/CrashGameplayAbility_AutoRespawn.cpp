@@ -173,7 +173,7 @@ void UCrashGameplayAbility_AutoRespawn::OnAvatarEndPlay(AActor* Avatar, EEndPlay
 	{
 		if (HasAuthority(&CurrentActivationInfo))
 		{
-			ensureAlwaysMsgf(1, TEXT("Avatar [%s] destroyed before death without player reset!"), *GetNameSafe(Avatar));
+			ensureAlwaysMsgf(true, TEXT("Avatar [%s] destroyed before death without player reset!"), *GetNameSafe(Avatar));
 
 			// Perform an instant reset. This should never happen; the ResetPlayer event should be used instead.
 			ControllerToReset = GetControllerFromActorInfo();

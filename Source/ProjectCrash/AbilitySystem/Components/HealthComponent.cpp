@@ -67,7 +67,7 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 
 	// Initialize the attributes to the attribute set's default values.
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), HealthSet->GetMaxHealth());
-	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetMaxHealth());
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), 0.0f);
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), 0.0f);
 
@@ -169,7 +169,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(DeathMessage.Verb, DeathMessage);
 
-			// Broadcast the message to clients. TODO: Do we need this?
+			// Broadcast the message to clients.
 			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
 			{
 				GS->MulticastReliableMessageToClients(DeathMessage);
