@@ -8,6 +8,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "AbilitySystem/AttributeSets/LivesAttributeSet.h"
 #include "AbilitySystem/Components/HealthComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -91,11 +92,13 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 				// TODO: Broadcast death message with respawn time.
 				const float RespawnTime = GetRespawnTime();
 
-				// Start respawn timer.
-				bShouldFinishReset = true;
-				UAbilityTask_WaitDelay* WaitDelayTask = UAbilityTask_WaitDelay::WaitDelay(this, RespawnTime);
-				WaitDelayTask->OnFinish.AddDynamic(this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd);
-				WaitDelayTask->ReadyForActivation();
+				// Start timer to respawn on the server.
+				if (HasAuthority(&CurrentActivationInfo))
+				{
+					bShouldFinishReset = true;
+					FTimerHandle TimerHandle;
+					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd, RespawnTime, false);
+				}
 			}
 			// If the player can't respawn, the ability handles what to do with them (e.g. making them a spectator).
 			else
