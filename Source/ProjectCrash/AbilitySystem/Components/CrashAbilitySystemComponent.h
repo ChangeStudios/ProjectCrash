@@ -45,6 +45,10 @@ public:
 	 * avatar was set for this ASC, informs all abilities of the avatar change. */
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
+	/** If the new avatar has a movement component, starts listening for land events, so the current knockback source
+	 * can be cleared. */
+	virtual void OnNewAvatarSet();
+
 	/** Unregisters this ASC from the global ability subsystem. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -156,6 +160,24 @@ public:
 
 	/** Broadcasts a message communicating the ability activation failure. */
 	virtual void NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason) override;
+
+
+
+	// Knockback processing.
+
+public:
+
+	/** Sets the source for the knockback currently applied to this ASC's avatar. */
+	void SetCurrentKnockbackSource(const AActor* Source);
+
+	/** Getter for the source of the knockback currently applied to this ASC's avatar. */
+	const AActor* GetCurrentKnockbackSource() const { return CurrentKnockbackSource ? CurrentKnockbackSource : nullptr; }
+
+protected:
+
+	/** The last actor responsible for knockback applied to this ASC's avatar. Cleared when the avatar lands. */
+	UPROPERTY()
+	TObjectPtr<const AActor> CurrentKnockbackSource;
 
 
 

@@ -92,6 +92,13 @@ void ACrashCharacter::BeginPlay()
 	FirstPersonMesh->SetScalarParameterValueOnMaterials(FName("FirstPerson"), 1.0f);
 }
 
+void ACrashCharacter::FellOutOfWorld(const class UDamageType& dmgType)
+{
+	Super::FellOutOfWorld(dmgType);
+
+	// TODO: Ask the ASC for the last person to apply knockback, if there is one. They are the damage instigator.
+}
+
 void ACrashCharacter::PossessedBy(AController* NewController)
 {
 	// Cache our previous team.

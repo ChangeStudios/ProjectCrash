@@ -7,6 +7,11 @@
 #include "CrashCharacterMovementComponent.generated.h"
 
 class UMovementAttributeSet;
+
+/** Delegate signature for broadcasting when a character lands on the ground via its movement component (as opposed to
+ * its character). */
+DECLARE_MULTICAST_DELEGATE_OneParam(FMoveCompLandedSignature, const FHitResult& /* Hit */);
+
 /**
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
@@ -43,6 +48,20 @@ protected:
 
 	/** Automatically uninitializes this component from the ability system when it's unregistered. */
 	virtual void OnUnregister() override;
+
+
+
+	// Movement.
+
+public:
+
+	/** Fired when this character lands on the ground. */
+	FMoveCompLandedSignature LandedDelegate;
+
+protected:
+
+	/** Fires LandedDelegate when this character lands. */
+	virtual void ProcessLanded(const FHitResult& Hit, float remainingTime, int32 Iterations) override;
 
 
 

@@ -9,6 +9,7 @@
 #include "AbilitySystemLog.h"
 #include "Characters/PawnCameraManager.h"
 #include "CrashGameplayTags.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -263,7 +264,7 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 	K2_OnNewAvatarSet();
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, bool bForceUpwardsVelocity)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, bool bForceUpwardsVelocity)
 {
 	if (!ensure(Target))
 	{
@@ -289,12 +290,12 @@ void UCrashGameplayAbilityBase::AddKnockbackFromLocation(float Force, FVector So
 	}
 
 	// Apply knockback.
-	AddKnockbackInDirection(ForceVector, Target, Instigator);
+	AddKnockbackToTargetInDirection(ForceVector, Target);
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackInDirection(FVector Force, AActor* Target, AActor* Instigator)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetInDirection(FVector Force, AActor* Target)
 {
-	// Convert force from kilogram km/s to newton-seconds for AddImpulse.
+	// Convert force from kilogram km/s to newton-seconds for AddImpulse, so designers don't have to use absurd numbers.
 	Force = Force * 1000.0f;
 
 	// If the target actor is a character, add the impulse to their movement component.
@@ -314,7 +315,12 @@ void UCrashGameplayAbilityBase::AddKnockbackInDirection(FVector Force, AActor* T
 		}
 	}
 
-	// TODO: Broadcast message to credit upcoming knockback kills, until the target touches the ground again.
+	/* If the target has an ASC, track the current source of the target's knockback. This is cleared when the target
+	 * lands on the ground. */
+	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Target))
+	{
+		CrashASC->SetCurrentKnockbackSource(GetOwningActorFromActorInfo());
+	}
 }
 
 void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)

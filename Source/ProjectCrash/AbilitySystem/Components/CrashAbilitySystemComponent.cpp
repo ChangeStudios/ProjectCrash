@@ -12,10 +12,19 @@
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "GameplayCueManager.h"
+#include "AbilitySystem/CrashAbilitySystemGlobals.h"
+#include "Characters/CrashCharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/Character.h"
+
+/** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
+ * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
+#define MIN_UPWARD_KNOCKBACK_PCT 0.5
 
 UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
 	CurrentExclusiveAbility = nullptr;
+	CurrentKnockbackSource = nullptr;
 }
 
 void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -29,9 +38,13 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
-	// Notify each ability if a valid new avatar was set.
+	// Notify this ASC and its abilities if a valid new avatar was set.
 	if (bHasValidNewAvatar)
 	{
+		// Perform any necessary avatar initialization with the ASC.
+		OnNewAvatarSet();
+
+		// Notify each ability that a valid new avatar was set.
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
 			UCrashGameplayAbilityBase* CrashAbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
@@ -67,6 +80,23 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
 	{
 		GlobalAbilitySubsystem->RegisterASC(this);
+	}
+}
+
+void UCrashAbilitySystemComponent::OnNewAvatarSet()
+{
+	// Clear any leftover knockback source from the last avatar.
+	CurrentKnockbackSource = nullptr;
+
+	// If the new avatar has a movement component, clear their knockback source whenever they land on the ground.
+	if (UCrashCharacterMovementComponent* CrashCharMovementComp = UCrashCharacterMovementComponent::FindCrashMovementComponent(GetAvatarActor()))
+	{
+		CrashCharMovementComp->LandedDelegate.AddWeakLambda(this, [this](FHitResult Hit)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Knockback source cleared from %s."), *GetNameSafe(GetOwnerActor()));
+
+			CurrentKnockbackSource = nullptr;
+		});
 	}
 }
 
@@ -383,6 +413,15 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+	}
+}
+
+void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(const AActor* Source)
+{
+	if (ensure(IsValid(Source)))
+	{
+		CurrentKnockbackSource = Source;
+		UE_LOG(LogTemp, Error, TEXT("Knockback source applied to %s from %s."), *GetNameSafe(GetOwnerActor()), *GetNameSafe(Source));
 	}
 }
 
