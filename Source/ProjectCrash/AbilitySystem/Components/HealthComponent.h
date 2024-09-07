@@ -170,6 +170,9 @@ protected:
 	/** Health attribute set to which this component is currently bound. Owned by AbilitySystemComponent. */
 	TObjectPtr<const UHealthAttributeSet> HealthSet;
 
+	/** Clears the "Dying" and "Dead" tags from the owning ASC. */
+	void ClearGameplayTags();
+
 
 
 	// Utils.
@@ -180,6 +183,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ability|Attribute|Health")
 	static UHealthComponent* FindHealthComponent(const AActor* Actor) { return (Actor ? Actor->FindComponentByClass<UHealthComponent>() : nullptr); }
 
-	/** Clears the "Dying" and "Dead" tags from the owning ASC. */
-	void ClearGameplayTags();
+	/** Applies enough damage to kill the owning actor. */
+	void DamageSelfDestruct(bool bFellOutOfWorld = false);
 };

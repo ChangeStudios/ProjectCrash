@@ -92,11 +92,13 @@ void ACrashCharacter::BeginPlay()
 	FirstPersonMesh->SetScalarParameterValueOnMaterials(FName("FirstPerson"), 1.0f);
 }
 
-void ACrashCharacter::FellOutOfWorld(const class UDamageType& dmgType)
+void ACrashCharacter::FellOutOfWorld(const UDamageType& dmgType)
 {
-	Super::FellOutOfWorld(dmgType);
-
-	// TODO: Ask the ASC for the last person to apply knockback, if there is one. They are the damage instigator.
+	// Characters die when they fall out of the world, instead of simply being destroyed.
+	if (HealthComponent)
+	{
+		HealthComponent->DamageSelfDestruct(true);
+	}
 }
 
 void ACrashCharacter::PossessedBy(AController* NewController)

@@ -8,10 +8,13 @@
 #include "CrashGameplayTags.h"
 #include "CrashStatics.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
+#include "GameFramework/CrashAssetManager.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/Data/GlobalGameData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
@@ -283,6 +286,61 @@ void UHealthComponent::ClearGameplayTags()
 	{
 		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 0);
 		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dead, 0);
+	}
+}
+
+void UHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
+{
+	if ((DeathState == EDeathState::NotDead) && AbilitySystemComponent)
+	{
+		// Retrieve the damage gameplay effect class that we'll use to apply damage.
+		const TSubclassOf<UGameplayEffect> DamageGE = UCrashAssetManager::GetOrLoadClass(UGlobalGameData::Get().DamageGameplayEffect_SetByCaller);
+
+		if (!DamageGE)
+		{
+			if (UGlobalGameData::Get().DamageGameplayEffect_SetByCaller.IsNull())
+			{
+				UE_LOG(LogCrash, Error, TEXT("UHealthComponent::DamageSelfDestruct failed to find damage gameplay effect. DamageGameplayEffect_SetByCaller has not been set in global data."));
+			}
+			else
+			{
+				UE_LOG(LogCrash, Error, TEXT("UHealthComponent::DamageSelfDestruct failed to load damage gameplay effect [%s]."), *UGlobalGameData::Get().DamageGameplayEffect_SetByCaller.GetAssetName());
+			}
+
+			return;
+		}
+
+		// Create an effect spec for the damage.
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+
+		// If the actor fell out of the world, add the last person to deal knockback to them as an instigator.
+		if (bFellOutOfWorld && AbilitySystemComponent->GetCurrentKnockbackSource())
+		{
+			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), nullptr /* The world is technically the effect causer. */);
+		}
+
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageGE, 1.0f, EffectContext);
+		FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
+
+		if (!Spec)
+		{
+			UE_LOG(LogCrash, Error, TEXT("UHealthComponent::DamageSelfDestruct failed to apply damage to owner [%s]: unable to make outgoing spec."), *GetNameSafe(GetOwner()));
+		}
+
+		// Add context tags to the effect.
+		Spec->AddDynamicAssetTag(CrashGameplayTags::TAG_GameplayEffects_Damage_SelfDestruct);
+
+		if (bFellOutOfWorld)
+		{
+			Spec->AddDynamicAssetTag(CrashGameplayTags::TAG_GameplayEffects_Damage_FellOutOfWorld);
+		}
+
+		// Set damage magnitude.
+		const float DamageMagnitude = GetMaxHealth();
+		Spec->SetSetByCallerMagnitude(CrashGameplayTags::TAG_GameplayEffects_SetByCaller_Damage, DamageMagnitude);
+
+		// Apply the effect.
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
 }
 

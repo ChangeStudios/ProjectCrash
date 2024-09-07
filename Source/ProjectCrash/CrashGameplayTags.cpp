@@ -27,10 +27,12 @@ namespace CrashGameplayTags
 
 
 	// Gameplay effects
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageSelf, "GameplayEffects.Damage.CanDamageSelf", "Specifies that damage caused by this gameplay effect can affect the source actor.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "Specifies that damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. This overrides damage invulnerabilities.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. This overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Damage, "GameplayEffects.SetByCaller.Damage", "Used to dynamically set the magnitude of damage applied by gameplay effects.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageSelf, "GameplayEffects.Damage.CanDamageSelf", "The damage caused by this gameplay effect can affect the source actor.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "The damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. Overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. Overrides damage invulnerabilities.");
 
 
 	// Gameplay events

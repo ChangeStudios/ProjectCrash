@@ -42,6 +42,8 @@ namespace CrashGameplayTags
 
 
 	// Gameplay effects
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_SetByCaller_Damage);
+
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_CanDamageSelf);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_CanDamageTeam);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_FellOutOfWorld);

@@ -416,7 +416,7 @@ void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpe
 	}
 }
 
-void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(const AActor* Source)
+void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(AActor* Source)
 {
 	if (ensure(IsValid(Source)))
 	{

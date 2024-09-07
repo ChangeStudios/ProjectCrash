@@ -168,16 +168,16 @@ public:
 public:
 
 	/** Sets the source for the knockback currently applied to this ASC's avatar. */
-	void SetCurrentKnockbackSource(const AActor* Source);
+	void SetCurrentKnockbackSource(AActor* Source);
 
 	/** Getter for the source of the knockback currently applied to this ASC's avatar. */
-	const AActor* GetCurrentKnockbackSource() const { return CurrentKnockbackSource ? CurrentKnockbackSource : nullptr; }
+	AActor* GetCurrentKnockbackSource() const { return CurrentKnockbackSource ? CurrentKnockbackSource : nullptr; }
 
 protected:
 
 	/** The last actor responsible for knockback applied to this ASC's avatar. Cleared when the avatar lands. */
 	UPROPERTY()
-	TObjectPtr<const AActor> CurrentKnockbackSource;
+	TObjectPtr<AActor> CurrentKnockbackSource;
 
 
 

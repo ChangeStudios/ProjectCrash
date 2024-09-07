@@ -6,22 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "GlobalGameData.generated.h"
 
-/**
- * Defines a collection of data used when identifying members of a team during gameplay.
- */
-USTRUCT(BlueprintType)
-struct FTeamColorData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UMaterialInstance> TeamFresnel;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FLinearColor TeamUIColor = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
-};
-
-
+class UGameplayEffect;
 
 /**
  * Global game data synchronously loaded by the asset manager when the game starts. This data is ALWAYS globally
@@ -32,21 +17,23 @@ class PROJECTCRASH_API UGlobalGameData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
-	// Teams.
+	// Construction.
 
-// Team fresnel materials.
 public:
 
-	/** Fresnel to use on "friendly" actors. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Friendly Team Color", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
-	FTeamColorData TeamColor_Friendly;
+	/** Default constructor. */
+	UGlobalGameData();
 
-	/** Fresnel to use on "neutral" actors. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Neutral Team Color", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
-	FTeamColorData TeamColor_Neutral;
+	/** Retrieves the loaded game data. */
+	static const UGlobalGameData& Get();
 
-	/** Fresnels to use on hostile actors, if each hostile team should get a unique fresnel. Used for team-based game
-	 * modes. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Teams", DisplayName = "Hostile Team Colors", Meta = (DeprecatedProperty, DeprecatedMessage = "Team color data is outdated. Use the TeamCreationComponent instead."))
-	TArray<FTeamColorData> TeamColor_HostileList;
+
+
+	// Gameplay effects.
+
+public:
+
+	/** Gameplay effect used to apply damage from code. Uses set-by-caller for magnitude. */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", DisplayName = "Damage Gameplay Effect (Set-By-Caller)")
+	TSoftClassPtr<UGameplayEffect> DamageGameplayEffect_SetByCaller;
 };
