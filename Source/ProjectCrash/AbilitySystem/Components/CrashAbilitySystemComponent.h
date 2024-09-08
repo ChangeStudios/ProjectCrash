@@ -9,14 +9,10 @@
 
 /** A generic delegate signature that passes a single gameplay ability pointer. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGenericAbilitySignature, UGameplayAbility*, Ability);
-/** Delegate used to broadcast when this ability system is initialized. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FASCInitSignature, AActor*, OwnerActor, AActor*, AvatarActor);
 /** Delegate used to broadcast when this ASC is granted a new ability. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityGrantedSignature, const FGameplayAbilitySpec&, GrantedAbilitySpec);
 /** Delegate used to broadcast when an ability is removed from this ASC. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityRemovedSignature, const FGameplayAbilitySpec&, RemovedAbilitySpec);
-/** Delegate used to broadcast the Death event and communicate in important information. */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathEventSignature, const FDeathData&, DeathData);
 
 /**
  * The ability system component used for this project.
@@ -48,6 +44,10 @@ public:
 	/** Registers this ASC with the global ability subsystem and attempts to activate passive abilities. If a new, valid
 	 * avatar was set for this ASC, informs all abilities of the avatar change. */
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
+
+	/** If the new avatar has a movement component, starts listening for land events, so the current knockback source
+	 * can be cleared. */
+	virtual void OnNewAvatarSet();
 
 	/** Unregisters this ASC from the global ability subsystem. */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -160,6 +160,24 @@ public:
 
 	/** Broadcasts a message communicating the ability activation failure. */
 	virtual void NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason) override;
+
+
+
+	// Knockback processing.
+
+public:
+
+	/** Sets the source for the knockback currently applied to this ASC's avatar. */
+	void SetCurrentKnockbackSource(AActor* Source);
+
+	/** Getter for the source of the knockback currently applied to this ASC's avatar. */
+	AActor* GetCurrentKnockbackSource() const { return CurrentKnockbackSource ? CurrentKnockbackSource : nullptr; }
+
+protected:
+
+	/** The last actor responsible for knockback applied to this ASC's avatar. Cleared when the avatar lands. */
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentKnockbackSource;
 
 
 

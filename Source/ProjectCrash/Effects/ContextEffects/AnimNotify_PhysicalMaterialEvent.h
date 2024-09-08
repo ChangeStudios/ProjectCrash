@@ -109,16 +109,16 @@ private:
 public:
 
 	/** Material event to play. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (Categories = "Event.PhysicalMaterial", ExposeOnSpawn = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (Categories = "GameplayEvent.PhysicalMaterial", ExposeOnSpawn = true))
 	FGameplayTag Event;
 
 	/** Location offset from the socket location (if attached). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
-	FVector LocationOffset = FVector::ZeroVector;
+	FVector LocationOffset;
 
 	/** Rotation offset from socket rotation (if attached). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
-	FRotator RotationOffset = FRotator::ZeroRotator;
+	FRotator RotationOffset;
 
 	/** Parameters for spawning the event's VFX. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
@@ -130,7 +130,7 @@ public:
 
 	/** Whether to attach this event's spawned objects to a bone/socket. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attachment Properties", Meta = (ExposeOnSpawn = true))
-	bool bAttached = true;
+	bool bAttached;
 
 	/** Name of the socket to attach to. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attachment Properties", Meta = (ExposeOnSpawn = true, EditCondition = "bAttached"))
@@ -139,4 +139,9 @@ public:
 	/** Parameters for the line trace performed by this event to find the target physical material. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
 	FPhysicalMaterialEventTraceSettings TraceProperties;
+
+	/** If true, this notify will only be played when the mesh on which it's playing is visible. If false, the notify
+	 * will always play. Useful for using different effects for first- and third-person. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
+	bool bPerspectiveBased;
 };
