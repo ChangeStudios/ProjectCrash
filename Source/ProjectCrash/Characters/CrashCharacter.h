@@ -48,8 +48,7 @@ public:
 	/** Enables first-person depth rendering for the first-person character mesh. */
 	virtual void BeginPlay() override;
 
-	/** Kills this character when they fall out of the world. Makes the knockback instigator (if there is one) the
-	 * damage instigator. */
+	/** Kills this character when they fall out of the world. */
 	virtual void FellOutOfWorld(const class UDamageType& dmgType) override;
 
 
