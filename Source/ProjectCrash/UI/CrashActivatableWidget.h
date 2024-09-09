@@ -26,7 +26,8 @@ enum class ECrashWidgetInputMode : uint8
 
 
 /**
- * Base activatable widget class for this project. Provides input configuration options and various utilities.
+ * Base activatable widget class for this project. Provides input configuration options and various utilities. Primarily
+ * intended for menus; game HUDs should use user widgets.
  */
 UCLASS(Abstract)
 class PROJECTCRASH_API UCrashActivatableWidget : public UCommonActivatableWidget
