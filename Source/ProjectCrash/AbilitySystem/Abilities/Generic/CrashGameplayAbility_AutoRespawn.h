@@ -42,14 +42,20 @@ public:
 // Respawn logic.
 protected:
 
+	/** Called when this ability's avatar is initialized or changes. Starts listening for the new avatar's death, or
+	 * immediately triggers respawn logic if the avatar is already dead. */
 	void ActivateOrStartListeningForDeath();
 
+	/** When the avatar dies, starts a respawn timer if the player can respawn. Otherwise, triggers OnRespawnFailed. */
 	UFUNCTION()
 	void OnDeathStarted(AActor* DyingActor);
 
+	/** Finishes resetting the player when the respawn timer ends, if they haven't been reset already (if a direct
+	 * reset was requested during the respawn timer). */
 	UFUNCTION()
 	void OnRespawnTimerEnd() { if (bShouldFinishReset) { FinishReset(); } }
 
+	/** Restarts the player via the game mode. */
 	void FinishReset();
 
 	/** Binds to the current avatar's death via its health component, and to its destruction if it gets destroyed before
@@ -66,16 +72,22 @@ protected:
 // Data.
 private:
 
+	/** Whether we've started listening for the player to be reset directly. */
 	bool bIsListeningForReset;
 
+	/** Whether we've already finished resetting the player once. Prevents the player from resetting multiple times
+	 * (e.g. if a direct reset is requested during a respawn timer). */
 	bool bShouldFinishReset;
 
+	/** The avatar whose destruction we're currently listening for, in case it gets destroyed without dying. */
 	UPROPERTY()
 	AActor* BoundAvatar;
 
+	/** The health component whose death we're currently listening for. */
 	UPROPERTY()
 	UHealthComponent* BoundHealthComponent;
 
+	/** The controller we're waiting to reset once the respawn timer finishes. */
 	UPROPERTY()
 	AController* ControllerToReset;
 

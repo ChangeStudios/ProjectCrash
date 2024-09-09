@@ -9,8 +9,12 @@
 #include "AbilitySystem/AttributeSets/LivesAttributeSet.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 #include "GameFramework/CrashLogging.h"
-#include "GameFramework/PlayerState.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
+#include "Player/CrashPlayerState.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "GameFramework/Messages/CrashSimpleDurationMessage.h"
+#include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerController.h"
 
@@ -59,6 +63,8 @@ void UCrashGameplayAbility_AutoRespawn::ActivateOrStartListeningForDeath()
 	if (!bIsListeningForReset)
 	{
 		// TODO: Start listening for reset.
+		// GameplayEvent.Reset
+		// PlayerResetMessage
 
 		bIsListeningForReset = true;
 	}
@@ -89,11 +95,20 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 			 * before resetting them. */
 			if (CanRespawn())
 			{
-				// TODO: Broadcast death message with respawn time.
+				// Broadcast the respawn message with the respawn duration.
 				const float RespawnTime = GetRespawnTime();
+				if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+				{
+					FCrashSimpleDurationMessage RespawnStartMessage;
+					RespawnStartMessage.Instigator = GetCrashPlayerStateFromActorInfo();
+					RespawnStartMessage.Duration = RespawnTime;
+
+					UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+					MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Player_Respawn_Started, RespawnStartMessage);
+				}
 
 				// Start timer to respawn on the server.
-				if (HasAuthority(&CurrentActivationInfo))
+				if (CurrentActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Type::Authority)
 				{
 					bShouldFinishReset = true;
 					FTimerHandle TimerHandle;
@@ -111,7 +126,6 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 
 void UCrashGameplayAbility_AutoRespawn::FinishReset()
 {
-	// Prevent player from resetting multiple times (e.g. if a direct reset is requested during a respawn timer).
 	bShouldFinishReset = false;
 
 	if (IsValid(ControllerToReset))
@@ -124,7 +138,19 @@ void UCrashGameplayAbility_AutoRespawn::FinishReset()
 			CrashGM->RequestPlayerRestartNextTick(ControllerToReset, true);
 		}
 
-		// TODO: Broadcast respawn completed
+		// Broadcast a message indicating that the respawn finished successfully.
+		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+		{
+			FCrashSimpleDurationMessage RespawnCompletedMessage;
+			RespawnCompletedMessage.Instigator = GetCrashPlayerStateFromActorInfo();
+
+			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+			MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Player_Respawn_Completed, RespawnCompletedMessage);
+
+			/* NOTE: We might want to replicate this to clients if we want to indicate whether a player is alive or
+			 * dead on some kind of scoreboard, in which case we'd have to change this into a verb message to replicate
+			 * it. */
+		}
 	}
 }
 
@@ -171,7 +197,7 @@ void UCrashGameplayAbility_AutoRespawn::OnAvatarEndPlay(AActor* Avatar, EEndPlay
 {
 	if (Reason == EEndPlayReason::Type::Destroyed)
 	{
-		if (HasAuthority(&CurrentActivationInfo))
+		if (CurrentActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Type::Authority)
 		{
 			ensureAlwaysMsgf(true, TEXT("Avatar [%s] destroyed before death without player reset!"), *GetNameSafe(Avatar));
 
