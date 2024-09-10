@@ -75,6 +75,9 @@ void ACrashPlayerController::OnPlayerStateChanged()
 
 	// Cache the new player state as the one to which this controller's team is currently bound.
 	LastSeenPlayerState = PlayerState;
+
+	// Broadcast the change.
+	PlayerStateChangedDelegate.Broadcast(PlayerState);
 }
 
 void ACrashPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)

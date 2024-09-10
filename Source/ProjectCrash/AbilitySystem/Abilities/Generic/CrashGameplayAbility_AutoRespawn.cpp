@@ -177,6 +177,8 @@ void UCrashGameplayAbility_AutoRespawn::StartListeningForDeath()
 
 void UCrashGameplayAbility_AutoRespawn::StopListeningForDeath()
 {
+	bShouldFinishReset = false;
+
 	// Clear avatar destruction delegate.
 	if (IsValid(BoundAvatar))
 	{

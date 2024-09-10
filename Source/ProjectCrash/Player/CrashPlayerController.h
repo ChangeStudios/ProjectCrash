@@ -10,6 +10,9 @@
 class UCrashAbilitySystemComponent;
 class ACrashPlayerState;
 
+/** Fired when this controller's player state is set. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerStateChangedSignature, const APlayerState*, NewPlayerState);
+
 /**
  * Base modular player controller for this project.
  *
@@ -50,6 +53,10 @@ public:
 
 	/** Triggers OnPlayerStateChanged. */
 	virtual void OnRep_PlayerState() override;
+
+	/** Fired when this controller's player state is set. */
+	UPROPERTY(BlueprintAssignable)
+	FPlayerStateChangedSignature PlayerStateChangedDelegate;
 
 protected:
 

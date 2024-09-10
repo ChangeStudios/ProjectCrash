@@ -24,8 +24,12 @@ public:
 	/** Default constructor. */
 	UTaggedWidget(const FObjectInitializer& ObjectInitializer);
 
+	/** Waits for this widget's owning controller to receive a player state, so we can start listening to its ASC. */
+	virtual void NativeOnInitialized() override;
+
 	/** Starts listening for gameplay tag changes on the owning player. */
-	virtual void NativeConstruct() override;
+	UFUNCTION()
+	void OnPlayerStateSet(const APlayerState* NewPlayerState);
 
 	/** Stops listening for gameplay tag changes on the owning player. */
 	virtual void NativeDestruct() override;
@@ -48,7 +52,7 @@ protected:
 
 	/** Visibility to use when the owning player does not have any tags in HiddenByTags. */
 	UPROPERTY(EditAnywhere, Category = "Behavior")
-	ESlateVisibility VisibleVisibility = ESlateVisibility::SelfHitTestInvisible;
+	ESlateVisibility ShownVisibility = ESlateVisibility::SelfHitTestInvisible;
 
 	/** Visibility to use when the owning player has any tags in HiddenByTags. */
 	UPROPERTY(EditAnywhere, Category = "Behavior")
@@ -56,6 +60,8 @@ protected:
 
 private:
 
+	/** Whether this widget wants to be visible, regardless of its tags. Driven by SetVisibility calls rather than the
+	 * widget's actual visibility. */
 	bool bWantsToBeVisible = true;
 
 	/** Hides or reveals this widget depending on the tag changes. */
