@@ -198,6 +198,12 @@ void UHealthComponent::StartDeath()
 	// Locally update the current DeathState. This gets synced on clients by OnRep_DeathState.
 	DeathState = EDeathState::DeathStarted;
 
+	// Give the dying ASC a "Dying" tag during the death sequence.
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 1);
+	}
+
 	AActor* Owner = GetOwner();
 	check(Owner);
 
@@ -316,7 +322,7 @@ void UHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
 		// If the actor fell out of the world, add the last person to deal knockback to them as an instigator.
 		if (bFellOutOfWorld && AbilitySystemComponent->GetCurrentKnockbackSource())
 		{
-			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), nullptr /* The world is technically the effect causer. */);
+			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), AbilitySystemComponent->GetCurrentKnockbackSource() /* The world is technically the effect causer, but this needs to be valid for the damage execution. */);
 		}
 
 		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageGE, 1.0f, EffectContext);

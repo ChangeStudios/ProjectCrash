@@ -98,7 +98,7 @@ void AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting()
 
 void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ShouldProduceTargetData())
+	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
 		// Perform avatar filtering.
 		if (bIgnoreSelf && OtherActor == SourceActor)

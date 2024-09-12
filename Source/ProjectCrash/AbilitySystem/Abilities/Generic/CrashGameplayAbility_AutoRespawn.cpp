@@ -26,6 +26,7 @@ UCrashGameplayAbility_AutoRespawn::UCrashGameplayAbility_AutoRespawn(const FObje
     ActivationMethod = EAbilityActivationMethod::Passive;
 	bServerRespectsRemoteAbilityCancellation = false;
 	bRetriggerInstancedAbility = true;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ServerOnly;
 
 	if (HasAnyFlags(RF_ClassDefaultObject))
@@ -107,13 +108,10 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 					MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Player_Respawn_Started, RespawnStartMessage);
 				}
 
-				// Start timer to respawn on the server.
-				if (CurrentActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Type::Authority)
-				{
-					bShouldFinishReset = true;
-					FTimerHandle TimerHandle;
-					GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd, RespawnTime, false);
-				}
+				// Start timer to respawn.
+				bShouldFinishReset = true;
+				FTimerHandle TimerHandle;
+				GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd, RespawnTime, false);
 			}
 			// If the player can't respawn, the ability handles what to do with them (e.g. making them a spectator).
 			else
@@ -130,26 +128,36 @@ void UCrashGameplayAbility_AutoRespawn::FinishReset()
 
 	if (IsValid(ControllerToReset))
 	{
-		// Restart the player.
-		AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
-		ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
-		if (ensure(IsValid(CrashGM)))
+		// Restart the player on the server.
+		if (CurrentActorInfo->IsNetAuthority())
 		{
-			CrashGM->RequestPlayerRestartNextTick(ControllerToReset, true);
+			AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+			ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
+			if (ensure(IsValid(CrashGM)))
+			{
+				CrashGM->RequestPlayerRestartNextTick(ControllerToReset, true);
+			}
 		}
 
 		// Broadcast a message indicating that the respawn finished successfully.
 		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
-			FCrashSimpleDurationMessage RespawnCompletedMessage;
+			FCrashVerbMessage RespawnCompletedMessage;
+			RespawnCompletedMessage.Verb = CrashGameplayTags::TAG_Message_Player_Respawn_Completed;
 			RespawnCompletedMessage.Instigator = GetCrashPlayerStateFromActorInfo();
 
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-			MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Player_Respawn_Completed, RespawnCompletedMessage);
+			MessageSystem.BroadcastMessage(RespawnCompletedMessage.Verb, RespawnCompletedMessage);
 
-			/* NOTE: We might want to replicate this to clients if we want to indicate whether a player is alive or
-			 * dead on some kind of scoreboard, in which case we'd have to change this into a verb message to replicate
-			 * it. */
+			/* FinishReset isn't always called locally if there's a missed prediction, so we have to replicate the
+			 * message to clients to ensure they always receive it. */
+			if (CurrentActorInfo->IsNetAuthority())
+			{
+				if (ACrashGameState* CrashGS = GetWorld()->GetGameState<ACrashGameState>())
+				{
+					CrashGS->MulticastReliableMessageToClients(RespawnCompletedMessage);
+				}
+			}
 		}
 	}
 }
@@ -199,7 +207,7 @@ void UCrashGameplayAbility_AutoRespawn::OnAvatarEndPlay(AActor* Avatar, EEndPlay
 {
 	if (Reason == EEndPlayReason::Type::Destroyed)
 	{
-		if (CurrentActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Type::Authority)
+		if (CurrentActorInfo->IsNetAuthority())
 		{
 			ensureAlwaysMsgf(true, TEXT("Avatar [%s] destroyed before death without player reset!"), *GetNameSafe(Avatar));
 
