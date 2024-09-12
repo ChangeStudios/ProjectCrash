@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/PlayerState.h"
 #include "Player/CrashPlayerController.h"
 
@@ -28,7 +29,16 @@ void UTaggedWidget::NativeOnInitialized()
 	{
 		if (ACrashPlayerController* CrashPC = Cast<ACrashPlayerController>(GetOwningPlayer()))
 		{
-			CrashPC->PlayerStateChangedDelegate.AddDynamic(this, &UTaggedWidget::OnPlayerStateSet);
+			// Immediately initialize the widget if the player state has already been set.
+			if (CrashPC->PlayerState)
+			{
+				OnPlayerStateSet(CrashPC->PlayerState);
+			}
+			// Listen for the player state to be set before initializing this widget.
+			else
+			{
+				CrashPC->PlayerStateChangedDelegate.AddDynamic(this, &UTaggedWidget::OnPlayerStateSet);
+			}
 		}
 		else
 		{
