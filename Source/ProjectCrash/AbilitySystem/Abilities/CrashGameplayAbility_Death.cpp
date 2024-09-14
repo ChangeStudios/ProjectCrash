@@ -18,7 +18,7 @@ UCrashGameplayAbility_Death::UCrashGameplayAbility_Death(const FObjectInitialize
 		// Add a default trigger from the "Death" event tag.
 		FAbilityTriggerData DefaultTrigger;
 		DefaultTrigger.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
-		DefaultTrigger.TriggerTag = CrashGameplayTags::TAG_GameplayEvent_Ability_Death;
+		DefaultTrigger.TriggerTag = CrashGameplayTags::TAG_GameplayEvent_Player_Death;
 		AbilityTriggers.Add(DefaultTrigger);
 
 		// Add a "Dying" tag to the dying ASC while this ability is active.

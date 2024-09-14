@@ -144,7 +144,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 		// Send a "Death" event to the dying actor's ASC. This can be used to trigger a death ability.
 		{
 			FGameplayEventData Payload;
-			Payload.EventTag = CrashGameplayTags::TAG_GameplayEvent_Ability_Death;
+			Payload.EventTag = CrashGameplayTags::TAG_GameplayEvent_Player_Death;
 			Payload.Instigator = DamageInstigator;
 			Payload.Target = AbilitySystemComponent->GetAvatarActor();
 			Payload.OptionalObject2 = DamageEffectSpec.Def; // Optional object is the damage effect definition.
@@ -162,7 +162,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DeathMessage;
-			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
+			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Player_Death;
 			DeathMessage.Instigator = DamageInstigator;
 			DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
 			DeathMessage.Target = UCrashStatics::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());

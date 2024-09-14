@@ -160,6 +160,11 @@ private:
 
 	// Death.
 
+public:
+
+	/** Resets this character without killing the player. */
+	virtual void Reset() override;
+
 protected:
 
 	/** Begins death sequence: disables collision, disables movement. */

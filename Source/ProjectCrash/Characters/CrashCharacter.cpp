@@ -234,6 +234,16 @@ void ACrashCharacter::OnAbilitySystemUninitialized()
 	HealthComponent->UninitializeFromAbilitySystem();
 }
 
+void ACrashCharacter::Reset()
+{
+	// Disable movement and collision and destroy this character.
+	DisableMovementAndCollision();
+
+	K2_OnReset();
+
+	UninitAndDestroy();
+}
+
 void ACrashCharacter::OnDeathStarted(AActor* OwningActor)
 {
 	// Disable movement and collision on this actor.
