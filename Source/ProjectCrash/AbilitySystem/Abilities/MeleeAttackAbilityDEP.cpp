@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/Generic/MeleeAttackAbilityDEP.h"
+#include "AbilitySystem/Abilities/MeleeAttackAbilityDEP.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"

@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/Generic/CrashGameplayAbility_Death.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbility_Death.h"
 
 #include "AbilitySystemComponent.h"
 #include "CrashGameplayTags.h"

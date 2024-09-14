@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/Generic/CrashGameplayAbility_Jump.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbility_Jump.h"
 
 #include "AbilitySystemLog.h"
 #include "GameFramework/Character.h"

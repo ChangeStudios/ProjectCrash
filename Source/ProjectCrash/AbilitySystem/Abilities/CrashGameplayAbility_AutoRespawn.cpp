@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "AbilitySystem/Abilities/Generic/CrashGameplayAbility_AutoRespawn.h"
+#include "AbilitySystem/Abilities/CrashGameplayAbility_AutoRespawn.h"
 
 #include "AbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
