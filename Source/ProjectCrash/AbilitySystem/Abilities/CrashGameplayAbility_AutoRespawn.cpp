@@ -146,25 +146,7 @@ void UCrashGameplayAbility_AutoRespawn::FinishReset()
 		}
 
 		// Broadcast a message indicating that the respawn finished successfully.
-		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-		{
-			FCrashVerbMessage RespawnCompletedMessage;
-			RespawnCompletedMessage.Verb = CrashGameplayTags::TAG_Message_Player_Respawn_Completed;
-			RespawnCompletedMessage.Instigator = GetCrashPlayerStateFromActorInfo();
-
-			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-			MessageSystem.BroadcastMessage(RespawnCompletedMessage.Verb, RespawnCompletedMessage);
-
-			/* FinishReset isn't always called locally if there's a missed prediction, so we have to replicate the
-			 * message to clients to ensure they always receive it. */
-			if (CurrentActorInfo->IsNetAuthority())
-			{
-				if (ACrashGameState* CrashGS = GetWorld()->GetGameState<ACrashGameState>())
-				{
-					CrashGS->MulticastReliableMessageToClients(RespawnCompletedMessage);
-				}
-			}
-		}
+		OnRespawnCompleted();
 	}
 }
 
@@ -218,6 +200,7 @@ void UCrashGameplayAbility_AutoRespawn::OnResetMessageReceived(FGameplayTag Chan
 		{
 			StopListeningForDeath();
 			bShouldFinishReset = false;
+			OnRespawnCompleted();
 		}
 	}
 }
@@ -234,6 +217,30 @@ void UCrashGameplayAbility_AutoRespawn::OnAvatarEndPlay(AActor* Avatar, EEndPlay
 			ControllerToReset = GetControllerFromActorInfo();
 			StopListeningForDeath();
 			FinishReset();
+		}
+	}
+}
+
+void UCrashGameplayAbility_AutoRespawn::OnRespawnCompleted()
+{
+	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	{
+		// Broadcast a RespawnCompleted message.
+		FCrashVerbMessage RespawnCompletedMessage;
+		RespawnCompletedMessage.Verb = CrashGameplayTags::TAG_Message_Player_Respawn_Completed;
+		RespawnCompletedMessage.Instigator = GetCrashPlayerStateFromActorInfo();
+
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSystem.BroadcastMessage(RespawnCompletedMessage.Verb, RespawnCompletedMessage);
+
+		/* FinishReset isn't always called locally if there's a missed prediction, so we have to replicate the
+		 * message to clients to ensure they always receive it. */
+		if (CurrentActorInfo->IsNetAuthority())
+		{
+			if (ACrashGameState* CrashGS = GetWorld()->GetGameState<ACrashGameState>())
+			{
+				CrashGS->MulticastReliableMessageToClients(RespawnCompletedMessage);
+			}
 		}
 	}
 }

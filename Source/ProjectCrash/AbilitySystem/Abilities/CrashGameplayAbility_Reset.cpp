@@ -42,7 +42,7 @@ void UCrashGameplayAbility_Reset::ActivateAbility(const FGameplayAbilitySpecHand
 	// Cancels abilities as if the character died.
 	FGameplayTagContainer AbilityTypesToIgnore;
 	AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_SurvivesDeath);
-	CrashASC->CancelAbilities();
+	CrashASC->CancelAbilities(nullptr, &AbilityTypesToIgnore, this);
 
 	// Reset the character.
 	if (ACrashCharacter* CrashChar = GetCrashActorInfo()->CrashCharacter.Get())

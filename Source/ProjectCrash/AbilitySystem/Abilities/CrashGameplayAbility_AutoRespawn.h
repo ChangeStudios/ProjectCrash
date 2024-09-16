@@ -74,6 +74,9 @@ protected:
 	UFUNCTION()
 	void OnAvatarEndPlay(AActor* Avatar, EEndPlayReason::Type Reason);
 
+	/** Broadcasts a message indicating that the respawn completed. */
+	void OnRespawnCompleted();
+
 // Data.
 private:
 
