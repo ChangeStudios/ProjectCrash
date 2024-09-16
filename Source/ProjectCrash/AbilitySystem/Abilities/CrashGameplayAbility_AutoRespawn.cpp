@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbility_AutoRespawn.h"
 
 #include "AbilitySystemComponent.h"
+#include "CrashGameplayAbility_Reset.h"
 #include "CrashGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "AbilitySystem/AttributeSets/LivesAttributeSet.h"
@@ -47,6 +48,8 @@ void UCrashGameplayAbility_AutoRespawn::OnRemoveAbility(const FGameplayAbilityAc
 {
 	Super::OnRemoveAbility(ActorInfo, Spec);
 
+	ResetListener.Unregister();
+
 	StopListeningForDeath();
 }
 
@@ -63,9 +66,8 @@ void UCrashGameplayAbility_AutoRespawn::ActivateOrStartListeningForDeath()
 	 * characters). When this happens, we want to skip the death sequence and just reset them. */
 	if (!bIsListeningForReset)
 	{
-		// TODO: Start listening for reset.
-		// GameplayEvent.Reset
-		// PlayerResetMessage
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		ResetListener = MessageSystem.RegisterListener(CrashGameplayTags::TAG_Message_Player_Reset, this, &ThisClass::OnResetMessageReceived);
 
 		bIsListeningForReset = true;
 	}
@@ -205,6 +207,19 @@ void UCrashGameplayAbility_AutoRespawn::StopListeningForDeath()
 
 	// We can't clear the BoundAvatar yet; we still use it during the death sequence, after this function is called.
 	BoundHealthComponent = nullptr;
+}
+
+void UCrashGameplayAbility_AutoRespawn::OnResetMessageReceived(FGameplayTag Channel, const FCrashPlayerResetMessage& Message)
+{
+	if (Message.OwningActor == GetOwningActorFromActorInfo())
+	{
+		// Clean up this ability, interrupting any ongoing death or reset logic.
+		if (CurrentActorInfo->IsNetAuthority())
+		{
+			StopListeningForDeath();
+			bShouldFinishReset = false;
+		}
+	}
 }
 
 void UCrashGameplayAbility_AutoRespawn::OnAvatarEndPlay(AActor* Avatar, EEndPlayReason::Type Reason)

@@ -4,11 +4,14 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbility_Reset.h"
 
 #include "AbilitySystemLog.h"
+#include "CrashGameplayAbility_AutoRespawn.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/CrashCharacter.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/GameModes/CrashGameMode.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerState.h"
 
 
@@ -36,7 +39,7 @@ void UCrashGameplayAbility_Reset::ActivateAbility(const FGameplayAbilitySpecHand
 
 	SetCanBeCanceled(false);
 
-	/** Cancels abilities as if the character died. */
+	// Cancels abilities as if the character died.
 	FGameplayTagContainer AbilityTypesToIgnore;
 	AbilityTypesToIgnore.AddTag(CrashGameplayTags::TAG_Ability_Behavior_SurvivesDeath);
 	CrashASC->CancelAbilities();
@@ -59,6 +62,17 @@ void UCrashGameplayAbility_Reset::ActivateAbility(const FGameplayAbilitySpecHand
 	MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_Player_Reset, ResetMessage);
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	// Restart the player.
+	if (CurrentActorInfo->IsNetAuthority())
+	{
+		AGameModeBase* GM = UGameplayStatics::GetGameMode(this);
+		ACrashGameMode* CrashGM = GM ? Cast<ACrashGameMode>(GM) : nullptr;
+		if (ensure(IsValid(CrashGM)))
+		{
+			CrashGM->RequestPlayerRestartNextTick(GetControllerFromActorInfo(), true);
+		}
+	}
 
 	// Finish the reset.
 	const bool bReplicateEndAbility = true;

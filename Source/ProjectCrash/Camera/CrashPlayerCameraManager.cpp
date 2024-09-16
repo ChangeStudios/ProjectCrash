@@ -6,6 +6,12 @@
 #include "CrashCameraComponent.h"
 #include "Engine/Canvas.h"
 
+ACrashPlayerCameraManager::ACrashPlayerCameraManager()
+{
+	// This project's default field-of-view.
+	DefaultFOV = 100.0f;
+}
+
 void ACrashPlayerCameraManager::GetCameraBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const
 {
 	// Retrieve the local player's pawn. Can be a spectator.

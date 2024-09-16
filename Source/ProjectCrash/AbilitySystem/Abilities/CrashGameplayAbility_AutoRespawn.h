@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "CrashGameplayAbility_AutoRespawn.generated.h"
 
 class UHealthComponent;
@@ -65,6 +66,10 @@ protected:
 	/** Clears any delegates bound to this ability's avatar's death or destruction. Nulls BoundHealthComponent. */
 	void StopListeningForDeath();
 
+	/** Called if the player is directly reset during a respawn to cancel the respawn. */
+	UFUNCTION()
+	void OnResetMessageReceived(FGameplayTag Channel, const FCrashPlayerResetMessage& Message);
+
 	/** Triggers an instant reset from the server if the player's avatar is destroyed without dying. */
 	UFUNCTION()
 	void OnAvatarEndPlay(AActor* Avatar, EEndPlayReason::Type Reason);
@@ -78,6 +83,9 @@ private:
 	/** Whether we've already finished resetting the player once. Prevents the player from resetting multiple times
 	 * (e.g. if a direct reset is requested during a respawn timer). */
 	bool bShouldFinishReset;
+
+	/** Listens for a direct reset of the player, which cancels the automatic respawn. */
+	FGameplayMessageListenerHandle ResetListener;
 
 	/** The avatar whose destruction we're currently listening for, in case it gets destroyed without dying. */
 	UPROPERTY()

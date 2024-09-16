@@ -7,7 +7,7 @@
 #include "CrashGameplayAbility_Reset.generated.h"
 
 /**
- * 
+ * Directly resets the activating player, destroying their pawn and restarting them.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashGameplayAbility_Reset : public UCrashGameplayAbilityBase
@@ -26,7 +26,9 @@ protected:
 };
 
 
-
+/**
+ * Message communicating the direct reset of a player.
+ */
 USTRUCT(BlueprintType)
 struct FCrashPlayerResetMessage
 {
