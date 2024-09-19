@@ -14,7 +14,6 @@
 #include "Player/CrashPlayerState.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameState.h"
-#include "GameFramework/GameModes/PlayerSpawningManagerComponent.h"
 #include "GameFramework/Messages/CrashSimpleDurationMessage.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Kismet/GameplayStatics.h"
