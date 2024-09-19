@@ -105,9 +105,9 @@ public:
 	/** Spawns spectator pawns using a spectator player start. */
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 
-	/** Changes this controller to be a player or a spectator. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
-	void SetSpectating(bool bSpectator);
+	virtual void BeginSpectatingState() override;
+	virtual void EndSpectatingState() override;
+	virtual void BeginPlayingState() override;
 
 
 

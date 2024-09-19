@@ -265,7 +265,7 @@ void UCrashGameplayAbility_AutoRespawn::OnRespawnFailed_Implementation()
 	// Make the player a spectator.
 	if (ACrashPlayerController* CrashPC = GetCrashPlayerControllerFromActorInfo())
 	{
-		CrashPC->SetSpectating(true);
+		CrashPC->ChangeState(NAME_Spectating);
 	}
 }
 

@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
+#include "Player/PlayerSpawningManagerComponent.h"
 #include "UI/CrashHUD.h"
 
 ACrashGameMode::ACrashGameMode()
@@ -156,6 +157,18 @@ bool ACrashGameMode::IsGameModeLoaded() const
 	check(GameModeManagerComponent);
 
 	return GameModeManagerComponent->IsGameModeLoaded();
+}
+
+AActor* ACrashGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	/* Proxy the call to the player spawning manager. This allows each game mode to control how it wants to spawn
+	 * players. */
+	if (UPlayerSpawningManagerComponent* SpawningComponent = GameState->FindComponentByClass<UPlayerSpawningManagerComponent>())
+	{
+		return SpawningComponent->ChoosePlayerStart(Player);
+	}
+
+	return Super::ChoosePlayerStart_Implementation(Player);
 }
 
 void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)

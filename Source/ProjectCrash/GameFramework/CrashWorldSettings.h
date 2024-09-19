@@ -17,25 +17,12 @@ class PROJECTCRASH_API ACrashWorldSettings : public AWorldSettings
 {
 	GENERATED_BODY()
 
-	// Accessors.
+	// World properties.
 
 public:
 
 	/** Retrieves the game mode data object as a primary asset ID, ensuring that it's not in an unscanned directory. */
 	FPrimaryAssetId GetDefaultGameModeData() const;
-
-
-
-	// World properties.
-
-protected:
-
-	/** The default game mode data used for this level. This is used for levels that don't have another means of
-	 * determining their game mode data, such as standalone levels (main menu, practice range, etc.). */
-	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
-	TSoftObjectPtr<UCrashGameModeData> DefaultGameModeData;
-
-public:
 
 #if WITH_EDITORONLY_DATA
 	/** Forces standalone net mode when playing in the editor. Useful for testing levels that should always be played
@@ -43,6 +30,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = PIE)
 	bool ForceStandaloneNetMode = false;
 #endif // WITH_EDITORONLY_DATA
+
+protected:
+
+	/** The default game mode data used for this level. This is used for levels that don't have another means of
+	 * determining their game mode data, such as standalone levels (main menu, practice range, etc.). */
+	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
+	TSoftObjectPtr<UCrashGameModeData> DefaultGameModeData;
 
 
 

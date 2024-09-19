@@ -30,7 +30,7 @@ enum class EPlayerStartLocationOccupancy : uint8
  *
  * Also contains logic to prevent collisions and close-proximity starts.
  */
-UCLASS()
+UCLASS(ClassGroup = "Common", HideCategories = "Collision")
 class PROJECTCRASH_API ACrashPlayerStart : public APlayerStart, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
@@ -39,17 +39,22 @@ class PROJECTCRASH_API ACrashPlayerStart : public APlayerStart, public IGameplay
 
 public:
 
-	/** Returns whether the given controller's pawn could fit in this player start's location. */
+	/** Returns whether the given controller's pawn could fit at this player start's location. */
 	EPlayerStartLocationOccupancy GetLocationOccupancy(AController* const ControllerToFit) const;
 
-	bool IsClaimed() const;
+	/** Whether this start has been claimed by a player, and should not be used again. */
+	bool IsClaimed() const { return ClaimedController != nullptr; }
 
+	/** Claims this start for the given player, preventing it from being used again for at least MinExpirationDuration
+	 * seconds. */
 	bool TryClaim(AController* ClaimingController);
 
 protected:
 
+	/** Continuously called to check if this player start is ready to be unclaimed. */
 	void CheckUnclaimed();
 
+	/** The player that currently claims this player start. Null if unclaimed. */
 	UPROPERTY(Transient)
 	TObjectPtr<AController> ClaimedController;
 
@@ -61,6 +66,7 @@ private:
 	/** Interval at which to check if this start can be used again. */
 	float ExpirationCheckInterval = 0.5f;
 
+	/** Timer for checking when this start should be unclaimed. */
 	FTimerHandle ExpirationTimerHandle;
 
 
@@ -79,10 +85,10 @@ protected:
 
 	/** The team to which this player start belongs. Can be left unset. Used in game modes where players are spawned
 	 * according to their team. */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Player Start")
 	uint8 TeamIndex = FGenericTeamId::NoTeam;
 
 	/** Tags which can be queried and used to customize spawning behavior, depending on the game mode. */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Player Start", Meta = (Categories = "GameMode.PlayerStart"))
 	FGameplayTagContainer PlayerStartTags;
 };

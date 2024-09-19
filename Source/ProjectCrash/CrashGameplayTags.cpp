@@ -48,6 +48,8 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_Initializing, "InitState.Initializing", "Actors and their components are being initialized for game play.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_PlayerStart_Spectator, "GameMode.PlayerStart.Spectator", "Indicates that this player start should be used for spectators.");
+
 
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InputTag_Jump, "InputTag.Jump", "Input tag to activate the jump ability.");

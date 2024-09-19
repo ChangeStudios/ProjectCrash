@@ -112,37 +112,49 @@ ASpectatorPawn* ACrashPlayerController::SpawnSpectatorPawn()
 
 	if (SpawnedPawn)
 	{
-		SpawnedPawn->SetActorLocation({0.0f, 0.0f, 1000.0f});
+		// SpawnedPawn->SetActorLocation({0.0f, 0.0f, 1000.0f});
 	}
 
 	return SpawnedPawn;
 }
 
-void ACrashPlayerController::SetSpectating(bool bSpectator)
+void ACrashPlayerController::BeginPlayingState()
 {
-	// Make the player a spectator.
-	if (bSpectator)
+	if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
 	{
-		ChangeState(NAME_Spectating);
-
-		if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
-		{
-			CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Spectator);
-			CrashPS->SetIsSpectator(true);
-		}
+		CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Player);
 	}
-	// Make the player a player.
-	else
-	{
-		ChangeState(NAME_Playing);
 
-		if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
-		{
-			CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Player);
-		}
-	}
+	Super::BeginPlayingState();
 
 	ResetIgnoreInputFlags();
+}
+
+void ACrashPlayerController::BeginSpectatingState()
+{
+	if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
+	{
+		CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Spectator);
+		CrashPS->SetIsSpectator(true);
+	}
+
+	Super::BeginSpectatingState();
+
+	ResetIgnoreInputFlags();
+}
+
+void ACrashPlayerController::EndSpectatingState()
+{
+	Super::EndSpectatingState();
+
+	// Mark the spectator pawn for destruction.
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		if (GetSpectatorPawn() != NULL)
+		{
+			DestroySpectatorPawn();
+		}
+	}));
 }
 
 ACrashPlayerState* ACrashPlayerController::GetCrashPlayerState() const

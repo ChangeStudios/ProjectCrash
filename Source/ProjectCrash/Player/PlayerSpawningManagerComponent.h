@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/GameStateComponent.h"
 #include "PlayerSpawningManagerComponent.generated.h"
 
@@ -11,7 +12,7 @@ class ACrashPlayerStart;
 /**
  * Controls how players are spawned and respawned. Should be subclassed to define game mode-specific spawning rules.
  */
-UCLASS(Blueprintable)
+UCLASS()
 class PROJECTCRASH_API UPlayerSpawningManagerComponent : public UGameStateComponent
 {
 	GENERATED_BODY()
@@ -49,19 +50,35 @@ private:
 protected:
 
 	/** Virtual function that should be overridden to select the best player start depending on the game mode. */
-	virtual AActor* FindBestPlayerStart(AController* Player) { return nullptr; }
+	virtual AActor* FindBestPlayerStart(AController* Player, TArray<ACrashPlayerStart*>& PlayerStarts) { return nullptr; }
 
-// Internals.
-protected:
+private:
+#if WITH_EDITOR
+	/** Returns the first player start created by a PIE "Play From Here" request. Returns null if the session was not
+	 * started like this. */
+	APlayerStart* FindPlayFromHereStart(AController* Player);
+#endif // WITH_EDITOR
+
+
+
+	// Internals.
+
+private:
 
 	/** Every player start in the current level, cached for convenience when choosing player spawns. */
 	UPROPERTY(Transient)
-	TArray<TWeakObjectPtr<ACrashPlayerStart>> PlayerStarts;
+	TArray<TWeakObjectPtr<ACrashPlayerStart>> PlayerStarts_Internal;
 
-// Utils.
+
+
+	// Utils.
+
 protected:
+
+	/** Returns the first player start in the world with the given tag. */
+	APlayerStart* FindFirstStartWithTag(FGameplayTag Tag);
 
 	/** Helper for retrieving the first available player start. Used as a fallback if no player starts can be found
 	 * otherwise. */
-	APlayerStart* FindFirstUnoccupiedPlayerStart(AController* Player) const;
+	APlayerStart* FindFirstUnoccupiedPlayerStart(AController* Player, TArray<ACrashPlayerStart*>& PlayerStarts) const;
 };

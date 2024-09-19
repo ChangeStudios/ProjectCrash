@@ -67,6 +67,17 @@ public:
 
 public:
 
+	/** Uses the PlayerSpawningManagerComponent to find the best spawn for the given player. */
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	/** Disables using controllers' StartSpot to spawn them. The spawn manager should always be used instead. */
+	virtual bool ShouldSpawnAtStartSpot(AController* Player) override { return false; }
+
+	/** Don't do anything here. This is called before things like teams are set up. We wait until PostLogin to actually
+	 * try to spawn the player, and we'll use the spawn manager, not StartSpot. */
+	// TODO: Call SetInitialLocationAndRotation for spectators to use.
+	virtual bool UpdatePlayerStartSpot(AController* Player, const FString& Portal, FString& OutErrorMessage) override { return true; }
+
 	/**
 	 * Tries to restart (respawn) the specified player or bot the next tick.
 	 *
