@@ -102,9 +102,10 @@ private:
 
 public:
 
-	/** Spawns spectator pawns using a spectator player start. */
+	// Tries to spawn at a spectator player start.
 	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
 
+	// TODO: Implement.
 	virtual void BeginSpectatingState() override;
 	virtual void EndSpectatingState() override;
 	virtual void BeginPlayingState() override;

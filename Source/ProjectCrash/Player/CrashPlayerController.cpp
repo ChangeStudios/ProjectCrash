@@ -3,10 +3,14 @@
 
 #include "Player/CrashPlayerController.h"
 
+#include "CrashGameplayTags.h"
+#include "CrashPlayerStart.h"
 #include "CrashPlayerState.h"
+#include "EngineUtils.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Camera/CrashPlayerCameraManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/SpectatorPawn.h"
 
 ACrashPlayerController::ACrashPlayerController(const FObjectInitializer& ObjectInitializer)
@@ -107,15 +111,20 @@ void ACrashPlayerController::OnPlayerStateChangedTeam(UObject* TeamAgent, int32 
 
 ASpectatorPawn* ACrashPlayerController::SpawnSpectatorPawn()
 {
-	// TODO: Spawn a specator pawn at a spectator player start.
-	ASpectatorPawn* SpawnedPawn = Super::SpawnSpectatorPawn();
-
-	if (SpawnedPawn)
+	// Initialize the spectator pawn's transform to any spectator player start that can be found.
+	for (TActorIterator<ACrashPlayerStart> It(GetWorld()); It; ++It)
 	{
-		// SpawnedPawn->SetActorLocation({0.0f, 0.0f, 1000.0f});
+		if (ACrashPlayerStart* CrashPlayerStart = *It)
+		{
+			if (CrashPlayerStart->HasMatchingGameplayTag(CrashGameplayTags::TAG_GameMode_PlayerStart_Spectator))
+			{
+				SetInitialLocationAndRotation(CrashPlayerStart->GetActorLocation(), CrashPlayerStart->GetActorRotation());
+				break;
+			}
+		}
 	}
 
-	return SpawnedPawn;
+	return Super::SpawnSpectatorPawn();
 }
 
 void ACrashPlayerController::BeginPlayingState()

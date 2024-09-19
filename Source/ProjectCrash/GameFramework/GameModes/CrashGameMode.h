@@ -75,7 +75,6 @@ public:
 
 	/** Don't do anything here. This is called before things like teams are set up. We wait until PostLogin to actually
 	 * try to spawn the player, and we'll use the spawn manager, not StartSpot. */
-	// TODO: Call SetInitialLocationAndRotation for spectators to use.
 	virtual bool UpdatePlayerStartSpot(AController* Player, const FString& Portal, FString& OutErrorMessage) override { return true; }
 
 	/**
