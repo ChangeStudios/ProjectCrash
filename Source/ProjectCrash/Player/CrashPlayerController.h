@@ -98,15 +98,28 @@ private:
 
 
 
+	// Spectating.
+
+public:
+
+	/** Spawns spectator pawns using a spectator player start. */
+	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
+
+	/** Changes this controller to be a player or a spectator. */
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
+	void SetSpectating(bool bSpectator);
+
+
+
 	// Utils.
 
 public:
 
 	/** Retrieves this player controller's typed player state. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerController")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
 	ACrashPlayerState* GetCrashPlayerState() const;
 
 	/** Retrieves this player's ASC, assuming it's stored on their player state. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerController")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
 };

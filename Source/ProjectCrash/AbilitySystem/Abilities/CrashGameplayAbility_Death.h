@@ -29,4 +29,10 @@ protected:
 
 	/** Finishes the avatar actor's death sequence through their health component. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+private:
+
+	/** The dying avatar actor. Cached in case the player respawns with a new avatar before this ability ends. */
+	UPROPERTY()
+	TObjectPtr<AActor> DyingActor;
 };

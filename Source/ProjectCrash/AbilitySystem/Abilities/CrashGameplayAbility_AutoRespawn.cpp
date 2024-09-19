@@ -14,6 +14,7 @@
 #include "Player/CrashPlayerState.h"
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameState.h"
+#include "GameFramework/GameModes/PlayerSpawningManagerComponent.h"
 #include "GameFramework/Messages/CrashSimpleDurationMessage.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Kismet/GameplayStatics.h"
@@ -262,11 +263,10 @@ bool UCrashGameplayAbility_AutoRespawn::CanRespawn_Implementation()
 
 void UCrashGameplayAbility_AutoRespawn::OnRespawnFailed_Implementation()
 {
-	// TODO: Make player spectator.
+	// Make the player a spectator.
 	if (ACrashPlayerController* CrashPC = GetCrashPlayerControllerFromActorInfo())
 	{
-		CrashPC->ChangeState(NAME_Spectating);
-		CrashPC->ResetIgnoreInputFlags();
+		CrashPC->SetSpectating(true);
 	}
 }
 

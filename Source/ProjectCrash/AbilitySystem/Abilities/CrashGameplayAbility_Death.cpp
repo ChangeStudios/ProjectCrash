@@ -39,7 +39,8 @@ void UCrashGameplayAbility_Death::ActivateAbility(const FGameplayAbilitySpecHand
 	ActorInfo->AbilitySystemComponent.Get()->CancelAbilities(nullptr, &SurvivesDeath, this);
 
 	// Start the actor's death sequence through their health component.
-	if (UHealthComponent* HealthComponent = UHealthComponent::FindHealthComponent(ActorInfo->AvatarActor.Get()))
+	DyingActor = ActorInfo->AvatarActor.Get();
+	if (UHealthComponent* HealthComponent = UHealthComponent::FindHealthComponent(DyingActor))
 	{
 		HealthComponent->StartDeath();
 	}
@@ -52,7 +53,7 @@ void UCrashGameplayAbility_Death::EndAbility(const FGameplayAbilitySpecHandle Ha
 	check(ActorInfo);
 
 	// Finish the actor's death sequence through their health component.
-	if (UHealthComponent* HealthComponent = UHealthComponent::FindHealthComponent(ActorInfo->AvatarActor.Get()))
+	if (UHealthComponent* HealthComponent = UHealthComponent::FindHealthComponent(DyingActor))
 	{
 		HealthComponent->FinishDeath();
 	}

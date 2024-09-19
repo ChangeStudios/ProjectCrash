@@ -226,6 +226,7 @@ void UHealthComponent::FinishDeath()
 	// Add a "Dead" tag to the owner. This will be cleared when the ASC is re-initialized with a new health component.
 	if (AbilitySystemComponent)
 	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 0);
 		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dead, 1);
 	}
 

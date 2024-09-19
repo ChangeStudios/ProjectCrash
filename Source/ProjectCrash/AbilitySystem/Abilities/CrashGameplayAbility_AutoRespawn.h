@@ -10,7 +10,8 @@
 class UHealthComponent;
 
 /**
- * Listens for when the player's avatar dies via a health component. If possible, the player will try to respawn.
+ * Listens for when the player's avatar dies via a health component. If possible, the player will try to respawn
+ * according to the rules of the game state's PlayerSpawningManagerComponent.
  *
  * This ability can be subclassed to alter its behavior for different game modes and to add user-facing logic (e.g. a
  * respawn timer). Not intended to be subclassed in C++.
@@ -109,7 +110,7 @@ private:
 protected:
 
 	/**
-	 * Returns whether this ability's player can respawn.
+	 * Returns whether the player can respawn (restart as a player, not a spectator), depending on the game mode rules.
 	 *
 	 * Default implementation return true if the player's "Lives" attribute (ULivesAttributeSet) is at least one.
 	 * Returns false if the player has no lives left, or does not have a LivesAttributeSet.
@@ -118,15 +119,15 @@ protected:
 	bool CanRespawn();
 
 	/**
-	 * Called when the player attempts to respawn but CanRespawn fails.
+	 * Called when the player tries to respawn, but CanRespawn fails.
 	 *
-	 * Default implementation makes the respawning player a spectator.
+	 * Default implementation changes the player to a spectator, since they can no longer respawn.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnRespawnFailed();
 
 	/**
-	 * Returns how long the player should wait after dying to respawn.
+	 * Determines how long the player will wait after dying to respawn.
 	 *
 	 * Default implementation returns the "RespawnTime" game mode property.
 	 */

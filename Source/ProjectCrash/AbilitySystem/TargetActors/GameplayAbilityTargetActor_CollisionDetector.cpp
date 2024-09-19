@@ -98,7 +98,7 @@ void AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting()
 
 void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ShouldProduceTargetData() && ensureAlwaysMsgf(OwningAbility, TEXT("Collision detected from target actor [%s] with missing outer ability. The ability that created this target actor may not have properly ended the targeting task."), *GetNameSafe(this)))
+	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
 		// Perform avatar filtering.
 		if (bIgnoreSelf && OtherActor == SourceActor)

@@ -7,6 +7,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Camera/CrashPlayerCameraManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/SpectatorPawn.h"
 
 ACrashPlayerController::ACrashPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -102,6 +103,46 @@ void ACrashPlayerController::OnPlayerStateChangedTeam(UObject* TeamAgent, int32 
 {
 	// Broadcast this controller's "team changed" delegate when its player state changes teams.
 	BroadcastIfTeamChanged(this, IntegerToGenericTeamId(OldTeam), IntegerToGenericTeamId(NewTeam));
+}
+
+ASpectatorPawn* ACrashPlayerController::SpawnSpectatorPawn()
+{
+	// TODO: Spawn a specator pawn at a spectator player start.
+	ASpectatorPawn* SpawnedPawn = Super::SpawnSpectatorPawn();
+
+	if (SpawnedPawn)
+	{
+		SpawnedPawn->SetActorLocation({0.0f, 0.0f, 1000.0f});
+	}
+
+	return SpawnedPawn;
+}
+
+void ACrashPlayerController::SetSpectating(bool bSpectator)
+{
+	// Make the player a spectator.
+	if (bSpectator)
+	{
+		ChangeState(NAME_Spectating);
+
+		if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
+		{
+			CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Spectator);
+			CrashPS->SetIsSpectator(true);
+		}
+	}
+	// Make the player a player.
+	else
+	{
+		ChangeState(NAME_Playing);
+
+		if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
+		{
+			CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Player);
+		}
+	}
+
+	ResetIgnoreInputFlags();
 }
 
 ACrashPlayerState* ACrashPlayerController::GetCrashPlayerState() const
