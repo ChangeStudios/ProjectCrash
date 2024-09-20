@@ -8,6 +8,8 @@
 #include "EngineUtils.h"
 #include "Engine/PlayerStartPIE.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "GameFramework/Teams/TeamSubsystem.h"
 
 UPlayerSpawningManagerComponent::UPlayerSpawningManagerComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -202,4 +204,87 @@ APlayerStart* UPlayerSpawningManagerComponent::FindFirstUnoccupiedPlayerStart(AC
 	}
 
 	return nullptr;
+}
+
+AActor* UPlayerSpawningManagerComponent::FindSafestPlayerStart(AController* Player, TArray<ACrashPlayerStart*>& PlayerStarts) const
+{
+	UTeamSubsystem* TeamSubsystem = GetWorld()->GetSubsystem<UTeamSubsystem>();
+	ACrashGameState* CrashGS = GetGameStateChecked<ACrashGameState>();
+
+	if (!ensure(TeamSubsystem))
+	{
+		return nullptr;
+	}
+
+	const int32 TeamId = TeamSubsystem->FindTeamFromObject(Player);
+
+	// NOTE: We might want intentionally neutral players?
+	if (!ensure(TeamId != INDEX_NONE))
+	{
+		return nullptr;
+	}
+
+	ACrashPlayerStart* SafestPlayerStart = nullptr;
+	double SafestDistance = 0.0f;
+	ACrashPlayerStart* FallbackSafestPlayerStart = nullptr;
+	double FallbackSafestDistance = 0.0f;
+
+	// Find the player start that is furthest from its closest enemy.
+	for (ACrashPlayerStart* PlayerStart : PlayerStarts)
+	{
+		double DistToClosestEnemy = MAX_dbl;
+
+		// Find the closest enemy to this start, to measure how "safe" it is.
+		for (APlayerState* OtherPS : CrashGS->PlayerArray)
+		{
+			const int32 OtherTeamId = TeamSubsystem->FindTeamFromObject(OtherPS);
+
+			// Don't count spectators or neutral players.
+			if (OtherPS->IsOnlyASpectator() || !(ensure(OtherTeamId != INDEX_NONE)))
+			{
+				continue;
+			}
+
+			// If the player is an enemy, check if they're the closest one to this player start.
+			if (TeamId != OtherTeamId)
+			{
+				if (APawn* OtherPawn = OtherPS->GetPawn())
+				{
+					const float DistToEnemy = PlayerStart->GetDistanceTo(OtherPawn);
+
+					if (DistToEnemy < DistToClosestEnemy)
+					{
+						DistToClosestEnemy = DistToEnemy;
+					}
+				}
+			}
+		}
+
+		// Try not to use claimed starts, but we can if we have no other options.
+		if (PlayerStart->IsClaimed())
+		{
+			if (FallbackSafestPlayerStart == nullptr || DistToClosestEnemy > FallbackSafestDistance)
+			{
+				FallbackSafestPlayerStart = PlayerStart;
+				FallbackSafestDistance = DistToClosestEnemy;
+			}
+		}
+		/* If this player start can be used, check if it's safer than our current start (i.e. the closest enemy is
+		 * further). */
+		else if (PlayerStart->GetLocationOccupancy(Player) < EPlayerStartLocationOccupancy::Full)
+		{
+			if (PlayerStart == nullptr || DistToClosestEnemy > SafestDistance)
+			{
+				SafestPlayerStart = PlayerStart;
+				SafestDistance = DistToClosestEnemy;
+			}
+		}
+	}
+
+	if (SafestPlayerStart)
+	{
+		return SafestPlayerStart;
+	}
+
+	return FallbackSafestPlayerStart;
 }

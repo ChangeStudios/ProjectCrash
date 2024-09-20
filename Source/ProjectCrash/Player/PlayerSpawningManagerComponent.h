@@ -11,6 +11,8 @@ class ACrashPlayerStart;
 
 /**
  * Controls how players are spawned and respawned. Should be subclassed to define game mode-specific spawning rules.
+ *
+ * Default spawning rules spawn players at random player starts.
  */
 UCLASS()
 class PROJECTCRASH_API UPlayerSpawningManagerComponent : public UGameStateComponent
@@ -81,4 +83,7 @@ protected:
 	/** Helper for retrieving the first available player start. Used as a fallback if no player starts can be found
 	 * otherwise. */
 	APlayerStart* FindFirstUnoccupiedPlayerStart(AController* Player, TArray<ACrashPlayerStart*>& PlayerStarts) const;
+
+	/** Finds the furthest possible player start from enemies of the given player's team. */
+	AActor* FindSafestPlayerStart(AController* Player, TArray<ACrashPlayerStart*>& PlayerStarts) const;
 };
