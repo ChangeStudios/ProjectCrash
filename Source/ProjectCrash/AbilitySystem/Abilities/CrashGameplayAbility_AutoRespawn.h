@@ -126,12 +126,8 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnRespawnFailed();
 
-	/**
-	 * Determines how long the player will wait after dying to respawn.
-	 *
-	 * Default implementation returns the "RespawnTime" game mode property.
-	 */
-	UFUNCTION(BlueprintNativeEvent)
+	/** Determines how long the player will wait after dying to respawn. */
+	UFUNCTION(BlueprintImplementableEvent)
 	float GetRespawnTime();
 
 

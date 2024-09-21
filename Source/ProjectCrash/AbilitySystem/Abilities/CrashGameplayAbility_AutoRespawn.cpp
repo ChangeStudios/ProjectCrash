@@ -269,12 +269,6 @@ void UCrashGameplayAbility_AutoRespawn::OnRespawnFailed_Implementation()
 	}
 }
 
-float UCrashGameplayAbility_AutoRespawn::GetRespawnTime_Implementation()
-{
-	// TODO: Retrieve game mode property.
-	return 5.0f;
-}
-
 bool UCrashGameplayAbility_AutoRespawn::IsAvatarDeadOrDying() const
 {
 	if (AActor* Avatar = GetAvatarActorFromActorInfo())
