@@ -144,7 +144,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 		// Send a "Death" event to the dying actor's ASC. This can be used to trigger a death ability.
 		{
 			FGameplayEventData Payload;
-			Payload.EventTag = CrashGameplayTags::TAG_GameplayEvent_Ability_Death;
+			Payload.EventTag = CrashGameplayTags::TAG_GameplayEvent_Player_Death;
 			Payload.Instigator = DamageInstigator;
 			Payload.Target = AbilitySystemComponent->GetAvatarActor();
 			Payload.OptionalObject2 = DamageEffectSpec.Def; // Optional object is the damage effect definition.
@@ -162,7 +162,7 @@ void UHealthComponent::OnOutOfHealth(AActor* DamageInstigator, const FGameplayEf
 		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DeathMessage;
-			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Death;
+			DeathMessage.Verb = CrashGameplayTags::TAG_Message_Player_Death;
 			DeathMessage.Instigator = DamageInstigator;
 			DeathMessage.InstigatorTags = *DamageEffectSpec.CapturedSourceTags.GetAggregatedTags();
 			DeathMessage.Target = UCrashStatics::GetPlayerStateFromObject(AbilitySystemComponent->GetAvatarActor());
@@ -198,6 +198,12 @@ void UHealthComponent::StartDeath()
 	// Locally update the current DeathState. This gets synced on clients by OnRep_DeathState.
 	DeathState = EDeathState::DeathStarted;
 
+	// Give the dying ASC a "Dying" tag during the death sequence.
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 1);
+	}
+
 	AActor* Owner = GetOwner();
 	check(Owner);
 
@@ -220,6 +226,7 @@ void UHealthComponent::FinishDeath()
 	// Add a "Dead" tag to the owner. This will be cleared when the ASC is re-initialized with a new health component.
 	if (AbilitySystemComponent)
 	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dying, 0);
 		AbilitySystemComponent->SetLooseGameplayTagCount(CrashGameplayTags::TAG_State_Dead, 1);
 	}
 
@@ -316,7 +323,7 @@ void UHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
 		// If the actor fell out of the world, add the last person to deal knockback to them as an instigator.
 		if (bFellOutOfWorld && AbilitySystemComponent->GetCurrentKnockbackSource())
 		{
-			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), nullptr /* The world is technically the effect causer. */);
+			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), AbilitySystemComponent->GetCurrentKnockbackSource() /* The world is technically the effect causer, but this needs to be valid for the damage execution. */);
 		}
 
 		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageGE, 1.0f, EffectContext);

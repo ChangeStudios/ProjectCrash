@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 
 #include "CrashVerbMessage.generated.h"
@@ -17,7 +16,7 @@ struct FCrashVerbMessage
 {
 	GENERATED_BODY()
 
-	/** The verb of this message. E.g. "damage dealt." */
+	/** The verb of this message, e.g. "damage dealt." Usually the same tag as was used to broadcast this message. */
 	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
 	FGameplayTag Verb;
 

@@ -62,6 +62,8 @@ struct FGameFeatureAbilitiesEntry
 
 /**
  * Adds abilities and attribute sets to all actors of a specified class.
+ *
+ * TODO: Update comments to clarify that contexts = worlds in which this action is active.
  */
 UCLASS(MinimalAPI, DisplayName = "Add Abilities/Attributes")
 class UGameFeatureAction_AddAbilities : public UGameFeatureAction_WorldActionBase
@@ -95,7 +97,7 @@ private:
 public:
 
 	/** Abilities, ability sets, and attribute sets that will be granted to actors of a specified class. */
-	UPROPERTY(EditAnywhere, Category="Abilities/Attributes", DisplayName = "Granted Abilities/Attributes List", Meta = (TitleProperty = "ActorClass", ShowOnlyInnerProperties))
+	UPROPERTY(EditAnywhere, Category = "Abilities/Attributes", DisplayName = "Granted Abilities/Attributes List", Meta = (TitleProperty = "ActorClass", ShowOnlyInnerProperties))
 	TArray<FGameFeatureAbilitiesEntry> AbilitiesList;
 
 
@@ -154,5 +156,5 @@ public:
 #if WITH_EDITOR
 	/** Validates the abilities and attribute sets referenced by this game feature action. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
-#endif
+#endif // WITH_EDITOR
 };

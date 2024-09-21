@@ -36,15 +36,19 @@ namespace CrashGameplayTags
 
 
 	// Gameplay events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_Death, "GameplayEvent.Ability.Death", "Event triggered when an actor dies via running out of health. Can be used to trigger a \"Death\" gameplay ability.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_MeleeSurfaceImpact, "GameplayEvent.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_PerformTargeting, "GameplayEvent.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Death, "GameplayEvent.Player.Death", "Triggered when an actor dies via running out of health. Can be used to trigger a \"Death\" gameplay ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Reset, "GameplayEvent.Player.Reset", "Performs an instant server reset on a target player.");
 
 
 	// Game framework.
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_WaitingForData, "InitState.WaitingForData", "We are entering the map and waiting to load and replicate all of the data we need for initialization: game data, Challenger data, skin data, etc.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_Initializing, "InitState.Initializing", "Actors and their components are being initialized for game play.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_PlayerStart_Spectator, "GameMode.PlayerStart.Spectator", "Indicates that this player start should be used for spectators.");
 
 
 	// Input
@@ -55,13 +59,17 @@ namespace CrashGameplayTags
 
 
 	// Messages.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Death, "Message.Death", "Verbal message communicating a death.");
-
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated, "Message.Ability.Activated", "Message communicating that a gameplay ability was successfully activated.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "Message communicating that a gameplay ability's cooldown started.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Death, "Message.Player.Death", "Verbal message communicating a death.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Reset, "Message.Player.Reset", "Reset message indicating a player has been directly reset.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Started, "Message.Player.Respawn.Started", "Simple duration message indicating a player began respawning.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Completed, "Message.Player.Respawn.Completed", "Simple duration message indicating a player finished respawning.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
 

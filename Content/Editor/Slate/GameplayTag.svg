@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: url(#New_Gradient_Swatch_1);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 66.7px;
+      }
+
+      .cls-2 {
+        fill: url(#New_Gradient_Swatch_1-2);
+      }
+    </style>
+    <linearGradient id="New_Gradient_Swatch_1" data-name="New Gradient Swatch 1" x1="66.7" y1="396" x2="725.2" y2="396" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#999"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="New_Gradient_Swatch_1-2" data-name="New Gradient Swatch 1" x1="200" y1="250" x2="300" y2="250" xlink:href="#New_Gradient_Swatch_1"/>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.1, SVG Export Plug-In . SVG Version: 1.2.0 Build 142)  -->
+  <g>
+    <g id="Layer_1">
+      <path class="cls-1" d="M372.4,100h-205.7c-36.8,0-66.7,29.8-66.7,66.7v205.7c0,17.7,7,34.6,19.5,47.1l243.1,243.1c39.1,39.1,102.4,39.1,141.4,0l158.6-158.6c39.1-39.1,39.1-102.4,0-141.4l-243.1-243.1c-12.5-12.5-29.5-19.5-47.1-19.5Z"/>
+      <circle class="cls-2" cx="250" cy="250" r="50"/>
+    </g>
+  </g>
+</svg>

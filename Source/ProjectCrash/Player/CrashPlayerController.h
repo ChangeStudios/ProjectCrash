@@ -10,6 +10,9 @@
 class UCrashAbilitySystemComponent;
 class ACrashPlayerState;
 
+/** Fired when this controller's player state is set. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerStateChangedSignature, const APlayerState*, NewPlayerState);
+
 /**
  * Base modular player controller for this project.
  *
@@ -51,6 +54,10 @@ public:
 	/** Triggers OnPlayerStateChanged. */
 	virtual void OnRep_PlayerState() override;
 
+	/** Fired when this controller's player state is set. */
+	UPROPERTY(BlueprintAssignable)
+	FPlayerStateChangedSignature PlayerStateChangedDelegate;
+
 protected:
 
 	/** Called when the player state is set or cleared. Default implementation broadcasts TeamChangedDelegate, since
@@ -91,15 +98,29 @@ private:
 
 
 
+	// Spectating.
+
+public:
+
+	// Tries to spawn at a spectator player start.
+	virtual ASpectatorPawn* SpawnSpectatorPawn() override;
+
+	// TODO: Implement.
+	virtual void BeginSpectatingState() override;
+	virtual void EndSpectatingState() override;
+	virtual void BeginPlayingState() override;
+
+
+
 	// Utils.
 
 public:
 
 	/** Retrieves this player controller's typed player state. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerController")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
 	ACrashPlayerState* GetCrashPlayerState() const;
 
 	/** Retrieves this player's ASC, assuming it's stored on their player state. */
-	UFUNCTION(BlueprintCallable, Category = "Crash|PlayerController")
+	UFUNCTION(BlueprintCallable, Category = "Crash|Player Controller")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const;
 };

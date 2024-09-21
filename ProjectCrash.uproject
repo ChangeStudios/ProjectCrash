@@ -18,7 +18,8 @@
 				"CoreUObject",
 				"UnrealEd",
 				"Blutility",
-				"NiagaraAnimNotifies"
+				"NiagaraAnimNotifies",
+				"CommonUI"
 			]
 		},
 		{

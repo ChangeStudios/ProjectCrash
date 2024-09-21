@@ -41,10 +41,9 @@ void ACrashWorldSettings::CheckForErrors()
 	for (TActorIterator<APlayerStart> PlayerStartIt(GetWorld()); PlayerStartIt; ++PlayerStartIt)
 	{
 		APlayerStart* PlayerStart = *PlayerStartIt;
-
-		if (IsValid(PlayerStart) && PlayerStart->GetClass() == APlayerStart::StaticClass())
+		if (IsValid(PlayerStart) && (PlayerStart->GetClass() == APlayerStart::StaticClass()))
 		{
-			MapCheck.Warning()
+			MapCheck.Error()
 				->AddToken(FUObjectToken::Create(PlayerStart))
 				->AddToken(FTextToken::Create(FText::FromString("is a standard APlayerStart. Use ACrashPlayerStart instead.")));
 		}

@@ -93,8 +93,6 @@ void UCrashAbilitySystemComponent::OnNewAvatarSet()
 	{
 		CrashCharMovementComp->LandedDelegate.AddWeakLambda(this, [this](FHitResult Hit)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Knockback source cleared from %s."), *GetNameSafe(GetOwnerActor()));
-
 			CurrentKnockbackSource = nullptr;
 		});
 	}
@@ -421,7 +419,6 @@ void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(AActor* Source)
 	if (ensure(IsValid(Source)))
 	{
 		CurrentKnockbackSource = Source;
-		UE_LOG(LogTemp, Error, TEXT("Knockback source applied to %s from %s."), *GetNameSafe(GetOwnerActor()), *GetNameSafe(Source));
 	}
 }
 
