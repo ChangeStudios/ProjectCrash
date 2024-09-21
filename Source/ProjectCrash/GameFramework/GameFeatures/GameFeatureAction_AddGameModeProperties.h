@@ -65,7 +65,6 @@ public:
 
 	/** The game mode properties that will be registered. These will be globally readable via the game mode property
 	 * subsystem. */
-	// TODO: Should we just make this a TMap?
 	UPROPERTY(EditAnywhere, Category = "Game Mode Properties", DisplayName = "Properties to Register", Meta = (TitleProperty = "{Property}: {Value}", ShowOnlyInnerProperties))
 	TArray<FGameFeaturePropertiesEntry> GameModePropertiesList;
 
