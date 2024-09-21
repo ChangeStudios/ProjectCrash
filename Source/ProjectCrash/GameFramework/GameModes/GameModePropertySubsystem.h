@@ -28,6 +28,7 @@ class PROJECTCRASH_API UGameModePropertySubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 	friend class UGameFeatureAction_AddGameModeProperties;
+	friend class FGameplayDebuggerCategory_GameModeProperties;
 
 	// Property management.
 
@@ -54,10 +55,6 @@ public:
 
 	/** Whether the given game mode property is registered with the game mode property subsystem. */
 	bool DoesGameModePropertyExist(FGameplayTag Property) const;
-
-	/** Retrieves all properties registered with this subsystem. Primarily used for debugging. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Game|Game Mode Properties")
-	void GetProperties(TArray<FGameplayTag>& OutProperties) { GameModeProperties.GenerateKeyArray(OutProperties); }
 
 
 

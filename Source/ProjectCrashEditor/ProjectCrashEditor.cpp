@@ -15,6 +15,7 @@
 #include "AssetTypes/AssetTypeActions_Teams.h"
 #include "AssetTypes/AssetTypeActions_InventoryItemDefinition.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
+#include "GameFramework/GameModes/GameplayDebuggerCategory_GameModeProperties.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateStyleRegistry.h"
@@ -160,6 +161,7 @@ void FProjectCrashEditorModule::StartupModule()
 	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
 	GameplayDebuggerModule.RegisterCategory("Inventory", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Inventory::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
 	GameplayDebuggerModule.RegisterCategory("Equipment", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Equipment::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
+	GameplayDebuggerModule.RegisterCategory("GameModeProperties", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_GameModeProperties::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
 	GameplayDebuggerModule.NotifyCategoriesChanged();
 #endif // WITH_GAMEPLAY_DEBUGGER
 }
@@ -206,6 +208,8 @@ void FProjectCrashEditorModule::ShutdownModule()
     {
     	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
     	GameplayDebuggerModule.UnregisterCategory("Inventory");
+    	GameplayDebuggerModule.UnregisterCategory("Equipment");
+    	GameplayDebuggerModule.UnregisterCategory("GameModeProperties");
     	GameplayDebuggerModule.NotifyCategoriesChanged();
     }
 #endif // WITH_GAMEPLAY_DEBUGGER
