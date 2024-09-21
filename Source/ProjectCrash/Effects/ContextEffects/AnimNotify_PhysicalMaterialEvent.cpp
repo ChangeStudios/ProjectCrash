@@ -6,7 +6,11 @@
 #include "CrashPhysicalMaterial.h"
 
 
-UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent()
+UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent() :
+	LocationOffset(FVector::ZeroVector),
+	RotationOffset(FRotator::ZeroRotator),
+	bAttached(true),
+	bPerspectiveBased(true)
 {
 	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
@@ -14,6 +18,8 @@ UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent()
 #endif
 
 	bShouldFireInEditor = true;
+
+	// Initialize the fallback physical material if it's already loaded.
 	DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.Get();
 }
 
@@ -22,7 +28,6 @@ void UAnimNotify_PhysicalMaterialEvent::PostLoad()
 	Super::PostLoad();
 
 	// Load the fallback physical material.
-	// TODO: Test if this is loading the asset multiple times
 	if (DefaultPhysicalMaterialPath.IsNull() && DefaultPhysicalMaterialPath.ToSoftObjectPath().IsValid())
 	{
 		DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.LoadSynchronous();
@@ -72,9 +77,8 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 		{
 			if (const APawn* Pawn = Cast<APawn>(OwningActor))
 			{
-				/* Don't play effects triggered by invisible meshes. This prevents anyone from seeing/hearing both
-				 * first-person and third-person effects. */
-				if (!MeshComp->IsVisible())
+				// Don't play effects triggered by invisible meshes if this is a perspective-based effect.
+				if (bPerspectiveBased && !MeshComp->IsVisible())
 				{
 					return;
 				}

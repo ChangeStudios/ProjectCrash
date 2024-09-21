@@ -17,7 +17,9 @@
 				"GameFeatures",
 				"CoreUObject",
 				"UnrealEd",
-				"Blutility"
+				"Blutility",
+				"NiagaraAnimNotifies",
+				"CommonUI"
 			]
 		},
 		{

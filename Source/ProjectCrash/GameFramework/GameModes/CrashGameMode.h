@@ -10,7 +10,7 @@ class UCrashGameModeData;
 class UPawnData;
 
 /** Delegate for when a player or bot joins the game and after traveling. */
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGameModePlayerInitializedSignature, AGameModeBase* /* GameMode */, AController* /* NewPlayer */);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FGameModePlayerInitializedSignature, AGameModeBase* /* GameMode */, AController* /* NewPlayer */);
 
 /**
  * Base modular game mode for this project. Responsible for finding the "game mode data" asset to use for the current
@@ -63,6 +63,34 @@ public:
 
 
 
+	// Player spawning.
+
+public:
+
+	/** Uses the PlayerSpawningManagerComponent to find the best spawn for the given player. */
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	/** Disables using controllers' StartSpot to spawn them. The spawn manager should always be used instead. */
+	virtual bool ShouldSpawnAtStartSpot(AController* Player) override { return false; }
+
+	/** Don't do anything here. This is called before things like teams are set up. We wait until PostLogin to actually
+	 * try to spawn the player, and we'll use the spawn manager, not StartSpot. */
+	virtual bool UpdatePlayerStartSpot(AController* Player, const FString& Portal, FString& OutErrorMessage) override { return true; }
+
+	/**
+	 * Tries to restart (respawn) the specified player or bot the next tick.
+	 *
+	 * @param Controller		The player to restart.
+	 * @param bForceReset		If true, resets the controller this frame, abandoning its current pawn.
+	 */
+	UFUNCTION(BlueprintCallable)
+	void RequestPlayerRestartNextTick(AController* Controller, bool bForceReset = false);
+
+	/** Continuously tries to restart the player until they're spawned successfully. */
+	virtual void FailedToRestartPlayer(AController* NewPlayer) override;
+
+
+
 	// Player initialization.
 
 public:
@@ -76,7 +104,7 @@ public:
 
 	/** Post-login event fired when a player or bot joins the game, after they finish initialization. Also fired after
 	 * traveling. */
-	FOnGameModePlayerInitializedSignature OnGameModePlayerInitializeDelegate;
+	FGameModePlayerInitializedSignature GameModePlayerInitializedDelegate;
 
 // Pawns.
 public:

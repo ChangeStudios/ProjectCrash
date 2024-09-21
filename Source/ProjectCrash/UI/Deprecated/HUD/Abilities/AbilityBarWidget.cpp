@@ -42,7 +42,7 @@ void UAbilityBarWidget::OnASCInit(AActor* OwnerActor, AActor* AvatarActor)
 	ActivateWidget();
 }
 
-void UAbilityBarWidget::OnDeath(const FDeathData& DeathData)
+void UAbilityBarWidget::OnDeath()
 {
 	// Deactivate this widget when its owner dies.
 	DeactivateWidget();

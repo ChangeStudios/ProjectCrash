@@ -6,7 +6,7 @@
 namespace CrashGameplayTags
 {
 	// Abilities
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_PersistsThroughAvatarDestruction, "Ability.Behavior.PersistsThroughAvatarDestruction", "Indicates that an ability is not canceled when its ASC’s avatar dies or is unpossessed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_SurvivesDeath, "Ability.Behavior.SurvivesDeath", "Indicates that an ability is not canceled when its ASC’s avatar dies or is unpossessed.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_InputBlocking, "Ability.Behavior.InputBlocking", "This ability blocks movement and camera input while active.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_Disabled, "Ability.Behavior.Disabled", "This ability is disabled and cannot be activated. Used to explicitly block abilities without removing them.");
 
@@ -22,27 +22,33 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Ultimate, "Ability.Behavior.UI.Frontend.Ultimate", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as an ultimate ability.");
 
 
-	// Camera
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_CameraType_FirstPerson, "CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
-
-
 	// Effects
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageSelf, "Effects.Damage.CanDamageSelf", "Specifies that damage caused by this gameplay effect can affect the source actor.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_CanDamageTeam, "Effects.Damage.CanDamageTeam", "Specifies that damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_FellOutOfWorld, "Effects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. This overrides damage invulnerabilities.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_Damage_SelfDestruct, "Effects.Damage.SelfDestruct", "Self-destruct damage. This overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_CameraType_FirstPerson, "Effects.CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
 
 
-	// Events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_Death, "Event.Ability.Death", "Event triggered when an actor dies via running out of health. Activates the Death gameplay ability, defined in the game mode, on the ASC associated with the dying actor.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_MeleeSurfaceImpact, "Event.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Event_Ability_PerformTargeting, "Event.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
+	// Gameplay effects
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Damage, "GameplayEffects.SetByCaller.Damage", "Used to dynamically set the magnitude of damage applied by gameplay effects.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageSelf, "GameplayEffects.Damage.CanDamageSelf", "The damage caused by this gameplay effect can affect the source actor.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "The damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. Overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. Overrides damage invulnerabilities.");
+
+
+	// Gameplay events
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_MeleeSurfaceImpact, "GameplayEvent.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_PerformTargeting, "GameplayEvent.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Death, "GameplayEvent.Player.Death", "Triggered when an actor dies via running out of health. Can be used to trigger a \"Death\" gameplay ability.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Reset, "GameplayEvent.Player.Reset", "Performs an instant server reset on a target player.");
 
 
 	// Game framework.
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_WaitingForData, "InitState.WaitingForData", "We are entering the map and waiting to load and replicate all of the data we need for initialization: game data, Challenger data, skin data, etc.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_Initializing, "InitState.Initializing", "Actors and their components are being initialized for game play.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_PlayerStart_Spectator, "GameMode.PlayerStart.Spectator", "Indicates that this player start should be used for spectators.");
 
 
 	// Input
@@ -53,19 +59,24 @@ namespace CrashGameplayTags
 
 
 	// Messages.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Death, "Message.Death", "Verbal message communicating a death.");
-
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated, "Message.Ability.Activated", "Message communicating that a gameplay ability was successfully activated.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "Message communicating that a gameplay ability's cooldown started.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Death, "Message.Player.Death", "Verbal message communicating a death.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Reset, "Message.Player.Reset", "Reset message indicating a player has been directly reset.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Started, "Message.Player.Respawn.Started", "Simple duration message indicating a player began respawning.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Completed, "Message.Player.Respawn.Completed", "Simple duration message indicating a player finished respawning.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
 
 
 	// States
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_AbilityInputBlocked, "State.AbilityInputBlocked", "Ability activation via input is disabled on any ASC with this tag.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dead, "State.Dead", "The player is currently dead, likely without a pawn. This is removed when the player's ASC is re-initialized with a new health component.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The actor is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
 

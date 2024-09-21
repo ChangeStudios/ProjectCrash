@@ -41,6 +41,18 @@ public:
 
 
 
+	// Initialization.
+
+public:
+
+	/** Enables first-person depth rendering for the first-person character mesh. */
+	virtual void BeginPlay() override;
+
+	/** Kills this character when they fall out of the world. */
+	virtual void FellOutOfWorld(const class UDamageType& dmgType) override;
+
+
+
 	// Events.
 
 // Pawn extension routing.
@@ -146,6 +158,25 @@ private:
 
 
 
+	// Death.
+
+public:
+
+	/** Resets this character without killing the player. */
+	virtual void Reset() override;
+
+protected:
+
+	/** Begins death sequence: disables collision, disables movement. */
+	UFUNCTION()
+	virtual void OnDeathStarted(AActor* OwningActor);
+
+	/** Ends death sequence: detaches controller, destroys pawn. */
+	UFUNCTION()
+	virtual void OnDeathFinished(AActor* OwningActor);
+
+
+
 	// Teams.
 
 public:
@@ -188,4 +219,16 @@ private:
 	/** Broadcasts TeamChangedDelegate when this character's team is assigned or changes. */
 	UFUNCTION()
 	void OnRep_TeamId_Internal(FGenericTeamId OldTeamId);
+
+
+
+	// Utils.
+
+private:
+
+	/** Disables movement input and collision for this character. Used for death and resets. */
+	void DisableMovementAndCollision();
+
+	/** Unpossesses, uninitializes, and destroys this character. */
+	void UninitAndDestroy();
 };

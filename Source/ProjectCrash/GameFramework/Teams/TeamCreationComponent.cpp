@@ -66,7 +66,7 @@ void UTeamCreationComponent::AssignPlayersToTeams()
 	// Listen for any new players, to assign them a team when they join.
 	ACrashGameMode* GameMode = Cast<ACrashGameMode>(GameState->AuthorityGameMode);
 	check(GameMode);
-	GameMode->OnGameModePlayerInitializeDelegate.AddUObject(this, &ThisClass::OnPlayerInitialized);
+	GameMode->GameModePlayerInitializedDelegate.AddUObject(this, &ThisClass::OnPlayerInitialized);
 }
 
 void UTeamCreationComponent::ChooseTeamForPlayer(ACrashPlayerState* CrashPS)

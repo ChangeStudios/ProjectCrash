@@ -35,15 +35,46 @@ void AEquipmentActor::OnRep_EquipmentPerspective()
 	if (RootComponent && RootComponent->GetAttachParent())
 	{
 		RootComponent->SetVisibility(RootComponent->GetAttachParent()->IsVisible());
+
+		float FirstPersonDepthScale = (EquipmentPerspective == EEquipmentPerspective::FirstPerson ? 1.0f : 0.0f);
+		TArray<UMeshComponent*> MeshComponents;
+		GetComponents(UMeshComponent::StaticClass(), MeshComponents);
+		for (UMeshComponent* MeshComp : MeshComponents)
+		{
+			// Enable first-person depth scale for this actor. This prevents clipping on first-person actors.
+			MeshComp->SetScalarParameterValueOnMaterials(FName("FirstPerson"), FirstPersonDepthScale);
+
+			// Disable shadows on first-person actors.
+			MeshComp->SetCastShadow(!FirstPersonDepthScale);
+
+			/* Force mesh components to use their parent's bounds in first-person. This prevents them from being culled
+			 * when they shouldn't be visible (e.g. when completely behind a wall), but still are visible because of our
+			 * first-person depth scale. */
+			MeshComp->bUseAttachParentBound = FirstPersonDepthScale;
+		}
 	}
 }
 
-void AEquipmentActor::ProcessEquipmentEvent(FGameplayTag Event)
+void AEquipmentActor::ProcessEquipmentAnimation(FGameplayTag AnimationTag)
 {
-	// TODO: implement
+	/* If the animation tag matches a tag in EquipmentAnimations, play that equipment animation on any skeletal mesh
+	 * component on this actor. */
+	if (TObjectPtr<UAnimMontage>* EquipmentAnimation = EquipmentAnimations.Find(AnimationTag))
+	{
+		TArray<UActorComponent*> Components;
+		GetComponents(USkeletalMeshComponent::StaticClass(), Components);
+
+		for (UActorComponent* MeshComp : Components)
+		{
+			Cast<USkeletalMeshComponent>(MeshComp)->PlayAnimation(EquipmentAnimation->Get(), EquipmentAnimation->Get()->bLoop);
+		}
+	}
+
+	// Forward the animation to an optional blueprint implementation.
+	K2_ProcessEquipmentAnimation(AnimationTag);
 }
 
-void AEquipmentActor::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void AEquipmentActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	

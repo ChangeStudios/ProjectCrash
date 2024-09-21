@@ -77,6 +77,10 @@ public:
 	template <typename AssetType>
 	static AssetType* GetOrLoadAsset(const TSoftObjectPtr<AssetType>& AssetPointer);
 
+	/** Retrieves the given class. Synchronously loads the class if it's not loaded. */
+	template <typename AssetType>
+	static TSubclassOf<AssetType> GetOrLoadClass(const TSoftClassPtr<AssetType>& AssetPointer);
+
 protected:
 
 	/** Synchronously loads the given data asset via a blocking load. */
@@ -117,4 +121,27 @@ AssetType* UCrashAssetManager::GetOrLoadAsset(const TSoftObjectPtr<AssetType>& A
 	}
 
 	return LoadedAsset;
+}
+
+template <typename AssetType>
+TSubclassOf<AssetType> UCrashAssetManager::GetOrLoadClass(const TSoftClassPtr<AssetType>& AssetPointer)
+{
+	TSubclassOf<AssetType> LoadedClass;
+
+	const FSoftObjectPath& AssetPath = AssetPointer.ToSoftObjectPath();
+
+	if (AssetPath.IsValid())
+	{
+		// Try to get the class if it's already loaded.
+		LoadedClass = AssetPointer.Get();
+
+		// Sync load the class if it isn't loaded.
+		if (!LoadedClass)
+		{
+			LoadedClass = Cast<UClass>(SynchronousLoadAsset(AssetPath));
+			ensureAlwaysMsgf(LoadedClass, TEXT("Failed to load asset class [%s]."), *AssetPointer.ToString());
+		}
+	}
+
+	return LoadedClass;
 }

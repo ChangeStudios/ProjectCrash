@@ -80,6 +80,25 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 
 	// Health component.
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->DeathStartedDelegate.AddDynamic(this, &ThisClass::OnDeathStarted);
+	HealthComponent->DeathFinishedDelegate.AddDynamic(this, &ThisClass::OnDeathFinished);
+}
+
+void ACrashCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Enable first-person depth rendering. It would be preferable to do this in construction, but we can't.
+	FirstPersonMesh->SetScalarParameterValueOnMaterials(FName("FirstPerson"), 1.0f);
+}
+
+void ACrashCharacter::FellOutOfWorld(const UDamageType& dmgType)
+{
+	// Characters die when they fall out of the world, instead of simply being destroyed.
+	if (HealthComponent)
+	{
+		HealthComponent->DamageSelfDestruct(true);
+	}
 }
 
 void ACrashCharacter::PossessedBy(AController* NewController)
@@ -168,7 +187,7 @@ void ACrashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
 {
 	// When blending out of a first-person camera, immediately switch to third-person.
-	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_CameraType_FirstPerson))
+	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_Effects_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(false, true);
 		ThirdPersonMesh->SetVisibility(true, true);
@@ -178,7 +197,7 @@ void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCam
 void ACrashCharacter::OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCameraMode, UCrashCameraModeBase* NewCameraMode)
 {
 	// When blending into a first-person camera, switch to third-person when fully blended.
-	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_CameraType_FirstPerson))
+	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_Effects_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(true, true);
 		ThirdPersonMesh->SetVisibility(false, true);
@@ -215,6 +234,31 @@ void ACrashCharacter::OnAbilitySystemUninitialized()
 	HealthComponent->UninitializeFromAbilitySystem();
 }
 
+void ACrashCharacter::Reset()
+{
+	// Disable movement and collision and destroy this character.
+	DisableMovementAndCollision();
+
+	K2_OnReset();
+
+	UninitAndDestroy();
+}
+
+void ACrashCharacter::OnDeathStarted(AActor* OwningActor)
+{
+	// Disable movement and collision on this actor.
+	DisableMovementAndCollision();
+} 
+
+void ACrashCharacter::OnDeathFinished(AActor* OwningActor)
+{
+	// Destroy this character next frame.
+	GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+	{
+		UninitAndDestroy();
+	});
+}
+
 void ACrashCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamId)
 {
 	// This character's team cannot be set directly. Its team is driven by its controller.
@@ -235,7 +279,49 @@ void ACrashCharacter::OnRep_TeamId_Internal(FGenericTeamId OldTeamId)
 	BroadcastIfTeamChanged(this, OldTeamId, TeamId_Internal);
 }
 
-void ACrashCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void ACrashCharacter::DisableMovementAndCollision()
+{
+	// Disable movement input.
+	if (Controller)
+	{
+		Controller->SetIgnoreMoveInput(true);
+	}
+
+	// Disable movement processing.
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->StopMovementImmediately();
+	MovementComp->DisableMovement();
+
+	// Disable collision on capsule. Meshes may still be used (e.g. ragdolling).
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	check(CapsuleComp);
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+}
+
+void ACrashCharacter::UninitAndDestroy()
+{
+	// Unpossess and destroy this actor.
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(0.1f); // Small delay to give things time to clean up.
+	}
+
+	// Uninitialize the ASC.
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if (ASC->GetAvatarActor() == this)
+		{
+			PawnExtComp->UninitializeAbilitySystem();
+		}
+	}
+
+	// Hide this actor until it's fully destroyed.
+	SetActorHiddenInGame(true);
+}
+
+void ACrashCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

@@ -7,6 +7,11 @@
 #include "CrashCharacterMovementComponent.generated.h"
 
 class UMovementAttributeSet;
+
+/** Delegate signature for broadcasting when a character lands on the ground via its movement component (as opposed to
+ * its character). */
+DECLARE_MULTICAST_DELEGATE_OneParam(FMoveCompLandedSignature, const FHitResult& /* Hit */);
+
 /**
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
@@ -46,6 +51,20 @@ protected:
 
 
 
+	// Movement.
+
+public:
+
+	/** Fired when this character lands on the ground. */
+	FMoveCompLandedSignature LandedDelegate;
+
+protected:
+
+	/** Fires LandedDelegate when this character lands. */
+	virtual void ProcessLanded(const FHitResult& Hit, float remainingTime, int32 Iterations) override;
+
+
+
 	/* Attribute changes callbacks, responsible for updating the movement component's properties using corresponding
 	 * attributes. */
 
@@ -53,15 +72,15 @@ protected:
 
 	/** Updates this movement component's MaxWalkSpeed property. */
 	UFUNCTION()
-	void OnMaxWalkSpeedChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnMaxWalkSpeedChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Updates this movement component's JumpZVelocity property. */
 	UFUNCTION()
-	void OnJumpVelocityChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnJumpVelocityChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Updates this component's owning character's JumpCount property. */
 	UFUNCTION()
-	void OnJumpCountChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+	void OnJumpCountChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 
 

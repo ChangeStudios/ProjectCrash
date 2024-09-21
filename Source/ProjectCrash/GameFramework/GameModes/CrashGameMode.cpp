@@ -3,6 +3,7 @@
 
 #include "GameFramework/GameModes/CrashGameMode.h"
 
+#include "AIController.h"
 #include "GameModeManagerComponent.h"
 #include "Characters/PawnExtensionComponent.h"
 #include "Characters/Data/PawnData.h"
@@ -15,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
+#include "Player/PlayerSpawningManagerComponent.h"
 #include "UI/CrashHUD.h"
 
 ACrashGameMode::ACrashGameMode()
@@ -157,6 +159,18 @@ bool ACrashGameMode::IsGameModeLoaded() const
 	return GameModeManagerComponent->IsGameModeLoaded();
 }
 
+AActor* ACrashGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	/* Proxy the call to the player spawning manager. This allows each game mode to control how it wants to spawn
+	 * players. */
+	if (UPlayerSpawningManagerComponent* SpawningComponent = GameState->FindComponentByClass<UPlayerSpawningManagerComponent>())
+	{
+		return SpawningComponent->ChoosePlayerStart(Player);
+	}
+
+	return Super::ChoosePlayerStart_Implementation(Player);
+}
+
 void ACrashGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
 	/** Don't start new players until the game mode has finished loading. Players that join prior to this will be
@@ -172,7 +186,7 @@ void ACrashGameMode::GenericPlayerInitialization(AController* C)
 	Super::GenericPlayerInitialization(C);
 
 	// Broadcast the player's initialization.
-	OnGameModePlayerInitializeDelegate.Broadcast(this, C);
+	GameModePlayerInitializedDelegate.Broadcast(this, C);
 }
 
 const UPawnData* ACrashGameMode::FindDefaultPawnDataForPlayer(AController* Player)
@@ -281,6 +295,56 @@ const UPawnData* ACrashGameMode::GetPawnDataForController(AController* InControl
 
 	// If the game mode is not loaded, there is no pawn data that we can use.
 	return nullptr;
+}
+
+void ACrashGameMode::RequestPlayerRestartNextTick(AController* Controller, bool bForceReset)
+{
+	// Instantly reset target controller if desired.
+	if (bForceReset && (Controller != nullptr))
+	{
+		Controller->Reset();
+	}
+
+	// Use default restart logic for players.
+	if (APlayerController* PC = Cast<APlayerController>(Controller))
+	{
+		GetWorldTimerManager().SetTimerForNextTick(PC, &APlayerController::ServerRestartPlayer_Implementation);
+	}
+	// Restarting bots is not currently supported.
+	else if (AAIController* AIC = Cast<AAIController>(Controller))
+	{
+		UE_LOG(LogCrashGameMode, Error, TEXT("Requested player restart for AI controller. This is not currently supported. A new bot should be spawned instead."));
+	}
+}
+
+void ACrashGameMode::FailedToRestartPlayer(AController* NewPlayer)
+{
+	Super::FailedToRestartPlayer(NewPlayer);
+
+	// If we failed to spawn a pawn for the player, but we have a valid pawn class for them, try again next tick.
+	if (UClass* PawnClass = GetDefaultPawnClassForController_Implementation(NewPlayer))
+	{
+		if (APlayerController* PC = Cast<APlayerController>(NewPlayer))
+		{
+			// Prevent players from trying to restart forever if PlayerCanRestart fails.
+			if (PlayerCanRestart(PC))
+			{
+				RequestPlayerRestartNextTick(NewPlayer);
+			}
+			else
+			{
+				UE_LOG(LogCrashGameMode, Verbose, TEXT("Failed to restart player [%s]. PlayerCanRestart is false."), *GetPathNameSafe(NewPlayer)); 
+			}
+		}
+		else
+		{
+			RequestPlayerRestartNextTick(NewPlayer);
+		}
+	}
+	else
+	{
+		UE_LOG(LogCrashGameMode, Verbose, TEXT("Failed to restart player [%s]. Player has no valid pawn class."), *GetPathNameSafe(NewPlayer)); 
+	}
 }
 
 UClass* ACrashGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)

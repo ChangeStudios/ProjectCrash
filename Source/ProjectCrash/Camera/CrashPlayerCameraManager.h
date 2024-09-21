@@ -18,6 +18,9 @@ class ACrashPlayerCameraManager : public APlayerCameraManager
 
 public:
 
+	/** Default constructor. */
+	ACrashPlayerCameraManager();
+
 	/** Gets the current camera component's top-most camera mode's weight and identifying tag. Useful for determining
 	 * the local player's current camera type, e.g. "First-Person." */
 	void GetCameraBlendInfo(float& OutTopCameraWeight, FGameplayTag& OutTopCameraTag) const;

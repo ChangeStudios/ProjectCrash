@@ -3,10 +3,15 @@
 
 #include "Player/CrashPlayerController.h"
 
+#include "CrashGameplayTags.h"
+#include "CrashPlayerStart.h"
 #include "CrashPlayerState.h"
+#include "EngineUtils.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Camera/CrashPlayerCameraManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/SpectatorPawn.h"
 
 ACrashPlayerController::ACrashPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -75,6 +80,9 @@ void ACrashPlayerController::OnPlayerStateChanged()
 
 	// Cache the new player state as the one to which this controller's team is currently bound.
 	LastSeenPlayerState = PlayerState;
+
+	// Broadcast the change.
+	PlayerStateChangedDelegate.Broadcast(PlayerState);
 }
 
 void ACrashPlayerController::SetGenericTeamId(const FGenericTeamId& NewTeamId)
@@ -99,6 +107,63 @@ void ACrashPlayerController::OnPlayerStateChangedTeam(UObject* TeamAgent, int32 
 {
 	// Broadcast this controller's "team changed" delegate when its player state changes teams.
 	BroadcastIfTeamChanged(this, IntegerToGenericTeamId(OldTeam), IntegerToGenericTeamId(NewTeam));
+}
+
+ASpectatorPawn* ACrashPlayerController::SpawnSpectatorPawn()
+{
+	// Initialize the spectator pawn's transform to any spectator player start that can be found.
+	for (TActorIterator<ACrashPlayerStart> It(GetWorld()); It; ++It)
+	{
+		if (ACrashPlayerStart* CrashPlayerStart = *It)
+		{
+			if (CrashPlayerStart->HasMatchingGameplayTag(CrashGameplayTags::TAG_GameMode_PlayerStart_Spectator))
+			{
+				SetInitialLocationAndRotation(CrashPlayerStart->GetActorLocation(), CrashPlayerStart->GetActorRotation());
+				break;
+			}
+		}
+	}
+
+	return Super::SpawnSpectatorPawn();
+}
+
+void ACrashPlayerController::BeginPlayingState()
+{
+	if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
+	{
+		CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Player);
+	}
+
+	Super::BeginPlayingState();
+
+	ResetIgnoreInputFlags();
+}
+
+void ACrashPlayerController::BeginSpectatingState()
+{
+	if (ACrashPlayerState* CrashPS = GetCrashPlayerState())
+	{
+		CrashPS->SetPlayerConnectionType(EPlayerConnectionType::Spectator);
+		CrashPS->SetIsSpectator(true);
+	}
+
+	Super::BeginSpectatingState();
+
+	ResetIgnoreInputFlags();
+}
+
+void ACrashPlayerController::EndSpectatingState()
+{
+	Super::EndSpectatingState();
+
+	// Mark the spectator pawn for destruction.
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		if (GetSpectatorPawn() != NULL)
+		{
+			DestroySpectatorPawn();
+		}
+	}));
 }
 
 ACrashPlayerState* ACrashPlayerController::GetCrashPlayerState() const

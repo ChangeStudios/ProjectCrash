@@ -15,7 +15,7 @@ UEquipmentDefinitionFactory::UEquipmentDefinitionFactory(const FObjectInitialize
 
 UObject* UEquipmentDefinitionFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
-	return NewObject<UEquipmentDefinitionFactory>(InParent, Class, Name, Flags);
+	return NewObject<UEquipmentDefinition>(InParent, Class, Name, Flags);
 }
 
 bool UEquipmentDefinitionFactory::CanCreateNew() const

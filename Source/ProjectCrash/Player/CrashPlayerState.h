@@ -15,8 +15,8 @@ class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UPawnData;
 
-/** Signature for delegate fired when this player's current pawn data changes, as a result of them changing their
- * current playable character. */
+/** Fired when this player's current pawn data changes, as a result of them changing their current playable
+ * character. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPawnDataChangedSignature, const UPawnData*, OldPawnData, const UPawnData*, NewPawnData);
 
 /**
