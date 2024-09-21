@@ -108,7 +108,9 @@ void FProjectCrashEditorModule::StartupModule()
 	// Assign the content root of the style set.
 	StyleSetInstance->SetContentRoot(FPaths::ProjectContentDir() / TEXT("Editor/Slate"));
 
-	// Set icons and thumbnails.
+	/* Set icons and thumbnails. To customize a class's asset appearance with an SVG, import the SVG file into the
+	 * Content/Editor/Slate directory, and add an entry to this list in the form
+	 * {"ClassOrStructName", "FileNameWithoutExtension"}. */
 	const FClassIconInfo AssetTypesSVG[] = {
 		{"CrashAbilitySet", "CrashAbilitySet"},
 		{"CrashAttributeSet", "CrashAttributeSet"},
@@ -121,6 +123,7 @@ void FProjectCrashEditorModule::StartupModule()
 		{"EquipmentSkin", "EquipmentSkin"},
 		{"GameFeatureAction_AddAbilities", "CrashGameplayAbilityBase"},
 		{"GameFeatureAction_AddComponents", "ActorComponent"},
+		{"GameFeatureAction_AddGameModeProperties", "GameplayTag"},
 		{"GameFeatureAction_AddInputActionMapping", "InputActionMapping"},
 		{"GameFeatureAction_AddInputMappingContext", "InputMappingContext"},
 		{"GameFeatureAction_AddWidgets", "Widget"},
