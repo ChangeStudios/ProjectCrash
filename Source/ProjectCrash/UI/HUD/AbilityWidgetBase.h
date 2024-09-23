@@ -54,6 +54,8 @@ class PROJECTCRASH_API UAbilityWidgetBase : public UCommonUserWidget
 	 *			Fired when the ASC loses the State.AbilityInputBlocked tag
 	 *		OnAbilityActivationFailed
 	 *			Fired when the ASC fails to activate an ability
+	 *		OnAbilityCostChanged
+	 *			Fired when the cost used for an ability increases or decreases
 	 *
 	 */
 
