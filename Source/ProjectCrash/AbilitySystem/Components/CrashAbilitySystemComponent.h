@@ -60,28 +60,6 @@ protected:
 
 
 
-	// Ability management.
-
-public:
-
-	/** Broadcast when a new ability is granted to this ASC. */
-	UPROPERTY()
-	FAbilityGrantedSignature AbilityGrantedDelegate;
-
-	/** Broadcast when an ability is removed from this ASC. */
-	UPROPERTY()
-	FAbilityRemovedSignature AbilityRemovedDelegate;
-
-protected:
-
-	/** Broadcasts AbilityGrantedDelegate when an ability is granted to this ASC. */
-	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
-
-	/** Broadcasts AbilityRemovedDelegate when an ability is removed from this ASC. */
-	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
-
-
-
 	// Input processing.
 
 public:
@@ -148,18 +126,16 @@ protected:
 
 
 
-	// Ability activation events.
+	/* Ability events. These are forwarded to the gameplay message subsystem to inform other systems of the events. The
+	 * ASC's generic callbacks are insufficient for most cases. */
 
 public:
 
-	/** Broadcasts a message communicating that the ability successfully activated. */
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 	virtual void NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability) override;
-
-	/** Broadcasts a message communicating that the ability ended. */
-	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
-
-	/** Broadcasts a message communicating the ability activation failure. */
 	virtual void NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason) override;
+	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
 
 
 
@@ -235,4 +211,7 @@ public:
 
 	/** Retrieves the typed version of this ASC's actor info. */
 	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
+
+	/** Shorthand for locally broadcasting a gameplay ability message. */
+	void BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude = 0.0f);
 };

@@ -59,10 +59,14 @@ namespace CrashGameplayTags
 
 
 	// Messages.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated, "Message.Ability.Activated", "Message communicating that a gameplay ability was successfully activated.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "Message communicating that a gameplay ability's cooldown started.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Added, "Message.Ability.Added", "A gameplay ability was granted to an ASC.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Removed, "Message.Ability.Removed", "A gameplay ability was removed from an ASC.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Success, "Message.Ability.Activated.Success", "A gameplay ability was successfully activated.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Failed, "Message.Ability.Activated.Failed", "A gameplay ability tried to activate but failed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "A gameplay ability ended.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "A gameplay ability's cooldown started. Magnitude is the cooldown duration.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Ended, "Message.Ability.Cooldown.Ended", "A gameplay ability's cooldown ended.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_CostChanged, "Message.Ability.CostChanged", "The cost used to activate a gameplay ability changed. Magnitude is the signed change.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
 

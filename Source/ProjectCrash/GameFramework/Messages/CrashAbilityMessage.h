@@ -7,8 +7,8 @@
 #include "CrashAbilityMessage.generated.h"
 
 /**
- * A message involving the behavior of a gameplay ability. Provides information about the ability, along with a
- * tag defining the type of message itself (e.g. "Activated," "Ended," "Cancelled," etc.).
+ * A message involving the behavior of a gameplay ability. Provides standardized information about the ability and an
+ * identifying message type.
  */
 USTRUCT(BlueprintType)
 struct FCrashAbilityMessage
@@ -19,18 +19,26 @@ struct FCrashAbilityMessage
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayTag MessageType;
 
-	/** The ability spec referred to by the message. */
+	/** The ability referred to by the message. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
-	/** The actor info of this message's ability, with which this message was broadcast. */
+	/** The actor info of the ability's owning ASC at the time of the broadcast. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FCrashGameplayAbilityActorInfo ActorInfo;
 
-	/** An optional numeric value to pass as a payload, such as the duration of a cooldown applied. */
+	/** An optional numeric value to pass as a payload, such as the duration of a cooldown. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
-	float OptionalMagnitude = 0.0f;
+	float Magnitude = 0.0f;
 
 	/** Returns a debug string representation of this message. */
-	PROJECTCRASH_API FString ToString() const;
+	PROJECTCRASH_API FString ToString() const
+	{
+		return FString::Printf(TEXT("Ability [%s] triggered [%s] with a magnitude of %f (Owner: [%s], Avatar: [%s])"),
+			*AbilitySpecHandle.ToString(),
+			*MessageType.ToString(),
+			Magnitude,
+			*GetNameSafe(ActorInfo.OwnerActor.Get()),
+			*GetNameSafe(ActorInfo.AvatarActor.Get()));
+	}
 };
