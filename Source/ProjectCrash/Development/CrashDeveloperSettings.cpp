@@ -20,7 +20,6 @@ FName UCrashDeveloperSettings::GetCategoryName() const
 }
 
 #if WITH_EDITOR
-
 void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 {
 	// Notify user of an active game mode override.
@@ -46,6 +45,35 @@ void UCrashDeveloperSettings::OnPlayInEditorBegin() const
 	}
 }
 
+void UCrashDeveloperSettings::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	
+	ApplySettings();
+}
+
+void UCrashDeveloperSettings::PostReloadConfig(class FProperty* PropertyThatWasLoaded)
+{
+	Super::PostReloadConfig(PropertyThatWasLoaded);
+	
+	ApplySettings();
+}
+
+void UCrashDeveloperSettings::PostInitProperties()
+{
+	Super::PostInitProperties();
+	
+	ApplySettings();
+}
+
+void UCrashDeveloperSettings::ApplySettings()
+{
+	// Whether gameplay messages should be logged.
+	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("GameplayMessageSubsystem.LogMessages")))
+	{
+		CVar->Set(bLogGameplayMessages);
+	}
+}
 #endif // WITH_EDITOR
 
 #undef LOCTEXT_NAMESPACE
