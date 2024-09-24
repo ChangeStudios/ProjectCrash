@@ -28,6 +28,7 @@ namespace CrashGameplayTags
 
 	// Gameplay effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Damage, "GameplayEffects.SetByCaller.Damage", "Used to dynamically set the magnitude of damage applied by gameplay effects.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_CooldownDuration, "GameplayEffects.SetByCaller.CooldownDuration", "Used to use a single reusable gameplay effect for ability cooldowns by dynamically setting its duration.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageSelf, "GameplayEffects.Damage.CanDamageSelf", "The damage caused by this gameplay effect can affect the source actor.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "The damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");

@@ -17,7 +17,7 @@ void UAbilityBarWidget::OnASCReady()
 	Super::OnASCReady();
 
 	// OwningASC->DeathEventDelegate.AddDynamic(this, &UAbilityBarWidget::OnDeath);
-	OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
+	// OwningASC->AbilityGrantedDelegate.AddDynamic(this, &UAbilityBarWidget::InitializeAbilityWithUI);
 
 	// Get the player's current abilities and sort them by their input tag, so they always appear in the same order.
 	FScopedAbilityListLock ActiveScopeLock(*OwningASC);

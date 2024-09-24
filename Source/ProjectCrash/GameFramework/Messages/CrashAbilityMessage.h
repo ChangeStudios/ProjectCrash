@@ -4,6 +4,7 @@
 
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
+#include "AbilitySystemComponent.h"
 #include "CrashAbilityMessage.generated.h"
 
 /**
@@ -34,8 +35,11 @@ struct FCrashAbilityMessage
 	/** Returns a debug string representation of this message. */
 	PROJECTCRASH_API FString ToString() const
 	{
+		UAbilitySystemComponent* ASC = ActorInfo.AbilitySystemComponent.Get();
+		FGameplayAbilitySpec* Spec = ASC ? ASC->FindAbilitySpecFromHandle(AbilitySpecHandle) : nullptr;
+
 		return FString::Printf(TEXT("Ability [%s] triggered [%s] with a magnitude of %f (Owner: [%s], Avatar: [%s])"),
-			*AbilitySpecHandle.ToString(),
+			Spec ? *GetNameSafe(Spec->Ability) : *FString("Spec Not Found"),
 			*MessageType.ToString(),
 			Magnitude,
 			*GetNameSafe(ActorInfo.OwnerActor.Get()),

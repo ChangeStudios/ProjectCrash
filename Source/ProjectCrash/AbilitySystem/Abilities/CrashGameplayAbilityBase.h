@@ -176,8 +176,29 @@ public:
 
 protected:
 
-	/** Broadcasts a gameplay message when this ability's cooldown is applied. */
+	/** Tags that can put this ability on a cooldown, in addition to any defined in the cooldown GE class. */
+	UPROPERTY(EditDefaultsOnly, Category = "Cooldowns", Meta = (Categories = "Ability.Identifier", EditCondition = "CooldownGameplayEffectClass"))
+	FGameplayTagContainer CooldownTags;
+
+	/** The duration of this ability's cooldown. The cooldown GE class must have a set-by-caller duration. */
+	UPROPERTY(EditDefaultsOnly, Category = "Cooldowns", Meta = (Units = "seconds", ClampMin = "0"))
+	float CooldownDuration;
+
+	/** Tags used as this ability's cooldown tags. This is a union of this ability's CooldownTags and the cooldown GE's
+	 * tags. */
+	UPROPERTY(Transient)
+	FGameplayTagContainer CooldownTags_Internal;
+
+	/** Injects CooldownTags into the cooldown GE, and sets the cooldown GE's duration with CooldownDuration if
+	 * possible. */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+
+	/** Adds this ability's CooldownTags to the tags that can put this ability into a cooldown. */
+	virtual const FGameplayTagContainer* GetCooldownTags() const override;
+
+	/** Whether this ability should try to override its cooldown GE's duration. Only true if the cooldown GE is set and
+	 * has a set-by-caller duration. */
+	bool ShouldSetCooldownDuration() const;
 
 
 
@@ -311,7 +332,7 @@ public:
 	ACrashPlayerState* GetCrashPlayerStateFromActorInfo() const;
 
 	/** Returns this ability's CDO. */
-	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO??"))
+	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))
 	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
 
 
@@ -322,8 +343,21 @@ public:
 
 #if WITH_EDITOR
 
-	/** Disables support for bReplicateInputDirectly. */
+	/** Disables support for bReplicateInputDirectly and ensures CooldownDuration is greater than 0, if set. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+
+#endif // WITH_EDITOR
+
+
+
+	// Editor.
+
+public:
+
+#if WITH_EDITOR
+
+	/** Determines whether certain properties in this class can be edited. */
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
 
 #endif // WITH_EDITOR
 };

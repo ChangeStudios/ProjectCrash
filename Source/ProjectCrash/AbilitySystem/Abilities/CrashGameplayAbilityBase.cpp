@@ -211,32 +211,71 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 {
 	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
-		// Apply the cooldown manually so we can get a reference to the active effect.
-		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+		// Add this ability's cooldown tags to the cooldown GE.
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
 
+		// Override the cooldown GE's duration if it uses a set-by-caller duration.
+		if (ShouldSetCooldownDuration())
+		{
+			check(CooldownDuration > 0.0f);
+			SpecHandle.Data.Get()->SetSetByCallerMagnitude(CrashGameplayTags::TAG_GameplayEffects_SetByCaller_CooldownDuration, CooldownDuration);
+		}
+
+		// Apply the cooldown.
+		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+
+		// Broadcast relevant messages if the cooldown was successfully applied.
 		if (CooldownEffectHandle.WasSuccessfullyApplied())
 		{
-			// Send a standardized message that this ability's cooldown started.
-			if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+			// Listen for the cooldown effect to be removed (meaning the cooldown ended).
+			UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo();
+			CrashASC->OnAnyGameplayEffectRemovedDelegate().AddWeakLambda(this, [this, CooldownEffectHandle, CrashASC](const FActiveGameplayEffect& RemovedEffect)
 			{
-				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;
-				AbilityMessage.AbilitySpecHandle = Handle;
-				AbilityMessage.ActorInfo = *GetCrashActorInfo();
-				const FActiveGameplayEffect* CooldownEffect = GetAbilitySystemComponentFromActorInfo_Checked()->GetActiveGameplayEffect(CooldownEffectHandle);
-				AbilityMessage.OptionalMagnitude = CooldownEffect->GetDuration();
-
-				UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-				MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-
-				// TODO: Broadcast the message to clients, since ApplyCooldown is only called on the server.
-				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
+				if (RemovedEffect.Handle == CooldownEffectHandle)
 				{
-					// GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
+					ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(ApplyCooldown, );
+					CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f);
 				}
-			}
+			});
+
+			// Send a standardized message that this ability's cooldown started.
+			const float CooldownTime = CrashASC->GetActiveGameplayEffect(CooldownEffectHandle)->GetDuration();
+			CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started, GetCurrentAbilitySpecHandle(), CooldownTime);
 		}
 	}
+}
+
+const FGameplayTagContainer* UCrashGameplayAbilityBase::GetCooldownTags() const
+{
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&CooldownTags_Internal);
+	MutableTags->Reset(); // Tags are retrieved through the CDO, so they need to be reset each time.
+
+	// Add cooldown GE's tags.
+	if (const FGameplayTagContainer* ParentTags = Super::GetCooldownTags())
+	{
+		MutableTags->AppendTags(*ParentTags);
+	}
+
+	// Add this ability's cooldown tags.
+	MutableTags->AppendTags(CooldownTags);
+
+	return MutableTags;
+}
+
+bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
+{
+	// Abilities can only set their cooldown duration directly if their cooldown GE has a set-by-caller duration.
+	if (IsValid(CooldownGameplayEffectClass))
+	{
+		if (const UGameplayEffect* CDO = CooldownGameplayEffectClass.GetDefaultObject())
+		{
+			return (CDO->DurationPolicy == EGameplayEffectDurationType::HasDuration) &&
+				(CDO->DurationMagnitude.GetMagnitudeCalculationType() == EGameplayEffectMagnitudeCalculation::SetByCaller);
+		}
+	}
+
+	return false;
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -439,8 +478,35 @@ EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationCont
 		Result = EDataValidationResult::Invalid;
 	}
 
+	// Ensure we have a valid cooldown duration, if it will be used.
+	if (ShouldSetCooldownDuration() && !(CooldownDuration > 0.0f))
+	{
+		Context.AddError(LOCTEXT("CooldownTooShort", "This ability's cooldown gameplay effect will be overridden by this ability, but its cooldown is too short. Either make the cooldown duration greater than 0.0s, or use a cooldown GE that does not use set-by-caller for its duration."));
+		Result = EDataValidationResult::Invalid;
+	}
+
 	return Result;
 }
-#endif
+#endif // WITH_EDITOR
+
+#if WITH_EDITOR
+bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
+{
+	bool bIsEditable = Super::CanEditChange(InProperty);
+
+	if (bIsEditable && InProperty)
+	{
+		const FName PropertyName = InProperty->GetFName();
+
+		// Cooldown duration should only be editable if it will actually be used.
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, CooldownDuration))
+		{
+			bIsEditable = ShouldSetCooldownDuration();
+		}
+	}
+
+	return bIsEditable;
+}
+#endif // WITH_EDITOR
 
 #undef LOCTEXT_NAMESPACE
