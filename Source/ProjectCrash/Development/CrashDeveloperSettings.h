@@ -71,4 +71,8 @@ public:
 	/** If true, all messages broadcast via the gameplay message subsystem will be logged. */
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Messages")
 	bool bLogGameplayMessages = false;
+
+	/** Disables developer settings pop-ups (e.g. "Developer Settings Override Pawn Data: ..."). */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Editor")
+	bool bSuppressDeveloperSettingsMessages = false;
 };
