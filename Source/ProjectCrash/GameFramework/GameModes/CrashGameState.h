@@ -8,6 +8,7 @@
 #include "CrashGameState.generated.h"
 
 struct FCrashVerbMessage;
+struct FCrashAbilityMessage;
 class ACrashPlayerState;
 class UCrashGameModeData;
 class UGameModeManagerComponent;
@@ -88,12 +89,12 @@ public:
 
 public:
 
-	/** Reliably broadcasts a verbal message to all clients. */
+	/** Unreliably broadcasts a verbal message to all clients. */
 	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Unreliable)")
 	void MulticastUnreliableMessageToClients(const FCrashVerbMessage Message);
 
-	/** Unreliably broadcasts a verbal message to all clients. */
-	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Reliable)")
+	/** Reliably broadcasts a verbal message to all clients. */
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Verb, Reliable)")
 	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
 
 
