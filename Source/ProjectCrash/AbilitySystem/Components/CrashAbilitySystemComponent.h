@@ -213,5 +213,9 @@ public:
 	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
 
 	/** Shorthand for locally broadcasting a gameplay ability message. */
-	void BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude = 0.0f);
+	void BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude = 0.0f, bool bReplicateMessage = false);
+
+	/** Multicasts broadcasting for a gameplay ability message. */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastReliableAbilityMessageToClients(const struct FCrashAbilityMessage Message);
 };

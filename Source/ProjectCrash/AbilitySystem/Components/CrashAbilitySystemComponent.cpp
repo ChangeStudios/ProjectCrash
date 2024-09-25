@@ -16,6 +16,8 @@
 #include "Characters/CrashCharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 /** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
  * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
@@ -352,7 +354,7 @@ void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySp
 	Super::OnGiveAbility(AbilitySpec);
 
 	// Send a standardized message communicating the ability addition.
-	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Added, AbilitySpec.Handle);
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Added, AbilitySpec.Handle, AbilitySpec.Level);
 }
 
 void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
@@ -541,7 +543,7 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
 }
 
-void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude)
+void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)
 {
 	ensure(MessageType.IsValid());
 
@@ -555,4 +557,19 @@ void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag Me
 	// Broadcast the message locally.
 	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 	MessageSystem.BroadcastMessage(Message.MessageType, Message);
+
+	// Some events only occur on the server. If we should replicate this message to clients, use a reliable multicast.
+	if (bReplicateMessage && AbilityActorInfo->IsNetAuthority())
+	{
+		MulticastReliableAbilityMessageToClients(Message);
+	}
+}
+
+void UCrashAbilitySystemComponent::MulticastReliableAbilityMessageToClients_Implementation(const FCrashAbilityMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.MessageType, Message);
+	}
 }
