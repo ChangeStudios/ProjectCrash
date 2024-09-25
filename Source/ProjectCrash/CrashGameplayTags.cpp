@@ -10,17 +10,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_InputBlocking, "Ability.Behavior.InputBlocking", "This ability blocks movement and camera input while active.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_Disabled, "Ability.Behavior.Disabled", "This ability is disabled and cannot be activated. Used to explicitly block abilities without removing them.");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Equipment, "Ability.Behavior.UI.Slotted.Equipment", "This ability will ability in the HUD as an equipment-granted ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Generic, "Ability.Behavior.UI.Slotted.Generic", "This ability will ability in the HUD as a generic ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Weapon, "Ability.Behavior.UI.Slotted.Weapon", "This ability will ability in the HUD as a weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Ultimate, "Ability.Behavior.UI.Slotted.Ultimate", "This ability will ability in the HUD as the character's ultimate.");
-
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_PrimaryWeapon, "Ability.Behavior.UI.Frontend.PrimaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a primary weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_SecondaryWeapon, "Ability.Behavior.UI.Frontend.SecondaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a secondary weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_StandardAbility, "Ability.Behavior.UI.Frontend.StandardAbility", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a standard ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Passive, "Ability.Behavior.UI.Frontend.Passive", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a passive ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Ultimate, "Ability.Behavior.UI.Frontend.Ultimate", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as an ultimate ability.");
-
 
 	// Effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_CameraType_FirstPerson, "Effects.CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
