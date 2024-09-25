@@ -20,7 +20,7 @@ struct FCrashAbilityMessage
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayTag MessageType;
 
-	/** The ability referred to by the message. */
+	/** The ability referred to by the message. Almost always the CDO. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
@@ -28,7 +28,7 @@ struct FCrashAbilityMessage
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FCrashGameplayAbilityActorInfo ActorInfo;
 
-	/** An optional numeric value to pass as a payload, such as the duration of a cooldown. */
+	/** An optional numeric value to pass as a payload (duration of a cooldown, ability's level, etc.). */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	float Magnitude = 0.0f;
 

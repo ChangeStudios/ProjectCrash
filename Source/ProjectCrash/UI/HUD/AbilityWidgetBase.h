@@ -4,8 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "AbilityWidgetBase.generated.h"
 
+struct FGameplayAbilitySpecHandle;
+struct FCrashGameplayAbilityActorInfo;
+class UCrashGameplayAbilityBase;
+struct FCrashAbilityMessage;
 class UCrashAbilitySystemComponent;
 
 /**
@@ -75,15 +80,71 @@ private:
 
 
 
-	// Blueprint events.
+	// Message listeners.
 
 protected:
 
+	/** Called when any kind of ability message is received. Routes messages to BP events as necessary. */
+	UFUNCTION()
+	void OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message);
+
+private:
+
+	/** Listener for ability messages. */
+	FGameplayMessageListenerHandle AbilityMessageListener;
+
+
+
+	// Blueprint events.
+
+// Generic events.
+protected:
+
+	/** Called when this widget is bound to its owning player's ASC. Earliest point at which the ASC is accessible. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability System Bound")
 	void K2_OnAbilitySystemBound(UCrashAbilitySystemComponent* CrashASC);
 
+	/**
+	 * Called when any type of ability message (message in the Message.Ability channel) corresponding to this widget's
+	 * ability system is received.
+	 *
+	 * This is always called IN ADDITION to the message-specific event (e.g. OnAbilityAdded for Message.Ability.Added),
+	 * in case you want an ability message that isn't handled by a dedicated event.
+	 */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Message Received")
+	void K2_OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message);
+
+/* Ability events dedicated to each unique ability message to make listening to them easier in BP. Handles are passed to
+ * more easily track any data being stored for each ability (e.g. a map of handles to their displayed widget). */
+protected:
+
+	/** An ability was granted to this widget's bound ASC. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Added")
-	void K2_OnAbilityAdded();
+	void K2_OnAbilityAdded(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** An ability was removed from this widget's bound ASC. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Removed")
+	void K2_OnAbilityRemoved(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** An ability was activated by this widget's bound ASC. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activated")
+	void K2_OnAbilityActivated_Success(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** This widget's bound ASC tried but failed to activate an ability. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activation Failed")
+	void K2_OnAbilityActivated_Failed(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** An ability that was activated by this widget's bound ASC ended. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Ended")
+	void K2_OnAbilityEnded(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** One of this widget's bound ASC's abilities started a cooldown. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Started")
+	void K2_OnAbilityCooldownStarted(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** One of this widget's bound ASC's abilities ended its cooldown. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Ended")
+	void K2_OnAbilityCooldownEnded(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
 
 
@@ -98,6 +159,7 @@ private:
 
 	/** The ability system to which this widget is bound. This ASC's owning controller is this widget's owner. Only set
 	 * once, upon initialization, and is never changed. */
+	// TODO: Expose to blueprints?
 	UPROPERTY()
 	TWeakObjectPtr<UCrashAbilitySystemComponent> BoundASC;
 };

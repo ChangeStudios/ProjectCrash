@@ -166,10 +166,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
 	TObjectPtr<UTexture2D> AbilityIcon;
 
-	/** Additional tags defining this ability's behavior in various user interface contexts. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides, Categories = "Ability.Behavior.UI"))
-	FGameplayTagContainer UserInterfaceTags;
-
 
 
 	// Cooldowns.
@@ -330,6 +326,10 @@ public:
 	/** Attempts to retrieve the typed player state from the current actor info. Often null. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	ACrashPlayerState* GetCrashPlayerStateFromActorInfo() const;
+
+	/** This ability has these tags. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
+	const FGameplayTagContainer& GetAbilityTags() const { return AbilityTags; }
 
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))
