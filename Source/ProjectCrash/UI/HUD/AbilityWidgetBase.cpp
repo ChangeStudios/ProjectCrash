@@ -61,7 +61,12 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 	{
 		// Specs aren't well-exposed to BP, so just pass the CDO instead.
 		const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
-		UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec->Ability);
+		UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
+		if (!IsValid(Ability))
+		{
+			Ability = AbilitySpec->Ability;
+		}
+		UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
 
 		// TODO: C++ please add switches for structs thank you <3
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Added))

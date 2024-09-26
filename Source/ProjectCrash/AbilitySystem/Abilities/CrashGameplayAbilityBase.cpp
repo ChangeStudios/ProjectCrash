@@ -13,6 +13,7 @@
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
@@ -223,27 +224,45 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 		}
 
 		// Apply the cooldown.
-		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+		FActiveGameplayEffectHandle CooldownEffectHandle;
+		/** If we commit our cooldown AFTER our original ability's activation (like waiting until the ability ends to
+		 * start its cooldown), its original key won't be valid for prediction. We need to create and confirm a new
+		 * prediction window if we still want to predict the cooldown. */
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		FScopedPredictionWindow ScopedPrediction(ASC, true);
+		CooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+		if (IsPredictingClient())
+		{
+			GetAbilitySystemComponentFromActorInfo()->ServerSetReplicatedEvent(EAbilityGenericReplicatedEvent::GameCustom1 /* Cooldown start. */, Handle, ActivationInfo.GetActivationPredictionKey(), ASC->ScopedPredictionKey);
+		}
 
 		// Broadcast relevant messages if the cooldown was successfully applied.
 		if (CooldownEffectHandle.WasSuccessfullyApplied())
 		{
-			// Listen for the cooldown effect to be removed (meaning the cooldown ended).
+			// Listen for the cooldown tags to be removed.
 			UCrashAbilitySystemComponent* CrashASC = GetCrashAbilitySystemComponentFromActorInfo();
-			CrashASC->OnAnyGameplayEffectRemovedDelegate().AddWeakLambda(this, [this, CooldownEffectHandle, CrashASC, ActorInfo](const FActiveGameplayEffect& RemovedEffect)
+			TMap<const FGameplayTag&, FDelegateHandle> CooldownTagDelegates;
+			for (const FGameplayTag& Tag : GetCooldownTags())
 			{
-				if (RemovedEffect.Handle == CooldownEffectHandle)
+				CooldownTagDelegates.Add(Tag, CrashASC->RegisterGameplayTagEvent(Tag, EGameplayTagEventType::Type::NewOrRemoved)
+					.AddWeakLambda(this, [this, CooldownEffectHandle, CrashASC, CooldownTagDelegates](const FActiveGameplayEffect& RemovedEffect)
 				{
-					ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(ApplyCooldown, );
-					CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f, true);
-				}
-			});
+					if (RemovedEffect.Handle == CooldownEffectHandle)
+					{
+						ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(ApplyCooldown, );
+						CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f);
+
+						for (auto KVP : CooldownTagDelegates)
+						{
+							CrashASC->UnregisterGameplayTagEvent(KVP.Value, KVP.Key);
+						}
+					}
+				}));
+			}
 
 			// Send a standardized message that this ability's cooldown started.
-			// NOTE: May want to change how we're notifying of cooldowns. If we listened for cooldown tags instead, we
-			// could predict cooldown starts.
 			const float CooldownTime = CrashASC->GetActiveGameplayEffect(CooldownEffectHandle)->GetDuration();
-			CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started, GetCurrentAbilitySpecHandle(), CooldownTime, true);
+			CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started, GetCurrentAbilitySpecHandle(), CooldownTime);
 		}
 	}
 }

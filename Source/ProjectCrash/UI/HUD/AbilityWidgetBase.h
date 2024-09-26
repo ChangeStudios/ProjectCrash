@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "AbilityWidgetBase.generated.h"
 
@@ -159,7 +160,17 @@ private:
 
 	/** The ability system to which this widget is bound. This ASC's owning controller is this widget's owner. Only set
 	 * once, upon initialization, and is never changed. */
-	// TODO: Expose to blueprints?
 	UPROPERTY()
 	TWeakObjectPtr<UCrashAbilitySystemComponent> BoundASC;
+
+
+
+	// Utils.
+
+protected:
+
+	/** Retrieves the ASC bound to this widget: this widget's owning player's ability system. Will not be usable until
+	 * OnAbilitySystemBound is called. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability|User Interface|Ability Widget")
+	const UCrashAbilitySystemComponent* GetBoundASC() const { return IsValid(BoundASC.Get()) ? BoundASC.Get() : nullptr; }
 };
