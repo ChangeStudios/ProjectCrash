@@ -170,6 +170,12 @@ public:
 
 	// Cooldowns.
 
+public:
+
+	/** The gameplay effect used for this ability's cooldown. Null if this ability has no cooldown. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
+	TSubclassOf<UGameplayEffect> GetAbilityCooldownClass() const { return CooldownGameplayEffectClass; }
+
 protected:
 
 	/** Tags that can put this ability on a cooldown, in addition to any defined in the cooldown GE class. */
@@ -195,6 +201,17 @@ protected:
 	/** Whether this ability should try to override its cooldown GE's duration. Only true if the cooldown GE is set and
 	 * has a set-by-caller duration. */
 	bool ShouldSetCooldownDuration() const;
+
+
+
+	// Cost.
+	// TODO: Implement charge-based abilities.
+
+public:
+
+	/** The gameplay effect used for this ability's cost. Null if this ability has no cost. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
+	TSubclassOf<UGameplayEffect> GetAbilityCostClass() const { return CostGameplayEffectClass; }
 
 
 
