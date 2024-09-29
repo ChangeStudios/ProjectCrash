@@ -261,12 +261,13 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 			const float CooldownTime = CrashASC->GetActiveGameplayEffect(CooldownEffectHandle)->GetTimeRemaining(GetWorld()->GetTimeSeconds());
 			CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started, GetCurrentAbilitySpecHandle(), CooldownTime, true);
 
-			// Listen for the cooldown tags to be removed.
-			FDelegateHandle CooldownTagDelegate = CrashASC->RegisterGameplayTagEvent(CooldownTags.First())
-				.AddWeakLambda(this, [this, CrashASC, CooldownTagDelegate](const FGameplayTag Tag, int32 NewCount)
+			// Listen for the cooldown effect to be removed.
+			CrashASC->OnAnyGameplayEffectRemovedDelegate().AddWeakLambda(this, [this, CooldownEffectHandle, CrashASC](const FActiveGameplayEffect& RemovedEffect)
 			{
-				CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f, true);
-				CrashASC->UnregisterGameplayTagEvent(CooldownTagDelegate, CooldownTags.First());
+				if (RemovedEffect.Handle == CooldownEffectHandle)
+				{
+					CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f, true);
+				}
 			});
 		}
 	}
