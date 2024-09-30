@@ -22,4 +22,8 @@ public:
 	/** Resets the local player, if they have the CrashGameplayAbility_Reset ability. */
 	UFUNCTION(Exec)
 	void ResetPlayer();
+
+	/** Kills the local player with self-destruct damage. */
+	UFUNCTION(Exec)
+	void KillPlayer();
 };
