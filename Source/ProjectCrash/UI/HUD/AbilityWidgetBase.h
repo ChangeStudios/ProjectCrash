@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonUserWidget.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "UI/TaggedWidget.h"
 #include "AbilityWidgetBase.generated.h"
 
 struct FGameplayAbilitySpecHandle;
@@ -18,7 +18,7 @@ class UCrashAbilitySystemComponent;
  * Widget that receives events related to its owning player's ability system and gameplay abilities.
  */
 UCLASS()
-class PROJECTCRASH_API UAbilityWidgetBase : public UCommonUserWidget
+class PROJECTCRASH_API UAbilityWidgetBase : public UTaggedWidget
 {
 	GENERATED_BODY()
 
