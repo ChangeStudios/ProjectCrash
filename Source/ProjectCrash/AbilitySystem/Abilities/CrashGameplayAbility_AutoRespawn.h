@@ -112,8 +112,7 @@ protected:
 	/**
 	 * Returns whether the player can respawn (restart as a player, not a spectator), depending on the game mode rules.
 	 *
-	 * Default implementation return true if the player's "Lives" attribute (ULivesAttributeSet) is at least one.
-	 * Returns false if the player has no lives left, or does not have a LivesAttributeSet.
+	 * Default implementation always allows the player to respawn.
 	 */
 	UFUNCTION(BlueprintNativeEvent)
 	bool CanRespawn();

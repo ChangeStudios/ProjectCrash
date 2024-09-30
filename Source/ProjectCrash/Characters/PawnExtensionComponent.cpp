@@ -10,6 +10,7 @@
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameFeatures/GameFeatureAction_AddAbilities.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -246,6 +247,12 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 	PawnData = InPawnData;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	Pawn->ForceNetUpdate();
+
+	// For pawns with self-contained ASCs, request abilities now. Players will have already done this.
+	if (!GetPlayerState<ACrashPlayerState>())
+	{
+		UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(GetOwner(), UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
+	}
 
 	// Try to progress our initialization, now that we have valid pawn data.
 	CheckDefaultInitialization();
