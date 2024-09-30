@@ -101,6 +101,7 @@ public:
 	/** Updates this player's current pawn data, destroying their current pawn if necessary, and restarts them. Used
 	 * for changing pawns during gameplay via a "Switch Character" menu. For initializing pawn data, use SetPawnData
 	 * instead. */
+	// TODO: Merge this and SetPawnData. We shouldn't have two separate functions.
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Crash|Player State")
 	void Server_ChangePawn(const UPawnData* InPawnData);
 
@@ -144,6 +145,10 @@ private:
 	/** This player's ability system component. */
 	UPROPERTY(VisibleAnywhere, Category = "Crash|Player State")
 	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+	/** Ability sets granted by the current pawn data. This only needs to be tracked in the player state, because pawns
+	 * without a player state can't switch their pawn data. */
+	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
 
 
 

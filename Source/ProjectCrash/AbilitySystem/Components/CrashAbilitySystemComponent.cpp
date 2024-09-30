@@ -546,6 +546,10 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)
 {
 	ensure(MessageType.IsValid());
+	if (!UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	{
+		return;
+	}
 
 	// Construct the message.
 	FCrashAbilityMessage Message;

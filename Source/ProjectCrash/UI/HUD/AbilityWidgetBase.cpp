@@ -57,7 +57,7 @@ void UAbilityWidgetBase::OnPlayerStateChanged(const APlayerState* NewPlayerState
 void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message)
 {
 	// Forward ability messages (filtering for this widget's ASC) to their corresponding BP events.
-	if (ensure(BoundASC.Get()) && (Message.ActorInfo.AbilitySystemComponent == BoundASC.Get()))
+	if (BoundASC.IsValid() && (Message.ActorInfo.AbilitySystemComponent == BoundASC.Get()))
 	{
 		// Specs aren't well-exposed to BP, so just pass the CDO instead.
 		const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);

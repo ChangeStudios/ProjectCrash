@@ -142,9 +142,6 @@ private:
 	/** Broadcast when the owning pawn removes itself as the avatar of an ASC. */
 	FSimpleMulticastDelegate OnAbilitySystemUninitialized;
 
-	/** Ability sets granted by the current pawn data. */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
-
 // Ability system component.
 public:
 
