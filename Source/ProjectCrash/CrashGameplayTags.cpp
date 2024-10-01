@@ -51,6 +51,8 @@ namespace CrashGameplayTags
 	// Messages.
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Added, "Message.Ability.Added", "A gameplay ability was granted to an ASC.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Removed, "Message.Ability.Removed", "A gameplay ability was removed from an ASC.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Disabled, "Message.Ability.Disabled", "A gameplay ability was disabled, and cannot be activated.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Enabled, "Message.Ability.Enabled", "A gameplay ability was re-enabled after being disabled.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Success, "Message.Ability.Activated.Success", "A gameplay ability was successfully activated.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Failed, "Message.Ability.Activated.Failed", "A gameplay ability tried to activate but failed.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "A gameplay ability ended.");

@@ -77,6 +77,14 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		{
 			K2_OnAbilityRemoved(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
 		}
+		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Disabled))
+		{
+			K2_OnAbilityDisabled(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
+		}
+		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Enabled))
+		{
+			K2_OnAbilityEnabled(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
+		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
 			K2_OnAbilityActivated_Success(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);

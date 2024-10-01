@@ -127,6 +127,14 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Removed")
 	void K2_OnAbilityRemoved(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
+	/** An ability was temporarily disabled (not removed). */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Disabled")
+	void K2_OnAbilityDisabled(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** An ability was re-enabled after being disabled. Not called when a usable ability is added. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Enabled")
+	void K2_OnAbilityEnabled(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
 	/** An ability was activated by this widget's bound ASC. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activated")
 	void K2_OnAbilityActivated_Success(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
