@@ -32,12 +32,15 @@ namespace CrashGameplayTags
 
 	// Gameplay effects
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_SetByCaller_Damage);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_SetByCaller_UltimateCharge);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_SetByCaller_CooldownDuration);
 
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_CanDamageSelf);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_CanDamageTeam);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_FellOutOfWorld);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_SelfDestruct);
+
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_UltimateCharge_FromDamage);
 
 
 	// Gameplay events
