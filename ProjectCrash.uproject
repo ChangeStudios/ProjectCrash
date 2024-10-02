@@ -19,7 +19,8 @@
 				"UnrealEd",
 				"Blutility",
 				"NiagaraAnimNotifies",
-				"CommonUI"
+				"CommonUI",
+				"GameplayAbilities"
 			]
 		},
 		{
