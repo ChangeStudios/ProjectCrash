@@ -105,6 +105,10 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		{
 			K2_OnAbilityCooldownEnded(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
 		}
+		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_CostChanged))
+		{
+			K2_OnAbilityCostChanged(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
+		}
 
 		K2_OnAbilityMessageReceived(Message.MessageType, Message);
 	}

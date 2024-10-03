@@ -147,13 +147,18 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Ended")
 	void K2_OnAbilityEnded(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
-	/** One of this widget's bound ASC's abilities started a cooldown. */
+	/** One of this widget's bound ASC's abilities started a cooldown. Magnitude is the cooldown duration. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Started")
 	void K2_OnAbilityCooldownStarted(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
 	/** One of this widget's bound ASC's abilities ended its cooldown. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Ended")
 	void K2_OnAbilityCooldownEnded(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
+
+	/** A variable used for the cost one of this widget's bound ASC's abilities changed. Magnitude is the variable's
+	 * new value (e.g. the player's new ultimate charge, or the ability's new charge count. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cost Changed")
+	void K2_OnAbilityCostChanged(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
 
 

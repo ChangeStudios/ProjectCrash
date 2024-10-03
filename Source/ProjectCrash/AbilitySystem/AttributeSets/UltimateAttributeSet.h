@@ -67,6 +67,10 @@ protected:
 	/** Called before an attribute is modified. Clamps the new value. */
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
+	/** Called after modifying the value of an attribute on the server. Broadcasts the CostChanged message on the
+	 * server.*/
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+
 	/** Clamps the ultimate charge attribute between its minimum and maximum values. Scales the ultimate charge with
 	 * the "UltimateChargeRate" game mode property. */
 	void ClampAndScaleUltimateCharge(const FGameplayAttribute& Attribute, float& NewValue) const;
@@ -88,7 +92,7 @@ private:
 
 protected:
 
-	/** OnRep for UltimateCharge. */
+	/** OnRep for UltimateCharge. Broadcasts the CostChanged message on clients. */
 	UFUNCTION()
 	void OnRep_UltimateCharge(const FGameplayAttributeData& OldValue);
 
@@ -115,4 +119,7 @@ protected:
 	 * @return						Whether an ability was found.
 	 */
 	bool GetUltimateAbility(FGameplayAbilitySpec& OutUltimateAbility, float& CostMagnitude) const;
+
+	/** Broadcasts an Ability.CostChanged message using the current value of UltimateCharge as the magnitude. */
+	void BroadcastUltChargeChanged() const;
 };

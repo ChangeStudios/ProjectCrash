@@ -188,6 +188,14 @@ void UUltimateAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribu
 	ClampAndScaleUltimateCharge(Attribute, NewValue);
 }
 
+void UUltimateAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+	// Broadcast a message communicating the new ultimate charge on the server.
+	BroadcastUltChargeChanged();
+}
+
 void UUltimateAttributeSet::ClampAndScaleUltimateCharge(const FGameplayAttribute& Attribute, float& NewValue) const
 {
 	if (Attribute == GetUltimateChargeAttribute())
@@ -209,21 +217,8 @@ void UUltimateAttributeSet::OnRep_UltimateCharge(const FGameplayAttributeData& O
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UUltimateAttributeSet, UltimateCharge, OldValue);
 
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FGameplayAbilitySpec UltimateAbility;
-		float UltCost;
-		bool bHasUltimate = GetUltimateAbility(UltimateAbility, UltCost);
-
-		FCrashAbilityMessage Message;
-		Message.MessageType = CrashGameplayTags::TAG_Message_Ability_CostChanged;
-		Message.AbilitySpecHandle = bHasUltimate ? UltimateAbility.Handle : FGameplayAbilitySpecHandle();
-		Message.ActorInfo = *GetCrashAbilitySystemComponent()->GetCrashAbilityActorInfo();
-		Message.Magnitude = GetUltimateCharge();
-
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(Message.MessageType, Message);
-	}
+	// Broadcast a message communicating the new ultimate charge on clients.
+	BroadcastUltChargeChanged();
 }
 
 float UUltimateAttributeSet::GetMaxUltimateCharge() const
@@ -256,6 +251,25 @@ bool UUltimateAttributeSet::GetUltimateAbility(FGameplayAbilitySpec& OutUltimate
 	}
 
 	return false;
+}
+
+void UUltimateAttributeSet::BroadcastUltChargeChanged() const
+{
+	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	{
+		FGameplayAbilitySpec UltimateAbility;
+		float UltCost;
+		bool bHasUltimate = GetUltimateAbility(UltimateAbility, UltCost);
+
+		FCrashAbilityMessage Message;
+		Message.MessageType = CrashGameplayTags::TAG_Message_Ability_CostChanged;
+		Message.AbilitySpecHandle = bHasUltimate ? UltimateAbility.Handle : FGameplayAbilitySpecHandle();
+		Message.ActorInfo = *GetCrashAbilitySystemComponent()->GetCrashAbilityActorInfo();
+		Message.Magnitude = GetUltimateCharge();
+
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		MessageSystem.BroadcastMessage(Message.MessageType, Message);
+	}
 }
 
 void UUltimateAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
