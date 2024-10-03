@@ -41,6 +41,7 @@ namespace CrashGameplayTags
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_SelfDestruct);
 
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_UltimateCharge_FromDamage);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_UltimateCharge_FromHealing);
 
 
 	// Gameplay events
@@ -56,6 +57,7 @@ namespace CrashGameplayTags
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_InitState_GameplayReady);
 
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameMode_PlayerStart_Spectator);
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameMode_Property_UltimateChargeRate);
 
 
 	// Input

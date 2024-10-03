@@ -25,7 +25,8 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. Overrides damage invulnerabilities.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. Overrides damage invulnerabilities.");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromDamage, "GameplayEffects.UltimateCharge.FromDamage", "Self-destruct damage. Overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromDamage, "GameplayEffects.UltimateCharge.FromDamage", "Ultimate charge granted by dealing damage.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromHealing, "GameplayEffects.UltimateCharge.FromHealing", "Ultimate charge granted by applying healing.");
 
 
 	// Gameplay events
@@ -42,6 +43,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_PlayerStart_Spectator, "GameMode.PlayerStart.Spectator", "Indicates that this player start should be used for spectators.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_Property_UltimateChargeRate, "GameMode.Property.UltimateChargeRate", "Scalar applied when gaining ultimate charge.");
 
 
 	// Input
@@ -61,7 +63,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "A gameplay ability ended.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "A gameplay ability's cooldown started. Magnitude is the cooldown duration.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Ended, "Message.Ability.Cooldown.Ended", "A gameplay ability's cooldown ended.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_CostChanged, "Message.Ability.CostChanged", "The cost used to activate a gameplay ability changed. Magnitude is the signed change.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_CostChanged, "Message.Ability.CostChanged", "The cost used to activate a gameplay ability changed. Magnitude is the cost variable's new value (e.g. new ultimate charge or new number of ability charges).");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Healing, "Message.Healing", "Verbal message communicating healing dealt.");

@@ -35,11 +35,6 @@ protected:
 	 * to the target's Damage attribute (HealthAttributeSet). */
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
-private:
-
-	/** Applies an ultimate charge GE to the instigator of the damage dealt. */
-	void GrantUltimateCharge(float DamageApplied, const AActor* Instigator, UAbilitySystemComponent* TargetASC) const;
-
 
 
 	// Attribute captures. Any attributes required to perform the execution are captured in the constructor.

@@ -5,12 +5,8 @@
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
-#include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
-#include "GameFramework/CrashAssetManager.h"
-#include "GameFramework/CrashLogging.h"
-#include "GameFramework/Data/GlobalGameData.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
 
 UDamageExecution::UDamageExecution()
@@ -131,51 +127,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	if (DamageToApply > 0.0f)
 	{
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UHealthAttributeSet::GetDamageAttribute(), EGameplayModOp::Additive, DamageToApply));
-
-		GrantUltimateCharge(DamageToApply, CrashContext->GetInstigator(), TargetASC);
 	}
 
 #endif // WITH_SERVER_CODE
-}
-
-void UDamageExecution::GrantUltimateCharge(float DamageApplied, const AActor* Instigator, UAbilitySystemComponent* TargetASC) const
-{
-	if (UAbilitySystemComponent* InstigatorASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Instigator))
-	{
-		const TSubclassOf<UGameplayEffect> UltimateGE = UCrashAssetManager::GetOrLoadClass(UGlobalGameData::Get().UltimateChargeGameplayEffect_SetByCaller);
-
-		if (!UltimateGE)
-		{
-			if (UGlobalGameData::Get().UltimateChargeGameplayEffect_SetByCaller.IsNull())
-			{
-				UE_LOG(LogCrash, Error, TEXT("DamageExecution failed to find ultimate charge gameplay effect. UltimateChargeGameplayEffect_SetByCaller has not been set in global data."));
-			}
-			else
-			{
-				UE_LOG(LogCrash, Error, TEXT("DamageExecution failed to load damage gameplay effect [%s]."), *UGlobalGameData::Get().UltimateChargeGameplayEffect_SetByCaller.GetAssetName());
-			}
-
-			return;
-		}
-
-		// Create an outgoing effect spec for granting ultimate charge.
-		FGameplayEffectContextHandle EffectContext = InstigatorASC->MakeEffectContext();
-		EffectContext.AddInstigator(TargetASC->GetOwnerActor(), TargetASC->GetAvatarActor());
-		FGameplayEffectSpecHandle UltimateSpecHandle = InstigatorASC->MakeOutgoingSpec(UltimateGE, 1.0f, EffectContext);
-		FGameplayEffectSpec* UltimateSpec = UltimateSpecHandle.Data.Get();
-
-		if (!UltimateSpec)
-		{
-			UE_LOG(LogCrash, Error, TEXT("DamageExecution failed to grant ultimate charge to instigator [%s]: unable to make outgoing spec."), *GetNameSafe(Instigator));
-		}
-
-		// Add context tags to the effect.
-		UltimateSpec->AddDynamicAssetTag(CrashGameplayTags::TAG_GameplayEffects_UltimateCharge_FromDamage);
-
-		// Set ultimate charge magnitude.
-		UltimateSpec->SetSetByCallerMagnitude(CrashGameplayTags::TAG_GameplayEffects_SetByCaller_UltimateCharge, DamageApplied);
-
-		// Apply the effect.
-		InstigatorASC->ApplyGameplayEffectSpecToSelf(*UltimateSpec);
-	}
 }
