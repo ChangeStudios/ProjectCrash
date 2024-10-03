@@ -37,7 +37,7 @@ public:
 protected:
 
 	/** Called before an execution modifies the value of an attribute. Throws out the execution if it attempts to
-	 * damage a target with damage invulnerability. */
+	 * damage a target with damage invulnerability. Clamps damage and healing to never exceed what can be applied. */
 	virtual bool PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data) override;
 
 	/** Called after an execution modifies the value of an attribute. Maps changes in meta attribute values to
