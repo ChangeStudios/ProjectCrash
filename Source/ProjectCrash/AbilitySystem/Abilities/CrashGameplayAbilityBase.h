@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UIExtensionSystem.h"
 #include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
+class UAbilityWidgetBase;
 class ACrashPlayerState;
 class AChallengerBase;
 class UCrashAbilitySystemComponent;
@@ -151,19 +153,19 @@ protected:
 public:
 
 	/** Whether this ability should appear in ability information widgets: the HUD, character selection screens, etc. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", DisplayName = "User-Facing Ability?")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", DisplayName = "User-Facing Ability?")
 	bool bIsUserFacingAbility;
 
 	/** This ability's user-facing name. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
 	FText UserFacingName;
 
 	/** This ability's user-facing description. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
 	FText UserFacingDescription;
 
 	/** This ability's icon. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Information", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
 	TObjectPtr<UTexture2D> AbilityIcon;
 
 

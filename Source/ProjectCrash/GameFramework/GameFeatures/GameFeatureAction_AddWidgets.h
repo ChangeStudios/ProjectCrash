@@ -44,7 +44,7 @@ struct FGameFeatureWidgetEntry
 
 	/** The slot into which this widget will be inserted on the player's HUD. The player needs a HUD layout containing
 	 * an extension point with a matching slot ID for this widget to be successfully added to their UI. */
-	UPROPERTY(EditAnywhere, Category = "UI.Slot")
+	UPROPERTY(EditAnywhere, Category = "Widget", Meta = (Categories = "UI.Slot"))
 	FGameplayTag TargetSlot;
 };
 
