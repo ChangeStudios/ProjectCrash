@@ -37,7 +37,6 @@ void UUltimateAttributeSet::PostInitProperties()
 
 bool UUltimateAttributeSet::ShouldDamageGrantUltimateCharge(AActor* Instigator, AActor* Target) const
 {
-	UE_LOG(LogTemp, Error, TEXT("Instigator:%s, Target:%s"), *GetNameSafe(Instigator), *GetNameSafe(Target));
 	// Instigator must be this attribute set's owner.
 	if (Instigator != GetOwningActor())
 	{
@@ -60,6 +59,17 @@ bool UUltimateAttributeSet::ShouldDamageGrantUltimateCharge(AActor* Instigator, 
 	if (!Target->IsA(APlayerState::StaticClass()) && !Target->IsA(APawn::StaticClass()))
 	{
 		return false;
+	}
+
+	// Do not grant ultimate charge while an ultimate is active.
+	{
+		FGameplayAbilitySpec Ability;
+		float Cost;
+		GetUltimateAbility(Ability, Cost);
+		if (Ability.IsActive())
+		{
+			return false;
+		}
 	}
 
 	// Players can only gain ultimate charge from damaging players on other teams.
@@ -96,6 +106,17 @@ bool UUltimateAttributeSet::ShouldHealingGrantUltimateCharge(AActor* Instigator,
 	if (!Target->IsA(APlayerState::StaticClass()))
 	{
 		return false;
+	}
+
+	// Do not grant ultimate charge while an ultimate is active.
+	{
+		FGameplayAbilitySpec Ability;
+		float Cost;
+		GetUltimateAbility(Ability, Cost);
+		if (Ability.IsActive())
+		{
+			return false;
+		}
 	}
 
 	// Players can only gain ultimate charge from healing players on other teams.
