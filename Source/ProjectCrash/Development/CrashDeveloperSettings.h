@@ -30,11 +30,27 @@ public:
 
 	// Initialization.
 
+#if WITH_EDITOR
+
 public:
 
-#if WITH_EDITOR
-	/** Notifies the user of any active developer overrides. TODO: Forcefully loads the pawn data if necessary. */
+	/** Notifies the user of any active developer overrides. */
 	PROJECTCRASH_API void OnPlayInEditorBegin() const;
+
+	/** Applies developer settings when updated. */
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	/** Applies developer settings when reloaded. */
+	virtual void PostReloadConfig(class FProperty* PropertyThatWasLoaded) override;
+
+	/** Applies developer settings on initialization. */
+	virtual void PostInitProperties() override;
+
+private:
+
+	/** Performs any necessary actions for developer settings. */
+	void ApplySettings();
+
 #endif // WITH_EDITOR
 
 
@@ -44,14 +60,19 @@ public:
 public:
 
 	/** The game mode data is determined by the game options. If set, this data will be used instead. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = "Crash", Meta = (AllowedTypes = "CrashGameModeData"))
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", Meta = (AllowedTypes = "CrashGameModeData"))
 	FPrimaryAssetId GameModeDataOverride;
 
 	/** Each player's pawn data is determined by the game mode, or by an optional character selection screen. If set,
-	 * this data will be used for all players instead.
-	 *
-	 * TODO: Make FPrimaryAssetId
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Config, Category = "Crash", Meta = (AllowedTypes = "PawnData"))
+	 * this data will be used for all players instead. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", Meta = (AllowedTypes = "PawnData"))
 	FPrimaryAssetId PawnDataOverride;
+
+	/** If true, all messages broadcast via the gameplay message subsystem will be logged. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Messages")
+	bool bLogGameplayMessages = false;
+
+	/** Disables developer settings pop-ups (e.g. "Developer Settings Override Pawn Data: ..."). */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Editor")
+	bool bSuppressDeveloperSettingsMessages = false;
 };

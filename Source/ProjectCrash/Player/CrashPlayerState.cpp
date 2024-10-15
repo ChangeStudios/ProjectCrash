@@ -159,6 +159,15 @@ void ACrashPlayerState::SetPawnData(const UPawnData* InPawnData)
 	 * mode-specific abilities via game feature actions. */
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
 
+	// Grant the new pawn data's default ability sets.
+	for (const UCrashAbilitySet* AbilitySet : PawnData->AbilitySets)
+	{
+		if (AbilitySet)
+		{
+			AbilitySet->GiveToAbilitySystem(AbilitySystemComponent.Get(), &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
+		}
+	}
+
 	ForceNetUpdate();
 }
 
@@ -174,6 +183,14 @@ void ACrashPlayerState::Server_ChangePawn_Implementation(const UPawnData* InPawn
 		CurrentPawn->SetLifeSpan(0.1f);
 		CurrentPawn->SetActorHiddenInGame(true);
 	}
+
+	// Remove the abilities granted by our old pawn data.
+	for (FCrashAbilitySet_GrantedHandles GrantedAbilitySet : GrantedPawnDataAbilitySets)
+	{
+		GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent.Get());
+	}
+
+	GrantedPawnDataAbilitySets.Empty(InPawnData->AbilitySets.Num());
 
 	// Update this player's pawn data.
 	SetPawnData(InPawnData);

@@ -10,8 +10,8 @@
  * Spawns an actor attached to this animation. The actor is destroyed when the notify ends.
  *
  * This notify does not intrinsically support skins, but the skin system supports skin-specific montages. This means
- * that to implement different animation actors for different skins, you can simply create multiple animation montages
- * using the same base character animation and simply change the animation notifies in each one.
+ * that to implement different animation actors for different skins, you can create multiple animation montages using
+ * the same base character animation and simply change the animation notifies in each one.
  *
  * This (A) helps to minimize and compartmentalize the data we need for each skin, and (B) makes implementing these
  * animation actors easier, as we can preview the exact skin-specific actors being spawned in-editor, instead of

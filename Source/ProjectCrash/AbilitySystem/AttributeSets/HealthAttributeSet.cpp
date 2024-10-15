@@ -46,6 +46,11 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 		}
 	}
 
+	/* Clamp damage and healing to what can actually be applied. E.g. if we're dealing 200 damage to a target with 50
+	 * health, we really only want to deal 50 damage, because our other systems only care about the damage and healing
+	 * we're actually we're applying (e.g. we'd only want to grant 50 ultimate charge, not 200). */
+	ClampAttribute(Data.EvaluatedData.Attribute, Data.EvaluatedData.Magnitude);
+
 	// Cache current attribute values before changes are applied.
 	HealthBeforeAttributeChange = GetHealth();
 	MaxHealthBeforeAttributeChange = GetMaxHealth();
@@ -181,6 +186,16 @@ void UHealthAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
 	else if (Attribute == GetMaxHealthAttribute())
 	{
 		NewValue = FMath::Max(NewValue, 1.0f);
+	}
+	// Never deal more damage than can be applied (i.e. remaining health).
+	else if (Attribute == GetDamageAttribute())
+	{
+		NewValue = FMath::Min(NewValue, GetHealth());
+	}
+	// Never deal more healing than can be applied (i.e. missing health).
+	else if (Attribute == GetHealingAttribute())
+	{
+		NewValue = FMath::Min(NewValue, (GetMaxHealth() - GetHealth()));
 	}
 }
 

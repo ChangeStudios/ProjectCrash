@@ -100,6 +100,7 @@ public:
 	 * By default, this is called by the game mode when spawning a new pawn. But this could also be called, for
 	 * example, by a bot-spawner, after spawning a bot.
 	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Crash|Pawn")
 	void SetPawnData(const UPawnData* InPawnData);
 
 private:
@@ -141,9 +142,6 @@ private:
 
 	/** Broadcast when the owning pawn removes itself as the avatar of an ASC. */
 	FSimpleMulticastDelegate OnAbilitySystemUninitialized;
-
-	/** Ability sets granted by the current pawn data. */
-	TArray<FCrashAbilitySet_GrantedHandles> GrantedPawnDataAbilitySets;
 
 // Ability system component.
 public:

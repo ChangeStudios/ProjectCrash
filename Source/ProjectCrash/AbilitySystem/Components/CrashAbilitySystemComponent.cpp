@@ -16,6 +16,8 @@
 #include "Characters/CrashCharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 /** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
  * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
@@ -122,22 +124,6 @@ void UCrashAbilitySystemComponent::TryActivatePassiveAbilities()
 			AbilityCDO->TryActivatePassiveAbility(AbilityActorInfo.Get(), AbilitySpec);
 		}
 	}
-}
-
-void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnGiveAbility(AbilitySpec);
-
-	// Broadcast that a new ability was granted to this ASC.
-	AbilityGrantedDelegate.Broadcast(AbilitySpec);
-}
-
-void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnRemoveAbility(AbilitySpec);
-
-	// Broadcast that an ability was removed from this ASC.
-	AbilityRemovedDelegate.Broadcast(AbilitySpec);
 }
 
 void UCrashAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
@@ -363,55 +349,44 @@ void UCrashAbilitySystemComponent::HandleAbilityEndedForActivationGroup(UCrashGa
 	}
 }
 
+void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnGiveAbility(AbilitySpec);
+
+	// Send a standardized message communicating the ability addition.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Added, AbilitySpec.Handle, AbilitySpec.Level);
+}
+
+void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnRemoveAbility(AbilitySpec);
+
+	// Send a standardized message communicating the ability removal.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Removed, AbilitySpec.Handle);
+}
+
 void UCrashAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability)
 {
 	Super::NotifyAbilityActivated(Handle, Ability);
 
-	// Send a standardized message that this ability was activated.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Activated;
-		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
-		AbilityMessage.AbilitySpecHandle = Handle;
-
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-	}
-}
-
-void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled)
-{
-	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
-
-	// Send a standardized message that this ability ended.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Ended;
-		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
-		AbilityMessage.AbilitySpecHandle = Handle;
-
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-	}
+	// Send a standardized message communicating the ability activation.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Activated_Success, Handle);
 }
 
 void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason)
 {
 	Super::NotifyAbilityFailed(Handle, Ability, FailureReason);
 
-	// Send a standardized message that the ability activation failed.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
-		AbilityMessage.ActorInfo = *static_cast<FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
-		AbilityMessage.AbilitySpecHandle = Handle;
+	// Send a standardized message communicating the ability activation failure.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Activated_Failed, Handle);
+}
 
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-	}
+void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled)
+{
+	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
+
+	// Send a standardized message communicating the ability end.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Ended, Handle);
 }
 
 void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(AActor* Source)
@@ -566,4 +541,39 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 {
 	// Cast to typed actor info.
 	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
+}
+
+void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)
+{
+	ensure(MessageType.IsValid());
+	if (!UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	{
+		return;
+	}
+
+	// Construct the message.
+	FCrashAbilityMessage Message;
+	Message.MessageType = MessageType;
+	Message.AbilitySpecHandle = Ability;
+	Message.ActorInfo = *GetCrashAbilityActorInfo();
+	Message.Magnitude = Magnitude;
+
+	// Broadcast the message locally.
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+	MessageSystem.BroadcastMessage(Message.MessageType, Message);
+
+	// Some events only occur on the server. If we should replicate this message to clients, use a reliable multicast.
+	if (bReplicateMessage && AbilityActorInfo->IsNetAuthority())
+	{
+		MulticastReliableAbilityMessageToClients(Message);
+	}
+}
+
+void UCrashAbilitySystemComponent::MulticastReliableAbilityMessageToClients_Implementation(const FCrashAbilityMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.MessageType, Message);
+	}
 }

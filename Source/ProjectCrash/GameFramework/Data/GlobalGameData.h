@@ -36,4 +36,8 @@ public:
 	/** Gameplay effect used to apply damage from code. Uses set-by-caller for magnitude. */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", DisplayName = "Damage Gameplay Effect (Set-By-Caller)")
 	TSoftClassPtr<UGameplayEffect> DamageGameplayEffect_SetByCaller;
+
+	/** Gameplay effect used to grant ultimate charge from code. Uses set-by-caller for magnitude. */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", DisplayName = "Ultimate Charge Gameplay Effect (Set-By-Caller)")
+	TSoftClassPtr<UGameplayEffect> UltimateChargeGameplayEffect_SetByCaller;
 };

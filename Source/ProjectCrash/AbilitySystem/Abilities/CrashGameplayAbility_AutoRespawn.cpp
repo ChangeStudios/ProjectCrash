@@ -247,17 +247,7 @@ void UCrashGameplayAbility_AutoRespawn::OnRespawnCompleted()
 
 bool UCrashGameplayAbility_AutoRespawn::CanRespawn_Implementation()
 {
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
-	{
-		if (const UAttributeSet* LivesAttribute = ASC->GetAttributeSet(ULivesAttributeSet::StaticClass()))
-		{
-			// TODO: Return true if there is at least one life left.
-
-			return true;
-		}
-	}
-
-	return false;
+	return true;
 }
 
 void UCrashGameplayAbility_AutoRespawn::OnRespawnFailed_Implementation()

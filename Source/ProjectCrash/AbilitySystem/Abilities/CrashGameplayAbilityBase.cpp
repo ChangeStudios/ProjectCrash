@@ -3,22 +3,19 @@
 
 #include "CrashGameplayAbilityBase.h"
 
-#include "Abilities/Tasks/AbilityTask.h"
-#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
-#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "AbilitySystemLog.h"
-#include "Characters/PawnCameraManager.h"
 #include "CrashGameplayTags.h"
+#include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "Characters/PawnCameraManager.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/GameModes/CrashGameState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
 
 #if WITH_EDITOR
@@ -211,32 +208,97 @@ void UCrashGameplayAbilityBase::ApplyCooldown(const FGameplayAbilitySpecHandle H
 {
 	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
-		// Apply the cooldown manually so we can get a reference to the active effect.
-		const FActiveGameplayEffectHandle CooldownEffectHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+		// Add this ability's cooldown tags to the cooldown GE.
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);
 
-		if (CooldownEffectHandle.WasSuccessfullyApplied())
+		// Override the cooldown GE's duration if it uses a set-by-caller duration.
+		if (ShouldSetCooldownDuration())
 		{
-			// Send a standardized message that this ability's cooldown started.
-			if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+			check(CooldownDuration > 0.0f);
+			SpecHandle.Data.Get()->SetSetByCallerMagnitude(CrashGameplayTags::TAG_GameplayEffects_SetByCaller_CooldownDuration, CooldownDuration);
+		}
+
+		// Apply the cooldown.
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		FActiveGameplayEffectHandle CooldownEffectHandle;
+
+		// If our current prediction key is still valid, use it to predict our cooldown.
+		if (ASC && ASC->ScopedPredictionKey.IsValidForMorePrediction())
+		{
+			CooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+		}
+		/* Create and confirm a new prediction window for applying the cooldown, if necessary (e.g. if we're applying it
+		 * at the end of a latent ability, like the end of a dash, when the original prediction key has already been
+		 * sent to the server). */
+		else
+		{
+			FScopedPredictionWindow ScopedPrediction(ASC, true);
+			CooldownEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+			if (IsPredictingClient())
 			{
-				FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-				AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Cooldown_Started;
-				AbilityMessage.AbilitySpecHandle = Handle;
-				AbilityMessage.ActorInfo = *GetCrashActorInfo();
-				const FActiveGameplayEffect* CooldownEffect = GetAbilitySystemComponentFromActorInfo_Checked()->GetActiveGameplayEffect(CooldownEffectHandle);
-				AbilityMessage.OptionalMagnitude = CooldownEffect->GetDuration();
-
-				UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-				MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-
-				// TODO: Broadcast the message to clients, since ApplyCooldown is only called on the server.
-				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(GetWorld())))
-				{
-					// GS->MulticastReliableAbilityMessageToClients(AbilityMessage);
-				}
+				GetAbilitySystemComponentFromActorInfo()->ServerSetReplicatedEvent(EAbilityGenericReplicatedEvent::GameCustom1 /* Cooldown start. */, Handle, ActivationInfo.GetActivationPredictionKey(), ASC->ScopedPredictionKey);
 			}
 		}
+
+		/* Broadcast relevant messages if the cooldown was successfully applied.
+		 * NOTE: We intentionally predict the cooldown, but not the cooldown message. We always want the client to be
+		 * up-to-date with the state of their ability, but we never want our messages to fall out of sync with the
+		 * server. For example, predicting the cooldown lets us always accurately determine whether our charge-based
+		 * ability's widget needs to enter a cooldown animation or if it can immediately be used again. Either way,
+		 * by NOT predicting the message that TRIGGERS the animation, the cooldown timer itself will always be synced
+		 * with the server. */
+		if (CooldownEffectHandle.WasSuccessfullyApplied() && ASC->IsOwnerActorAuthoritative())
+		{
+			UCrashAbilitySystemComponent* CrashASC = Cast<UCrashAbilitySystemComponent>(ASC);
+			check(CrashASC);
+
+			// Send a standardized message that this ability's cooldown started.
+			const float CooldownTime = CrashASC->GetActiveGameplayEffect(CooldownEffectHandle)->GetTimeRemaining(GetWorld()->GetTimeSeconds());
+			CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started, GetCurrentAbilitySpecHandle(), CooldownTime, true);
+
+			// Listen for the cooldown effect to be removed.
+			CrashASC->OnAnyGameplayEffectRemovedDelegate().AddWeakLambda(this, [this, CooldownEffectHandle, CrashASC](const FActiveGameplayEffect& RemovedEffect)
+			{
+				if (RemovedEffect.Handle == CooldownEffectHandle)
+				{
+					CrashASC->BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended, GetCurrentAbilitySpecHandle(), 0.0f, true);
+				}
+			});
+		}
 	}
+}
+
+const FGameplayTagContainer* UCrashGameplayAbilityBase::GetCooldownTags() const
+{
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&CooldownTags_Internal);
+	MutableTags->Reset(); // Tags are retrieved through the CDO, so they need to be reset each time.
+
+	// Add cooldown GE's tags.
+	if (const FGameplayTagContainer* ParentTags = Super::GetCooldownTags())
+	{
+		MutableTags->AppendTags(*ParentTags);
+	}
+
+	// Add this ability's cooldown tags.
+	MutableTags->AppendTags(CooldownTags);
+
+	return MutableTags;
+}
+
+bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
+{
+	// Abilities can only set their cooldown duration directly if their cooldown GE has a set-by-caller duration.
+	if (IsValid(CooldownGameplayEffectClass))
+	{
+		if (const UGameplayEffect* CDO = CooldownGameplayEffectClass.GetDefaultObject())
+		{
+			return (CDO->DurationPolicy == EGameplayEffectDurationType::HasDuration) &&
+				(CDO->DurationMagnitude.GetMagnitudeCalculationType() == EGameplayEffectMagnitudeCalculation::SetByCaller);
+		}
+	}
+
+	return false;
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
@@ -439,8 +501,35 @@ EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationCont
 		Result = EDataValidationResult::Invalid;
 	}
 
+	// Ensure we have a valid cooldown duration, if it will be used.
+	if (ShouldSetCooldownDuration() && !(CooldownDuration > 0.0f))
+	{
+		Context.AddError(LOCTEXT("CooldownTooShort", "This ability's cooldown gameplay effect will be overridden by this ability, but its cooldown is too short. Either make the cooldown duration greater than 0.0s, or use a cooldown GE that does not use set-by-caller for its duration."));
+		Result = EDataValidationResult::Invalid;
+	}
+
 	return Result;
 }
-#endif
+#endif // WITH_EDITOR
+
+#if WITH_EDITOR
+bool UCrashGameplayAbilityBase::CanEditChange(const FProperty* InProperty) const
+{
+	bool bIsEditable = Super::CanEditChange(InProperty);
+
+	if (bIsEditable && InProperty)
+	{
+		const FName PropertyName = InProperty->GetFName();
+
+		// Cooldown duration should only be editable if it will actually be used.
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(UCrashGameplayAbilityBase, CooldownDuration))
+		{
+			bIsEditable = ShouldSetCooldownDuration();
+		}
+	}
+
+	return bIsEditable;
+}
+#endif // WITH_EDITOR
 
 #undef LOCTEXT_NAMESPACE
