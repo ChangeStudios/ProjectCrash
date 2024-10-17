@@ -61,13 +61,18 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 	{
 		// Specs aren't well-exposed to BP, so just pass the CDO instead.
 		const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
+
+		if (!ensure(AbilitySpec))
+		{
+			return;
+		}
+
 		UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
 		if (!IsValid(Ability))
 		{
 			Ability = AbilitySpec->Ability;
 		}
 		UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
-
 
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Added))
 		{
