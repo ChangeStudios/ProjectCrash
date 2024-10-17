@@ -134,8 +134,21 @@ public:
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 	virtual void NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability) override;
-	virtual void NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason) override;
 	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
+
+
+
+	// Gameplay.
+
+public:
+
+	/** Disables all gameplay abilities possessed by this ASC with any of the given tags. Must be called with 
+	* authority. */
+	void DisableAbilitiesByTag(const FGameplayTagContainer& Tags);
+
+	/** Enables any disabled gameplay abilities possessed by this ASC with any of the given tags. Must be called with 
+	* authority. */
+	void EnableAbilitiesByTag(const FGameplayTagContainer& Tags);
 
 
 
@@ -212,10 +225,15 @@ public:
 	/** Retrieves the typed version of this ASC's actor info. */
 	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
 
-	/** Shorthand for locally broadcasting a gameplay ability message. */
+	/** Shorthand for broadcasting a gameplay ability message. */
 	void BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude = 0.0f, bool bReplicateMessage = false);
 
-	/** Multicasts broadcasting for a gameplay ability message. */
+	/** Multicast for locally broadcasting a gameplay ability message. */
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastReliableAbilityMessageToClients(const struct FCrashAbilityMessage Message);
+
+private:
+
+	/** Notifies all exclusive abilities, except the given ignored ability, that they are now disabled or enabled. */
+	void NotifyAbilityExclusiveAbilitiesDisabled(bool bDisabled, const UGameplayAbility* AbilityToIgnore);
 };

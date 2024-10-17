@@ -22,49 +22,6 @@ class PROJECTCRASH_API UAbilityWidgetBase : public UTaggedWidget
 {
 	GENERATED_BODY()
 
-	/**
-	 *	Initialization:
-	 *
-	 *		If the PS is available, call OnPSChanged
-	 *		If the PS isn't available, bind to when it's set
-	 *
-	 *		When PS is ready
-	 *			Cache ASC
-	 *			Iterate through activateable abilities
-	 *				Call OnAdded for each
-	 *			Start listening for messages with new ASC
-	 *
-	 *	OnAdded:
-	 *		Calls BP OnAdded
-	 *		Calls OnActivated if the ability is active
-	 *		Calls OnDisabled if the ability is disabled
-	 *		Calls OnCooldownStarted if the ability is on cooldown
-	 *
-	 *	On ASC Bound:
-	 *		Listen for tags added to the ASC
-	 * 
-	 *	Messages:
-	 *		OnAbilityAdded
-	 *			Fired when an ability is granted to the ASC.
-	 *		OnAbilityRemoved
-	 *			Fired when an ability is removed from the ASC
-	 *		OnAbilityActivated
-	 *			Fired when ASC activates an ability
-	 *		OnAbilityEnded
-	 *			Fired when ASC ends or cancels an ability
-	 *		OnAbilityDisabled
-	 *			Fired when an ability gets the Ability.Behavior.Disabled tag
-	 *			Fired when the ASC gets the State.AbilityInputBlocked tag
-	 *		OnAbilityEnabled
-	 *			Fired when an ability loses the Ability.Behavior.Disabled tag
-	 *			Fired when the ASC loses the State.AbilityInputBlocked tag
-	 *		OnAbilityActivationFailed
-	 *			Fired when the ASC fails to activate an ability
-	 *		OnAbilityCostChanged
-	 *			Fired when the cost used for an ability increases or decreases
-	 *
-	 */
-
 	// Initialization.
 
 public:
@@ -127,7 +84,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Removed")
 	void K2_OnAbilityRemoved(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
-	/** An ability was temporarily disabled (not removed). */
+	/** An ability was temporarily disabled (not removed).
+	 * TODO: Call when the ASC gets the State.AbilityInputBlocked tag. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Disabled")
 	void K2_OnAbilityDisabled(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
@@ -138,10 +96,6 @@ protected:
 	/** An ability was activated by this widget's bound ASC. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activated")
 	void K2_OnAbilityActivated_Success(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
-
-	/** This widget's bound ASC tried but failed to activate an ability. */
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activation Failed")
-	void K2_OnAbilityActivated_Failed(FGameplayAbilitySpecHandle AbilityHandle, UCrashGameplayAbilityBase* Ability, const FCrashGameplayAbilityActorInfo ActorInfo, float Magnitude);
 
 	/** An ability that was activated by this widget's bound ASC ended. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Ended")

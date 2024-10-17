@@ -68,13 +68,13 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		}
 		UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
 
-		// TODO: C++ please add switches for structs thank you <3
+
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Added))
 		{
 			K2_OnAbilityAdded(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Removed))
-		{
+		{ 
 			K2_OnAbilityRemoved(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Disabled))
@@ -88,10 +88,6 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
 			K2_OnAbilityActivated_Success(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
-		}
-		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Failed))
-		{
-			K2_OnAbilityActivated_Failed(Message.AbilitySpecHandle, CrashAbility, Message.ActorInfo, Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Ended))
 		{
@@ -123,6 +119,9 @@ void UAbilityWidgetBase::OnAbilitySystemBound()
 	{
 		UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Spec.Ability);
 		K2_OnAbilityAdded(Spec.Handle, CrashAbility, *BoundASC.Get()->GetCrashAbilityActorInfo(), Spec.Level);
+
+		/* TODO: Call OnActivated if it's active, OnDisabled if it's disabled, OnCooldownStarted if it's on cooldown,
+		 * and OnCostChanged if it has a relevant cost. */
 	}
 
 	// The Message.Ability tag is implicit, so we need to retrieve it manually.
