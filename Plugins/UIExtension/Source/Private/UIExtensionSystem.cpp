@@ -193,7 +193,10 @@ void UUIExtensionSubsystem::NotifyExtensionPointOfExtensions(TSharedPtr<FUIExten
 				if (ExtensionPoint->DoesExtensionPassContract(Extension.Get()))
 				{
 					FUIExtensionRequest Request = CreateExtensionRequest(Extension);
-					ExtensionPoint->Callback.ExecuteIfBound(EUIExtensionAction::Added, Request);
+					if (ExtensionPoint->Callback.IsBound())
+					{
+						ExtensionPoint->Callback.Execute(EUIExtensionAction::Added, Request);
+					}
 				}
 			}
 		}
@@ -205,7 +208,7 @@ void UUIExtensionSubsystem::NotifyExtensionPointOfExtensions(TSharedPtr<FUIExten
 	}
 }
 
-void UUIExtensionSubsystem::NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension)
+UUserWidget* UUIExtensionSubsystem::NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension)
 {
 	bool bOnInitialTag = true;
 	for (FGameplayTag Tag = Extension->ExtensionPointTag; Tag.IsValid(); Tag = Tag.RequestDirectParent())
@@ -222,7 +225,10 @@ void UUIExtensionSubsystem::NotifyExtensionPointsOfExtension(EUIExtensionAction 
 					if (ExtensionPoint->DoesExtensionPassContract(Extension.Get()))
 					{
 						FUIExtensionRequest Request = CreateExtensionRequest(Extension);
-						ExtensionPoint->Callback.ExecuteIfBound(Action, Request);
+						if (ExtensionPoint->Callback.IsBound())
+						{
+							return ExtensionPoint->Callback.Execute(Action, Request);
+						}
 					}
 				}
 			}
@@ -230,6 +236,8 @@ void UUIExtensionSubsystem::NotifyExtensionPointsOfExtension(EUIExtensionAction 
 		
 		bOnInitialTag = false;
 	}
+
+	return nullptr;
 }
 
 void UUIExtensionSubsystem::UnregisterExtension(const FUIExtensionHandle& ExtensionHandle)
@@ -290,6 +298,26 @@ void UUIExtensionSubsystem::UnregisterExtensionPoint(const FUIExtensionPointHand
 	}
 }
 
+UUserWidget* UUIExtensionSubsystem::RetrieveExtensionWidget(const FUIExtensionHandle& ExtensionHandle)
+{
+	if (ExtensionHandle.IsValid())
+	{
+		checkf(ExtensionHandle.ExtensionSource == this, TEXT("Trying to retrieve an extension that's not from this extension subsystem."));
+
+		TSharedPtr<FUIExtension> Extension = ExtensionHandle.DataPtr;
+		if (FExtensionList* ListPtr = ExtensionMap.Find(Extension->ExtensionPointTag))
+		{
+			return NotifyExtensionPointsOfExtension(EUIExtensionAction::Retrieve, Extension);
+		}
+	}
+	else
+	{
+		UE_LOG(LogUIExtension, Warning, TEXT("Trying to retrieve an invalid Handle."));
+	}
+
+	return nullptr;
+}
+
 FUIExtensionRequest UUIExtensionSubsystem::CreateExtensionRequest(const TSharedPtr<FUIExtension>& Extension)
 {
 	FUIExtensionRequest Request;
@@ -305,7 +333,11 @@ FUIExtensionRequest UUIExtensionSubsystem::CreateExtensionRequest(const TSharedP
 FUIExtensionPointHandle UUIExtensionSubsystem::K2_RegisterExtensionPoint(FGameplayTag ExtensionPointTag, EUIExtensionPointMatch ExtensionPointTagMatchType, const TArray<UClass*>& AllowedDataClasses, FExtendExtensionPointDynamicDelegate ExtensionCallback)
 {
 	return RegisterExtensionPoint(ExtensionPointTag, ExtensionPointTagMatchType, AllowedDataClasses, FExtendExtensionPointDelegate::CreateWeakLambda(ExtensionCallback.GetUObject(), [this, ExtensionCallback](EUIExtensionAction Action, const FUIExtensionRequest& Request) {
-		ExtensionCallback.ExecuteIfBound(Action, Request);
+		if (ExtensionCallback.IsBound())
+		{
+			ExtensionCallback.Execute(Action, Request);
+		}
+		return nullptr;
 	}));
 }
 
