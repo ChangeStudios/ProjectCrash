@@ -306,18 +306,13 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	Super::OnGiveAbility(ActorInfo, Spec);
 
 	// Register and initialize this ability's widgets.
-	UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>();
-	const APlayerController* PC = (ActorInfo && ActorInfo->IsLocallyControlledPlayer()) ? ActorInfo->PlayerController.Get() : nullptr;
-	if (ExtensionSubsystem && PC)
+	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
 	{
 		for (auto KVP : AbilityWidgets)
 		{
 			if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
 			{
-				FUIExtensionHandle ExtensionHandle = ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, PC->GetLocalPlayer(), KVP.Value, -1);
-				UUserWidget* NewAbilityWidget = ExtensionSubsystem->RetrieveExtensionWidget(ExtensionHandle);
-				Cast<UAbilityWidgetBase>(NewAbilityWidget)->InitializeWidgetWithAbility(Spec, GetCrashAbilitySystemComponentFromActorInfo());
-				AbilityWidgetHandles.Add(ExtensionHandle);
+				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetOwningActorFromActorInfo(), KVP.Value, -1));
 			}
 		}
 	}

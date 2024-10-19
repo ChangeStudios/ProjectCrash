@@ -7,31 +7,22 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 
-void UAbilityWidgetBase::InitializeWidgetWithAbility(const FGameplayAbilitySpec& AbilitySpec, UCrashAbilitySystemComponent* OwningASC)
+bool UAbilityWidgetBase::Initialize()
 {
-	ensure(OwningASC);
-
-	// Never re-bind an ability widget.
-	ensure(BoundASC == nullptr);
-
-	BoundAbilitySpec = AbilitySpec;
-	BoundAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
-	BoundASC = OwningASC;
-
-	K2_OnAbilityBound();
-
-	// TODO: Call OnActivated if the ability is active, OnDisabled if it's disabled, OnCooldownStarted if it's on
-	// cooldown, and OnCostChanged if it has a relevant cost.
-
-	// The Message.Ability tag is implicit, so we need to retrieve it manually.
-	const FGameplayTag TAG_Message_Ability = CrashGameplayTags::TAG_Message_Ability_Added.GetTag().RequestDirectParent();
-
-	// Start listening for messages related to the bound ability.
-	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	AbilityMessageListener = MessageSystem.RegisterListener<FCrashAbilityMessage>(TAG_Message_Ability, [&](FGameplayTag Channel, const FCrashAbilityMessage& Message)
+	if (!IsDesignTime())
 	{
-		OnAbilityMessageReceived(TAG_Message_Ability, Message);
-	}, EGameplayMessageMatch::PartialMatch);
+		// The Message.Ability tag is implicit, so we need to retrieve it manually.
+		const FGameplayTag TAG_Message_Ability = CrashGameplayTags::TAG_Message_Ability_Added.GetTag().RequestDirectParent();
+
+		// Start listening for messages related to the bound ability.
+		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+		AbilityMessageListener = MessageSystem.RegisterListener<FCrashAbilityMessage>(TAG_Message_Ability, [&](FGameplayTag Channel, const FCrashAbilityMessage& Message)
+		{
+			OnAbilityMessageReceived(TAG_Message_Ability, Message);
+		}, EGameplayMessageMatch::PartialMatch);
+	}
+
+	return Super::Initialize();
 }
 
 void UAbilityWidgetBase::RemoveFromParent()
@@ -50,38 +41,63 @@ void UAbilityWidgetBase::RemoveFromParent()
 
 void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message)
 {
-	// Forward ability messages to their corresponding BP events, filtering for messages related to the bound ability.
-	if (Message.AbilitySpecHandle == BoundAbilitySpec.Handle &&
-		BoundASC.IsValid() &&
-		Message.ActorInfo.AbilitySystemComponent == BoundASC.Get())
+	// We only care about our abilities.
+	// NOTE: I don't know if this will pass on the server when bots activate abilities. We would need to add an
+	// "OwningActor" variable to the ability message payload if it does.
+	if (!Message.ActorInfo.IsLocallyControlled())
+	{
+		return;
+	}
+
+	UCrashAbilitySystemComponent* ASC = Message.ActorInfo.CrashAbilitySystemComponent.Get();
+	if (!ensure(ASC))
+	{
+		return;
+	}
+
+	const FGameplayAbilitySpec* AbilitySpec = ASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
+	if (!ensure(AbilitySpec))
+	{
+		return;
+	}
+
+	UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
+	if (!IsValid(Ability))
+	{
+		Ability = AbilitySpec->Ability;
+	}
+	UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
+
+	// Forward ability messages to their corresponding events, filtering for messages related to the specified ability.
+	if (CrashAbility->AbilityTags.HasTag(AbilityIdentifierTag))
 	{
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Disabled))
 		{
-			K2_OnAbilityDisabled();
+			K2_OnAbilityDisabled(CrashAbility, ASC);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Enabled))
 		{
-			K2_OnAbilityEnabled();
+			K2_OnAbilityEnabled(CrashAbility, ASC);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
-			K2_OnAbilityActivated_Success();
+			K2_OnAbilityActivated_Success(CrashAbility, ASC);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Ended))
 		{
-			K2_OnAbilityEnded();
+			K2_OnAbilityEnded(CrashAbility, ASC);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started))
 		{
-			K2_OnAbilityCooldownStarted(Message.Magnitude);
+			K2_OnAbilityCooldownStarted(CrashAbility, ASC, Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended))
 		{
-			K2_OnAbilityCooldownEnded();
+			K2_OnAbilityCooldownEnded(CrashAbility, ASC);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_CostChanged))
 		{
-			K2_OnAbilityCostChanged(Message.Magnitude);
+			K2_OnAbilityCostChanged(CrashAbility, ASC, Message.Magnitude);
 		}
 	}
 }
