@@ -24,7 +24,7 @@ void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInp
 	{
 		if (AbilityIcon)
 		{
-			AbilityIcon->SetBrushFromTexture(CrashAbility->AbilityIcon, true);
+			// AbilityIcon->SetBrushFromTexture(CrashAbility->AbilityIcon, true);
 		}
 	}
 
