@@ -34,10 +34,12 @@ UENUM(BlueprintType)
 enum class EUIExtensionAction : uint8
 {
 	Added,
-	Removed
+	Removed,
+	Retrieve
 };
 
-DECLARE_DELEGATE_TwoParams(FExtendExtensionPointDelegate, EUIExtensionAction Action, const FUIExtensionRequest& Request);
+/** Returns the registered widget the given action is Added or Retrieve, if the widget is successfully registered. */
+DECLARE_DELEGATE_RetVal_TwoParams(UUserWidget*, FExtendExtensionPointDelegate, EUIExtensionAction Action, const FUIExtensionRequest& Request);
 
 /*
  *
@@ -205,6 +207,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UI Extension")
 	void UnregisterExtensionPoint(const FUIExtensionPointHandle& ExtensionPointHandle);
 
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UI Extension")
+	UUserWidget* RetrieveExtensionWidget(const FUIExtensionHandle& ExtensionHandle);
+
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 
 protected:
@@ -212,7 +217,7 @@ protected:
 	virtual void Deinitialize() override;
 
 	void NotifyExtensionPointOfExtensions(TSharedPtr<FUIExtensionPoint>& ExtensionPoint);
-	void NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension);
+	UUserWidget* NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension);
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category="UI Extension", meta = (DisplayName = "Register Extension Point"))
 	FUIExtensionPointHandle K2_RegisterExtensionPoint(FGameplayTag ExtensionPointTag, EUIExtensionPointMatch ExtensionPointTagMatchType, const TArray<UClass*>& AllowedDataClasses, FExtendExtensionPointDynamicDelegate ExtensionCallback);

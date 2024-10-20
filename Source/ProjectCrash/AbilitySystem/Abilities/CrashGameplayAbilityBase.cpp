@@ -16,7 +16,10 @@
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
+#include "UI/HUD/AbilityWidgetBase.h"
+#include "UI/HUD/AbilityWidgetBase_Dep.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -47,9 +50,6 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 	
 	ActivationMethod = EAbilityActivationMethod::OnInputTriggered;
 	ActivationGroup = EAbilityActivationGroup::Independent;
-
-	bIsUserFacingAbility = false;
-	AbilityIcon = nullptr;
 }
 
 void UCrashGameplayAbilityBase::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
@@ -305,6 +305,18 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
+	// Register and initialize this ability's widgets.
+	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
+	{
+		for (auto KVP : AbilityWidgets)
+		{
+			if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
+			{
+				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetOwningActorFromActorInfo(), KVP.Value, -1));
+			}
+		}
+	}
+
 	// Trigger the blueprint-exposed version of this callback.
 	K2_OnGiveAbility();
 
@@ -318,6 +330,18 @@ void UCrashGameplayAbilityBase::OnRemoveAbility(const FGameplayAbilityActorInfo*
 
 	// Trigger the blueprint-exposed version of this callback.
 	K2_OnRemoveAbility();
+
+	// Remove this ability's widgets.
+	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
+	{
+		for (FUIExtensionHandle& Extension : AbilityWidgetHandles)
+		{
+			if (Extension.IsValid())
+			{
+				ExtensionSubsystem->UnregisterExtension(Extension);
+			}
+		}
+	}
 }
 
 void UCrashGameplayAbilityBase::OnNewAvatarSet()

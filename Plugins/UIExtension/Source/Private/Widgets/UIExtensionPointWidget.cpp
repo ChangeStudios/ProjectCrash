@@ -114,7 +114,7 @@ void UUIExtensionPointWidget::RegisterExtensionPointForPlayerState(UCommonLocalP
 	}
 }
 
-void UUIExtensionPointWidget::OnAddOrRemoveExtension(EUIExtensionAction Action, const FUIExtensionRequest& Request)
+UUserWidget* UUIExtensionPointWidget::OnAddOrRemoveExtension(EUIExtensionAction Action, const FUIExtensionRequest& Request)
 {
 	if (Action == EUIExtensionAction::Added)
 	{
@@ -125,6 +125,7 @@ void UUIExtensionPointWidget::OnAddOrRemoveExtension(EUIExtensionAction Action, 
 		{
 			UUserWidget* Widget = CreateEntryInternal(WidgetClass);
 			ExtensionMapping.Add(Request.ExtensionHandle, Widget);
+			return Widget;
 		}
 		else if (DataClasses.Num() > 0)
 		{
@@ -139,12 +140,13 @@ void UUIExtensionPointWidget::OnAddOrRemoveExtension(EUIExtensionAction Action, 
 					{
 						ExtensionMapping.Add(Request.ExtensionHandle, Widget);
 						ConfigureWidgetForData.ExecuteIfBound(Widget, Data);
+						return Widget;
 					}
 				}
 			}
 		}
 	}
-	else
+	else if (Action == EUIExtensionAction::Removed)
 	{
 		if (UUserWidget* Extension = ExtensionMapping.FindRef(Request.ExtensionHandle))
 		{
@@ -152,6 +154,12 @@ void UUIExtensionPointWidget::OnAddOrRemoveExtension(EUIExtensionAction Action, 
 			ExtensionMapping.Remove(Request.ExtensionHandle);
 		}
 	}
+	else
+	{
+		return *ExtensionMapping.Find(Request.ExtensionHandle);
+	}
+
+	return nullptr;
 }
 
 #if WITH_EDITOR

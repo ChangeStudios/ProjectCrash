@@ -20,7 +20,7 @@ struct FCrashAbilityMessage
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayTag MessageType;
 
-	/** The ability referred to by the message. Almost always the CDO. */
+	/** The ability referred to by the message. */
 	UPROPERTY(BlueprintReadWrite, Category = Gameplay)
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 

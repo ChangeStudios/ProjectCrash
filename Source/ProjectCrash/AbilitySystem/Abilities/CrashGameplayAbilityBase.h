@@ -144,39 +144,25 @@ protected:
 
 	/** Removes gameplay effects applied by this ability and updates its activation group on the owning ASC. */
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-	
 
 
 
-	// Optional user-facing ability information.
+	// Optional ability widgets.
 
-public:
+protected:
 
-	/** Whether this ability should appear in ability information widgets: the HUD, character selection screens, etc. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", DisplayName = "User-Facing Ability?")
-	bool bIsUserFacingAbility;
+	/** When this ability is granted to an ASC, these widgets will be added to their specified slots. The widgets are
+	 * removed with the ability. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
+	TMap<FGameplayTag, TSubclassOf<UUserWidget>> AbilityWidgets;
 
-	/** This ability's user-facing name. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
-	FText UserFacingName;
-
-	/** This ability's user-facing description. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
-	FText UserFacingDescription;
-
-	/** This ability's icon. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User-Facing Data", Meta = (EditCondition = "bIsUserFacingAbility", EditConditionHides))
-	TObjectPtr<UTexture2D> AbilityIcon;
+	/** Handle for this ability's widgets, if it created any. */
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "Ability|User Interface")
+	TArray<FUIExtensionHandle> AbilityWidgetHandles;
 
 
 
 	// Cooldowns.
-
-public:
-
-	/** The gameplay effect used for this ability's cooldown. Null if this ability has no cooldown. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
-	TSubclassOf<UGameplayEffect> GetAbilityCooldownClass() const { return CooldownGameplayEffectClass; }
 
 protected:
 
@@ -203,17 +189,6 @@ protected:
 	/** Whether this ability should try to override its cooldown GE's duration. Only true if the cooldown GE is set and
 	 * has a set-by-caller duration. */
 	bool ShouldSetCooldownDuration() const;
-
-
-
-	// Cost.
-	// TODO: Implement charge-based abilities.
-
-public:
-
-	/** The gameplay effect used for this ability's cost. Null if this ability has no cost. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
-	TSubclassOf<UGameplayEffect> GetAbilityCostClass() const { return CostGameplayEffectClass; }
 
 
 
