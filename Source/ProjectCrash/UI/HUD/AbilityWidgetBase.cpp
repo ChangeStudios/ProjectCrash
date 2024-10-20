@@ -22,7 +22,7 @@ bool UAbilityWidgetBase::Initialize()
 		}, EGameplayMessageMatch::PartialMatch);
 	}
 
-	return Super::Initialize();
+	return Super::Initialize();;
 }
 
 void UAbilityWidgetBase::RemoveFromParent()
@@ -49,13 +49,12 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	UCrashAbilitySystemComponent* ASC = Message.ActorInfo.CrashAbilitySystemComponent.Get();
-	if (!ensure(ASC))
+	if (!ensure(BoundASC.IsValid()))
 	{
 		return;
 	}
 
-	const FGameplayAbilitySpec* AbilitySpec = ASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
+	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
 	if (!ensure(AbilitySpec))
 	{
 		return;
@@ -73,31 +72,31 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 	{
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Disabled))
 		{
-			K2_OnAbilityDisabled(CrashAbility, ASC);
+			K2_OnAbilityDisabled(CrashAbility);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Enabled))
 		{
-			K2_OnAbilityEnabled(CrashAbility, ASC);
+			K2_OnAbilityEnabled(CrashAbility);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
-			K2_OnAbilityActivated_Success(CrashAbility, ASC);
+			K2_OnAbilityActivated_Success(CrashAbility);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Ended))
 		{
-			K2_OnAbilityEnded(CrashAbility, ASC);
+			K2_OnAbilityEnded(CrashAbility);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started))
 		{
-			K2_OnAbilityCooldownStarted(CrashAbility, ASC, Message.Magnitude);
+			K2_OnAbilityCooldownStarted(CrashAbility, Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended))
 		{
-			K2_OnAbilityCooldownEnded(CrashAbility, ASC);
+			K2_OnAbilityCooldownEnded(CrashAbility);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_CostChanged))
 		{
-			K2_OnAbilityCostChanged(CrashAbility, ASC, Message.Magnitude);
+			K2_OnAbilityCostChanged(CrashAbility, Message.Magnitude);
 		}
 	}
 }

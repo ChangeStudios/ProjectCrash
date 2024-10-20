@@ -147,19 +147,16 @@ protected:
 
 
 
-	// Optional ability widget.
-	// NOTE: alternate approach: take any UUserWidget, don't do any initialization, and create a custom widget for every
-	// ability that needs one. Add a new variable to the ability message payload: an identifying tag; listen for any
-	// messages with a matching tag instead of a matching spec.
+	// Optional ability widgets.
 
 protected:
 
-	/** When this ability is granted to an ASC, these widgets will be added to their specified slots and initialized
-	 * using this ability's data. The widget is removed with the ability. */
+	/** When this ability is granted to an ASC, these widgets will be added to their specified slots. The widgets are
+	 * removed with the ability. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "User Interface")
 	TMap<FGameplayTag, TSubclassOf<UUserWidget>> AbilityWidgets;
 
-	/** Handle for this ability's widget, if it created one. */
+	/** Handle for this ability's widgets, if it created any. */
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "Ability|User Interface")
 	TArray<FUIExtensionHandle> AbilityWidgetHandles;
 

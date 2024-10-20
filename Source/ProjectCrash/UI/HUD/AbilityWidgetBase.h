@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonUserWidget.h"
-#include "GameplayAbilitySpec.h"
+#include "AbilitySystemWidgetBase.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "AbilityWidgetBase.generated.h"
 
@@ -16,7 +15,7 @@ struct FCrashAbilityMessage;
  * A widget that receives events related to a specified gameplay ability.
  */
 UCLASS()
-class PROJECTCRASH_API UAbilityWidgetBase : public UCommonUserWidget
+class PROJECTCRASH_API UAbilityWidgetBase : public UAbilitySystemWidgetBase
 {
 	GENERATED_BODY()
 
@@ -52,32 +51,32 @@ protected:
 	/** This ability was temporarily disabled (not removed). */
 	// TODO: Call when the ASC gets the State.AbilityInputBlocked tag.
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Disabled")
-	void K2_OnAbilityDisabled(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC);
+	void K2_OnAbilityDisabled(UCrashGameplayAbilityBase* Ability);
 
 	/** This ability was re-enabled after being disabled. Not called when the ability is added. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Enabled")
-	void K2_OnAbilityEnabled(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC);
+	void K2_OnAbilityEnabled(UCrashGameplayAbilityBase* Ability);
 
 	/** This ability was successfully activated by its ASC. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Activated")
-	void K2_OnAbilityActivated_Success(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC);
+	void K2_OnAbilityActivated_Success(UCrashGameplayAbilityBase* Ability);
 
 	/** This ability ended. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Ended")
-	void K2_OnAbilityEnded(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC);
+	void K2_OnAbilityEnded(UCrashGameplayAbilityBase* Ability);
 
 	/** This ability's cooldown was applied. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Started")
-	void K2_OnAbilityCooldownStarted(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC, float CooldownDuration);
+	void K2_OnAbilityCooldownStarted(UCrashGameplayAbilityBase* Ability, float CooldownDuration);
 
 	/** This ability's cooldown ended. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cooldown Ended")
-	void K2_OnAbilityCooldownEnded(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC);
+	void K2_OnAbilityCooldownEnded(UCrashGameplayAbilityBase* Ability);
 
 	/** A variable used as this ability's cost was changed. Magnitude is the variable's new value. E.g. the player's
 	 * new ultimate charge. */
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability Cost Changed")
-	void K2_OnAbilityCostChanged(UCrashGameplayAbilityBase* Ability, UCrashAbilitySystemComponent* ASC, float Magnitude);
+	void K2_OnAbilityCostChanged(UCrashGameplayAbilityBase* Ability, float Magnitude);
 
 
 
