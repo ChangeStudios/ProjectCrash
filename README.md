@@ -8,6 +8,8 @@ Several external documents have been written to detail some of the more complex 
 * [Input System](https://docs.google.com/document/d/1FKrdgqlygmAeED8yWPM5JkIU46k4OLQpI_tIjP9rxyo/edit?usp=sharing)
 * [Game Framework (WIP)](https://docs.google.com/document/d/1aGqGTMlhycm3lr8DFkSRUJVXz3RlMp6ysdWAF8IL7Rc/edit?usp=sharing)
 
+A technical demo showcasing some of these features is available [here](https://www.youtube.com/watch?v=vdXE34esnME).
+
 <h6>Legal Notice:
 <br></br>
 © 2024 Change Studios, LLC. All rights reserved. "Project Crash," Cloud Crashers, Change Studios, and the Change Studios logo are registered or unregistered trademarks of Change Studios, LLC in the US and/or other countries. All contents of this repository, including code and game assets, are copyright Change Studios, LCC. "Project Crash," Cloud Crashers, and related media are a protected IP.</h6>
