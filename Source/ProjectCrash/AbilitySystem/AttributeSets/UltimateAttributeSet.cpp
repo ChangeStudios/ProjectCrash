@@ -284,6 +284,12 @@ void UUltimateAttributeSet::BroadcastUltChargeChanged() const
 		float UltCost;
 		bool bHasUltimate = GetUltimateAbility(UltimateAbility, UltCost);
 
+		// If we don't have an ultimate ability, we don't care about changes to our ultimate charge.
+		if (!bHasUltimate)
+		{
+			return;
+		}
+
 		FCrashAbilityMessage Message;
 		Message.MessageType = CrashGameplayTags::TAG_Message_Ability_CostChanged;
 		Message.AbilitySpecHandle = bHasUltimate ? UltimateAbility.Handle : FGameplayAbilitySpecHandle();

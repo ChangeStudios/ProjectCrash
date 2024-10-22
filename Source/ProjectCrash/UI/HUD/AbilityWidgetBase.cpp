@@ -54,12 +54,12 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
-	if (!ensure(AbilitySpec))
+	if (!ensure(Message.AbilitySpecHandle.IsValid()))
 	{
 		return;
 	}
 
+	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
 	UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
 	if (!IsValid(Ability))
 	{
