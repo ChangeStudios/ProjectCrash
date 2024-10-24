@@ -6,6 +6,7 @@
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
+#include "GameFramework/PlayerState.h"
 
 bool UAbilityWidgetBase::Initialize()
 {
@@ -22,7 +23,7 @@ bool UAbilityWidgetBase::Initialize()
 		}, EGameplayMessageMatch::PartialMatch);
 	}
 
-	return Super::Initialize();;
+	return Super::Initialize();
 }
 
 void UAbilityWidgetBase::RemoveFromParent()
@@ -41,10 +42,9 @@ void UAbilityWidgetBase::RemoveFromParent()
 
 void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message)
 {
-	// We only care about our abilities.
-	// NOTE: I don't know if this will pass on the server when bots activate abilities. We would need to add an
-	// "OwningActor" variable to the ability message payload if it does.
-	if (!Message.ActorInfo.IsLocallyControlled())
+	// We only care about OUR abilities.
+	if (!Message.ActorInfo.OwnerActor.IsValid() ||
+		 Message.ActorInfo.OwnerActor.Get() != GetOwningPlayerState())
 	{
 		return;
 	}
@@ -54,12 +54,12 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
-	if (!ensure(AbilitySpec))
+	if (!ensure(Message.AbilitySpecHandle.IsValid()))
 	{
 		return;
 	}
 
+	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
 	UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
 	if (!IsValid(Ability))
 	{
