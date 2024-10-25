@@ -142,6 +142,10 @@ public:
 
 public:
 
+	/** Cancels any gameplay abilities that satisfy a given predicate. */
+	typedef TFunctionRef<bool(const UCrashGameplayAbilityBase* Ability, FGameplayAbilitySpecHandle Handle)> TShouldCancelAbilityFunc;
+	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);
+
 	/** Disables all gameplay abilities possessed by this ASC with any of the given tags. Must be called with 
 	* authority. */
 	void DisableAbilitiesByTag(const FGameplayTagContainer& Tags);

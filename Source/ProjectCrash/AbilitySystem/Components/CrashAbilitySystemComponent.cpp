@@ -387,6 +387,59 @@ void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle
 	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Ended, Handle);
 }
 
+void UCrashAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)
+{
+	ABILITYLIST_SCOPE_LOCK();
+
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (!AbilitySpec.IsActive())
+		{
+			continue;
+		}
+
+		// Only use CrashGameplayAbilityBase abilities in this function so the predicate can use the typed ability.
+		UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+		if (!AbilityCDO)
+		{
+			ABILITY_LOG(Error, TEXT("Ability [%s], not of type CrashGameplayAbilityBase, was granted to ASC [%s]. Abilities not of type CrashGameplayAbilityBase cannot be cancelled-by-function. Skipping."), *AbilitySpec.Ability.GetName(), *GetNameSafe(this));
+			continue;
+		}
+
+		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+		{
+			// Instanced abilities: cancel all the instances of the ability (not the CDO).
+			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
+			{
+				UCrashGameplayAbilityBase* CrashAbilityInstance = CastChecked<UCrashGameplayAbilityBase>(AbilityInstance);
+
+				if (ShouldCancelFunc(CrashAbilityInstance, AbilitySpec.Handle))
+				{
+					if (CrashAbilityInstance->CanBeCanceled())
+					{
+						CrashAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), CrashAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+					}
+					else
+					{
+						ABILITY_LOG(Error, TEXT("CancelAbilitiesByFunc failed to cancel ability [%s]: CanBeCanceled is false."), *GetNameSafe(CrashAbilityInstance));
+					}
+				}
+			}
+		}
+		else
+		{
+			// Non-instanced abilities: cancel the CDO.
+			if (ShouldCancelFunc(AbilityCDO, AbilitySpec.Handle))
+			{
+				// Non-instanced abilities can always be canceled.
+				check(AbilityCDO->CanBeCanceled());
+				AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(), bReplicateCancelAbility);
+			}
+		}
+	}
+}
+
 void UCrashAbilitySystemComponent::DisableAbilitiesByTag(const FGameplayTagContainer& Tags)
 {
 	if (!IsOwnerActorAuthoritative())
