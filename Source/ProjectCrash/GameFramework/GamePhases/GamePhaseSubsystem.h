@@ -83,7 +83,7 @@ public:
 protected:
 
 	/** Blueprint wrapper for StartPhase. */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "Start Phase", meta = (AutoCreateRefTerm = "PhaseEnded", ToolTip = "Starts the given phase by activating the ability on the game state. Ends all non-parent phases."))
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "Start Phase", meta = (AutoCreateRefTerm = "OnPhaseEnded", ToolTip = "Starts the given phase by activating the ability on the game state. Ends all non-parent phases."))
 	void K2_StartPhase(TSubclassOf<UGamePhaseAbility> PhaseAbility, const FGamePhaseDynamicSignature& OnPhaseEnded);
 
 	/** Blueprint wrapper for WhenPhaseStartsOrIsActive. */

@@ -128,7 +128,7 @@ void UGamePhaseSubsystem::OnBeginPhase(const UGamePhaseAbility* PhaseAbility, co
 {
 	const FGameplayTag NewPhaseTag = PhaseAbility->GetGamePhaseTag();
 
-	UE_LOG(LogGamePhase, Log, TEXT("Beginning Phase [%s] (%s) ..."), *NewPhaseTag.ToString(), *GetNameSafe(PhaseAbility));
+	UE_LOG(LogGamePhase, Log, TEXT("Beginning Phase [%s] (%s)..."), *NewPhaseTag.ToString(), *GetNameSafe(PhaseAbility));
 
 	const UWorld* World = GetWorld();
 	UCrashAbilitySystemComponent* GameStateASC = World->GetGameState()->FindComponentByClass<UCrashAbilitySystemComponent>();
@@ -153,8 +153,6 @@ void UGamePhaseSubsystem::OnBeginPhase(const UGamePhaseAbility* PhaseAbility, co
 			// End any phases that are not parents of the new phase.
 			if (!NewPhaseTag.MatchesTag(ActivePhaseTag))
 			{
-				UE_LOG(LogGamePhase, Log, TEXT("Ending phase [%s] (%s) ..."), *ActivePhaseTag.ToString(), *GetNameSafe(ActivePhaseAbility));
-
 				// End phases by cancelling the abilities.
 				FGameplayAbilitySpecHandle HandleToEnd = ActivePhaseSpec->Handle;
 				GameStateASC->CancelAbilitiesByFunc([HandleToEnd](const UCrashGameplayAbilityBase* CrashAbility, FGameplayAbilitySpecHandle Handle)
@@ -182,7 +180,7 @@ void UGamePhaseSubsystem::OnEndPhase(const UGamePhaseAbility* PhaseAbility, cons
 {
 	const FGameplayTag EndedPhaseTag = PhaseAbility->GetGamePhaseTag();
 
-	UE_LOG(LogGamePhase, Log, TEXT("\t... Ended phase [%s] (%s)."), *EndedPhaseTag.ToString(), *GetNameSafe(PhaseAbility));
+	UE_LOG(LogGamePhase, Log, TEXT("\t\t...Ended phase [%s] (%s)."), *EndedPhaseTag.ToString(), *GetNameSafe(PhaseAbility));
 
 	// Clear the active phase entry.
 	const FGamePhaseEntry& Entry = ActivePhases.FindChecked(PhaseAbilityHandle);
