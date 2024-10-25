@@ -35,10 +35,9 @@ enum class EPhaseTagMatchType : uint8
  * Manages gameplay flow via "game phases." Active game phases are represented by a Game Phase Ability in the game
  * state. Game phases are identified via tags: PreGame.CharacterSelection, Game.WarmUp, Game.Playing, etc.
  *
- * Parent and child phases can be active at the same time, but not sibling phases. Activating a new phase automatically
- * ends any phases that are not parents of the new phase.
- *
- * TODO: Unbind callbacks from WhenPhaseStartsOrIsActive and WhenPhaseEnds.
+ * Parent and child phases can be active at the same time (e.g. Game.Playing and Game.Playing.SuddenDeath), but not
+ * sibling phases (e.g. Game.Playing and Game.PostGame). Activating a new phase automatically ends any phases that are
+ * not parents of the new phase.
  *
  * @see UGamePhaseAbility
  */
@@ -118,11 +117,11 @@ private:
 	/** Tracks runtime data for active phase abilities. */
 	TMap<FGameplayAbilitySpecHandle, FGamePhaseEntry> ActivePhases;
 
-// Observers.
+// Phase change listeners.
 private:
 
-	/** Represents a listener registered to a phase transition callback. */
-	struct FPhaseObserver
+	/** Stores a callback that should be fired when transitioning to or from a specified phase. */
+	struct FPhaseListener
 	{
 		bool IsMatch(const FGameplayTag& OtherPhaseTag) const;
 
@@ -131,9 +130,9 @@ private:
 		FGamePhaseTagSignature PhaseCallback;
 	};
 
-	/** Observers listening for the start of a phase. */
-	TArray<FPhaseObserver> PhaseStartObservers;
+	/** Callbacks registered to the start of a phase. */
+	TArray<FPhaseListener> PhaseStartListeners;
 
-	/** Observers listening for the end of a phase. */
-	TArray<FPhaseObserver> PhaseEndObservers;
+	/** Callbacks registered to the end of a phase. */
+	TArray<FPhaseListener> PhaseEndListeners;
 };
