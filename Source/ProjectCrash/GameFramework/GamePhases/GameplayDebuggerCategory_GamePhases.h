@@ -5,11 +5,12 @@
 #if WITH_GAMEPLAY_DEBUGGER
 #include "GameplayDebuggerCategory.h"
 
-class PROJECTCRASH_API FGameplayDebuggerCategory_GameModeProperties : public FGameplayDebuggerCategory
+class PROJECTCRASH_API FGameplayDebuggerCategory_GamePhases : public FGameplayDebuggerCategory
 {
+
 public:
 
-	FGameplayDebuggerCategory_GameModeProperties();
+	FGameplayDebuggerCategory_GamePhases();
 
 	virtual void CollectData(APlayerController* OwnerPC, AActor* DebugActor) override;
 
@@ -19,11 +20,9 @@ public:
 
 protected:
 
-	FNumberFormattingOptions NumberFormattingOptions;
-
 	struct FRepData
 	{
-		TArray<TTuple<FString /* Property Name */, float /* Property Value */>> GameModeProperties;
+		TArray<FString> ActivePhases;
 		void Serialize(FArchive& Ar);
 	};
 

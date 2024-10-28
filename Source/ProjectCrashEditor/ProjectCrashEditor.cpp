@@ -16,6 +16,7 @@
 #include "AssetTypes/AssetTypeActions_InventoryItemDefinition.h"
 #include "GameFramework/GameFeatures/GameFeatureManager.h"
 #include "GameFramework/GameModes/GameplayDebuggerCategory_GameModeProperties.h"
+#include "GameFramework/GamePhases/GameplayDebuggerCategory_GamePhases.h"
 #include "Modules/ModuleManager.h"
 #include "Styling/SlateStyle.h"
 #include "Styling/SlateStyleRegistry.h"
@@ -162,9 +163,10 @@ void FProjectCrashEditorModule::StartupModule()
 	// Register gameplay debugger categories.
 #if WITH_GAMEPLAY_DEBUGGER
 	IGameplayDebugger& GameplayDebuggerModule = IGameplayDebugger::Get();
-	GameplayDebuggerModule.RegisterCategory("Inventory", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Inventory::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
-	GameplayDebuggerModule.RegisterCategory("Equipment", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Equipment::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
+	GameplayDebuggerModule.RegisterCategory("Inventory", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Inventory::MakeInstance), EGameplayDebuggerCategoryState::Disabled);
+	GameplayDebuggerModule.RegisterCategory("Equipment", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_Equipment::MakeInstance), EGameplayDebuggerCategoryState::Disabled);
 	GameplayDebuggerModule.RegisterCategory("GameModeProperties", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_GameModeProperties::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
+	GameplayDebuggerModule.RegisterCategory("GamePhases", IGameplayDebugger::FOnGetCategory::CreateStatic(&FGameplayDebuggerCategory_GamePhases::MakeInstance), EGameplayDebuggerCategoryState::EnabledInGame);
 	GameplayDebuggerModule.NotifyCategoriesChanged();
 #endif // WITH_GAMEPLAY_DEBUGGER
 }

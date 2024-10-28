@@ -46,6 +46,7 @@ class PROJECTCRASH_API UGamePhaseSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
+	friend class FGameplayDebuggerCategory_GamePhases;
 	friend class UGamePhaseAbility;
 
 	// Initialization.
