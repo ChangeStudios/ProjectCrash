@@ -88,6 +88,8 @@ namespace CrashGameplayTags
 
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Message_Inventory_Change);
 
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Message_Team_TagChange);
+
 
 	// States
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_State_AbilityInputBlocked);

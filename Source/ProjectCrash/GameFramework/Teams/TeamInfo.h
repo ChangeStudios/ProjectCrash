@@ -13,6 +13,21 @@ class UTeamCreationComponent;
 class UTeamSubsystem;
 
 /**
+ *
+ */
+USTRUCT()
+struct FCrashTeamTagChangedMessage
+{
+	GENERATED_BODY()
+
+	int32 TeamId;
+	FGameplayTag Tag;
+	int32 Count;
+};
+
+
+
+/**
  * The tangible representation of a team during gameplay. Contains an identifying team ID and stores replicated runtime
  * data related to the team with stacks of gameplay tags.
  */
@@ -80,6 +95,11 @@ public:
 	/** Collection of gameplay tag stacks that can be used to track runtime team stats (e.g. a team's score). */
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer TeamTags;
+
+	void BroadcastTagChange(FGameplayTag Tag);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_BroadcastTagChange(const FCrashTeamTagChangedMessage& Message);
 
 
 

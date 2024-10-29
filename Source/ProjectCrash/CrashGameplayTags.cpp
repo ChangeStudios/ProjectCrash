@@ -75,6 +75,8 @@ namespace CrashGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Team_TagChange, "Message.Team.TagChange", "Message communicating that a team's count of a certain tag changed.");
+
 
 	// States
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_AbilityInputBlocked, "State.AbilityInputBlocked", "Ability activation via input is disabled on any ASC with this tag.");

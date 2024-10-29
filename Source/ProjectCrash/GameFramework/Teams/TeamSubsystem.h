@@ -6,11 +6,12 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "TeamSubsystem.generated.h"
 
+struct FCrashTeamTagChangedMessage;
 class ATeamInfo;
 class ACrashPlayerState;
 
 /** Delegate for when a tag stack count in the specified team's runtime info object changes. */
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FTeamTagChangedSignature, int32, NewCount, int32, CountChange);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FTeamTagChangedSignature, int32, NewCount);
 /** Delegate for when the specified team's display asset changes. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, int32, TeamId);
 
@@ -140,11 +141,12 @@ public:
 	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
 
 	/** Binds the given delegate to when the specified team's count of the given tag changes. */
-	// TODO: Implement. Currently, this never fires.
-	UFUNCTION(BlueprintCallable, Category = "Teams", Meta = (AutoCreateRefTerm = "OnTagChanged"))
+	UFUNCTION(BlueprintCallable, Category = "Teams", Meta = (AutoCreateRefTerm = "OnTagChanged", Keywords = "listen watch"))
 	void ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged);
 
 private:
+
+	void OnTeamTagChanged(FGameplayTag Channel, const FCrashTeamTagChangedMessage& Message);
 
 	/** Stores a callback that should be fired when a team gains or loses any count of a certain tag. */
 	struct FTeamTagListener
