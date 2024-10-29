@@ -2,13 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "TeamSubsystem.generated.h"
 
 class ATeamInfo;
 class ACrashPlayerState;
 
+/** Delegate for when a tag stack count in the specified team's runtime info object changes. */
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FTeamTagChangedSignature, int32, NewCount, int32, CountChange);
 /** Delegate for when the specified team's display asset changes. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, int32, TeamId);
 
@@ -136,6 +138,29 @@ public:
 	/** Returns whether the given team has at least one of the specified tag. Tag must match exactly. */
 	UFUNCTION(BlueprintPure, Category = "Teams")
 	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
+
+	/** Binds the given delegate to when the specified team's count of the given tag changes. */
+	// TODO: Implement. Currently, this never fires.
+	UFUNCTION(BlueprintCallable, Category = "Teams", Meta = (AutoCreateRefTerm = "OnTagChanged"))
+	void ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged);
+
+private:
+
+	/** Stores a callback that should be fired when a team gains or loses any count of a certain tag. */
+	struct FTeamTagListener
+	{
+		FORCEINLINE bool IsMatch(const FGameplayTag& OtherTeamTag) const
+		{
+			return bPartialMatch ? OtherTeamTag.MatchesTag(TeamTag) : OtherTeamTag.MatchesTagExact(TeamTag);
+		};
+
+		FGameplayTag TeamTag;
+		bool bPartialMatch;
+		FTeamTagChangedSignature TagChangeCallback;
+	};
+
+	/** Listeners registered with each team's tag changes. */
+	TMap<int32 /* Team Id */, TArray<FTeamTagListener>> TeamTagListeners;
 
 
 

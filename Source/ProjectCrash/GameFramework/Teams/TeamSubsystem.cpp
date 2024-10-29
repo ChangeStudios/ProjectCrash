@@ -1,6 +1,5 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "GameFramework/Teams/TeamSubsystem.h"
 
 #include "AbilitySystemGlobals.h"
@@ -231,6 +230,17 @@ bool UTeamSubsystem::TeamHasTag(int32 TeamId, FGameplayTag Tag) const
 	}
 
 	return false;
+}
+
+void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged)
+{
+	// Register a new listener for the given callback.
+	FTeamTagListener Listener;
+	Listener.TeamTag = Tag;
+	Listener.bPartialMatch = bPartialMatch;
+	Listener.TagChangeCallback = OnTagChanged;
+
+	TeamTagListeners.FindOrAdd(TeamId).Add(Listener);
 }
 
 ETeamAlignment UTeamSubsystem::CompareTeams(const UObject* A, const UObject* B, int32& TeamA, int32& TeamB) const
