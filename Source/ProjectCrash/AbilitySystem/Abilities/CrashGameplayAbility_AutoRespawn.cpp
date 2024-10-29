@@ -6,7 +6,6 @@
 #include "CrashGameplayAbility_Reset.h"
 #include "CrashGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
-#include "AbilitySystem/AttributeSets/LivesAttributeSet.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
