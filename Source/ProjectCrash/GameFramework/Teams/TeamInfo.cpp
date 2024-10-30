@@ -5,7 +5,6 @@
 #include "CrashGameplayTags.h"
 #include "TeamSubsystem.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/Messages/CrashVerbMessage.h"
 #include "Net/UnrealNetwork.h"
 
 ATeamInfo::ATeamInfo(const FObjectInitializer& ObjectInitializer) :
@@ -69,21 +68,6 @@ void ATeamInfo::OnRep_TeamId()
 {
 	// Register this team with the team subsystem when it's assigned a valid ID on clients.
 	TryRegisterWithTeamSubsystem();
-}
-
-void ATeamInfo::BroadcastTagChange(FGameplayTag Tag)
-{
-	FCrashTeamTagChangedMessage Message;
-	Message.Tag = Tag;
-	Message.Count = TeamTags.GetTagCount(Tag);
-	Message.TeamId = TeamId;
-
-	UGameplayMessageSubsystem::Get(this).BroadcastMessage(CrashGameplayTags::TAG_Message_Team_TagChange, Message);
-
-	if (HasAuthority())
-	{
-		Multicast_BroadcastTagChange(Message);
-	}
 }
 
 void ATeamInfo::Multicast_BroadcastTagChange_Implementation(const FCrashTeamTagChangedMessage& Message)

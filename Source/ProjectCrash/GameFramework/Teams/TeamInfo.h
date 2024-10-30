@@ -2,26 +2,31 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayTagStack.h"
 #include "TeamSubsystem.h"
 #include "GameFramework/Info.h"
 #include "TeamInfo.generated.h"
 
-class UTeamDisplayAsset;
 class UTeamCreationComponent;
+class UTeamDisplayAsset;
 class UTeamSubsystem;
 
 /**
- *
+ * A message indicating that a team's count of a certain tag changed. Team tags are server-authoritative, so these
+ * messages must be RPCd to clients.
  */
 USTRUCT()
 struct FCrashTeamTagChangedMessage
 {
 	GENERATED_BODY()
 
+	/** The team whose count of a tag changed. */
 	int32 TeamId;
+
+	/** The tag whose count changed. */
 	FGameplayTag Tag;
+
+	/** The changed tag's new count, after the change. */
 	int32 Count;
 };
 
@@ -96,8 +101,8 @@ public:
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer TeamTags;
 
-	void BroadcastTagChange(FGameplayTag Tag);
-
+	/** Broadcasts the given team tag message to clients. This is done via the team info actor because the team
+	 * subsystem cannot handle RPCs. */
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_BroadcastTagChange(const FCrashTeamTagChangedMessage& Message);
 

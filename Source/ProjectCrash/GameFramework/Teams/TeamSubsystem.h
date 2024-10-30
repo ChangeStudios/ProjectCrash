@@ -3,12 +3,13 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "TeamSubsystem.generated.h"
 
-struct FCrashTeamTagChangedMessage;
-class ATeamInfo;
 class ACrashPlayerState;
+class ATeamInfo;
+struct FCrashTeamTagChangedMessage;
 
 /** Delegate for when a tag stack count in the specified team's runtime info object changes. */
 DECLARE_DYNAMIC_DELEGATE_OneParam(FTeamTagChangedSignature, int32, NewCount);
@@ -96,8 +97,11 @@ public:
 	/** Unregisters CheatManagerRegistrationHandle from the cheat manager. */
 	virtual void Deinitialize() override;
 
+	/** Restricts this subsystem to game and PIE worlds. */
+	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 
-	
+
+
 	// Team management
 
 public:
@@ -146,9 +150,18 @@ public:
 
 private:
 
+	/** Listener for messages indicating changes to team tags. */
+	FGameplayMessageListenerHandle TeamTagsListener;
+
+	/** Broadcasts a message indicating that the given team changed its count of the specified tag. Replicates the
+	 * message to clients. Server-only. */
+	void BroadcastTeamTagChange(ATeamInfo* TeamInfo, FGameplayTag Tag);
+
+	/** Called when a team's tags change. Fires any delegates bound to the specific team and tag that changed via
+	 * ObserveTeamTags. */
 	void OnTeamTagChanged(FGameplayTag Channel, const FCrashTeamTagChangedMessage& Message);
 
-	/** Stores a callback that should be fired when a team gains or loses any count of a certain tag. */
+	/** Stores a callback that should be fired when a certain team gains or loses any count of a certain tag. */
 	struct FTeamTagListener
 	{
 		FORCEINLINE bool IsMatch(const FGameplayTag& OtherTeamTag) const

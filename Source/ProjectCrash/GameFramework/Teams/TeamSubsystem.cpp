@@ -64,9 +64,16 @@ void UTeamSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	// Add Team Cheats to the cheat manager when it's created.
 	CheatManagerRegistrationHandle = UCheatManager::RegisterForOnCheatManagerCreated(FOnCheatManagerCreated::FDelegate::CreateLambda(AddTeamCheats));
 
-	// Register a listener for when teams' tags change to expose those callbacks to any listeners who want them.
-	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-	FGameplayMessageListenerHandle MessageListener = MessageSystem.RegisterListener(CrashGameplayTags::TAG_Message_Team_TagChange, this, &UTeamSubsystem::OnTeamTagChanged);
+	/* Register a listener for when teams' tags change to forward those callbacks to any listeners who want them via
+	 * the ObserveTeamTags node. */
+	if (UWorld* World = GetWorld())
+	{
+		UGameplayMessageSubsystem* MessageSystem = UGameInstance::GetSubsystem<UGameplayMessageSubsystem>(World->GetGameInstance());
+		if (ensure(MessageSystem))
+		{
+			TeamTagsListener = MessageSystem->RegisterListener(CrashGameplayTags::TAG_Message_Team_TagChange, this, &UTeamSubsystem::OnTeamTagChanged);
+		}
+	}
 }
 
 void UTeamSubsystem::Deinitialize()
@@ -74,7 +81,15 @@ void UTeamSubsystem::Deinitialize()
 	// Stop listening for the cheat manager to be created.
 	UCheatManager::UnregisterFromOnCheatManagerCreated(CheatManagerRegistrationHandle);
 
+	// Stop listening for changes to team tags.
+	TeamTagsListener.Unregister();
+
 	Super::Deinitialize();
+}
+
+bool UTeamSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
+{
+	return WorldType == EWorldType::Game || WorldType == EWorldType::PIE;
 }
 
 bool UTeamSubsystem::RegisterTeam(ATeamInfo* TeamInfo)
@@ -159,7 +174,8 @@ void UTeamSubsystem::AddTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count)
 				TeamInfo->TeamTags.AddTags(Tag, Count);
 
 				// Broadcast a message indicating the team's tags changed.
-				TeamInfo->BroadcastTagChange(Tag);
+				// TODO: FIX
+				BroadcastTeamTagChange(TeamInfo, Tag);
 			}
 			else
 			{
@@ -195,7 +211,7 @@ void UTeamSubsystem::RemoveTeamTags(int32 TeamId, FGameplayTag Tag, int32 Count)
 				TeamInfo->TeamTags.RemoveTags(Tag, Count);
 
 				// Broadcast a message indicating the team's tags changed.
-				TeamInfo->BroadcastTagChange(Tag);
+				BroadcastTeamTagChange(TeamInfo, Tag);
 			}
 			else
 			{
@@ -247,7 +263,7 @@ bool UTeamSubsystem::TeamHasTag(int32 TeamId, FGameplayTag Tag) const
 
 void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged)
 {
-	// Register a new listener for the given callback.
+	// Register a new listener to fire the given callback when the specified tag changes for the specified team.
 	FTeamTagListener Listener;
 	Listener.TeamTag = Tag;
 	Listener.bPartialMatch = bPartialMatch;
@@ -256,9 +272,25 @@ void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bParti
 	TeamTagListeners.FindOrAdd(TeamId).Add(Listener);
 }
 
+void UTeamSubsystem::BroadcastTeamTagChange(ATeamInfo* TeamInfo, FGameplayTag Tag)
+{
+	// Tag changes are server-authoritative.
+	check(TeamInfo->HasAuthority());
+
+	// Broadcast the tag change message locally.
+	FCrashTeamTagChangedMessage Message;
+	Message.Tag = Tag;
+	Message.Count = TeamInfo->TeamTags.GetTagCount(Tag);
+	Message.TeamId = TeamInfo->GetTeamId();
+	UGameplayMessageSubsystem::Get(this).BroadcastMessage(CrashGameplayTags::TAG_Message_Team_TagChange, Message);
+
+	// Broadcast the message to clients.
+	TeamInfo->Multicast_BroadcastTagChange(Message);
+}
+
 void UTeamSubsystem::OnTeamTagChanged(FGameplayTag Channel, const FCrashTeamTagChangedMessage& Message)
 {
-	// Fire each callback registered to the received message's tag for the message's team.
+	// Fire each callback registered to the changed tag on the changed team.
 	if (TeamTagListeners.Contains(Message.TeamId))
 	{
 		for (FTeamTagListener Listener : *TeamTagListeners.Find(Message.TeamId))
