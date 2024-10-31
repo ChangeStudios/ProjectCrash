@@ -16,7 +16,7 @@ class UHealthComponent;
  * This ability can be subclassed to alter its behavior for different game modes and to add user-facing logic (e.g. a
  * respawn timer). Not intended to be subclassed in C++.
  */
-UCLASS(Abstract)
+UCLASS(Abstract, HideCategories = ("Cooldowns", Input, "Costs"))
 class PROJECTCRASH_API UCrashGameplayAbility_AutoRespawn : public UCrashGameplayAbilityBase
 {
 	GENERATED_BODY()
