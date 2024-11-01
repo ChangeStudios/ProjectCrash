@@ -70,11 +70,17 @@ void ATeamInfo::OnRep_TeamId()
 	TryRegisterWithTeamSubsystem();
 }
 
-void ATeamInfo::Multicast_BroadcastTagChange_Implementation(const FCrashTeamTagChangedMessage& Message)
+void ATeamInfo::Multicast_BroadcastTagChange_Implementation(FGameplayTag Tag, int32 Count)
 {
 	// Locally broadcast the received message if this is a client.
 	if (GetNetMode() == NM_Client)
 	{
+		// Messages don't currently support serialization, so we have to reconstruct the message we're broadcasting.
+		FCrashTeamTagChangedMessage Message;
+		Message.Tag = Tag;
+		Message.Count = Count;
+		Message.TeamId = GetTeamId();
+
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(CrashGameplayTags::TAG_Message_Team_TagChange, Message);
 	}
 }

@@ -101,10 +101,10 @@ public:
 	UPROPERTY(Replicated)
 	FGameplayTagStackContainer TeamTags;
 
-	/** Broadcasts the given team tag message to clients. This is done via the team info actor because the team
+	/** Broadcasts a tag message with the given tag to clients. This is done via the team info actor because the team
 	 * subsystem cannot handle RPCs. */
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_BroadcastTagChange(const FCrashTeamTagChangedMessage& Message);
+	void Multicast_BroadcastTagChange(FGameplayTag Tag, int32 Count);
 
 
 

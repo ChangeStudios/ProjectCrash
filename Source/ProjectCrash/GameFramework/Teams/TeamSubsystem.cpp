@@ -285,7 +285,7 @@ void UTeamSubsystem::BroadcastTeamTagChange(ATeamInfo* TeamInfo, FGameplayTag Ta
 	UGameplayMessageSubsystem::Get(this).BroadcastMessage(CrashGameplayTags::TAG_Message_Team_TagChange, Message);
 
 	// Broadcast the message to clients.
-	TeamInfo->Multicast_BroadcastTagChange(Message);
+	TeamInfo->Multicast_BroadcastTagChange(Tag, Message.Count);
 }
 
 void UTeamSubsystem::OnTeamTagChanged(FGameplayTag Channel, const FCrashTeamTagChangedMessage& Message)
