@@ -15,6 +15,17 @@ class UHealthComponent;
  *
  * This ability can be subclassed to alter its behavior for different game modes and to add user-facing logic (e.g. a
  * respawn timer). Not intended to be subclassed in C++.
+ *
+ * NOTE: This respawn ability currently runs all of its logic on both the server and clients, because it usually wants
+ * to perform client-side logic (e.g. making the player a spectator when they permanently die). Ultimately, players will
+ * only actually be respawned by the server, but if clients want any client-side logic, such as triggering a respawn
+ * timer widget, they will need to guess the result of the server's version of the ability. This may require some
+ * hard-coded predictions, like implementing both server-side and client-side logic for CanRespawn.
+ *
+ * If this setup ever becomes more trouble than it's worth, there is an alternate version of this ability,
+ * GA_ServerSideAutoRespawn, implemented in blueprints that is server-authoritative. Instead of predicting the server's
+ * state, it uses gameplay messages to trigger client-side logic when needed. Note that this alternate implementation
+ * of this ability could also be done in C++ and would still solve this networking problem.
  */
 UCLASS(Abstract, HideCategories = ("Cooldowns", Input, "Costs"))
 class PROJECTCRASH_API UCrashGameplayAbility_AutoRespawn : public UCrashGameplayAbilityBase

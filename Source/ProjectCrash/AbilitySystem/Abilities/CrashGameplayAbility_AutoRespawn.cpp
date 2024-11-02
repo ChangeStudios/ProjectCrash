@@ -94,8 +94,6 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 		{
 			/* If the player can respawn (e.g. has lives left), wait a specific duration, determined by GetRespawnTime,
 			 * before resetting them. */
-			// TODO: Make this check server-side. We'll have to move client-side logic to separate functions, and
-			// perhaps trigger them using messages, since we can't use RPCs here.
 			if (CanRespawn())
 			{
 				// Broadcast the respawn message with the respawn duration.
@@ -111,10 +109,6 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 				}
 
 				// Start timer to respawn.
-				/* NOTE: I'm not a huge fan of the respawn being predicted. We might change it to be server-only in the
-				 * future. To do this, we'd wrap this timer in a server check (CurrentActorInfo->IsNetAuthority) and
-				 * change the RespawnCompleted message to a verbal message and broadcast it from the server. We could
-				 * also change this ability's execution policy to server-initiated. */
 				bShouldFinishReset = true;
 				FTimerHandle TimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd, RespawnTime, false);
