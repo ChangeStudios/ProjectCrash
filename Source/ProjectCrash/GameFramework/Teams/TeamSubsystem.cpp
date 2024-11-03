@@ -261,7 +261,7 @@ bool UTeamSubsystem::TeamHasTag(int32 TeamId, FGameplayTag Tag) const
 	return false;
 }
 
-void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged)
+void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, bool bFireOnBind, const FTeamTagChangedSignature& OnTagChanged)
 {
 	// Register a new listener to fire the given callback when the specified tag changes for the specified team.
 	FTeamTagListener Listener;
@@ -270,6 +270,16 @@ void UTeamSubsystem::ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bParti
 	Listener.TagChangeCallback = OnTagChanged;
 
 	TeamTagListeners.FindOrAdd(TeamId).Add(Listener);
+
+	// Immediately fire the delegate with the current tag count if desired.
+	if (bFireOnBind)
+	{
+		// Only fire the delegate if the team's tags have already been initialized.
+		if (TeamHasTag(TeamId, Tag))
+		{
+			OnTagChanged.ExecuteIfBound(GetTeamTagCount(TeamId, Tag));
+		}
+	}
 }
 
 void UTeamSubsystem::BroadcastTeamTagChange(ATeamInfo* TeamInfo, FGameplayTag Tag)

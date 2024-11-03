@@ -144,9 +144,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Teams")
 	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
 
-	/** Binds the given delegate to when the specified team's count of the given tag changes. */
+	/** Binds the given delegate to when the specified team's count of the given tag changes. If FireOnBind is true,
+	 * the delegate will be fired once immediately with the team's current tags (useful for initialization). */
 	UFUNCTION(BlueprintCallable, Category = "Teams", Meta = (AutoCreateRefTerm = "OnTagChanged", Keywords = "listen watch"))
-	void ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, const FTeamTagChangedSignature& OnTagChanged);
+	void ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, bool bFireOnBind, const FTeamTagChangedSignature& OnTagChanged);
 
 private:
 
