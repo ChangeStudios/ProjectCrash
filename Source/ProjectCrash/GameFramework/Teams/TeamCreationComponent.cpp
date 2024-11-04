@@ -44,6 +44,7 @@ void UTeamCreationComponent::OnGameModeLoaded(const UCrashGameModeData* GameMode
 void UTeamCreationComponent::CreateTeams()
 {
 	// By default, just create a unique team for each team defined in this component's map.
+	// TODO: We should know by now which teams will have players, and only create those.
 	for (const auto &KVP : TeamsToCreate)
 	{
 		const int32 TeamId = KVP.Key;
@@ -121,11 +122,6 @@ void UTeamCreationComponent::CreateTeam(int32 TeamId, UTeamDisplayAsset* Display
 	// Initialize the new team's data.
 	TeamInfo->SetTeamId(TeamId);
 	TeamInfo->SetTeamDisplayAsset(DisplayAsset);
-
-	if (bUseFriendlyDisplayAsset)
-	{
-		TeamInfo->SetFriendlyDisplayAsset(FriendlyDisplayAsset);
-	}
 }
 
 int32 UTeamCreationComponent::GetLeastPopulatedTeam() const
@@ -197,35 +193,9 @@ EDataValidationResult UTeamCreationComponent::IsDataValid(FDataValidationContext
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
 
-	if (bUseFriendlyDisplayAsset)
-	{
-		// If a friendly display asset is requested, make sure one is set.
-		if (FriendlyDisplayAsset == nullptr)
-		{
-			Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotFound", "{0} requested to use friendly display assets, but the friendly display asset was not set."), FText::FromString(GetPathNameSafe(this))));
-			return EDataValidationResult::Invalid;
-		}
-		// Make sure the friendly display asset is not used for any enemy teams.
-		else
-		{
-			TArray<TObjectPtr<UTeamDisplayAsset>> TeamDisplayAssets;
-			TeamsToCreate.GenerateValueArray(TeamDisplayAssets);
-
-			if (TeamDisplayAssets.Contains(FriendlyDisplayAsset))
-			{
-				Context.AddError(FText::Format(LOCTEXT("FriendlyDisplayAssetNotUnique", "{0} uses a display asset in its team map which is used as the friendly display asset. This will cause cause some enemy teams to appear as friendly to some players. Use a unique display asset as the friendly display asset."), FText::FromString(GetPathNameSafe(this))));
-				Result = EDataValidationResult::Invalid;
-			}
-		}
-	}
-
 	// Make sure every team display asset has identical properties.
 	TArray<TObjectPtr<UTeamDisplayAsset>> TeamDisplayAssets;
 	TeamsToCreate.GenerateValueArray(TeamDisplayAssets);
-	if (bUseFriendlyDisplayAsset)
-	{
-		TeamDisplayAssets.Add(FriendlyDisplayAsset);
-	}
 	TMap<UTeamDisplayAsset*, FMissingProperties> MissingProps;
 
 	for (UTeamDisplayAsset* TeamDisplayAsset : TeamDisplayAssets)

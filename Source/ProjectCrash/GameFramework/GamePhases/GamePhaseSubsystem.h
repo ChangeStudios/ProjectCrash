@@ -88,11 +88,11 @@ protected:
 	void K2_StartPhase(TSubclassOf<UGamePhaseAbility> PhaseAbility, const FGamePhaseDynamicSignature& OnPhaseEnded);
 
 	/** Blueprint wrapper for WhenPhaseStartsOrIsActive. */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "When Phase Starts or Is Active", Meta = (AutoCreateRefTerm = "WhenPhaseActive", ToolTip = "Binds the given delegate to when a phase with the specified tag starts. Immediately fires if the phase is already active."))
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "When Phase Starts or Is Active", Meta = (AutoCreateRefTerm = "WhenPhaseActive", KeyWords = "wait listen", ToolTip = "Binds the given delegate to when a phase with the specified tag starts. Immediately fires if the phase is already active."))
 	void K2_WhenPhaseStartsOrIsActive(FGameplayTag PhaseTag, EPhaseTagMatchType MatchType, FGamePhaseTagDynamicSignature WhenPhaseActive);
 
 	/** Blueprint wrapper for WhenPhaseEnds. */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "When Phase Ends", Meta = (AutoCreateRefTerm = "WhenPhaseEnds", ToolTip = "Binds the given delegate to when a phase with the specified tag ends."))
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Game Phase", DisplayName = "When Phase Ends", Meta = (AutoCreateRefTerm = "WhenPhaseEnds", KeyWords = "wait listen", ToolTip = "Binds the given delegate to when a phase with the specified tag ends."))
 	void K2_WhenPhaseEnds(FGameplayTag PhaseTag, EPhaseTagMatchType MatchType, FGamePhaseTagDynamicSignature WhenPhaseEnds);
 
 	/** Handles ending non-parent phases and executing callbacks when a new phase begins. */
