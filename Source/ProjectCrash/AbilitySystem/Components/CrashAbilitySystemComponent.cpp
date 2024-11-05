@@ -36,8 +36,8 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	check(ActorInfo);
 	check(InOwnerActor);
 
-	// Whether this ASC (A) has a valid avatar and (B) that avatar is not the same as the previous avatar.
-	const bool bHasValidNewAvatar = ((InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
+	// Whether this ASC (A) has a valid pawn avatar and (B) that avatar is not the same as the previous avatar.
+	const bool bHasValidNewAvatar = (Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
@@ -75,14 +75,14 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 			}
 		}
 
+		// Register this ASC with the global ability subsystem.
+		if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
+		{
+			GlobalAbilitySubsystem->RegisterASC(this);
+		}
+
 		// Attempt to activate any passive abilities when a valid new avatar is set.
 		TryActivatePassiveAbilities();
-	}
-
-	// Register this ASC with the global ability subsystem.
-	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
-	{
-		GlobalAbilitySubsystem->RegisterASC(this);
 	}
 }
 
