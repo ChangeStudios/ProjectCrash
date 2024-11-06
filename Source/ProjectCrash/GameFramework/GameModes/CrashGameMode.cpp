@@ -19,7 +19,8 @@
 #include "Player/PlayerSpawningManagerComponent.h"
 #include "UI/CrashHUD.h"
 
-ACrashGameMode::ACrashGameMode()
+ACrashGameMode::ACrashGameMode(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	DefaultPawnClass = nullptr;
 	GameStateClass = ACrashGameState::StaticClass();

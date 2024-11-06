@@ -135,8 +135,6 @@ void ACrashPlayerController::BeginPlayingState()
 	}
 
 	Super::BeginPlayingState();
-
-	ResetIgnoreInputFlags();
 }
 
 void ACrashPlayerController::BeginSpectatingState()
@@ -148,8 +146,6 @@ void ACrashPlayerController::BeginSpectatingState()
 	}
 
 	Super::BeginSpectatingState();
-
-	ResetIgnoreInputFlags();
 }
 
 void ACrashPlayerController::EndSpectatingState()

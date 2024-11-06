@@ -26,7 +26,7 @@ class PROJECTCRASH_API ACrashGameMode : public AModularGameModeBase
 public:
 
 	/** Default constructor. */
-	ACrashGameMode();
+	ACrashGameMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 
 
