@@ -61,7 +61,9 @@ protected:
 public:
 
 #if WITH_EDITOR
+
 	/** Ensures this ability's game phase tag is always set. */
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
+
 #endif // WITH_EDITOR
 };

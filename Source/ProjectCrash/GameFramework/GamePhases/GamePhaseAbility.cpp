@@ -60,3 +60,5 @@ EDataValidationResult UGamePhaseAbility::IsDataValid(class FDataValidationContex
 	return Result;
 }
 #endif // WITH_EDITOR
+
+#undef LOCTEXT_NAMESPACE

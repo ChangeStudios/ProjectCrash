@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "AbilitySystemWidgetBase.generated.h"
 
 class UCrashAbilitySystemComponent;
+
 /**
  * Widget that provides simple access to its owning player's ability system component. Useful for widgets that need
  * to read runtime data from their ASC (e.g. attribute displays).
