@@ -4,7 +4,6 @@
 
 #if WITH_GAMEPLAY_DEBUGGER
 
-#include "Engine/Canvas.h"
 #include "GameModePropertySubsystem.h"
 
 FGameplayDebuggerCategory_GameModeProperties::FGameplayDebuggerCategory_GameModeProperties()
@@ -25,7 +24,7 @@ void FGameplayDebuggerCategory_GameModeProperties::CollectData(APlayerController
 	{
 		if (UGameModePropertySubsystem* GameModePropertySubsystem = World->GetSubsystem<UGameModePropertySubsystem>())
 		{
-			for (auto KVP : GameModePropertySubsystem->GameModeProperties)
+			for (const auto& KVP : GameModePropertySubsystem->GameModeProperties)
 			{
 				// Serialize properties as tuples of the property name and its value.
 				FString PropertyName = (KVP.Key.IsValid() ? KVP.Key.ToString() : "<Invalid Tag!>");

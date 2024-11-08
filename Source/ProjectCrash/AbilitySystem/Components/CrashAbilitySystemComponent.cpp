@@ -36,8 +36,8 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	check(ActorInfo);
 	check(InOwnerActor);
 
-	// Whether this ASC (A) has a valid avatar and (B) that avatar is not the same as the previous avatar.
-	const bool bHasValidNewAvatar = ((InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
+	// Whether this ASC (A) has a valid pawn avatar and (B) that avatar is not the same as the previous avatar.
+	const bool bHasValidNewAvatar = (Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
@@ -75,14 +75,14 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 			}
 		}
 
+		// Register this ASC with the global ability subsystem.
+		if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
+		{
+			GlobalAbilitySubsystem->RegisterASC(this);
+		}
+
 		// Attempt to activate any passive abilities when a valid new avatar is set.
 		TryActivatePassiveAbilities();
-	}
-
-	// Register this ASC with the global ability subsystem.
-	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
-	{
-		GlobalAbilitySubsystem->RegisterASC(this);
 	}
 }
 
@@ -385,6 +385,59 @@ void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle
 
 	// Send a standardized message communicating the ability end.
 	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Ended, Handle);
+}
+
+void UCrashAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)
+{
+	ABILITYLIST_SCOPE_LOCK();
+
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (!AbilitySpec.IsActive())
+		{
+			continue;
+		}
+
+		// Only use CrashGameplayAbilityBase abilities in this function so the predicate can use the typed ability.
+		UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+		if (!AbilityCDO)
+		{
+			ABILITY_LOG(Error, TEXT("Ability [%s], not of type CrashGameplayAbilityBase, was granted to ASC [%s]. Abilities not of type CrashGameplayAbilityBase cannot be cancelled-by-function. Skipping."), *AbilitySpec.Ability.GetName(), *GetNameSafe(this));
+			continue;
+		}
+
+		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+		{
+			// Instanced abilities: cancel all the instances of the ability (not the CDO).
+			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
+			{
+				UCrashGameplayAbilityBase* CrashAbilityInstance = CastChecked<UCrashGameplayAbilityBase>(AbilityInstance);
+
+				if (ShouldCancelFunc(CrashAbilityInstance, AbilitySpec.Handle))
+				{
+					if (CrashAbilityInstance->CanBeCanceled())
+					{
+						CrashAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), CrashAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+					}
+					else
+					{
+						ABILITY_LOG(Error, TEXT("CancelAbilitiesByFunc failed to cancel ability [%s]: CanBeCanceled is false."), *GetNameSafe(CrashAbilityInstance));
+					}
+				}
+			}
+		}
+		else
+		{
+			// Non-instanced abilities: cancel the CDO.
+			if (ShouldCancelFunc(AbilityCDO, AbilitySpec.Handle))
+			{
+				// Non-instanced abilities can always be canceled.
+				check(AbilityCDO->CanBeCanceled());
+				AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(), bReplicateCancelAbility);
+			}
+		}
+	}
 }
 
 void UCrashAbilitySystemComponent::DisableAbilitiesByTag(const FGameplayTagContainer& Tags)

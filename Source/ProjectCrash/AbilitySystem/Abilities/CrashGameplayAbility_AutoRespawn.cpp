@@ -1,13 +1,11 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "AbilitySystem/Abilities/CrashGameplayAbility_AutoRespawn.h"
 
 #include "AbilitySystemComponent.h"
 #include "CrashGameplayAbility_Reset.h"
 #include "CrashGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
-#include "AbilitySystem/AttributeSets/LivesAttributeSet.h"
 #include "AbilitySystem/Components/HealthComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
@@ -111,10 +109,6 @@ void UCrashGameplayAbility_AutoRespawn::OnDeathStarted(AActor* DyingActor)
 				}
 
 				// Start timer to respawn.
-				/* NOTE: I'm not a huge fan of the respawn being predicted. We might change it to be server-only in the
-				 * future. To do this, we'd wrap this timer in a server check (CurrentActorInfo->IsNetAuthority) and
-				 * only broadcast the RespawnCompleted message from the server. We could also change this ability's
-				 * execution policy to server-initiated. */
 				bShouldFinishReset = true;
 				FTimerHandle TimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UCrashGameplayAbility_AutoRespawn::OnRespawnTimerEnd, RespawnTime, false);

@@ -8,7 +8,7 @@
 
 /**
  * The base class for "Death" abilities. This is triggered for the ASC of dying actors with the
- * "GameplayEvent.Ability.Death" event. This is activated automatically by the HealthAttributeSet and HealthComponent.
+ * "GameplayEvent.Player.Death" event. This is activated automatically by the HealthAttributeSet and HealthComponent.
  *
  * This should be subclassed to handle user-facing death logic, such as changing camera modes or playing VFX.
  */
