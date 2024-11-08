@@ -10,17 +10,6 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_InputBlocking, "Ability.Behavior.InputBlocking", "This ability blocks movement and camera input while active.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_Disabled, "Ability.Behavior.Disabled", "This ability is disabled and cannot be activated. Used to explicitly block abilities without removing them.");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Equipment, "Ability.Behavior.UI.Slotted.Equipment", "This ability will ability in the HUD as an equipment-granted ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Generic, "Ability.Behavior.UI.Slotted.Generic", "This ability will ability in the HUD as a generic ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Weapon, "Ability.Behavior.UI.Slotted.Weapon", "This ability will ability in the HUD as a weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Slotted_Ultimate, "Ability.Behavior.UI.Slotted.Ultimate", "This ability will ability in the HUD as the character's ultimate.");
-
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_PrimaryWeapon, "Ability.Behavior.UI.Frontend.PrimaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a primary weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_SecondaryWeapon, "Ability.Behavior.UI.Frontend.SecondaryWeapon", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a secondary weapon.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_StandardAbility, "Ability.Behavior.UI.Frontend.StandardAbility", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a standard ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Passive, "Ability.Behavior.UI.Frontend.Passive", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as a passive ability.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Ability_Behavior_UI_Frontend_Ultimate, "Ability.Behavior.UI.Frontend.Ultimate", "This ability will appear in information menus (character selection screens, character info pop-up, etc.) as an ultimate ability.");
-
 
 	// Effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Effects_CameraType_FirstPerson, "Effects.CameraType.FirstPerson", "When this camera mode is active, first-person meshes and effects should be visible, instead of third-person.");
@@ -28,11 +17,16 @@ namespace CrashGameplayTags
 
 	// Gameplay effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Damage, "GameplayEffects.SetByCaller.Damage", "Used to dynamically set the magnitude of damage applied by gameplay effects.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_UltimateCharge, "GameplayEffects.SetByCaller.UltimateCharge", "Used to dynamically set the ultimate charge granted by gameplay effects.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_CooldownDuration, "GameplayEffects.SetByCaller.CooldownDuration", "Used to use a single reusable gameplay effect for ability cooldowns by dynamically setting its duration.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageSelf, "GameplayEffects.Damage.CanDamageSelf", "The damage caused by this gameplay effect can affect the source actor.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "The damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. Overrides damage invulnerabilities.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. Overrides damage invulnerabilities.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromDamage, "GameplayEffects.UltimateCharge.FromDamage", "Ultimate charge granted by dealing damage.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromHealing, "GameplayEffects.UltimateCharge.FromHealing", "Ultimate charge granted by applying healing.");
 
 
 	// Gameplay events
@@ -49,6 +43,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_InitState_GameplayReady, "InitState.GameplayReady", "Ready to start gameplay at any time. All dependencies and sub-systems have been initialized.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_PlayerStart_Spectator, "GameMode.PlayerStart.Spectator", "Indicates that this player start should be used for spectators.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameMode_Property_UltimateChargeRate, "GameMode.Property.UltimateChargeRate", "Scalar applied when gaining ultimate charge.");
 
 
 	// Input
@@ -59,12 +54,19 @@ namespace CrashGameplayTags
 
 
 	// Messages.
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated, "Message.Ability.Activated", "Message communicating that a gameplay ability was successfully activated.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "Message communicating that a gameplay ability's cooldown started.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "Message communicating that a gameplay ability was ended.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Failed, "Message.Ability.Failed", "Message communicating that a gameplay ability tried to activate but failed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Added, "Message.Ability.Added", "A gameplay ability was granted to an ASC.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Removed, "Message.Ability.Removed", "A gameplay ability was removed from an ASC.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Disabled, "Message.Ability.Disabled", "A gameplay ability was disabled, and cannot be activated.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Enabled, "Message.Ability.Enabled", "A gameplay ability was re-enabled after being disabled.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Success, "Message.Ability.Activated.Success", "A gameplay ability was successfully activated.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Failed, "Message.Ability.Activated.Failed", "A gameplay ability tried to activate but failed.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "A gameplay ability ended.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Started, "Message.Ability.Cooldown.Started", "A gameplay ability's cooldown started. Magnitude is the cooldown duration.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Cooldown_Ended, "Message.Ability.Cooldown.Ended", "A gameplay ability's cooldown ended.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_CostChanged, "Message.Ability.CostChanged", "The cost used to activate a gameplay ability changed. Magnitude is the cost variable's new value (e.g. new ultimate charge or new number of ability charges).");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Healing, "Message.Healing", "Verbal message communicating healing dealt.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Death, "Message.Player.Death", "Verbal message communicating a death.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Reset, "Message.Player.Reset", "Reset message indicating a player has been directly reset.");
@@ -72,6 +74,8 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Completed, "Message.Player.Respawn.Completed", "Simple duration message indicating a player finished respawning.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Inventory_Change, "Message.Inventory.Change", "Message communicating that an item was added to or removed from an inventory.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Team_TagChange, "Message.Team.TagChange", "Message communicating that a team's count of a certain tag changed.");
 
 
 	// States

@@ -3,8 +3,8 @@
 
 #include "AbilitySystem/GameplayEffects/DamageExecution.h"
 
+#include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
-#include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"

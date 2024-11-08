@@ -34,26 +34,29 @@ void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshCom
 	APawn* OwnerAsPawn = Cast<APawn>(MeshComp->GetOwner());
 	UEquipmentComponent* EquipmentComp = (OwnerAsPawn ? UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn) : nullptr);
 
-	if (!EquipmentComp)
+	if (!IsValid(EquipmentComp))
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to begin a \"Hide Equipment\" notify state in animation [%s], but its owning actor [%s] does not have an equipment component."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
 		return;
 	}
 
 	// Iterate through each equipment actor for the current equipment and hide it.
-	if (EquipmentComp->GetEquipment())
+	if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
 	{
-		for (AEquipmentActor* EquipmentActor : EquipmentComp->GetEquipment()->GetSpawnedActors())
+		for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
 		{
-			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
+			if (IsValid(EquipmentActor))
 			{
-				/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
-				 * equipment or vice versa. */
-				if (MeshComp->GetAttachChildren().Contains(Root))
+				if (USceneComponent* Root = EquipmentActor->GetRootComponent())
 				{
-					/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
-					 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
-					Root->SetHiddenInGame(true, true);
+					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
+					 * equipment or vice versa. */
+					if (MeshComp->GetAttachChildren().Contains(Root))
+					{
+						/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
+						 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
+						Root->SetHiddenInGame(true, true);
+					}
 				}
 			}
 		}
@@ -75,26 +78,29 @@ void UAnimNotifyState_HideEquipment::NotifyEnd(USkeletalMeshComponent* MeshComp,
 	APawn* OwnerAsPawn = Cast<APawn>(MeshComp->GetOwner());
 	UEquipmentComponent* EquipmentComp = (OwnerAsPawn ? UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn) : nullptr);
 
-	if (!EquipmentComp)
+	if (!IsValid(EquipmentComp))
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to end a \"Hide Equipment\" notify state in animation [%s], but its owning actor [%s] does not have an equipment component."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
 		return;
 	}
 
 	// Iterate through each equipment actor for the current equipment and unhide it.
-	if (EquipmentComp->GetEquipment())
+	if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
 	{
-		for (AEquipmentActor* EquipmentActor : EquipmentComp->GetEquipment()->GetSpawnedActors())
+		for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
 		{
-			if (USceneComponent* Root = EquipmentActor->GetRootComponent())
+			if (IsValid(EquipmentActor))
 			{
-				/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
-				 * equipment or vice versa. */
-				if (MeshComp->GetAttachChildren().Contains(Root))
+				if (USceneComponent* Root = EquipmentActor->GetRootComponent())
 				{
-					/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
-					 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
-					Root->SetHiddenInGame(false, true);
+					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
+					 * equipment or vice versa. */
+					if (MeshComp->GetAttachChildren().Contains(Root))
+					{
+						/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
+						 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
+						Root->SetHiddenInGame(false, true);
+					}
 				}
 			}
 		}

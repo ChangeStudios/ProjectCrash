@@ -3,8 +3,10 @@
 
 #include "GameFramework/GameModes/CrashGameState.h"
 
+#include "AbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
 #include "GameModeManagerComponent.h"
+#include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
@@ -15,10 +17,16 @@
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
-ACrashGameState::ACrashGameState()
+ACrashGameState::ACrashGameState(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Create the component responsible for handling the current game mode.
 	GameModeManagerComponent = CreateDefaultSubobject<UGameModeManagerComponent>(TEXT("GameModeManagerComponent"));
+
+	// Create the game state's ability system.
+	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UCrashAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 }
 
 void ACrashGameState::PreInitializeComponents()
@@ -32,6 +40,10 @@ void ACrashGameState::PreInitializeComponents()
 void ACrashGameState::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	// Initialize the ability system component.
+	check(AbilitySystemComponent);
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 
 	// Attempt to progress initialization when the game mode data finishes loading.
 	GameModeManagerComponent->CallOrRegister_OnGameModeLoaded(FCrashGameModeLoadedSignature::FDelegate::CreateWeakLambda(this, [this](const UCrashGameModeData* CrashGameModeData)
@@ -143,6 +155,11 @@ void ACrashGameState::CheckDefaultInitialization()
 	// Before checking our progress, try progressing any other features we might depend on.
 	CheckDefaultInitializationForImplementers();
 	ContinueInitStateChain({ STATE_WAITING_FOR_DATA, STATE_INITIALIZING, STATE_GAMEPLAY_READY });
+}
+
+UAbilitySystemComponent* ACrashGameState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 void ACrashGameState::AddPlayerState(APlayerState* PlayerState)

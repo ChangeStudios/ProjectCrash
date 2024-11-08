@@ -2,13 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "ModularGameState.h"
+#include "AbilitySystemInterface.h"
 #include "Components/GameFrameworkInitStateInterface.h"
+#include "ModularGameState.h"
 #include "CrashGameState.generated.h"
 
 struct FCrashVerbMessage;
+struct FCrashAbilityMessage;
 class ACrashPlayerState;
+class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
 class UGameModeManagerComponent;
 namespace UE::GameFeatures { struct FResult; }
@@ -19,7 +21,7 @@ namespace UE::GameFeatures { struct FResult; }
  * the GameModeManagerComponent.
  */
 UCLASS()
-class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase, public IGameFrameworkInitStateInterface
+class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase, public IGameFrameworkInitStateInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -28,7 +30,7 @@ class PROJECTCRASH_API ACrashGameState : public AModularGameStateBase, public IG
 public:
 
 	/** Default constructor. */
-	ACrashGameState();
+	ACrashGameState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 
 
@@ -39,7 +41,7 @@ public:
 	/** Registers this actor as a feature with the initialization state framework. */
 	virtual void PreInitializeComponents() override;
 
-	/** Starts listening for the game mode to be loaded via the game mode manager component. */
+	/** Starts listening for the game mode to be loaded via the game mode manager component. Initializes the ASC. */
 	virtual void PostInitializeComponents() override;
 
 	/** Initializes this actor's initialization state. */
@@ -75,6 +77,26 @@ private:
 
 
 
+	// Ability system.
+
+public:
+
+	/** Interfaced getter for the game state's ability system component. */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	/** Typed getter for the game state's ability system component. */
+	UFUNCTION(BlueprintCallable, Category = "Game State", Meta = (ToolTip = "The game state's ability system"))
+	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponent() const { return AbilitySystemComponent; }
+
+protected:
+
+	/** The game state's ability system component, used for managing game-wide abilities (e.g. game phases), effects,
+	 * and cues. */
+	UPROPERTY(VisibleAnywhere, Category = "Game State")
+	TObjectPtr<UCrashAbilitySystemComponent> AbilitySystemComponent;
+
+
+
 	// Players.
 
 public:
@@ -88,12 +110,12 @@ public:
 
 public:
 
-	/** Reliably broadcasts a verbal message to all clients. */
+	/** Unreliably broadcasts a verbal message to all clients. */
 	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Unreliable)")
 	void MulticastUnreliableMessageToClients(const FCrashVerbMessage Message);
 
-	/** Unreliably broadcasts a verbal message to all clients. */
-	UFUNCTION(NetMulticast, Unreliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Reliable)")
+	/** Reliably broadcasts a verbal message to all clients. */
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Verb, Reliable)")
 	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
 
 

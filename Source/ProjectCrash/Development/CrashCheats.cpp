@@ -6,6 +6,8 @@
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/Abilities/CrashGameplayAbility_Reset.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
+#include "AbilitySystem/Components/HealthComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "Player/CrashPlayerState.h"
 
 UCrashCheats::UCrashCheats()
@@ -45,5 +47,26 @@ void UCrashCheats::ResetPlayer()
 		}
 
 		ABILITY_LOG(Error, TEXT("ResetPlayer was called on player [%s], but player does not the Reset gameplay ability."), *GetNameSafe(PC));
+	}
+}
+
+void UCrashCheats::KillPlayer()
+{
+	const APlayerController* PC = GetPlayerController();
+	if (const APawn* Pawn = PC->GetPawn())
+	{
+		// Self-destruct via health component.
+		if (UHealthComponent* HealthComp = UHealthComponent::FindHealthComponent(Pawn))
+		{
+			HealthComp->DamageSelfDestruct();
+		}
+		else
+		{
+			UE_LOG(LogCrash, Error, TEXT("KillPlayer was called on player [%s], but player's pawn does not have a health component."), *GetNameSafe(PC));
+		}
+	}
+	else
+	{
+		UE_LOG(LogCrash, Error, TEXT("KillPlayer was called on player [%s], but player does not have a pawn to kill."), *GetNameSafe(PC));
 	}
 }

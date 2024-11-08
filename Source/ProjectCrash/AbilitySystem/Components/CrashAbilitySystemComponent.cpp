@@ -16,6 +16,9 @@
 #include "Characters/CrashCharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 /** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
  * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
@@ -33,8 +36,8 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	check(ActorInfo);
 	check(InOwnerActor);
 
-	// Whether this ASC (A) has a valid avatar and (B) that avatar is not the same as the previous avatar.
-	const bool bHasValidNewAvatar = ((InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
+	// Whether this ASC (A) has a valid pawn avatar and (B) that avatar is not the same as the previous avatar.
+	const bool bHasValidNewAvatar = (Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
@@ -72,14 +75,14 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 			}
 		}
 
+		// Register this ASC with the global ability subsystem.
+		if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
+		{
+			GlobalAbilitySubsystem->RegisterASC(this);
+		}
+
 		// Attempt to activate any passive abilities when a valid new avatar is set.
 		TryActivatePassiveAbilities();
-	}
-
-	// Register this ASC with the global ability subsystem.
-	if (UCrashGlobalAbilitySubsystem* GlobalAbilitySubsystem = UWorld::GetSubsystem<UCrashGlobalAbilitySubsystem>(GetWorld()))
-	{
-		GlobalAbilitySubsystem->RegisterASC(this);
 	}
 }
 
@@ -122,22 +125,6 @@ void UCrashAbilitySystemComponent::TryActivatePassiveAbilities()
 			AbilityCDO->TryActivatePassiveAbility(AbilityActorInfo.Get(), AbilitySpec);
 		}
 	}
-}
-
-void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnGiveAbility(AbilitySpec);
-
-	// Broadcast that a new ability was granted to this ASC.
-	AbilityGrantedDelegate.Broadcast(AbilitySpec);
-}
-
-void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnRemoveAbility(AbilitySpec);
-
-	// Broadcast that an ability was removed from this ASC.
-	AbilityRemovedDelegate.Broadcast(AbilitySpec);
 }
 
 void UCrashAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
@@ -325,10 +312,14 @@ void UCrashAbilitySystemComponent::HandleAbilityActivatedForActivationGroup(UCra
 			return;
 		}
 
-		/* If the activated ability is exclusive, cancel the active replaceable exclusive ability, if there is one and
-		 * cache the new exclusive ability */
-		case EAbilityActivationGroup::Exclusive_Replaceable:
+		/* If the activated ability is exclusive, cancel the active replaceable exclusive ability (if there is one) and
+		 * cache the new exclusive ability. */
 		case EAbilityActivationGroup::Exclusive_Blocking:
+		{
+			// Also notify other exclusive abilities that they can't be activated, if a blocking ability was activated.
+			NotifyAbilityExclusiveAbilitiesDisabled(true, ActivatedAbility);
+		}
+		case EAbilityActivationGroup::Exclusive_Replaceable:
 		{
 			if (CurrentExclusiveAbility)
 			{
@@ -360,57 +351,144 @@ void UCrashAbilitySystemComponent::HandleAbilityEndedForActivationGroup(UCrashGa
 	if (CurrentExclusiveAbility == EndedAbility)
 	{
 		CurrentExclusiveAbility = nullptr;
+		NotifyAbilityExclusiveAbilitiesDisabled(false, EndedAbility);
 	}
+}
+
+void UCrashAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnGiveAbility(AbilitySpec);
+
+	// Send a standardized message communicating the ability addition.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Added, AbilitySpec.Handle, AbilitySpec.Level);
+}
+
+void UCrashAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnRemoveAbility(AbilitySpec);
+
+	// Send a standardized message communicating the ability removal.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Removed, AbilitySpec.Handle);
 }
 
 void UCrashAbilitySystemComponent::NotifyAbilityActivated(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability)
 {
 	Super::NotifyAbilityActivated(Handle, Ability);
 
-	// Send a standardized message that this ability was activated.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Activated;
-		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
-		AbilityMessage.AbilitySpecHandle = Handle;
-
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
-	}
+	// Send a standardized message communicating the ability activation.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Activated_Success, Handle);
 }
 
 void UCrashAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled)
 {
 	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
 
-	// Send a standardized message that this ability ended.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
-	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Ended;
-		AbilityMessage.ActorInfo = *GetCrashAbilityActorInfo();
-		AbilityMessage.AbilitySpecHandle = Handle;
+	// Send a standardized message communicating the ability end.
+	BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Ended, Handle);
+}
 
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+void UCrashAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)
+{
+	ABILITYLIST_SCOPE_LOCK();
+
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (!AbilitySpec.IsActive())
+		{
+			continue;
+		}
+
+		// Only use CrashGameplayAbilityBase abilities in this function so the predicate can use the typed ability.
+		UCrashGameplayAbilityBase* AbilityCDO = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability);
+		if (!AbilityCDO)
+		{
+			ABILITY_LOG(Error, TEXT("Ability [%s], not of type CrashGameplayAbilityBase, was granted to ASC [%s]. Abilities not of type CrashGameplayAbilityBase cannot be cancelled-by-function. Skipping."), *AbilitySpec.Ability.GetName(), *GetNameSafe(this));
+			continue;
+		}
+
+		if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+		{
+			// Instanced abilities: cancel all the instances of the ability (not the CDO).
+			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
+			{
+				UCrashGameplayAbilityBase* CrashAbilityInstance = CastChecked<UCrashGameplayAbilityBase>(AbilityInstance);
+
+				if (ShouldCancelFunc(CrashAbilityInstance, AbilitySpec.Handle))
+				{
+					if (CrashAbilityInstance->CanBeCanceled())
+					{
+						CrashAbilityInstance->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), CrashAbilityInstance->GetCurrentActivationInfo(), bReplicateCancelAbility);
+					}
+					else
+					{
+						ABILITY_LOG(Error, TEXT("CancelAbilitiesByFunc failed to cancel ability [%s]: CanBeCanceled is false."), *GetNameSafe(CrashAbilityInstance));
+					}
+				}
+			}
+		}
+		else
+		{
+			// Non-instanced abilities: cancel the CDO.
+			if (ShouldCancelFunc(AbilityCDO, AbilitySpec.Handle))
+			{
+				// Non-instanced abilities can always be canceled.
+				check(AbilityCDO->CanBeCanceled());
+				AbilityCDO->CancelAbility(AbilitySpec.Handle, AbilityActorInfo.Get(), FGameplayAbilityActivationInfo(), bReplicateCancelAbility);
+			}
+		}
 	}
 }
 
-void UCrashAbilitySystemComponent::NotifyAbilityFailed(const FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, const FGameplayTagContainer& FailureReason)
+void UCrashAbilitySystemComponent::DisableAbilitiesByTag(const FGameplayTagContainer& Tags)
 {
-	Super::NotifyAbilityFailed(Handle, Ability, FailureReason);
-
-	// Send a standardized message that the ability activation failed.
-	if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	if (!IsOwnerActorAuthoritative())
 	{
-		FCrashAbilityMessage AbilityMessage = FCrashAbilityMessage();
-		AbilityMessage.MessageType = CrashGameplayTags::TAG_Message_Ability_Failed;
-		AbilityMessage.ActorInfo = *static_cast<FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
-		AbilityMessage.AbilitySpecHandle = Handle;
+		ABILITY_LOG(Error, TEXT("DisableAbilitiesByTag called on the client. This method can only be called with authority."));
+		return;
+	}
 
-		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
-		MessageSystem.BroadcastMessage(AbilityMessage.MessageType, AbilityMessage);
+	ABILITYLIST_SCOPE_LOCK();
+
+	// Search for abilities with any matching tags.
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (AbilitySpec.Ability && AbilitySpec.Ability->AbilityTags.HasAny(Tags))
+		{
+			// Disable the ability.
+			AbilitySpec.Ability->AbilityTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
+
+			// Broadcast a message informing other systems that this ability is now disabled.
+			BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Disabled, AbilitySpec.Handle, AbilitySpec.Level);
+		}
+	}
+}
+
+void UCrashAbilitySystemComponent::EnableAbilitiesByTag(const FGameplayTagContainer& Tags)
+{
+	if (!IsOwnerActorAuthoritative())
+	{
+		ABILITY_LOG(Error, TEXT("EnableAbilitiesByTag called on the client. This method can only be called with authority."));
+		return;
+	}
+
+	ABILITYLIST_SCOPE_LOCK();
+
+	// Search for abilities with any matching tags.
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (AbilitySpec.Ability && AbilitySpec.Ability->AbilityTags.HasAny(Tags))
+		{
+			// Only try to re-enable abilities that are disabled.
+			if (AbilitySpec.Ability->AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_Disabled))
+			{
+				// Enable the ability.
+				AbilitySpec.Ability->AbilityTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
+
+				// Broadcast a message informing other systems that this ability is now enabled.
+				BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Enabled, AbilitySpec.Handle, AbilitySpec.Level);
+			}
+		}
 	}
 }
 
@@ -566,4 +644,60 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 {
 	// Cast to typed actor info.
 	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
+}
+
+void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)
+{
+	ensure(MessageType.IsValid());
+	if (!UGameplayMessageSubsystem::HasInstance(GetWorld()))
+	{
+		return;
+	}
+
+	// Construct the message.
+	FCrashAbilityMessage Message;
+	Message.MessageType = MessageType;
+	Message.AbilitySpecHandle = Ability;
+	Message.ActorInfo = *GetCrashAbilityActorInfo();
+	Message.Magnitude = Magnitude;
+
+	// Broadcast the message locally.
+	UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+	MessageSystem.BroadcastMessage(Message.MessageType, Message);
+
+	// Some events only occur on the server. If we should replicate this message to clients, use a reliable multicast.
+	if (bReplicateMessage && AbilityActorInfo->IsNetAuthority())
+	{
+		MulticastReliableAbilityMessageToClients(Message);
+	}
+}
+
+void UCrashAbilitySystemComponent::MulticastReliableAbilityMessageToClients_Implementation(const FCrashAbilityMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.MessageType, Message);
+	}
+}
+
+void UCrashAbilitySystemComponent::NotifyAbilityExclusiveAbilitiesDisabled(bool bDisabled, const UGameplayAbility* AbilityToIgnore)
+{
+	ABILITYLIST_SCOPE_LOCK();
+
+	/* Notify all exclusive abilities that they are now enabled/disabled. */
+	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
+	{
+		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
+		{
+			if (CrashAbility->GetActivationGroup() == EAbilityActivationGroup::Exclusive_Replaceable ||
+				CrashAbility->GetActivationGroup() == EAbilityActivationGroup::Exclusive_Blocking)
+			{
+				if (CrashAbility->GetClass() != AbilityToIgnore->GetClass())
+				{
+					BroadcastAbilityMessage((bDisabled ? CrashGameplayTags::TAG_Message_Ability_Disabled : CrashGameplayTags::TAG_Message_Ability_Enabled), AbilitySpec.Handle, true);
+				}
+			}
+		}
+	}
 }

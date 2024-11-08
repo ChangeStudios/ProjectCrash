@@ -12,13 +12,14 @@ class UTeamDisplayAsset;
 class UCrashGameModeData;
 
 /**
- * Game state component responsible for creating teams when the game starts. Should be subclassed to define which teams
- * are created.
+ * Game state component responsible for creating teams when the game starts. Creates a predefined number of teams when
+ * the game starts and assigns players to those teams as they join. Should be subclassed to define which teams are
+ * created.
  *
  * Can be subclassed in C++ to change how teams are created. E.g. rather than having fixed teams, a game mode may want
  * to create a new team for each player when they join.
  */
-UCLASS(Abstract, Blueprintable, HideCategories = (ComponentTick, Tags, ComponentReplication, Cooking, Activation, Variable, AssetUserData, Replication, Navigation), Meta = (ShortToolTip = "Defines which teams are created for a game."))
+UCLASS(Abstract, Blueprintable, HideCategories = (ComponentTick, Tags, ComponentReplication, Cooking, Activation, Variable, AssetUserData, Replication, Navigation), Meta = (ShortToolTip = "Defines which teams are created for a game. Creates a predefined number of teams when the game starts and assigns players to those teams as they join."))
 class PROJECTCRASH_API UTeamCreationComponent : public UGameStateComponent
 {
 	GENERATED_BODY()
@@ -46,7 +47,7 @@ protected:
 	/**
 	 * Called after the game mode is loaded to create this component's teams.
 	 *
-	 * Default implementation simply creates a team for each team in the TeamsToCreate map.
+	 * Default implementation creates a team for each team in the TeamsToCreate map.
 	 */
 	virtual void CreateTeams();
 
@@ -85,16 +86,6 @@ private:
 
 protected:
 
-	/** If true, teams will always use the same display asset when viewed by a team member. I.e. the player's team will
-	 * always be the same color for them. */
-	UPROPERTY(EditDefaultsOnly, Category = "Teams", DisplayName = "Use Friendly Display Asset?")
-	bool bUseFriendlyDisplayAsset = true;
-
-	/** If UseFriendlyDisplayAsset is true, this display asset will be used for teams when viewed by a team member. This
-	 * asset must not be present in TeamsToCreate, or two teams may appear the same color for some players. */
-	UPROPERTY(EditDefaultsOnly, Category = "Teams", Meta = (EditCondition = "bUseFriendlyDisplayAsset", EditConditionHides = "true"))
-	TObjectPtr<UTeamDisplayAsset> FriendlyDisplayAsset = nullptr;
-
 	/** The teams that will be created, represented by their team ID mapped to their corresponding display asset. */
 	UPROPERTY(EditDefaultsOnly, Category = "Teams")
 	TMap<uint8, TObjectPtr<UTeamDisplayAsset>> TeamsToCreate;
@@ -117,8 +108,7 @@ public:
 		TMap<FName, TArray<UTeamDisplayAsset*>> MissingTextures;
 	};
 
-	/** Validates that every display asset has the same properties set. Ensures FriendlyDisplayAsset is not present in
-	 * TeamsToCreate. */
+	/** Validates that every display asset has the same properties set. */
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 
 #endif // WITH_EDITOR

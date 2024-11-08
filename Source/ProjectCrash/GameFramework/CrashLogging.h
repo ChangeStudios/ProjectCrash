@@ -48,6 +48,13 @@ PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogEquipment, Log, All);
 
 
 
+	// Game phase log.
+
+/** Log channel for the game phase subsystem. */
+PROJECTCRASH_API DECLARE_LOG_CATEGORY_EXTERN(LogGamePhase, Log, All);
+
+
+
 	// Inventory log.
 
 /** Log channel for the inventory system. */

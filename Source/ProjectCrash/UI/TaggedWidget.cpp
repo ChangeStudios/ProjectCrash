@@ -42,7 +42,7 @@ void UTaggedWidget::NativeOnInitialized()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Created tagged widget [%s] for player [%s], who does not have a CrashPlayerController. The widget will not be able to listen for gameplay tags to control its visibility."), *GetPathNameSafe(this), *GetNameSafe(GetOwningPlayer()));
+			UE_LOG(LogUserInterface, Warning, TEXT("Created tagged widget [%s] for player [%s], who does not have a CrashPlayerController. The widget will not be able to listen for gameplay tags to control its visibility."), *GetPathNameSafe(this), *GetNameSafe(GetOwningPlayer()));
 		}
 	}
 }

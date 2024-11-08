@@ -13,8 +13,6 @@
  *
  * Note that this character will not behave properly if it's spawned with a player state: it won't know which ASC to
  * use.
- *
- * TODO: Can a player possess this AFTER it's spawned? No idea why you'd want to, but... could you?
  */
 UCLASS()
 class PROJECTCRASH_API ACharacterWithAbilities : public ACrashCharacter

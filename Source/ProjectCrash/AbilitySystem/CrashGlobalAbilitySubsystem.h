@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "CrashGlobalAbilitySubsystem.generated.h"
 
 class UCrashAbilitySystemComponent;
 class UGameplayAbility;
+class UGameplayEffect;
 
 /**
- * A structure containing a globally granted gameplay ability and handles it for each ASC to which it's currently
- * granted.
+ * Entry for tracking globally granted gameplay abilities.
  */
 USTRUCT()
 struct FGloballyGrantedAbility
@@ -21,18 +21,37 @@ struct FGloballyGrantedAbility
 
 public:
 
-	/** The globally granted gameplay ability. */
-	UPROPERTY()
-	TSubclassOf<UGameplayAbility> GrantedAbility;
-
-	/** Each ASC the ability is granted to, mapped to a handle to the ability in that ASC. */
+	/** Each ASC to which the ability is granted, mapped to that ASC's handle for the ability. */
 	UPROPERTY()
 	TMap<TObjectPtr<UCrashAbilitySystemComponent>, FGameplayAbilitySpecHandle> Handles;
 
-	/** Grants this ability to the given ASC. */
-	void GrantToASC(UCrashAbilitySystemComponent* ASC);
+	/** Grants the ability to the given ASC. */
+	void GrantToASC(TSubclassOf<UGameplayAbility> Ability, UCrashAbilitySystemComponent* ASC);
 
-	/** Removes this ability from the given ASC. */
+	/** Removes the ability from the given ASC. */
+	void RemoveFromASC(UCrashAbilitySystemComponent* ASC);
+};
+
+
+
+/**
+ * Entry for tracking globally applied gameplay effects.
+ */
+USTRUCT()
+struct FGloballyAppliedEffect
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Each ASC to which the effect is applied, mapped to that ASC's handle for the effect. */
+	UPROPERTY()
+	TMap<TObjectPtr<UCrashAbilitySystemComponent>, FActiveGameplayEffectHandle> Handles;
+
+	/** Applies the effect to the given ASC. */
+	void ApplyToASC(TSubclassOf<UGameplayEffect> Effect, UCrashAbilitySystemComponent* ASC);
+
+	/** Removes the effect from the given ASC. */
 	void RemoveFromASC(UCrashAbilitySystemComponent* ASC);
 };
 
@@ -51,12 +70,26 @@ class PROJECTCRASH_API UCrashGlobalAbilitySubsystem : public UWorldSubsystem
 public:
 
 	/** Grants a gameplay ability to all registers ASCs. */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ability|GlobalAbilitySubsystem")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ability|GlobalAbilitySubsystem", Meta = (Keywords = "add"))
 	void GrantGlobalAbility(TSubclassOf<UGameplayAbility> Ability);
 
 	/** Removes a granted gameplay ability from all registered ASCs. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ability|GlobalAbilitySubsystem")
 	void RemoveGlobalAbility(TSubclassOf<UGameplayAbility> Ability);
+
+
+
+	// Effects.
+
+public:
+
+	/** Grants a gameplay effect to all registered ASCs. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ability|GlobalAbilitySubsystem", Meta = (Keywords = "add grant"))
+	void ApplyGlobalEffect(TSubclassOf<UGameplayEffect> Effect);
+
+	/** Removes an applied gameplay effect from all registered ASCs. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Ability|GlobalAbilitySubsystem", Meta = (Keywords = "end"))
+	void RemoveGlobalEffect(TSubclassOf<UGameplayEffect> Effect);
 
 
 
@@ -72,9 +105,13 @@ public:
 
 private:
 
-	/** A map containing every current global ability, and handles to the ability in each ASC to which it's granted. */
+	/** A map containing current global abilities, and handles to that ability in each ASC to which it's granted. */
 	UPROPERTY()
 	TMap<TSubclassOf<UGameplayAbility>, FGloballyGrantedAbility> GrantedAbilities;
+
+	/** A map containing current global effects, and handles to that effect in each ASC to which it's applied. */
+	UPROPERTY()
+	TMap<TSubclassOf<UGameplayEffect>, FGloballyAppliedEffect> AppliedEffects;
 
 	/** All ability system components currently registered with the global ability subsystem. */
 	UPROPERTY()

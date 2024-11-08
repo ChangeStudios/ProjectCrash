@@ -10,6 +10,7 @@
 #include "Characters/Data/PawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "GameFramework/CrashLogging.h"
+#include "GameFramework/GameFeatures/GameFeatureAction_AddAbilities.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -247,6 +248,12 @@ void UPawnExtensionComponent::SetPawnData(const UPawnData* InPawnData)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnData, this);
 	Pawn->ForceNetUpdate();
 
+	// For pawns with self-contained ASCs, request abilities now. Players will have already done this.
+	if (!GetPlayerState<ACrashPlayerState>())
+	{
+		UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(GetOwner(), UGameFeatureAction_AddAbilities::NAME_AbilitiesReady);
+	}
+
 	// Try to progress our initialization, now that we have valid pawn data.
 	CheckDefaultInitialization();
 }
@@ -302,14 +309,17 @@ void UPawnExtensionComponent::InitializeAbilitySystem(UCrashAbilitySystemCompone
 	AbilitySystemComponent = InASC;
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Pawn);
 
-	// Grant the new pawn data's default ability sets on the server.
-	if (HasAuthority())
+	/* Grant the new pawn data's default ability sets. We only grant abilities here if the pawn does NOT have a player
+	 * state. If they do, the PS will handle granting and removing the pawn data's abilities itself, because it wants
+	 * to keep the abilities even if the pawn dies. */
+	if (HasAuthority() && !GetPlayerState<ACrashPlayerState>())
 	{
 		for (const UCrashAbilitySet* AbilitySet : PawnData->AbilitySets)
 		{
 			if (AbilitySet)
 			{
-				AbilitySet->GiveToAbilitySystem(AbilitySystemComponent.Get(), &GrantedPawnDataAbilitySets.AddDefaulted_GetRef());
+				// Pawns without player states can't switch pawn data, so we don't need to bother caching our abilities.
+				AbilitySet->GiveToAbilitySystem(AbilitySystemComponent.Get(), nullptr);
 			}
 		}
 	}
@@ -322,17 +332,6 @@ void UPawnExtensionComponent::UninitializeAbilitySystem()
 	if (!AbilitySystemComponent.Get())
 	{
 		return;
-	}
-
-	// Remove the current pawn data's ability sets.
-	if (HasAuthority())
-	{
-		for (FCrashAbilitySet_GrantedHandles GrantedAbilitySet : GrantedPawnDataAbilitySets)
-		{
-			GrantedAbilitySet.RemoveFromAbilitySystem(AbilitySystemComponent.Get());
-		}
-
-		GrantedPawnDataAbilitySets.Empty();
 	}
 
 	// Uninitialize this pawn from the ASC if it's the current avatar.

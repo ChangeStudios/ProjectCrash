@@ -152,6 +152,6 @@ protected:
 	 * is 0. */
 	FORCEINLINE static float SafeInvertDeltaSeconds(float DeltaSeconds) { return (DeltaSeconds > 0.0f ? (1.0f / DeltaSeconds) : (0.0f)); }
 
-	/** Returns this animation instance's owning pawn's movement component has a CrashCharacterMovementComponent. */
+	/** Returns this animation instance's owning pawn's movement component as a CrashCharacterMovementComponent. */
 	UCrashCharacterMovementComponent* GetCrashCharacterMovementComponent() const;
 };

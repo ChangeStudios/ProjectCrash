@@ -2,13 +2,17 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "TeamSubsystem.generated.h"
 
-class ATeamInfo;
 class ACrashPlayerState;
+class ATeamInfo;
+struct FCrashTeamTagChangedMessage;
 
+/** Delegate for when a tag stack count in the specified team's runtime info object changes. */
+DECLARE_DYNAMIC_DELEGATE_OneParam(FTeamTagChangedSignature, int32, NewCount);
 /** Delegate for when the specified team's display asset changes. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTeamDisplayAssetChangedSignature, int32, TeamId);
 
@@ -93,8 +97,11 @@ public:
 	/** Unregisters CheatManagerRegistrationHandle from the cheat manager. */
 	virtual void Deinitialize() override;
 
+	/** Restricts this subsystem to game and PIE worlds. */
+	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 
-	
+
+
 	// Team management
 
 public:
@@ -136,6 +143,40 @@ public:
 	/** Returns whether the given team has at least one of the specified tag. Tag must match exactly. */
 	UFUNCTION(BlueprintPure, Category = "Teams")
 	bool TeamHasTag(int32 TeamId, FGameplayTag Tag) const;
+
+	/** Binds the given delegate to when the specified team's count of the given tag changes. If FireOnBind is true,
+	 * the delegate will be fired once immediately with the team's current tags (useful for initialization). */
+	UFUNCTION(BlueprintCallable, Category = "Teams", Meta = (AutoCreateRefTerm = "OnTagChanged", Keywords = "listen watch"))
+	void ObserveTeamTags(int32 TeamId, FGameplayTag Tag, bool bPartialMatch, bool bFireOnBind, const FTeamTagChangedSignature& OnTagChanged);
+
+private:
+
+	/** Listener for messages indicating changes to team tags. */
+	FGameplayMessageListenerHandle TeamTagsListener;
+
+	/** Broadcasts a message indicating that the given team changed its count of the specified tag. Replicates the
+	 * message to clients. Server-only. */
+	void BroadcastTeamTagChange(ATeamInfo* TeamInfo, FGameplayTag Tag);
+
+	/** Called when a team's tags change. Fires any delegates bound to the specific team and tag that changed via
+	 * ObserveTeamTags. */
+	void OnTeamTagChanged(FGameplayTag Channel, const FCrashTeamTagChangedMessage& Message);
+
+	/** Stores a callback that should be fired when a certain team gains or loses any count of a certain tag. */
+	struct FTeamTagListener
+	{
+		FORCEINLINE bool IsMatch(const FGameplayTag& OtherTeamTag) const
+		{
+			return bPartialMatch ? OtherTeamTag.MatchesTag(TeamTag) : OtherTeamTag.MatchesTagExact(TeamTag);
+		};
+
+		FGameplayTag TeamTag;
+		bool bPartialMatch;
+		FTeamTagChangedSignature TagChangeCallback;
+	};
+
+	/** Listeners registered with each team's tag changes. */
+	TMap<int32 /* Team Id */, TArray<FTeamTagListener>> TeamTagListeners;
 
 
 
