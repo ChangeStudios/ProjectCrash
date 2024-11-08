@@ -68,6 +68,11 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", Meta = (AllowedTypes = "PawnData"))
 	FPrimaryAssetId PawnDataOverride;
 
+	/** Whether to skip straight to the gameplay phase in PIE. Enabling this skips the challenger selection, "waiting
+	 * for players," and countdown phases. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
+	bool bSkipToGameplay = false;
+
 	/** If true, all messages broadcast via the gameplay message subsystem will be logged. */
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Messages")
 	bool bLogGameplayMessages = false;

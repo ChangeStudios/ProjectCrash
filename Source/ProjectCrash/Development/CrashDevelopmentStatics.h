@@ -14,6 +14,19 @@ class PROJECTCRASH_API UCrashDevelopmentStatics : public UBlueprintFunctionLibra
 {
 	GENERATED_BODY()
 
+	// Developer settings.
+
+public:
+
+	/** Whether game logic should to skip straight to the gameplay phase. Always returns false, except during PIE
+	 * sessions when bSkipToGameplay is enabled in developer settings. */
+	UFUNCTION(BlueprintCallable, Category = "Development")
+	static bool ShouldSkipDirectlyToGameplay();
+
+
+
+	// Utils.
+
 public:
 
 	/** Finds the optimal world for running server cheats in PIE. */
