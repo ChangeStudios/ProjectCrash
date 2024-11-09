@@ -163,6 +163,12 @@ protected:
 
 
 	// Cooldowns.
+	
+public:
+
+	/** Returns false if a cooldown is blocking the activation of this ability. Ignores cooldowns if the
+	 * "bDisableCooldowns" option is enabled in developer settings. */
+	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const override;
 
 protected:
 

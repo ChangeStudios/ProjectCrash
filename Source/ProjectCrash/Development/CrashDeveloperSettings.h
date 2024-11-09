@@ -70,8 +70,13 @@ public:
 
 	/** Whether to skip straight to the gameplay phase in PIE. Enabling this skips the challenger selection, "waiting
 	 * for players," and countdown phases. */
-	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 	bool bSkipToGameplay = false;
+
+	/** Disable all ability cooldowns. Note that cooldowns will still appear in HUD, but won't restrict the activation
+	 * of abilities. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	bool bDisableCooldowns = false;
 
 	/** If true, all messages broadcast via the gameplay message subsystem will be logged. */
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Messages")

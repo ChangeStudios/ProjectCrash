@@ -11,6 +11,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "Characters/PawnCameraManager.h"
+#include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
@@ -299,6 +300,22 @@ bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
 	}
 
 	return false;
+}
+
+bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+#if WITH_EDITOR
+	// Disable cooldowns in the editor if desired.
+	if (GIsEditor)
+	{
+		if (GetDefault<UCrashDeveloperSettings>()->bDisableCooldowns)
+		{
+			return true;
+		}
+	}
+#endif // WITH_EDITOR
+
+	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
