@@ -38,9 +38,9 @@
 	}																																						\
 }
 
-/** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
- * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
-#define MIN_UPWARD_KNOCKBACK_PCT 0.5
+/** When knockback is applied to a grounded character, a small upward force will be added so they don't slide on the
+ * ground. The upward force will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (2D knockback force length)). */
+#define MIN_UPWARD_KNOCKBACK_PCT 0.2125
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -367,7 +367,7 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 	K2_OnNewAvatarSet();
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, bool bForceUpwardsVelocity)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target)
 {
 	if (!ensure(Target))
 	{
@@ -376,21 +376,7 @@ void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FV
 
 	// Calculate direction.
 	const FQuat DirectionRot = UKismetMathLibrary::FindLookAtRotation(Source, Target->GetActorLocation()).Quaternion();
-
-	/* Calculate horizontal and vertical force separately. Otherwise, we won't launch the target as far if we aren't at
-	 * exactly the same height. */
-	const FVector Direction2D = DirectionRot.GetAxisX().GetSafeNormal2D();
-	const float DirectionZ = DirectionRot.GetAxisX().Z * Force;
-	FVector ForceVector = (Force * Direction2D);
-	ForceVector.Z = DirectionZ;
-
-	/* If forcing upward velocity is requested, min-clamp the vertical force that will be applied to always knock the
-	 * target upwards. */
-	if (bForceUpwardsVelocity)
-	{
-		const float MinUpwardsVelocity = (Force * MIN_UPWARD_KNOCKBACK_PCT);
-		ForceVector.Z = FMath::Max(ForceVector.Z, MinUpwardsVelocity);
-	}
+	const FVector ForceVector = Force * DirectionRot.Vector();
 
 	// Apply knockback.
 	AddKnockbackToTargetInDirection(ForceVector, Target);
@@ -398,22 +384,27 @@ void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FV
 
 void UCrashGameplayAbilityBase::AddKnockbackToTargetInDirection(FVector Force, AActor* Target)
 {
-	// Convert force from kilogram km/s to newton-seconds for AddImpulse, so designers don't have to use absurd numbers.
-	Force = Force * 1000.0f;
-
-	// If the target actor is a character, add the impulse to their movement component.
+	// If the target actor is a character, launch them via their movement component.
 	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
 	{
-		if (UCharacterMovementComponent* TargetMovementComp = TargetChar->GetCharacterMovement())
+		UCharacterMovementComponent* TargetMovementComp = TargetChar->GetCharacterMovement();
+		if (ensure(IsValid(TargetMovementComp)))
 		{
-			TargetMovementComp->AddImpulse(Force);
+			// If the character is on the ground, add a small upward force so ground friction doesn't stop the impulse.
+			if (TargetMovementComp->IsMovingOnGround())
+			{
+				Force.Z = FMath::Max(Force.Size2D() * MIN_UPWARD_KNOCKBACK_PCT, Force.Z);
+			}
 		}
+
+		TargetChar->LaunchCharacter(Force, true, true);
 	}
-	// If the target actor has a primitive root with physics enabled, add the impulse to their root.
+	// If the target actor has a primitive root with physics enabled, add an impulse to their root.
 	else if (UPrimitiveComponent* RootScene = Cast<UPrimitiveComponent>(Target->GetRootComponent()))
 	{
 		if (RootScene->IsAnySimulatingPhysics())
 		{
+			// NOTE: May have to rescale force to take mass into account.
 			RootScene->AddImpulse(Force);
 		}
 	}
