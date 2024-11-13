@@ -55,18 +55,22 @@ void AEquipmentActor::OnRep_EquipmentPerspective()
 	}
 }
 
-void AEquipmentActor::ProcessEquipmentAnimation(FGameplayTag AnimationTag)
+void AEquipmentActor::ProcessEquipmentAnimation(FGameplayTag AnimationTag, EEquipmentPerspective Perspective)
 {
 	/* If the animation tag matches a tag in EquipmentAnimations, play that equipment animation on any skeletal mesh
 	 * component on this actor. */
 	if (TObjectPtr<UAnimMontage>* EquipmentAnimation = EquipmentAnimations.Find(AnimationTag))
 	{
-		TArray<UActorComponent*> Components;
-		GetComponents(USkeletalMeshComponent::StaticClass(), Components);
-
-		for (UActorComponent* MeshComp : Components)
+		// Equipment animations are perspective-specific.
+		if (Perspective == EquipmentPerspective)
 		{
-			Cast<USkeletalMeshComponent>(MeshComp)->PlayAnimation(EquipmentAnimation->Get(), EquipmentAnimation->Get()->bLoop);
+			TArray<UActorComponent*> Components;
+			GetComponents(USkeletalMeshComponent::StaticClass(), Components);
+
+			for (UActorComponent* MeshComp : Components)
+			{
+				Cast<USkeletalMeshComponent>(MeshComp)->PlayAnimation(EquipmentAnimation->Get(), EquipmentAnimation->Get()->bLoop);
+			}
 		}
 	}
 
