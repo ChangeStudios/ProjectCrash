@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UIExtensionSystem.h"
 #include "Abilities/GameplayAbility.h"
+#include "UIExtensionSystem.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
-class UAbilityWidgetBase;
+class ACrashCharacter;
 class ACrashPlayerState;
 class AChallengerBase;
+class UAbilityWidgetBase;
 class UCrashAbilitySystemComponent;
 class UCrashCameraModeBase;
 
@@ -309,6 +309,10 @@ public:
 	/** Returns this ability's owning ASC as a CrashAbilitySystemComponent. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+
+	/** Returns this ability's avatar as a CrashCharacter. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
+	ACrashCharacter* GetCrashCharacterFromActorInfo() const;
 
 	/** Returns the typed player controller from the current actor info. Often null. To try to retrieve any controller,
 	 * use GetControllerFromActorInfo instead. */

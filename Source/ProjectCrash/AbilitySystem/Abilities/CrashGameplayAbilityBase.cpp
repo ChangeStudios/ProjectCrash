@@ -10,6 +10,7 @@
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "Characters/CrashCharacter.h"
 #include "Characters/PawnCameraManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/Character.h"
@@ -474,13 +475,16 @@ FCrashGameplayAbilityActorInfo UCrashGameplayAbilityBase::K2_GetCrashActorInfo()
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
 {
-	// Retrieve the typed ASC cached by our custom actor info.
 	return (CurrentActorInfo ? GetCrashActorInfo()->GetCrashAbilitySystemComponent() : nullptr);
+}
+
+ACrashCharacter* UCrashGameplayAbilityBase::GetCrashCharacterFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<ACrashCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
 }
 
 ACrashPlayerController* UCrashGameplayAbilityBase::GetCrashPlayerControllerFromActorInfo() const
 {
-	// Retrieve the actor info's typed PC.
 	return GetCrashActorInfo()->GetCrashPlayerController();
 }
 
