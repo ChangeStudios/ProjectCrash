@@ -12,6 +12,7 @@
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "Characters/CrashCharacter.h"
 #include "Characters/PawnCameraManager.h"
+#include "Components/PrimitiveComponent.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
