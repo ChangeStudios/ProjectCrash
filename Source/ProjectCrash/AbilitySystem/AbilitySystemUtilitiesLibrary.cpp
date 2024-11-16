@@ -33,7 +33,7 @@ bool UAbilitySystemUtilitiesLibrary::HasLineOfSight(const UObject* WorldContextO
 	QueryParams.AddIgnoredActors(ActorsToIgnore);
 
 	// Perform trace.
-	World->LineTraceSingleByChannel(OutHitResult, Start, End, UEngineTypes::ConvertToCollisionChannel(TraceChannel));
+	World->LineTraceSingleByChannel(OutHitResult, Start, End, UEngineTypes::ConvertToCollisionChannel(TraceChannel), QueryParams);
 
 	// Return if the trace wasn't blocked.
 	return !OutHitResult.bBlockingHit;
