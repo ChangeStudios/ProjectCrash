@@ -96,7 +96,10 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyEnd(USkeletalMeshComponent* Mes
 	// Destroy the animation actor, if one was spawned.
 	for (AActor* SpawnedActor : SpawnedActors)
 	{
-		SpawnedActor->Destroy();
+		if (IsValid(SpawnedActor))
+		{
+			SpawnedActor->Destroy();
+		}
 	}
 
 	SpawnedActors.Empty();
