@@ -235,7 +235,7 @@ protected:
 
 	// Gameplay.
 
-public:
+protected:
 
 	/**
 	 * Applies knockback to the target actor in the direction of the source to the target.
@@ -262,8 +262,6 @@ public:
 	 * ends. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")
 	void ClearCameraMode();
-
-protected:
 
 	/** The camera mode currently being overridden by this ability. */
 	TSubclassOf<UCrashCameraModeBase> ActiveCameraMode;
