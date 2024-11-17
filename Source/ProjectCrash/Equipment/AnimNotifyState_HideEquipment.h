@@ -15,6 +15,8 @@ class PROJECTCRASH_API UAnimNotifyState_HideEquipment : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
+	// Animation notify.
+
 public:
 
 	/** Default constructor. */
@@ -28,4 +30,14 @@ public:
 
 	/** Unhides equipment owned by this character. */
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+
+
+
+	// User-exposed parameters.
+
+public:
+
+	/** Hide any equipment attached to this bone/socket. If unset, all equipment will be hidden. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
+	FName AttachedToSocket;
 };
