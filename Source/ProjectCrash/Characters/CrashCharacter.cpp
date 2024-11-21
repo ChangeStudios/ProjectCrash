@@ -5,6 +5,7 @@
 
 #include "CrashGameplayTags.h"
 #include "PawnExtensionComponent.h"
+#include "PushingCapsuleComponent.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Characters/CrashCharacterMovementComponent.h"
 #include "AbilitySystem/Components/HealthComponent.h"
@@ -20,7 +21,9 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 		// Do not create the default mesh component. We create our own for first- and third-person.
 		.DoNotCreateDefaultSubobject(MeshComponentName)
 		// Use this project's default character movement component.
-		.SetDefaultSubobjectClass<UCrashCharacterMovementComponent>(CharacterMovementComponentName))
+		.SetDefaultSubobjectClass<UCrashCharacterMovementComponent>(CharacterMovementComponentName)
+		// Use a pushing capsule component.
+		.SetDefaultSubobjectClass<UPushingCapsuleComponent>(CapsuleComponentName))
 {
 	// Disable ticking.
 	PrimaryActorTick.bStartWithTickEnabled = false;
