@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Abilities/GameplayAbility.h"
+#include "CoreMinimal.h"
 #include "UIExtensionSystem.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
