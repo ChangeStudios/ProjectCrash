@@ -19,6 +19,7 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 
 	CollisionDetector = nullptr;
 
+	CollisionProfile = FName("CapsuleHitDetection");
 	bIgnoreSelf = true;
 	bRepeatTargets = false;
 	bResetTargetsOnStart = true;
@@ -40,8 +41,8 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	 * must construct their own collision detector component. */
 	checkf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
 
-	// Use the CollisionDetector collision profile. This ignores everything but pawns' hitboxes.
-	CollisionDetector->SetCollisionProfileName(FName("CollisionDetector"));
+	// Use the desired collision profile. This lets us configure what we want to detect (e.g. pawn meshes or capsules).
+	CollisionDetector->SetCollisionProfileName(CollisionProfile);
 
 	// Reset the hit targets each time targeting restarts, if desired.
 	if (bResetTargetsOnStart)

@@ -29,13 +29,14 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::BeginPlay()
 #endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
 }
 
-void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, bool bInIgnoreSelf, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, bool bInFilterForGASActors, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
+void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, FName InCollisionProfile, bool bInIgnoreSelf, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, bool bInFilterForGASActors, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
 {
 	check(DetectorAsCapsule);
 
 	// Update this target actor's data.
 	CapsuleRadius = InCapsuleRadius;
 	CapsuleHalfHeight = InCapsuleHalfHeight;
+	CollisionProfile = InCollisionProfile;
 	bIgnoreSelf = bInIgnoreSelf;
 	bRepeatTargets = bInRepeatTargets;
 	bResetTargetsOnStart = bInResetTargetsOnStart;

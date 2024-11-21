@@ -60,6 +60,10 @@ protected:
 
 protected:
 
+	/** The collision profile to use for the detection capsule. */
+	UPROPERTY(BlueprintReadOnly)
+	FName CollisionProfile;
+
 	/** Whether to ignore the avatar of the gameplay ability using this target actor when checking for targets. */
 	UPROPERTY(BlueprintReadOnly)
 	bool bIgnoreSelf;
