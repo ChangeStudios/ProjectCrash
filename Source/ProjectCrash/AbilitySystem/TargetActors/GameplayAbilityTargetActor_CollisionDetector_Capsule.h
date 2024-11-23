@@ -38,6 +38,7 @@ public:
 	 *
 	 * @param InCapsuleRadius						This actor's detection capsule's radius.
 	 * @param InCapsuleHalfHeight					This actor's detection capsule's half-height.
+	 * @param InCollisionProfile					The collision profile to use for the detection capsule.
 	 * @param bInIgnoreSelf							Ignores this target data actor's SourceActor if hit. The
 	 *												SourceActor is the targeting ability's avatar by default.
 	 * @param bInRepeatTargets						Whether the same targets can be detected multiple times. If false,
@@ -59,6 +60,8 @@ public:
 		float InCapsuleRadius = 45.0f,
 		UPARAM(DisplayName = "Capsule Half-Height")
 		float InCapsuleHalfHeight = 90.0f,
+		UPARAM(DisplayName = "Collision Profile", Meta = (GetOptions = "Engine.KismetSystemLibrary.GetCollisionProfileNames"))
+		FName InCollisionProfile = FName("CapsuleHitDetection"),
 		UPARAM(DisplayName = "Ignore Self?")
 		bool bInIgnoreSelf = true,
 		UPARAM(DisplayName = "Repeat Targets?")

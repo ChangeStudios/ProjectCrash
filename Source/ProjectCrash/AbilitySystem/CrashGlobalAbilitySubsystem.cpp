@@ -134,11 +134,12 @@ void UCrashGlobalAbilitySubsystem::RemoveGlobalEffect(TSubclassOf<UGameplayEffec
 		{
 			if (KVP.Key != nullptr)
 			{
-				Entry.RemoveFromASC(KVP.Key);
+				KVP.Key->RemoveActiveGameplayEffect(KVP.Value);
 			}
 		}
 
 		// Clear the global effect entry.
+		Entry.Handles.Empty();
 		AppliedEffects.Remove(Effect);
 	}
 }
@@ -174,14 +175,14 @@ void UCrashGlobalAbilitySubsystem::UnregisterASC(UCrashAbilitySystemComponent* A
 		{
 			Entry.Value.RemoveFromASC(ASC);
 		}
-	}
 
-	// Remove each current global effect.
-	for (auto& Entry : AppliedEffects)
-	{
-		Entry.Value.RemoveFromASC(ASC);
-	}
+		// Remove each current global effect.
+		for (auto& Entry : AppliedEffects)
+		{
+			Entry.Value.RemoveFromASC(ASC);
+		}
 
-	// Clear the cached ASC.
-	RegisteredASCs.Remove(ASC);
+		// Clear the cached ASC.
+		RegisteredASCs.Remove(ASC);
+	}
 }

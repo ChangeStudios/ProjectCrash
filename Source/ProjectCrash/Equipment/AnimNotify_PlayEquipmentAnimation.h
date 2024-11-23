@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
+#include "EquipmentActor.h"
+#include "GameplayTagContainer.h"
 #include "AnimNotify_PlayEquipmentAnimation.generated.h"
 
 /**
@@ -45,4 +45,9 @@ protected:
 	 * EquipmentAnimations map will play that animation. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (Categories = "SkinProperty"))
 	FGameplayTag AnimationTag;
+
+	/** Which perspective to play the animation for. You can use the same equipment animation for all perspectives by
+	 * using this notify in both the first- and third-person character animations. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Perspective to Play Animation For")
+	EEquipmentPerspective EquipmentPerspective;
 };

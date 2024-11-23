@@ -63,6 +63,7 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -92.15f)); // Unreal leaves ~2.15cm of space between the collision capsule and the ground.
+	ThirdPersonMesh->SetGenerateOverlapEvents(true); // The third-person mesh is used for hit detection with overlaps with ability and projectile hitboxes.
 	ThirdPersonMesh->SetCollisionProfileName(FName("CrashPawnMesh"));
 
 

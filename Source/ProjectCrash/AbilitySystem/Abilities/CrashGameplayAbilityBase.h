@@ -2,14 +2,15 @@
 
 #pragma once
 
+#include "Abilities/GameplayAbility.h"
 #include "CoreMinimal.h"
 #include "UIExtensionSystem.h"
-#include "Abilities/GameplayAbility.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
-class UAbilityWidgetBase;
+class ACrashCharacter;
 class ACrashPlayerState;
 class AChallengerBase;
+class UAbilityWidgetBase;
 class UCrashAbilitySystemComponent;
 class UCrashCameraModeBase;
 
@@ -163,6 +164,12 @@ protected:
 
 
 	// Cooldowns.
+	
+public:
+
+	/** Returns false if a cooldown is blocking the activation of this ability. Ignores cooldowns if the
+	 * "bDisableCooldowns" option is enabled in developer settings. */
+	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const override;
 
 protected:
 
@@ -229,26 +236,23 @@ protected:
 
 	// Gameplay.
 
-public:
+protected:
 
 	/**
-	 * Applies the desired knockback to the target actor in the direction of the source to the target.
+	 * Applies knockback to the target actor in the direction of the source to the target.
 	 *
-	 * @param Force						Magnitude of force to apply, in kilogram kilometers/second.
-	 * @param bForceUpwardsVelocity		If true, the target will always be launched upwards. The vertical force will be
-	 *									clamped with a portion of the desired force. This prevents actors from sliding
-	 *									or getting stuck on the ground.
+	 * @param VelocityMagnitude		Scalar applied to knockback direction, in cm/s.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback", Meta = (AdvancedDisplay = "bForceUpwardsVelocity"))
-	void AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, bool bForceUpwardsVelocity = true);
+	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
+	void AddKnockbackToTargetFromLocation(float VelocityMagnitude, FVector Source, AActor* Target);
 
 	/**
 	 * Applies directional knockback to the target actor.
 	 *
-	 * @param Force						Vector of force to apply, in kilogram kilometers/second.
+	 * @param Velocity				Direction and magnitude of knockback, in cm/s.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
-	void AddKnockbackToTargetInDirection(FVector Force, AActor* Target);
+	void AddKnockbackToTargetInDirection(FVector Velocity, AActor* Target);
 
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */
@@ -259,8 +263,6 @@ public:
 	 * ends. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Camera")
 	void ClearCameraMode();
-
-protected:
 
 	/** The camera mode currently being overridden by this ability. */
 	TSubclassOf<UCrashCameraModeBase> ActiveCameraMode;
@@ -306,6 +308,10 @@ public:
 	/** Returns this ability's owning ASC as a CrashAbilitySystemComponent. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
 	UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActorInfo() const;
+
+	/** Returns this ability's avatar as a CrashCharacter. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Actor Info")
+	ACrashCharacter* GetCrashCharacterFromActorInfo() const;
 
 	/** Returns the typed player controller from the current actor info. Often null. To try to retrieve any controller,
 	 * use GetControllerFromActorInfo instead. */

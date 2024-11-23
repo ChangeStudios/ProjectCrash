@@ -20,10 +20,6 @@
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 
-/** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
- * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
-#define MIN_UPWARD_KNOCKBACK_PCT 0.5
-
 UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
 	CurrentExclusiveAbility = nullptr;
