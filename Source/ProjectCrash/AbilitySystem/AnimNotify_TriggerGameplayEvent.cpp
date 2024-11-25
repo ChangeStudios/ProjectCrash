@@ -10,9 +10,11 @@
 UAnimNotify_TriggerGameplayEvent::UAnimNotify_TriggerGameplayEvent()
 	: Super()
 {
-	// Set this notify's default color in the editor.
+	// We'll never have an ASC in the editor.
+	bShouldFireInEditor = false;
+
 #if WITH_EDITORONLY_DATA
-		NotifyColor = FColor(0, 128, 0, 255);
+	NotifyColor = FColor(0, 128, 0, 255);
 #endif
 }
 
@@ -30,6 +32,8 @@ FString UAnimNotify_TriggerGameplayEvent::GetNotifyName_Implementation() const
 
 void UAnimNotify_TriggerGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	Super::Notify(MeshComp, Animation, EventReference);
+
 	// Ensure we have valid references to the executing skeletal mesh component and its owning actor.
 	if (!IsValid(MeshComp) || !IsValid(MeshComp->GetOwner()))
 	{
@@ -59,6 +63,4 @@ void UAnimNotify_TriggerGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, 
 
 	// Send the gameplay event to the owner of the skeletal mesh component that triggered this notify.
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(MeshComp->GetOwner(), EventTag, EventData);
-
-	Super::Notify(MeshComp, Animation, EventReference);
 }
