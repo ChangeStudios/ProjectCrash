@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
+#include "Components/PrimitiveComponent.h"
 #include "GameplayAbilityTargetActor_CollisionDetector.generated.h"
 
 /**
@@ -11,6 +12,10 @@
  *
  * Subclasses should implement a "Configure" class to initialize this actor's data, and to reconfigure the data between
  * uses. See GameplayAbilityTargetActor_CollisionDetector_Capsule for reference.
+ *
+ * Some notes on debugging:
+ *		* Enable the "Debug" parameter when instantiating this class to draw a debug trace when a collision is detected.
+ *		* Toggle the "ShowDebug AbilitySystem" command to draw the target actor itself.
  */
 UCLASS(Abstract, NotPlaceable)
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector : public AGameplayAbilityTargetActor
@@ -51,6 +56,10 @@ protected:
 	UFUNCTION()
 	virtual void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	/** Draws target actor-specific debugging information when a successful collision is detected. */
+	UFUNCTION()
+	virtual void DrawCollisionDebug(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) PURE_VIRTUAL(AGameplayAbilityTargetActor_CollisionDetector, );
+
 	/** The collision component used to detect collision with this actor. Must be constructed by subclasses. */
 	TObjectPtr<UShapeComponent> CollisionDetector;
 
@@ -70,7 +79,7 @@ protected:
 
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
-	 UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	bool bRepeatTargets;
 
 	/** If true, target data will be automatically reset each time targeting starts. */

@@ -4,6 +4,7 @@
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
 
 #include "DisplayDebugHelpers.h"
+#include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/HUD.h"
@@ -46,6 +47,16 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCa
 	ShouldProduceTargetDataOnServer = bInShouldProduceTargetDataOnServer;
 
 	DetectorAsCapsule->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
+}
+
+void AGameplayAbilityTargetActor_CollisionDetector_Capsule::DrawCollisionDebug(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DrawDebugCapsule(GetWorld(), GetActorLocation(), CapsuleHalfHeight, CapsuleRadius, GetActorRotation().Quaternion(), FColor::Green, true, -1, 0);
+	if (bFromSweep)
+	{
+		DrawDebugLine(GetWorld(), SweepResult.TraceStart, SweepResult.ImpactPoint, FColor::Green, true, -1, 0);
+		DrawDebugPoint(GetWorld(), SweepResult.ImpactPoint, 16.0f, FColor::Red, true, -1, 0);
+	}
 }
 
 #if WITH_EDITOR

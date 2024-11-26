@@ -155,5 +155,13 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 
 		// Generate and send the generated target data.
 		TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, TargetHit));
+
+#if ENABLE_DRAW_DEBUG
+		// Draw debug info on collision detection.
+		if (bDebug)
+		{
+			DrawCollisionDebug(OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		}
+#endif // ENABLE_DRAW_DEBUG
 	}
 }

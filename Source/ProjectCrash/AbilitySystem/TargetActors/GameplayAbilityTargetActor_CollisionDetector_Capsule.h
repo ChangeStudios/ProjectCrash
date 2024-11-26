@@ -95,6 +95,11 @@ protected:
 
 	// Internals.
 
+protected:
+
+	/** Draws debug info when a successful collision is detected. Draws a capsule where the collision occurred. */
+	virtual void DrawCollisionDebug(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+
 private:
 
 	/** This actor's collision detector cached as a capsule component for convenience. */
@@ -107,7 +112,8 @@ private:
 public:
 
 #if WITH_EDITOR
-	// Draws debug info when ability system debugging is enabled.
+	/** Draws debug info when ability system debugging is enabled. Continuously draws a visual representation of this
+	 * target actor. */
 	static void OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos);
 #endif // WITH_EDITOR
 };
