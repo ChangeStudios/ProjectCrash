@@ -115,21 +115,4 @@ void UAnimNotifyState_TriggerAbilityTargeting::NotifyEnd(USkeletalMeshComponent*
 	}
 }
 
-#if WITH_EDITOR
-EDataValidationResult UAnimNotifyState_TriggerAbilityTargeting::IsDataValid(class FDataValidationContext& Context) const
-{
-	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
-
-	/** We never want to fire a targeting event without an ability identifier. This could result in accidentally
-	 * triggering targeting events in other abilities that use event-based targeting. */
-	if (!AbilityIdentifier.IsValid())
-	{
-		Result = EDataValidationResult::Invalid;
-		Context.AddError(FText(LOCTEXT("InvalidAbilityIdentifier", "Ability identifier not set. An identifier is required to specify the ability to trigger targeting for.")));
-	}
-
-	return Result;
-}
-#endif // WITH_EDITOR
-
 #undef LOCTEXT_NAMESPACE

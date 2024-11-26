@@ -49,17 +49,4 @@ protected:
 	 * triggering another ability's targeting. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (Categories = "Ability.Identifier"))
 	FGameplayTag AbilityIdentifier;
-
-
-
-	// Validation.
-
-#if WITH_EDITOR
-
-public:
-
-	/** Ensures this notify's ability identifier is set. */
-	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
-
-#endif // WITH_EDITOR
 };
