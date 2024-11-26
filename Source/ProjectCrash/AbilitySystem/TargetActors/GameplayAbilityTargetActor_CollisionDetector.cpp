@@ -20,10 +20,8 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 	CollisionDetector = nullptr;
 
 	CollisionProfile = FName("CapsuleHitDetection");
-	bIgnoreSelf = true;
 	bRepeatTargets = false;
 	bResetTargetsOnStart = true;
-	bFilterForGASActors = true;
 
 	Targets = TArray<AActor*>();
 }
@@ -104,26 +102,10 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 {
 	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
-		// Perform avatar filtering.
-		if (bIgnoreSelf && OtherActor == SourceActor)
-		{
-			return;
-		}
-
 		// Perform target data filtering.
 		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
 			return;
-		}
-
-		// Perform GAS filtering.
-		if (bFilterForGASActors)
-		{
-			const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
-			if (!ASC || ASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
-			{
-				return;
-			}
 		}
 
 		// Check if the actor has already been detected as a target.

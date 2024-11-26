@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemGlobals.h"
+#include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "CrashGameplayAbilityTypes.generated.h"
 
@@ -93,4 +95,23 @@ public:
 	/** Returns the affected animation instance from the FirstPersonSkeletalMeshComponent. Null for avatars that are not
 	 * of type CrashCharacter. */
 	UAnimInstance* GetFirstPersonAnimInstance() const;
+};
+
+
+
+/**
+ * A target data filter that filters out any actors without an ability system component. Used for abilities that should
+ * only target GAS actors (e.g. actors that can take damage).
+ */
+USTRUCT(BlueprintType)
+struct FGASActorTargetDataFilter : public FGameplayTargetDataFilter
+{
+	GENERATED_BODY()
+
+	/** Returns true if the actor has an associated ability system component and passes the base filter
+	 * implementation. */
+	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
+	{
+		return (UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered) != nullptr) && Super::FilterPassesForActor(ActorToBeFiltered);
+	}
 };

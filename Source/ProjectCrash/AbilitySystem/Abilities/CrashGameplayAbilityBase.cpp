@@ -481,6 +481,16 @@ ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo()
 	return GetCrashActorInfo()->GetCrashPlayerState();
 }
 
+FGameplayTargetDataFilterHandle UCrashGameplayAbilityBase::MakeGASActorFilter(ETargetDataFilterSelf::Type FilterSelf)
+{
+	FGameplayTargetDataFilterHandle FilterHandle;
+	FGASActorTargetDataFilter* Filter = new FGASActorTargetDataFilter();
+	Filter->InitializeFilterContext(GetAvatarActorFromActorInfo());
+	Filter->SelfFilter = FilterSelf;
+	FilterHandle.Filter = TSharedPtr<FGASActorTargetDataFilter>(Filter);
+	return FilterHandle;
+}
+
 #if WITH_EDITOR
 EDataValidationResult UCrashGameplayAbilityBase::IsDataValid(FDataValidationContext& Context) const
 {

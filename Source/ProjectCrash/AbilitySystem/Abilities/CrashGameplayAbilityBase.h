@@ -5,6 +5,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "CoreMinimal.h"
 #include "UIExtensionSystem.h"
+#include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
 class ACrashCharacter;
@@ -330,6 +331,11 @@ public:
 	/** This ability has these tags. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
 	const FGameplayTagContainer& GetAbilityTags() const { return AbilityTags; }
+
+	/** A gameplay target data filter that filters for actors with an ability system component. Uses this ability's
+	 * avatar for "self" filtering. */
+	UFUNCTION(BlueprintPure, Category = "Ability Statics", DisplayName = "GAS Actors Filter")
+	FGameplayTargetDataFilterHandle MakeGASActorFilter(ETargetDataFilterSelf::Type FilterSelf);
 
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))

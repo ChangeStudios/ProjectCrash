@@ -111,11 +111,9 @@ void UMeleeAttackAbilityDEP::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 				AttackRadius,
 				AttackRange / 2.0f,
 				FName("CapsuleHitDetection"),
-				true,
 				false,
 				true,
 				FGameplayTargetDataFilterHandle(),
-				true,
 				IgnoreTargetsWithTags,
 				false
 			);

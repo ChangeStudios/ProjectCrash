@@ -73,10 +73,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	FName CollisionProfile;
 
-	/** Whether to ignore the avatar of the gameplay ability using this target actor when checking for targets. */
-	UPROPERTY(BlueprintReadOnly)
-	bool bIgnoreSelf;
-
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
 	UPROPERTY(BlueprintReadOnly)
@@ -85,10 +81,6 @@ protected:
 	/** If true, target data will be automatically reset each time targeting starts. */
 	UPROPERTY(BlueprintReadOnly)
 	bool bResetTargetsOnStart;
-
-	/** Whether to filter for targets with an ability system component. */
-	UPROPERTY(BlueprintReadOnly)
-	bool bFilterForGASActors;
 
 	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
 	UPROPERTY(BlueprintReadOnly)

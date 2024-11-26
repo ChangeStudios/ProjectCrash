@@ -39,15 +39,12 @@ public:
 	 * @param InCapsuleRadius						This actor's detection capsule's radius.
 	 * @param InCapsuleHalfHeight					This actor's detection capsule's half-height.
 	 * @param InCollisionProfile					The collision profile to use for the detection capsule.
-	 * @param bInIgnoreSelf							Ignores this target data actor's SourceActor if hit. The
-	 *												SourceActor is the targeting ability's avatar by default.
 	 * @param bInRepeatTargets						Whether the same targets can be detected multiple times. If false,
 	 *												the Targets array must be explicitly cleared before a target can be
 	 *												detected again, after being sent the first time. This is done
 	 *												automatically if bInResetTargetsOnStart is true.
 	 * @param bInResetTargetsOnStart				Automatically resets the hit targets each time targeting starts.
 	 * @param InFilter								Optional target data filter used on hit actors.
-	 * @param bInFilterForGASActors					Whether to filter for targets with an ability system component.
 	 * @param IgnoreTargetsWithTags					Ignore any targets with any of these tags.
 	 * @param bInShouldProduceTargetDataOnServer	If true, the server will generate the target data directly (or after
 	 *												receiving a confirmation). If false, the server will wait for the
@@ -62,16 +59,12 @@ public:
 		float InCapsuleHalfHeight = 90.0f,
 		UPARAM(DisplayName = "Collision Profile", Meta = (GetOptions = "Engine.KismetSystemLibrary.GetCollisionProfileNames"))
 		FName InCollisionProfile = FName("CapsuleHitDetection"),
-		UPARAM(DisplayName = "Ignore Self?")
-		bool bInIgnoreSelf = true,
 		UPARAM(DisplayName = "Repeat Targets?")
 		bool bInRepeatTargets = false,
 		UPARAM(DisplayName = "Reset Targets on Start?")
 		bool bInResetTargetsOnStart = true,
 		UPARAM(DisplayName = "Filter")
 		FGameplayTargetDataFilterHandle InFilter = FGameplayTargetDataFilterHandle(),
-		UPARAM(DisplayName = "Filter for GAS Actors?")
-		bool bInFilterForGASActors = true,
 		FGameplayTagContainer IgnoreTargetsWithTags = FGameplayTagContainer(),
 		UPARAM(DisplayName = "Produce Taget Data on Server?")
 		bool bInShouldProduceTargetDataOnServer = true

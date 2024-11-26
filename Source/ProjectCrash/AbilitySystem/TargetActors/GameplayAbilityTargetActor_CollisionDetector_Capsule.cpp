@@ -30,7 +30,7 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::BeginPlay()
 #endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
 }
 
-void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, FName InCollisionProfile, bool bInIgnoreSelf, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, bool bInFilterForGASActors, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
+void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, FName InCollisionProfile, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
 {
 	check(DetectorAsCapsule);
 
@@ -38,11 +38,9 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCa
 	CapsuleRadius = InCapsuleRadius;
 	CapsuleHalfHeight = InCapsuleHalfHeight;
 	CollisionProfile = InCollisionProfile;
-	bIgnoreSelf = bInIgnoreSelf;
 	bRepeatTargets = bInRepeatTargets;
 	bResetTargetsOnStart = bInResetTargetsOnStart;
 	Filter = InFilter;
-	bFilterForGASActors = bInFilterForGASActors;
 	IgnoredTargetTags = IgnoreTargetsWithTags;
 	ShouldProduceTargetDataOnServer = bInShouldProduceTargetDataOnServer;
 
