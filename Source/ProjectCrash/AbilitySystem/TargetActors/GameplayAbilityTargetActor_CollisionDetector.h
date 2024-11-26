@@ -38,9 +38,10 @@ public:
 	/** Binds callbacks to when another actor overlaps with this actor's collision detector. */
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
-	/** Stops targeting and cleans up this target actor. */
+	/** Stops targeting and cleans up this target actor so it can be re-used. The engine's built-in target actors don't
+	 * do this because they always destroy themselves, so they don't have to clean up any delegates or bindings. */
 	virtual void StopTargeting();
-	
+
 	/** Fires cancellation notifies and stops targeting. */
 	virtual void CancelTargeting() override;
 
