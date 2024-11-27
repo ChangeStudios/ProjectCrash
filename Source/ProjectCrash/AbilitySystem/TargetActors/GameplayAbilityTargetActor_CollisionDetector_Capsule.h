@@ -11,7 +11,7 @@ class UCapsuleComponent;
 /**
  * A collision detector using a configurable capsule collision shape.
  */
-UCLASS(NotPlaceable)
+UCLASS(NotPlaceable, DisplayName = "Target Actor: Collision Detector, Capsule")
 class PROJECTCRASH_API AGameplayAbilityTargetActor_CollisionDetector_Capsule : public AGameplayAbilityTargetActor_CollisionDetector
 {
 	GENERATED_BODY()

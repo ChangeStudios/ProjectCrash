@@ -32,6 +32,8 @@ public:
 
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
+	// Stops targeting without firing "Canceled" delegates.
+	UFUNCTION(BlueprintCallable)
 	virtual void StopTargeting();
 
 	virtual void CancelTargeting() override;
@@ -48,7 +50,7 @@ public:
 	float MaxRange;
 
 	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))
-	FName TraceChannel;
+	TEnumAsByte<ECollisionChannel> TraceChannel;
 
 
 

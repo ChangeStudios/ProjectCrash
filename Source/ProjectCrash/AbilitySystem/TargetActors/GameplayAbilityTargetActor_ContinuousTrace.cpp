@@ -21,6 +21,12 @@ AGameplayAbilityTargetActor_ContinuousTrace::AGameplayAbilityTargetActor_Continu
 void AGameplayAbilityTargetActor_ContinuousTrace::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
+
+	if (!Ability)
+	{
+		return;
+	}
+
 	SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
 
 	// Reset cached targets so they can be hit again.
