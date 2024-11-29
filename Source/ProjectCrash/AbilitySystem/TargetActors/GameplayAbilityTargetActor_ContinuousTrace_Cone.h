@@ -20,11 +20,7 @@ class PROJECTCRASH_API AGameplayAbilityTargetActor_ContinuousTrace_Cone : public
 
 protected:
 
-	/** The radius of the capsule being used for collision detection. */
-	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))
-	float ConeBaseRadius;
-
-	/** The half-height of the capsule being used for collision detection. */
-	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true", ClampMin = "-180", ClampMax = "180", Units = "Degrees"))
-	float ConeAngle;
+	/** The half-angle of the cone used for collision detection (degrees). */
+	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true", ClampMin = "-90", ClampMax = "90", Units = "Degrees"))
+	float ConeHalfAngle;
 };

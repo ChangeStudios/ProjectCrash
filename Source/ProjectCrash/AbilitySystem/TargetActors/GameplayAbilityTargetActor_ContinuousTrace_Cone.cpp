@@ -38,7 +38,21 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 #if ENABLE_DRAW_DEBUG
 	if (bDebug)
 	{
-		DrawDebugLine(World, ViewLocation, ViewEnd, FColor::Green, false, 2.0f);
+		// Debug lines for every hit in this frame's sphere sweep.
+		// for (const FHitResult& HitResult : HitResults)
+		// {
+		// 	FVector HitDirection = (HitResult.ImpactPoint - ViewLocation);
+		// 	HitDirection.Normalize();
+		// 	DrawDebugLine(World, ViewLocation, ViewLocation + (HitDirection * MaxRange), FColor::Green, true);
+		// }
+
+		/* This debug draw shows the sphere sweep we've actually performed, not the simulated cone that is used to
+		 * determine whether a hit is valid. This is primarily for backend debugging to make sure the theoretical cone
+		 * we want to simulate aligns with the trace we performed. */
+		DrawDebugSphereTraceMulti(World, ViewLocation, ViewEnd, ConeBaseRadius, EDrawDebugTrace::Persistent, false, HitResults, FColor::Red, FColor::Red, -1.0f);
+
+		// Debug cone showing what the cone we're trying to simulate would look like.
+		DrawDebugCone(World, ViewLocation, ViewRotation.Vector(), ConeSlantHeight, ConeHalfAngleRad, ConeHalfAngleRad, 24, FColor::Green, true);
 	}
 #endif // ENABLE_DRAW_DEBUG
 
