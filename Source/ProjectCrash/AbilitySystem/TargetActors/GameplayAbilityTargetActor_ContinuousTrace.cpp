@@ -1,12 +1,13 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_ContinuousTrace.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
 #include "Abilities/GameplayAbility.h"
 
+// Number of traces to perform per second.
+#define TRACE_RATE 30.0f
 
 AGameplayAbilityTargetActor_ContinuousTrace::AGameplayAbilityTargetActor_ContinuousTrace(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -14,6 +15,7 @@ AGameplayAbilityTargetActor_ContinuousTrace::AGameplayAbilityTargetActor_Continu
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PostUpdateWork;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = (1.0f / TRACE_RATE);
 
 	MaxRange = 500.0f;
 }
@@ -83,11 +85,13 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 		// Produce target data from any hits this frame.
 		if (ShouldProduceTargetData() && OwningAbility)
 		{
-			TArray<FHitResult> FilteredHits;
+			TArray<FHitResult> FilteredHitResults;
 
 			// Filter valid hits.
-			for (const FHitResult& Hit : HitResults)
+			for (FHitResult& Hit : HitResults)
 			{
+				MoveTemp(Hit);
+
 				const AActor* HitActor = Hit.GetActor();
 				
 				// Ignore hits that didn't hit an actor.
@@ -103,7 +107,7 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 				}
 
 				// Perform target data filtering if we have a filter.
-				if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(Hit.GetActor()))
+				if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(HitActor))
 				{
 					continue;
 				}
@@ -111,12 +115,15 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 				// Cache the hit actor so it doesn't repeat.
 				HitTargets.Add(HitActor);
 
+				// Some cues won't automatically trigger unless the hit is blocking.
+				Hit.bBlockingHit = true;
+
 				// Successful hit.
-				FilteredHits.Add(Hit);
+				FilteredHitResults.Add(Hit);
 			}
 
 			// Send all of this frame's hits together.
-			TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResults(OwningAbility, FilteredHits));
+			TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResults(OwningAbility, FilteredHitResults));
 		}
 	}
 }

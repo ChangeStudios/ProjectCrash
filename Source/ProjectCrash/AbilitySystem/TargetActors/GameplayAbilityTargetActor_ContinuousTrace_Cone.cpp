@@ -2,12 +2,23 @@
 
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_ContinuousTrace_Cone.h"
 
+#include "DrawDebugHelpers.h"
+#include "KismetTraceUtils.h"
 #include "Abilities/GameplayAbility.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
+#define DEBUG_DRAW_TIME 3.0f
+#define PROXIMITY_FORGIVENESS_TO_RADIUS 0.25f
+
 TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrace(AActor* InSourceActor)
 {
+#if ENABLE_DRAW_DEBUG
+	TArray<FVector> MissedHits;
+	// SuccessfulHits only contains one successful hit per actor. This tracks EVERY successful hit on any actors.
+	TArray<FVector> ValidHits;
+#endif // ENABLE_DRAW_DEBUG
+
 	UWorld* World = InSourceActor->GetWorld();
 
 	check(World);
@@ -18,6 +29,7 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 	}
 
 	TArray<FHitResult> HitResults;
+	TArray<FHitResult> SuccessfulHits;
 	bool bTraceComplex = false;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(AGameplayAbilityTargetActor_ContinuousTrace_Cone), bTraceComplex);
 	Params.bReturnPhysicalMaterial = true;
@@ -29,32 +41,114 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 	PC->GetPlayerViewPoint(ViewLocation, ViewRotation);
 	FVector ViewEnd = ViewLocation + (ViewRotation.Vector() * MaxRange);
 
-	// FCollisionShape SphereSweep = FCollisionShape::MakeCapsule()
+	const double ConeHalfAngleRad = FMath::DegreesToRadians(ConeHalfAngle);
+	const double ConeBaseRadius = MaxRange * tan(ConeHalfAngleRad); // r = h * tan(theta / 2)
+	const double ConeSlantHeight = FMath::Sqrt((ConeBaseRadius * ConeBaseRadius) + (MaxRange * MaxRange)); // s = sqrt(r^2 + h^2)
 
-	World->LineTraceMultiByChannel(HitResults, ViewLocation, ViewEnd, TraceChannel, Params);
+	// If the hit is within this distance (really close), we won't check if it's within the cone, as long as it's in front of us (normal < 180 deg).
+	const float ProximityForgivenessDistance = ConeBaseRadius * PROXIMITY_FORGIVENESS_TO_RADIUS;
 
-	// World->SweepMultiByChannel(HitResults, ViewLocation, ViewEnd, ViewRotation, TraceChannel, )
+	/* Unreal doesn't support cone collision shapes, and FCollisionShape isn't well-suited to being extended. To perform
+	 * a cone-shaped trace, we perform a sphere sweep with the radius of the cone's base, and then check each hit to see
+	 * if it would be inside a theoretical cone, depending on its distance and normal to our trace origin. We could also
+	 * do a capsule overlap, but a sweep gets us better hit results for things like damage VFX. */
+	FCollisionShape SphereSweep = FCollisionShape::MakeSphere(ConeBaseRadius);
+	World->SweepMultiByChannel(HitResults, ViewLocation, ViewEnd, ViewRotation.Quaternion(), TraceChannel, SphereSweep, Params);
+
+	TArray<AActor*> HitActors;
+	for (const FHitResult& HitResult : HitResults)
+	{
+		AActor* HitActor = HitResult.GetActor();
+
+		if (!IsValid(HitActor))
+		{
+			continue;
+		}
+
+		// Once we successfully hit a target, don't bother processing any other hits against it.
+		if (HitActors.Contains(HitActor))
+		{
+			// Don't break after one successful hit when we want to debug ALL of our hits.
+			#if	!ENABLE_DRAW_DEBUG
+				continue;
+			#endif // !ENABLE_DRAW_DEBUG
+		}
+
+		// HitResult.Distance gives us the distance of the sweep trace, but we want the distance to the impact point.
+		const double Distance = (HitResult.ImpactPoint - ViewLocation).Length();
+		/* Normally, the hit needs to be within the cone if we want to count it. But if we're REALLY close to our
+		 * target, we'll count the hit even if it's outside the cone, as long as it's in front of us. */
+		const double MaxAngle = (Distance < ProximityForgivenessDistance) ? (PI / 2.0) : ConeHalfAngleRad;
+
+		// Check if the hit is within the angle of the simulated cone.
+		const FVector HitNormal = (HitResult.ImpactPoint - ViewLocation);
+		const double Dot = FVector::DotProduct(ViewRotation.Vector(), HitNormal.GetSafeNormal());
+		const double DeltaAngle = FMath::Acos(Dot);		// theta = arccos ( (A • B) / (|A|*|B|) )		(|A|*|B| = 1, A and B are unit vectors)
+		if (DeltaAngle > MaxAngle)
+		{
+			#if ENABLE_DRAW_DEBUG
+				MissedHits.Add(HitResult.ImpactPoint);
+			#endif
+
+			continue;
+		}
+
+		/* Since we're using a sphere sweep, we may get hits in the hemisphere of the capsule formed by the sweep, which
+		 * would be beyond the simulated cone's flat base. */
+		const double LengthAtAngle = MaxRange / cos(DeltaAngle);	// hypotenuse = adjacent / cos(theta)
+		if (Distance > LengthAtAngle)
+		{
+			#if ENABLE_DRAW_DEBUG
+				MissedHits.Add(HitResult.ImpactPoint);
+			#endif
+
+			continue;
+		}
+
+		// Success
+		#if ENABLE_DRAW_DEBUG
+			ValidHits.Add(HitResult.ImpactPoint);
+		#endif
+
+		// We have to perform a second check for repeated actors here when we skip the first check for debugging.
+		if (!HitActors.Contains(HitActor))
+		{
+			HitActors.Add(HitActor);
+			SuccessfulHits.Add(HitResult);
+		}
+	}
 
 #if ENABLE_DRAW_DEBUG
 	if (bDebug)
 	{
-		// Debug lines for every hit in this frame's sphere sweep.
-		// for (const FHitResult& HitResult : HitResults)
-		// {
-		// 	FVector HitDirection = (HitResult.ImpactPoint - ViewLocation);
-		// 	HitDirection.Normalize();
-		// 	DrawDebugLine(World, ViewLocation, ViewLocation + (HitDirection * MaxRange), FColor::Green, true);
-		// }
-
 		/* This debug draw shows the sphere sweep we've actually performed, not the simulated cone that is used to
-		 * determine whether a hit is valid. This is primarily for backend debugging to make sure the theoretical cone
-		 * we want to simulate aligns with the trace we performed. */
-		DrawDebugSphereTraceMulti(World, ViewLocation, ViewEnd, ConeBaseRadius, EDrawDebugTrace::Persistent, false, HitResults, FColor::Red, FColor::Red, -1.0f);
+		 * determine whether a hit is successful. This is primarily for backend debugging to make sure the theoretical
+		 * cone we want to simulate aligns with the trace we performed. */
+		// DrawDebugSphereTraceMulti(World, ViewLocation, ViewEnd, ConeBaseRadius, EDrawDebugTrace::ForDuration, false, HitResults, FColor::Red, FColor::Red, DEBUG_DRAW_TIME);
 
 		// Debug cone showing what the cone we're trying to simulate would look like.
-		DrawDebugCone(World, ViewLocation, ViewRotation.Vector(), ConeSlantHeight, ConeHalfAngleRad, ConeHalfAngleRad, 24, FColor::Green, true);
+		DrawDebugCone(World, ViewLocation, ViewRotation.Vector(), ConeSlantHeight, ConeHalfAngleRad, ConeHalfAngleRad, 24, FColor(0, 128, 0), false, DEBUG_DRAW_TIME, 0, 0.0f);
+
+		// Debug sphere showing the space where targets are so close that we don't care about their direction.
+		DrawDebugSphere(World, ViewLocation, ProximityForgivenessDistance, 24, FColor(0, 128, 0), false, DEBUG_DRAW_TIME);
+
+		// Debug lines for every hit we processed from the sweep, color-coded to whether they were successful.
+		for (const FVector& MissedHit : MissedHits)
+		{
+			DrawDebugLine(World, ViewLocation, MissedHit, FColor::Red, false, DEBUG_DRAW_TIME);
+		}
+		for (const FVector& ValidHit : ValidHits)
+		{
+			DrawDebugLine(World, ViewLocation, ValidHit, FColor::Green, false, DEBUG_DRAW_TIME);
+		}
+
+		// Debug lines for the hits we actually processed (the one hit we used for each actor).
+		for (const FHitResult& SuccessfulHit : SuccessfulHits)
+		{
+			DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Cyan, false, DEBUG_DRAW_TIME);
+		}
 	}
 #endif // ENABLE_DRAW_DEBUG
 
-	return HitResults;
+	return SuccessfulHits;
 }
