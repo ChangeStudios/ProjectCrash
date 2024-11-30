@@ -9,7 +9,7 @@
 /**
  * Performs a continuous trace in the shape of a cone from the owner's camera.
  */
-UCLASS(NotPlaceable, DisplayName = "Continuous Trace: Cone", Meta = (ScriptName = "Target Actor: Continuous Trace, Cone"))
+UCLASS(NotPlaceable, DisplayName = "Continuous Trace: Cone")
 class PROJECTCRASH_API AGameplayAbilityTargetActor_ContinuousTrace_Cone : public AGameplayAbilityTargetActor_ContinuousTrace
 {
 	GENERATED_BODY()

@@ -15,8 +15,6 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 {
 #if ENABLE_DRAW_DEBUG
 	TArray<FVector> MissedHits;
-	// SuccessfulHits only contains one successful hit per actor. This tracks EVERY successful hit on any actors.
-	TArray<FVector> ValidHits;
 #endif // ENABLE_DRAW_DEBUG
 
 	UWorld* World = InSourceActor->GetWorld();
@@ -65,13 +63,11 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 			continue;
 		}
 
-		// Once we successfully hit a target, don't bother processing any other hits against it.
+		/* Once we successfully hit a target, don't bother processing any other hits against it. This will always fail
+		 * when debugging. */
 		if (HitActors.Contains(HitActor))
 		{
-			// Don't break after one successful hit when we want to debug ALL of our hits.
-			#if	!ENABLE_DRAW_DEBUG
-				continue;
-			#endif // !ENABLE_DRAW_DEBUG
+			continue;
 		}
 
 		// HitResult.Distance gives us the distance of the sweep trace, but we want the distance to the impact point.
@@ -86,9 +82,9 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 		const double DeltaAngle = FMath::Acos(Dot);		// theta = arccos ( (A • B) / (|A|*|B|) )		(|A|*|B| = 1, A and B are unit vectors)
 		if (DeltaAngle > MaxAngle)
 		{
-			#if ENABLE_DRAW_DEBUG
-				MissedHits.Add(HitResult.ImpactPoint);
-			#endif
+#if ENABLE_DRAW_DEBUG
+			MissedHits.Add(HitResult.ImpactPoint);
+#endif
 
 			continue;
 		}
@@ -98,24 +94,19 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 		const double LengthAtAngle = MaxRange / cos(DeltaAngle);	// hypotenuse = adjacent / cos(theta)
 		if (Distance > LengthAtAngle)
 		{
-			#if ENABLE_DRAW_DEBUG
-				MissedHits.Add(HitResult.ImpactPoint);
-			#endif
+#if ENABLE_DRAW_DEBUG
+			MissedHits.Add(HitResult.ImpactPoint);
+#endif
 
 			continue;
 		}
 
-		// Success
-		#if ENABLE_DRAW_DEBUG
-			ValidHits.Add(HitResult.ImpactPoint);
-		#endif
+#if !ENABLE_DRAW_DEBUG
+		// Cache the actor we successfully hit, so we don't waste time processing any more hits on them.
+		HitActors.Add(HitActor);
+#endif
 
-		// We have to perform a second check for repeated actors here when we skip the first check for debugging.
-		if (!HitActors.Contains(HitActor))
-		{
-			HitActors.Add(HitActor);
-			SuccessfulHits.Add(HitResult);
-		}
+		SuccessfulHits.Add(HitResult);
 	}
 
 #if ENABLE_DRAW_DEBUG
@@ -132,20 +123,28 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 		// Debug sphere showing the space where targets are so close that we don't care about their direction.
 		DrawDebugSphere(World, ViewLocation, ProximityForgivenessDistance, 24, FColor(0, 128, 0), false, DEBUG_DRAW_TIME);
 
-		// Debug lines for every hit we processed from the sweep, color-coded to whether they were successful.
+		// Debug lines for every unsuccessful hit we processed from the sweep.
 		for (const FVector& MissedHit : MissedHits)
 		{
 			DrawDebugLine(World, ViewLocation, MissedHit, FColor::Red, false, DEBUG_DRAW_TIME);
 		}
-		for (const FVector& ValidHit : ValidHits)
-		{
-			DrawDebugLine(World, ViewLocation, ValidHit, FColor::Green, false, DEBUG_DRAW_TIME);
-		}
 
-		// Debug lines for the hits we actually processed (the one hit we used for each actor).
+		// Debug lines for every successful hit we processed from the sweep.
+		TArray<AActor*> HitActors_Debug;
 		for (const FHitResult& SuccessfulHit : SuccessfulHits)
 		{
-			DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Cyan, false, DEBUG_DRAW_TIME);
+			/* Distinguish the hits that were actually passed to the target data in cyan. These will always be the first
+			 * successful hits on each actor. */
+			if (!HitActors_Debug.Contains(SuccessfulHit.GetActor()))
+			{
+				DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Cyan, false, DEBUG_DRAW_TIME);
+				HitActors_Debug.Add(SuccessfulHit.GetActor());
+			}
+			// Hits on repeated actors will never have occurred outside of debugging.
+			else
+			{
+				DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Green, false, DEBUG_DRAW_TIME);
+			}
 		}
 	}
 #endif // ENABLE_DRAW_DEBUG

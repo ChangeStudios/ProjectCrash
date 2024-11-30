@@ -22,7 +22,7 @@ struct FGameFeaturePropertiesEntry
 
 	/** The value of the game mode property. */
 	UPROPERTY(EditAnywhere, Category = "Game Mode Properties")
-	float Value;
+	float Value = 0.0f;
 };
 
 
