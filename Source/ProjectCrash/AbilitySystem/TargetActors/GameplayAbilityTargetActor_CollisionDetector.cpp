@@ -117,22 +117,28 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 		// Cache the target so it doesn't repeat.
 		Targets.Add(OtherActor);
 
-		// Generate a hit result for our target data, so it can be used for FX triggers.
+		/* Generate a hit result for the target data so it can be used for FX triggers. bBlockingHit must be true to
+		 * trigger certain cues. */
 		FHitResult TargetHit;
-		const FVector TraceStart = GetActorLocation();
-		const FVector TraceEnd = OtherActor->GetActorLocation();
+		const FVector OwningActorLoc = GetActorLocation();
+		const FVector TargetActorLoc = OtherActor->GetActorLocation();
 		const float SweepRadius = 50.0f;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(OwningAbility->GetAvatarActorFromActorInfo());
-		GetWorld()->SweepSingleByChannel(TargetHit, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel1 /** AbilityTarget */, FCollisionShape::MakeSphere(SweepRadius), CollisionParams);
+		GetWorld()->SweepSingleByChannel(TargetHit, OwningActorLoc, TargetActorLoc, FQuat::Identity, ECC_GameTraceChannel1 /** AbilityTarget */, FCollisionShape::MakeSphere(SweepRadius), CollisionParams);
 
-		// Make sure our actor data is always set even if the trace fails.
+		/* If the trace fails, generate an artificial hit result to ensure we at least have an approximation of the
+		 * necessary data. */
 		if (!TargetHit.bBlockingHit || (TargetHit.GetActor() != OtherActor))
 		{
 			TargetHit.bBlockingHit = true;
 			TargetHit.HitObjectHandle = FActorInstanceHandle(OtherActor);
 			TargetHit.Component = OtherComp;
-			TargetHit.ImpactPoint = OtherActor->GetActorLocation();
+			TargetHit.Location = TargetActorLoc;
+			TargetHit.Normal = FVector(OwningActorLoc - TargetActorLoc).GetSafeNormal();
+			TargetHit.ImpactPoint = TargetActorLoc;
+			TargetHit.ImpactNormal = TargetHit.Normal;
+			TargetHit.Distance = FVector::Dist(OwningActorLoc, TargetActorLoc);
 		}
 
 		// Generate and send the generated target data.
