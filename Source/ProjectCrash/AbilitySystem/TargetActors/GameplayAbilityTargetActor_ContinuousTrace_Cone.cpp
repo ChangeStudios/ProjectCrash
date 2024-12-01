@@ -65,6 +65,7 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 
 		/* Once we successfully hit a target, don't bother processing any other hits against it. This will always fail
 		 * when debugging. */
+		// TODO: Iterate over every hit and take the closest one?
 		if (HitActors.Contains(HitActor))
 		{
 			continue;
