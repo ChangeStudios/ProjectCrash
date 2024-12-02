@@ -517,12 +517,9 @@ void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag Gam
 
 float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
-	check(Montage);
-	
 	float Duration = -1.0f;
 
 	// Get the first-person mesh, if the avatar is a CrashCharacter.
-	UAnimInstance* AnimInstance = nullptr;
 	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
 
 	// First-person montages cannot be played without a CrashCharacter avatar. No other actors have a first-person mesh.
@@ -532,8 +529,9 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 	}
 
 	// Retrieve the first-person mesh animation instance.
-	USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
-	AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
+	// USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
+	// UAnimInstance* AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
 
 	if (AnimInstance && Montage)
 	{
