@@ -74,11 +74,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "ActorInfo")
 	TWeakObjectPtr<USkeletalMeshComponent> FirstPersonSkeletalMeshComponent;
 
-	/** Animation instance of the avatar actor's first-person mesh, if the avatar is of type CrashCharacter. Often
-	 * null. */
-	UPROPERTY(BlueprintReadOnly, Category = "ActorInfo")
-	TWeakObjectPtr<UAnimInstance> FirstPersonAnimInstance;
-
 // Accessors.
 public:
 
