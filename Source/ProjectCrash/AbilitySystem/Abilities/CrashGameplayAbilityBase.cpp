@@ -39,6 +39,14 @@
 	}																																						\
 }
 
+namespace Crash
+{
+	static int32 CooldownsDisabled = 0;
+	static FAutoConsoleVariableRef CVarCooldownsDisabled(TEXT("Crash.CooldownsDisabled"),
+		CooldownsDisabled,
+		TEXT("Disables cooldowns and costs for gameplay abilities. (Cooldowns will still appear in HUD)"));
+}
+
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -301,16 +309,13 @@ bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
 
 bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
 {
-#if WITH_EDITOR
-	// Disable cooldowns in the editor if desired.
-	if (GIsEditor)
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	// Disable cooldowns in editor and debug builds if desired.
+	if (Crash::CooldownsDisabled != 0)
 	{
-		if (GetDefault<UCrashDeveloperSettings>()->bDisableCooldowns)
-		{
-			return true;
-		}
+		return true;
 	}
-#endif // WITH_EDITOR
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
 	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
 }

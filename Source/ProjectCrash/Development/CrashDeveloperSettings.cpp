@@ -76,6 +76,12 @@ void UCrashDeveloperSettings::ApplySettings()
 	{
 		CVar->Set(bLogGameplayMessages);
 	}
+
+	// Whether cooldowns and costs should be disabled.
+	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("Crash.CooldownsDisabled")))
+	{
+		CVar->Set(bDisableCooldowns);
+	}
 }
 #endif // WITH_EDITOR
 
