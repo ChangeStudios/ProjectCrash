@@ -229,6 +229,10 @@ public:
 	/** Retrieves the typed version of this ASC's actor info. */
 	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
 
+	/** Create an EffectContext for the owner of this AbilitySystemComponent, initialized with a hit result. */
+	UFUNCTION(BlueprintCallable, Category = GameplayEffects)
+	virtual FGameplayEffectContextHandle MakeEffectContextWithHitResult(const FHitResult& HitResult) const;
+
 	/** Shorthand for broadcasting a gameplay ability message. */
 	void BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude = 0.0f, bool bReplicateMessage = false);
 

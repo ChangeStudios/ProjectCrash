@@ -54,7 +54,7 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 	World->SweepMultiByChannel(HitResults, ViewLocation, ViewEnd, ViewRotation.Quaternion(), TraceChannel, SphereSweep, Params);
 
 	TArray<AActor*> HitActors;
-	for (const FHitResult& HitResult : HitResults)
+	for (FHitResult& HitResult : HitResults)
 	{
 		AActor* HitActor = HitResult.GetActor();
 
@@ -78,8 +78,8 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 		const double MaxAngle = (Distance < ProximityForgivenessDistance) ? (PI / 2.0) : ConeHalfAngleRad;
 
 		// Check if the hit is within the angle of the simulated cone.
-		const FVector HitNormal = (HitResult.ImpactPoint - ViewLocation);
-		const double Dot = FVector::DotProduct(ViewRotation.Vector(), HitNormal.GetSafeNormal());
+		const FVector HitDirection = (HitResult.ImpactPoint - ViewLocation);
+		const double Dot = FVector::DotProduct(ViewRotation.Vector(), HitDirection.GetSafeNormal());
 		const double DeltaAngle = FMath::Acos(Dot);		// theta = arccos ( (A • B) / (|A|*|B|) )		(|A|*|B| = 1, A and B are unit vectors)
 		if (DeltaAngle > MaxAngle)
 		{
@@ -106,6 +106,10 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 		// Cache the actor we successfully hit, so we don't waste time processing any more hits on them.
 		HitActors.Add(HitActor);
 #endif
+
+		// We want the actual normal of the trace we performed; not whatever our sweep told us.
+		HitResult.Normal = ViewRotation.Vector();
+		HitResult.ImpactNormal = HitDirection.GetSafeNormal();
 
 		SuccessfulHits.Add(HitResult);
 	}

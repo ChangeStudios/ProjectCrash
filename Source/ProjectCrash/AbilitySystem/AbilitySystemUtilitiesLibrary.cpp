@@ -98,3 +98,23 @@ void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(FVector V
 		CrashASC->SetCurrentKnockbackSource(Instigator);
 	}
 }
+
+FHitResult UAbilitySystemUtilitiesLibrary::GetTargetDataHitResultWithCustomDirection(const FGameplayAbilityTargetDataHandle& TargetData, FVector NewDirection)
+{
+	if (TargetData.Data.IsValidIndex(0))
+	{
+		FGameplayAbilityTargetData* Data = TargetData.Data[0].Get();
+		if (Data)
+		{
+			if (const FHitResult* HitResultPtr = Data->GetHitResult())
+			{
+				// Copy the target data's hit result.
+				FHitResult HitResult = FHitResult(*HitResultPtr);
+				HitResult.Normal = NewDirection;
+				return HitResult;
+			}
+		}
+	}
+
+	return FHitResult();
+}

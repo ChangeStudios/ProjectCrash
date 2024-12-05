@@ -317,6 +317,17 @@ bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle H
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
+// #if WITH_EDITOR
+// 	// Disable cooldowns in the editor if desired.
+// 	if (GIsEditor)
+// 	{
+// 		if (Crash::CooldownsDisabled != 0)
+// 		{
+// 			return true;
+// 		}
+// 	}
+// #endif // WITH_EDITOR
+
 	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
 }
 
