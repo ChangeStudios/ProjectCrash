@@ -104,9 +104,7 @@ private:
 
 public:
 
-#if WITH_EDITOR
 	/** Draws debug info when ability system debugging is enabled. Continuously draws a visual representation of this
 	 * target actor. */
 	static void OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos);
-#endif // WITH_EDITOR
 };

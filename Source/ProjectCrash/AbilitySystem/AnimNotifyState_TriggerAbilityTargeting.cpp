@@ -7,18 +7,20 @@
 #include "AbilitySystemGlobals.h"
 #include "CrashGameplayTags.h"
 #include "EngineLogs.h"
-#include "Animation/DebugSkelMeshComponent.h"
+
+#if WITH_EDITOR
 #include "Misc/DataValidation.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "GameplayAbility"
 
 UAnimNotifyState_TriggerAbilityTargeting::UAnimNotifyState_TriggerAbilityTargeting()
 	: Super()
 {
+#if WITH_EDITORONLY_DATA
 	// We'll never have an ASC in the editor.
 	bShouldFireInEditor = false;
 
-#if WITH_EDITORONLY_DATA
 	NotifyColor = FColor(0, 128, 0, 255);
 #endif // WITH_EDITORONLY_DATA
 }

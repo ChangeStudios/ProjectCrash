@@ -92,10 +92,8 @@ protected:
 
 public:
 
-#if WITH_EDITOR
 	/** Logs all assets currently loaded by the asset registry. */
 	static void DumpLoadedAssets(UClass* ClassToFilter = nullptr);
-#endif // WITH_EDITOR
 };
 
 

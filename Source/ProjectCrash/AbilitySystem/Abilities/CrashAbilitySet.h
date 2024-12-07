@@ -120,8 +120,6 @@ protected:
 
 	// Debugging.
 
-#if WITH_EDITOR
-
 public:
 
 	/** Returns a list of the names of the abilities in this handle. Requires a reference to the ASC to which the
@@ -133,8 +131,6 @@ public:
 
 	/** Returns a list of the names of the attribute sets in this handle. */
 	void GetAttributeDebugInfo(TArray<FString>& OutDebugInfo) const;
-
-#endif
 };
 
 

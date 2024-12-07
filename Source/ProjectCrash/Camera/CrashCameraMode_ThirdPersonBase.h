@@ -167,7 +167,7 @@ public:
 
 protected:
 
-#if WITH_EDITOR
+#if ENABLE_DRAW_DEBUG
 	/** Tracks when we last drew debugging for camera penetration prevention. */
 	mutable float LastDrawDebugTime = -MAX_FLT;
 #endif

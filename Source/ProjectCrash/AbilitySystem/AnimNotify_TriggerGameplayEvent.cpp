@@ -10,10 +10,10 @@
 UAnimNotify_TriggerGameplayEvent::UAnimNotify_TriggerGameplayEvent()
 	: Super()
 {
+#if WITH_EDITORONLY_DATA
 	// We'll never have an ASC in the editor.
 	bShouldFireInEditor = false;
 
-#if WITH_EDITORONLY_DATA
 	NotifyColor = FColor(0, 128, 0, 255);
 #endif
 }

@@ -12,12 +12,11 @@ UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent() :
 	bAttached(true),
 	bPerspectiveBased(true)
 {
-	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
+	bShouldFireInEditor = true;
+
 	NotifyColor = FColor(0, 255, 128, 255);
 #endif
-
-	bShouldFireInEditor = true;
 
 	// Initialize the fallback physical material if it's already loaded.
 	DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.Get();

@@ -25,9 +25,9 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::BeginPlay()
 {
 	Super::BeginPlay();
 
-#if WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
+#if ENABLE_DRAW_DEBUG
 	AHUD::OnShowDebugInfo.AddStatic(&AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo);
-#endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
+#endif // ENABLE_DRAW_DEBUG
 }
 
 void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, FName InCollisionProfile, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
@@ -57,7 +57,6 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::DrawCollisionDebug(A
 	}
 }
 
-#if WITH_EDITOR
 void AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos)
 {
 	// Draw debug info for this actor if GAS debugging is enabled.
@@ -73,4 +72,3 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo(AHUD
 		}
 	}
 }
-#endif // WITH_EDITOR

@@ -16,8 +16,6 @@
 				"ModularGameplay",
 				"GameFeatures",
 				"CoreUObject",
-				"UnrealEd",
-				"Blutility",
 				"NiagaraAnimNotifies",
 				"CommonUI",
 				"GameplayAbilities"

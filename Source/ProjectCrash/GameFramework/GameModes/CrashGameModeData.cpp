@@ -16,7 +16,6 @@ UCrashGameModeData::UCrashGameModeData()
 }
 
 #if WITH_EDITOR
-
 EDataValidationResult UCrashGameModeData::IsDataValid(FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
@@ -43,6 +42,7 @@ EDataValidationResult UCrashGameModeData::IsDataValid(FDataValidationContext& Co
 }
 #endif // WITH_EDITOR
 
+#if WITH_EDITORONLY_DATA
 void UCrashGameModeData::UpdateAssetBundleData()
 {
 	Super::UpdateAssetBundleData();
@@ -56,5 +56,6 @@ void UCrashGameModeData::UpdateAssetBundleData()
 		}
 	}
 }
+#endif // WITH_EDITORONLY_DATA
 
 #undef LOCTEXT_NAMESPACE

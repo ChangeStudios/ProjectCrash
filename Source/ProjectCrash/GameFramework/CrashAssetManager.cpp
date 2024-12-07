@@ -161,7 +161,6 @@ UObject* UCrashAssetManager::SynchronousLoadAsset(const FSoftObjectPath& AssetPa
 	return nullptr;
 }
 
-#if WITH_EDITOR
 void UCrashAssetManager::DumpLoadedAssets(UClass* ClassToFilter)
 {
 	UE_LOG(LogCrash, Log, TEXT("== Start Dumping Loaded Asset Registry Assets ==="));
@@ -205,4 +204,3 @@ void UCrashAssetManager::DumpLoadedAssets(UClass* ClassToFilter)
 	UE_LOG(LogCrash, Log, TEXT("Total Asset Registry Assets Dumped: [%i]."), DumpedAssetsCount);
 	UE_LOG(LogCrash, Log, TEXT("========= Finish Asset Registry Assets =========="));
 }
-#endif // WITH_EDITOR
