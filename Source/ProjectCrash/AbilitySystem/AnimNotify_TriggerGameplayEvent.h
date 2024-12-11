@@ -44,6 +44,6 @@ public:
 
 	/** The gameplay tag used to trigger the gameplay event when this notify is triggered. The event is sent to the
 	 * owner of the mesh that triggered this notify. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Gameplay Event Tag")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Gameplay Event Tag", Meta = (Categories = "GameplayEvent"))
 	FGameplayTag EventTag;
 };

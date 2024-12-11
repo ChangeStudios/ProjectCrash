@@ -45,7 +45,6 @@ namespace CrashGameplayTags
 
 
 	// Gameplay events
-	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEvent_Ability_MeleeSurfaceImpact);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEvent_Ability_PerformTargeting);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEvent_Ability_StartTargeting);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEvent_Ability_EndTargeting);
