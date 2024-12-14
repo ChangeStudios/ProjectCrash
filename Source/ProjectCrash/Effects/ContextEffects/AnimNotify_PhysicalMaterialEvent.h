@@ -144,4 +144,14 @@ public:
 	 * will always play. Useful for using different effects for first- and third-person. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (ExposeOnSpawn = true))
 	bool bPerspectiveBased;
+
+
+
+	// Internals.
+
+private:
+
+	/** Whether this physical material event should be triggered. The event gets thrown out if there is an active
+	 * montage playing in the "Full Body" slot, since this should override events like footsteps. */
+	FORCEINLINE bool ShouldAnimationTriggerNotify(UAnimInstance* AnimInstance, UAnimSequenceBase* Animation);
 };
