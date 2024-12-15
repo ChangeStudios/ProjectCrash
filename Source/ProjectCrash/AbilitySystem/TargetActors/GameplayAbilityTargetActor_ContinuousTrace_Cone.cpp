@@ -15,6 +15,7 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 {
 #if ENABLE_DRAW_DEBUG
 	TArray<FVector> MissedHits;
+	TArray<FVector> SuccessfulUnprocessedHits; // Successful hits that were thrown out for more favorable ones.
 #endif // ENABLE_DRAW_DEBUG
 
 	UWorld* World = InSourceActor->GetWorld();
@@ -53,20 +54,11 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 	FCollisionShape SphereSweep = FCollisionShape::MakeSphere(ConeBaseRadius);
 	World->SweepMultiByChannel(HitResults, ViewLocation, ViewEnd, ViewRotation.Quaternion(), TraceChannel, SphereSweep, Params);
 
-	TArray<AActor*> HitActors;
 	for (FHitResult& HitResult : HitResults)
 	{
 		AActor* HitActor = HitResult.GetActor();
 
 		if (!IsValid(HitActor))
-		{
-			continue;
-		}
-
-		/* Once we successfully hit a target, don't bother processing any other hits against it. This will always fail
-		 * when debugging. */
-		// TODO: Iterate over every hit and take the closest one?
-		if (HitActors.Contains(HitActor))
 		{
 			continue;
 		}
@@ -102,10 +94,36 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 			continue;
 		}
 
-#if !ENABLE_DRAW_DEBUG
-		// Cache the actor we successfully hit, so we don't waste time processing any more hits on them.
-		HitActors.Add(HitActor);
-#endif
+		/* If we've already hit this actor, check the new hit against the existing one and use whichever hit is closer
+		 * to our view direction, just so the VFX appear closer to where we're actually aiming. */
+		const int32 ExistingHitIndex = SuccessfulHits.IndexOfByPredicate(
+			[HitActor](const FHitResult& Hit){ return Hit.GetActor() == HitActor; });
+		if (ExistingHitIndex != INDEX_NONE)
+		{
+			const FHitResult& ExistingHitOnActor = SuccessfulHits[ExistingHitIndex];
+
+			const FVector ExistingDirection = (ExistingHitOnActor.ImpactPoint - ViewLocation);
+			const double ExistingDot = FVector::DotProduct(ViewRotation.Vector(), ExistingDirection.GetSafeNormal());
+
+			// If the new hit is closer to the player's aim, remove the old hit and use the new one.
+			if (Dot > ExistingDot)
+			{
+#if ENABLE_DRAW_DEBUG
+				SuccessfulUnprocessedHits.Add(ExistingHitOnActor.ImpactPoint);
+#endif // ENABLE_DRAW_DEBUG
+
+				SuccessfulHits.RemoveAt(ExistingHitIndex);
+			}
+			// If the new hit is further from the player's aim, throw it out.
+			else
+			{
+#if ENABLE_DRAW_DEBUG
+				SuccessfulUnprocessedHits.Add(HitResult.ImpactPoint);
+#endif // ENABLE_DRAW_DEBUG
+
+				continue;
+			}
+		}
 
 		// We want the actual normal of the trace we performed; not whatever our sweep told us.
 		HitResult.Normal = ViewRotation.Vector();
@@ -134,22 +152,16 @@ TArray<FHitResult> AGameplayAbilityTargetActor_ContinuousTrace_Cone::PerformTrac
 			DrawDebugLine(World, ViewLocation, MissedHit, FColor::Red, false, DEBUG_DRAW_TIME);
 		}
 
-		// Debug lines for every successful hit we processed from the sweep.
-		TArray<AActor*> HitActors_Debug;
+		// Debug lines for successful hits that were thrown out because we found a better one.
+		for (const FVector& SuccessfulUnprocessedHit : SuccessfulUnprocessedHits)
+		{
+			DrawDebugLine(World, ViewLocation, SuccessfulUnprocessedHit, FColor::Green, false, DEBUG_DRAW_TIME);
+		}
+
+		// Debug lines for every successful hit we actually processed from the sweep.
 		for (const FHitResult& SuccessfulHit : SuccessfulHits)
 		{
-			/* Distinguish the hits that were actually passed to the target data in cyan. These will always be the first
-			 * successful hits on each actor. */
-			if (!HitActors_Debug.Contains(SuccessfulHit.GetActor()))
-			{
-				DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Cyan, false, DEBUG_DRAW_TIME);
-				HitActors_Debug.Add(SuccessfulHit.GetActor());
-			}
-			// Hits on repeated actors will never have occurred outside of debugging.
-			else
-			{
-				DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Green, false, DEBUG_DRAW_TIME);
-			}
+			DrawDebugLine(World, ViewLocation, SuccessfulHit.ImpactPoint, FColor::Cyan, false, DEBUG_DRAW_TIME);
 		}
 	}
 #endif // ENABLE_DRAW_DEBUG
