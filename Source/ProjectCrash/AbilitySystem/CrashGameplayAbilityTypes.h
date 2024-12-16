@@ -6,6 +6,7 @@
 #include "AbilitySystemGlobals.h"
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "GameFramework/Teams/TeamSubsystem.h"
 #include "CrashGameplayAbilityTypes.generated.h"
 
 class ACrashPlayerState;
@@ -107,6 +108,38 @@ struct FGASActorTargetDataFilter : public FGameplayTargetDataFilter
 	 * implementation. */
 	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
 	{
-		return (UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered) != nullptr) && Super::FilterPassesForActor(ActorToBeFiltered);
+		if (!Super::FilterPassesForActor(ActorToBeFiltered))
+		{
+			return false;
+		}
+		
+		if (UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered) == nullptr)
+		{
+			return false;
+		}
+
+		// TODO: Implement
+		if (IsValid(ActorToBeFiltered))
+		{
+			UTeamSubsystem* TeamSubsystem = ActorToBeFiltered->GetWorld()->GetSubsystem<UTeamSubsystem>();
+			if (ensure(TeamSubsystem))
+			{
+			}
+		}
+
+		// If we can't find the team subsystem or the actor isn't valid, assume it's a neutral agent.
+		// TODO: Implement
 	}
+
+	/** If false, actors with the same team as self will be filtered out. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	bool bAllowTeammates = false;
+
+	/** If false, actors will a different team than self will be filtered out. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	bool bAllowEnemies = true;
+
+	/** If false, actors with a neutral team and without a team will be filtered out. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	bool bAllowNeutral = true;
 };
