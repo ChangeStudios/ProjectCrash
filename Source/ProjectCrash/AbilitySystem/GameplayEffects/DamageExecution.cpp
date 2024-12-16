@@ -7,6 +7,7 @@
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "GameFramework/Teams/TeamSubsystem.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
 
 UDamageExecution::UDamageExecution()
@@ -83,11 +84,15 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	}
 
 
-	// Apply rules for team-damage and self-damage.
+	// Apply rules for team-damage.
 	float DamageInteractionAllowedMultiplier = 1.0f;
 	if (TargetActor)
 	{
-		// TODO: DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, HitActor) ? 1.0f : 0.0f;
+		UTeamSubsystem* TeamSubsystem = TargetActor->GetWorld()->GetSubsystem<UTeamSubsystem>();
+		if (ensure(TeamSubsystem))
+		{
+			DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, TargetActor) ? 1.0f : 0.0f;
+		}
 	}
 
 
