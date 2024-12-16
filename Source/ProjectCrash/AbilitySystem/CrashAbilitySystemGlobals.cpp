@@ -38,7 +38,15 @@ void UCrashAbilitySystemGlobals::InitGameplayCueParameters(FGameplayCueParameter
 			CueParameters.Location = (HitResult->bBlockingHit ? HitResult->ImpactPoint : HitResult->TraceEnd);
 			CueParameters.Normal = HitResult->ImpactNormal;
 			CueParameters.PhysicalMaterial = HitResult->PhysMaterial;
-			CueParameters.TargetAttachComponent = (HitResult->Component.IsValid() ? HitResult->Component.Get() : HitResult->GetActor()->GetRootComponent());
+
+			if (HitResult->Component.IsValid())
+			{
+				CueParameters.TargetAttachComponent = HitResult->Component.Get();
+			}
+			else if (IsValid(HitResult->GetActor()))
+			{
+				CueParameters.TargetAttachComponent = HitResult->GetActor()->GetRootComponent();
+			}
 		}
 
 		// NOTE: We might have to initialize the cue's instigator, effect causer, etc. too.
