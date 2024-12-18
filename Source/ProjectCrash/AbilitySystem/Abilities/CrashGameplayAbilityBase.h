@@ -337,6 +337,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ability Statics", DisplayName = "GAS Actors Filter")
 	FGameplayTargetDataFilterHandle MakeGASActorFilter(ETargetDataFilterSelf::Type FilterSelf);
 
+	/** Creates a gameplay target data filter, using this ability's avatar as the filter's Self parameter. */
+	UFUNCTION(BlueprintPure, Category = "Filter")
+	FGameplayTargetDataFilterHandle MakeCrashFilter(FCrashTargetDataFilter Filter);
+
 	/** Returns this ability's CDO. */
 	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))
 	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }

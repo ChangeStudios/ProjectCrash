@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AbilitySystemUtilitiesLibrary.generated.h"
 
+struct FCrashTargetDataFilter;
+
 /**
  * Collection of utilities for scripting gameplay abilities.
  */
@@ -60,4 +62,14 @@ public:
 	 * setting the direction of effect contexts. */
 	UFUNCTION(BlueprintPure, Category = "Ability|TargetData")
 	static FHitResult GetTargetDataHitResultWithCustomDirection(const FGameplayAbilityTargetDataHandle& TargetData, FVector NewDirection);
+
+
+
+	// Target data.
+
+public:
+
+	/** Create a handle for filtering target data. */
+	UFUNCTION(BlueprintPure, Category = "Filter")
+	static FGameplayTargetDataFilterHandle MakeCrashFilterHandle(FCrashTargetDataFilter Filter, AActor* FilterActor);
 };

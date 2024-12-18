@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilitySystemUtilitiesLibrary.h"
 
 #include "CrashAbilitySystemGlobals.h"
+#include "CrashGameplayAbilityTypes.h"
 #include "Components/CrashAbilitySystemComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/Character.h"
@@ -117,4 +118,13 @@ FHitResult UAbilitySystemUtilitiesLibrary::GetTargetDataHitResultWithCustomDirec
 	}
 
 	return FHitResult();
+}
+
+FGameplayTargetDataFilterHandle UAbilitySystemUtilitiesLibrary::MakeCrashFilterHandle(FCrashTargetDataFilter Filter, AActor* FilterActor)
+{
+	FGameplayTargetDataFilterHandle FilterHandle;
+	FCrashTargetDataFilter* NewFilter = new FCrashTargetDataFilter(Filter);
+	NewFilter->InitializeFilterContext(FilterActor);
+	FilterHandle.Filter = TSharedPtr<FCrashTargetDataFilter>(NewFilter);
+	return FilterHandle;
 }

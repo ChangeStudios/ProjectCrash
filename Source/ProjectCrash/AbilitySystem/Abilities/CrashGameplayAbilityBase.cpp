@@ -500,11 +500,16 @@ ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo()
 FGameplayTargetDataFilterHandle UCrashGameplayAbilityBase::MakeGASActorFilter(ETargetDataFilterSelf::Type FilterSelf)
 {
 	FGameplayTargetDataFilterHandle FilterHandle;
-	FGASActorTargetDataFilter* Filter = new FGASActorTargetDataFilter();
+	FCrashTargetDataFilter* Filter = new FCrashTargetDataFilter();
 	Filter->InitializeFilterContext(GetAvatarActorFromActorInfo());
 	Filter->SelfFilter = FilterSelf;
-	FilterHandle.Filter = TSharedPtr<FGASActorTargetDataFilter>(Filter);
+	FilterHandle.Filter = TSharedPtr<FCrashTargetDataFilter>(Filter);
 	return FilterHandle;
+}
+
+FGameplayTargetDataFilterHandle UCrashGameplayAbilityBase::MakeCrashFilter(FCrashTargetDataFilter Filter)
+{
+	return UAbilitySystemUtilitiesLibrary::MakeCrashFilterHandle(Filter, GetAvatarActorFromActorInfo());
 }
 
 #if WITH_EDITOR
