@@ -332,18 +332,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
 	const FGameplayTagContainer& GetAbilityTags() const { return AbilityTags; }
 
-	/** A gameplay target data filter that filters for actors with an ability system component. Uses this ability's
-	 * avatar for "self" filtering. */
-	UFUNCTION(BlueprintPure, Category = "Ability Statics", DisplayName = "GAS Actors Filter")
-	FGameplayTargetDataFilterHandle MakeGASActorFilter(ETargetDataFilterSelf::Type FilterSelf);
-
-	/** Creates a gameplay target data filter, using this ability's avatar as the filter's Self parameter. */
+	/** Creates a target data filter that filters out any actors without an ASC, using this ability's avatar as the
+	 * filter's Self parameter. */
 	UFUNCTION(BlueprintPure, Category = "Filter")
 	FGameplayTargetDataFilterHandle MakeCrashFilter(FCrashTargetDataFilter Filter);
-
-	/** Returns this ability's CDO. */
-	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))
-	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
 
 
 
