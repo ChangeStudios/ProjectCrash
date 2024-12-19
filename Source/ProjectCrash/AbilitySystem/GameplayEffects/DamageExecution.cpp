@@ -14,9 +14,13 @@ UDamageExecution::UDamageExecution()
 {
 	// Define the specifications for capturing each attribute needed for this execution.
 	BaseDamageDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+	DamageBoostDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageBoostAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+	DamageResDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageResistanceAttribute(), EGameplayEffectAttributeCaptureSource::Target, true);
 
 	// Capture the attributes needed to perform this execution.
 	RelevantAttributesToCapture.Add(BaseDamageDef);
+	RelevantAttributesToCapture.Add(DamageBoostDef);
+	RelevantAttributesToCapture.Add(DamageResDef);
 }
 
 void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
@@ -41,9 +45,11 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.TargetTags = TargetTags;
 
 
-	// Retrieve the captured base damage value.
-	float DamageToApply = 0.0f;
+	// Retrieve the captured damage values.
+	float DamageToApply = 0.0f, OutgoingDamageMultiplier = 0.0f, IncomingDamageMultiplier = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvaluateParameters, DamageToApply);
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageBoostDef, EvaluateParameters, OutgoingDamageMultiplier);
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageResDef, EvaluateParameters, IncomingDamageMultiplier);
 
 
 	// Retrieve information about the source and target.
@@ -123,6 +129,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 
 
 	// Calculate and clamp damage.
+	DamageToApply = DamageToApply * OutgoingDamageMultiplier * IncomingDamageMultiplier;
 	DamageToApply = FMath::Max(DamageToApply * DistanceFalloffMultiplier * DamageInteractionAllowedMultiplier, 0.0f);
 
 	// Round the damage value down to the nearest whole number. We only use whole numbers for health in this project.

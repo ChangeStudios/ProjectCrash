@@ -20,10 +20,14 @@ UHealthAttributeSet::UHealthAttributeSet() :
 	bOutOfHealth(false),
 	HealthBeforeAttributeChange(0.0f),
 	MaxHealth(100.0f),
-	MaxHealthBeforeAttributeChange(0.0f)
+	MaxHealthBeforeAttributeChange(0.0f),
+	DamageBoost(1.0f),
+	DamageResistance(1.0f)
 {
 	InitHealth(100.0f);
 	InitMaxHealth(100.0f);
+	InitDamageBoost(1.0f);
+	InitDamageResistance(1.0f);
 }
 
 bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
