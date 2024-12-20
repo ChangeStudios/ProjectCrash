@@ -358,8 +358,13 @@ bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Ta
 	{
 		return true;
 	}
-	// If an object has a team, it can damage objects without a team if that object has an ASC.
-	else if ((Alignment == ETeamAlignment::InvalidArgument) && (InstigatorTeam != INDEX_NONE))
+	// Objects without a team can damage anyone.
+	else if (InstigatorTeam == INDEX_NONE)
+	{
+		return true;
+	}
+	// Objects without a team can be damaged by anyone if they have an ASC.
+	else if (TargetTeam == INDEX_NONE)
 	{
 		return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Cast<const AActor>(Target)) != nullptr;
 	}
