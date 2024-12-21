@@ -69,6 +69,10 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Healing, "Message.Healing", "Verbal message communicating healing dealt.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Started, "Message.GameplayEffectWidget.Started", "Message used to initialize a new gameplay effect widget.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Updated, "Message.GameplayEffectWidget.Updated", "Message used to update an existing gameplay effect widget (e.g. when a stack is added).");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Ended, "Message.GameplayEffectWidget.Ended", "Message used to remove a gameplay effect widget when the effect has ended.");
+
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Death, "Message.Player.Death", "Verbal message communicating a death.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Reset, "Message.Player.Reset", "Reset message indicating a player has been directly reset.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Respawn_Started, "Message.Player.Respawn.Started", "Simple duration message indicating a player began respawning.");
