@@ -3,37 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "GameplayEffectComponent.h"
 #include "GameplayEffectUIData.h"
 #include "GameplayTagContainer.h"
 #include "UIExtensionSystem.h"
 #include "WidgetGameplayEffectComponent.generated.h"
-
-/**
- * A message used to communicate events to gameplay effect widgets.
- */
-USTRUCT(BlueprintType)
-struct FGameplayEffectWidgetMessage
-{
-	GENERATED_BODY()
-
-	/** The handle for the widget to which this message is relevant. Only valid in "Started" messages. Should be cached
-	 * for later use. */
-	UPROPERTY(BlueprintReadWrite)
-	FUIExtensionHandle ExtensionHandle;
-
-	/** */
-	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<const UGameplayEffect> GameplayEffectDefinition = nullptr;
-
-	/** */
-	UPROPERTY(BlueprintReadWrite)
-	float Duration = 0.0f;
-
-	/** */
-	UPROPERTY(BlueprintReadWrite)
-	int32 StackCount = 0;
-};
 
 /**
  * Pushes a widget representing the gameplay effect while the effect is active. Can represent buffs or debuffs. A timer

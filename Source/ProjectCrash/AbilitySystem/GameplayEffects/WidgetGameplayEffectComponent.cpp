@@ -8,6 +8,7 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/GameModes/CrashGameState.h"
+#include "GameFramework/Messages/CrashGameplayEffectMessage.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DataValidation.h"
 
@@ -25,40 +26,32 @@ void UWidgetGameplayEffectComponent::OnGameplayEffectApplied(FActiveGameplayEffe
 	{
 		UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(PC->GetWorld());
 
-		if (ULocalPlayer* LocalPlayer = PC->GetLocalPlayer())
+		// If the effect does not stack, or this is the first stack, create a new effect widget.
+		if ((GESpec.Def && GESpec.Def->StackingType == EGameplayEffectStackingType::None) ||
+			GESpec.GetStackCount() <= 1)
 		{
-			// If the effect does not stack, or this is the first stack, create a new effect widget.
-			if ((GESpec.Def && GESpec.Def->StackingType == EGameplayEffectStackingType::None) ||
-				GESpec.GetStackCount() <= 1)
+			// Initialize the new widget with a message.
+			FCrashGameplayEffectMessage GEWidgetMessage;
+			GEWidgetMessage.GameplayEffectDefinition = GESpec.Def;
+			GEWidgetMessage.Duration = GESpec.CalculateModifiedDuration();
+			GEWidgetMessage.StackCount = GESpec.GetStackCount();
+			MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_GameplayEffectWidget_Started, GEWidgetMessage);
+
+			// Listen for the effect's removal.
+			ActiveGEContainer.OnActiveGameplayEffectRemovedDelegate.AddUObject(this, &UWidgetGameplayEffectComponent::OnGameplayEffectRemoved);
+		}
+		// If a new stack of an ongoing effect was applied, send a message to update the existing widget.
+		else
+		{
+			FCrashGameplayEffectMessage GEWidgetMessage;
+			GEWidgetMessage.GameplayEffectDefinition = GESpec.Def;
+			GEWidgetMessage.Duration = GESpec.CalculateModifiedDuration();
+			GEWidgetMessage.StackCount = GESpec.GetStackCount();
+			MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_GameplayEffectWidget_Updated, GEWidgetMessage);
+
+			// TODO: broadcast the message to clients (stacks aren't predicted).
+			if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(PC->GetWorld())))
 			{
-				// Create a widget for the new gameplay effect.
-				UUIExtensionSubsystem* ExtensionSubsystem = PC->GetWorld()->GetSubsystem<UUIExtensionSubsystem>();
-				FUIExtensionHandle Handle = ExtensionSubsystem->RegisterExtensionAsWidgetForContext(WidgetSlot, LocalPlayer, Widget, -1);
-
-				// Initialize the new widget with a message.
-				FGameplayEffectWidgetMessage GEWidgetMessage;
-				GEWidgetMessage.ExtensionHandle = Handle;
-				GEWidgetMessage.GameplayEffectDefinition = GESpec.Def;
-				GEWidgetMessage.Duration = GESpec.CalculateModifiedDuration();
-				GEWidgetMessage.StackCount = GESpec.GetStackCount();
-				MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_GameplayEffectWidget_Started, GEWidgetMessage);
-
-				// Listen for the effect's removal.
-				ActiveGEContainer.OnActiveGameplayEffectRemovedDelegate.AddUObject(this, &UWidgetGameplayEffectComponent::OnGameplayEffectRemoved);
-			}
-			// If a new stack of an ongoing effect was applied, send a message to update the existing widget.
-			else
-			{
-				FGameplayEffectWidgetMessage GEWidgetMessage;
-				GEWidgetMessage.GameplayEffectDefinition = GESpec.Def;
-				GEWidgetMessage.Duration = GESpec.CalculateModifiedDuration();
-				GEWidgetMessage.StackCount = GESpec.GetStackCount();
-				MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_GameplayEffectWidget_Updated, GEWidgetMessage);
-
-				// TODO: broadcast the message to clients (stacks aren't predicted).
-				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(PC->GetWorld())))
-				{
-				}
 			}
 		}
 	}
@@ -82,7 +75,7 @@ void UWidgetGameplayEffectComponent::OnGameplayEffectRemoved(const FActiveGamepl
 	 * themselves when their duration ends. */
 	if (ActiveGE.Spec.Def && ActiveGE.Spec.Def->DurationPolicy == EGameplayEffectDurationType::Infinite)
 	{
-		FGameplayEffectWidgetMessage GEWidgetMessage;
+		FCrashGameplayEffectMessage GEWidgetMessage;
 		GEWidgetMessage.GameplayEffectDefinition = ActiveGE.Spec.Def;
 		GEWidgetMessage.Duration = ActiveGE.Spec.CalculateModifiedDuration();
 		GEWidgetMessage.StackCount = ActiveGE.Spec.GetStackCount();
