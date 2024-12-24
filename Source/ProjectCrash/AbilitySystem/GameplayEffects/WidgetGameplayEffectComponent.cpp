@@ -7,6 +7,11 @@
 #include "GameplayEffect.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/GameModes/CrashGameState.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/DataValidation.h"
+
+#define LOCTEXT_NAMESPACE "GameplayEffectComponent"
 
 void UWidgetGameplayEffectComponent::OnGameplayEffectApplied(FActiveGameplayEffectsContainer& ActiveGEContainer, FGameplayEffectSpec& GESpec, FPredictionKey& PredictionKey) const
 {
@@ -49,6 +54,11 @@ void UWidgetGameplayEffectComponent::OnGameplayEffectApplied(FActiveGameplayEffe
 				GEWidgetMessage.Duration = GESpec.CalculateModifiedDuration();
 				GEWidgetMessage.StackCount = GESpec.GetStackCount();
 				MessageSystem.BroadcastMessage(CrashGameplayTags::TAG_Message_GameplayEffectWidget_Updated, GEWidgetMessage);
+
+				// TODO: broadcast the message to clients (stacks aren't predicted).
+				if (ACrashGameState* GS = Cast<ACrashGameState>(UGameplayStatics::GetGameState(PC->GetWorld())))
+				{
+				}
 			}
 		}
 	}
@@ -68,8 +78,8 @@ void UWidgetGameplayEffectComponent::OnGameplayEffectRemoved(const FActiveGamepl
 		return;
 	}
 
-	/* Send a message to remove the effect widget if the effect is infinite. Duration-based effects remove themselves
-	 * when their duration ends. */
+	/* Send a message to remove the effect widget if the effect is infinite. Duration-based effects should remove
+	 * themselves when their duration ends. */
 	if (ActiveGE.Spec.Def && ActiveGE.Spec.Def->DurationPolicy == EGameplayEffectDurationType::Infinite)
 	{
 		FGameplayEffectWidgetMessage GEWidgetMessage;
@@ -85,6 +95,19 @@ void UWidgetGameplayEffectComponent::OnGameplayEffectRemoved(const FActiveGamepl
 #if WITH_EDITOR
 EDataValidationResult UWidgetGameplayEffectComponent::IsDataValid(class FDataValidationContext& Context) const
 {
-	return Super::IsDataValid(Context);
+	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
+
+	const UGameplayEffect* OuterGE = GetOuterUGameplayEffect();
+
+	// Instant effects are not supported: instant effects should not need persistent widgets to indicate their status.
+	if (OuterGE->DurationPolicy == EGameplayEffectDurationType::Instant)
+	{
+		Context.AddError(LOCTEXT("InstantEffectsNotSupported", "Gameplay effect component \"Add Effect Widget\" does not currently support instant effects."));
+		Result = EDataValidationResult::Invalid;
+	}
+
+	return Result;
 }
 #endif // WITH_EDITOR
+
+#undef LOCTEXT_NAMESPACE

@@ -36,8 +36,10 @@ struct FGameplayEffectWidgetMessage
 };
 
 /**
- * Pushes a widget representing the gameplay effect while the effect is active. Can represent buffs or debuggs. A timer
+ * Pushes a widget representing the gameplay effect while the effect is active. Can represent buffs or debuffs. A timer
  * will be displayed for duration-based effects.
+ *
+ * TODO: Finish.
  */
 UCLASS(CollapseCategories, DisplayName = "Add Effect Widget")
 class PROJECTCRASH_API UWidgetGameplayEffectComponent : public UGameplayEffectUIData
