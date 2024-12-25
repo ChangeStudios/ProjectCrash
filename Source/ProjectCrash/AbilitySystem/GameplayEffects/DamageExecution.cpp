@@ -5,6 +5,7 @@
 
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
+#include "CrashGameplayTags.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "GameFramework/Teams/TeamSubsystem.h"
@@ -91,13 +92,27 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 
 
 	// Apply rules for team-damage.
+	// NOTE: We already do this when filtering hits with target actors, since it's common for us to want to skip effects
+	// besides damage (e.g. knockback) depending on the interaction type. But we do it again here in case we want to
+	// consider damage differently. E.g. to make a rocket-jump that applies knockback to self but not damage, we could
+	// allow the rocket's explosion to detect its owner, but wouldn't give the effect a "CanDamageSelf" tag.
 	float DamageInteractionAllowedMultiplier = 1.0f;
 	if (TargetActor)
 	{
 		UTeamSubsystem* TeamSubsystem = TargetActor->GetWorld()->GetSubsystem<UTeamSubsystem>();
 		if (ensure(TeamSubsystem))
 		{
-			DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, TargetActor) ? 1.0f : 0.0f;
+			/* Tags can be added to effect specs to allow damage to self or teammates. Self-destruct damage overrides
+			 * any rules. */
+			const FGameplayTagContainer& DynamicTags = Spec.GetDynamicAssetTags();
+			const bool bCanDamageSelf = DynamicTags.HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_SelfDestruct) ||
+										DynamicTags.HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_CanDamageSelf);
+			const bool bCanDamageTeam = DynamicTags.HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_CanDamageTeam);
+
+			// NOTE: We disallow self and team damage by default because we very rarely want to damage ourself or our
+			// teammates. So when we do, we want to be very explicit and deliberate about it.
+			// TODO: Allow self damage by default, so we don't get confused when we just want to apply damage to everyone?
+			DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, TargetActor, bCanDamageSelf, bCanDamageTeam) ? 1.0f : 0.0f;
 		}
 	}
 

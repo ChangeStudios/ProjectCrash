@@ -337,7 +337,7 @@ ETeamAlignment UTeamSubsystem::CompareTeams(const UObject* A, const UObject* B) 
 	return CompareTeams(A, B, OutTeamA, OutTeamB);
 }
 
-bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf) const
+bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf, bool bAllowDamageToTeam) const
 {
 	// If the instigator can damage itself, check if it's trying to. Otherwise, we'll end up returning false.
 	if (bAllowDamageToSelf)
@@ -357,6 +357,11 @@ bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Ta
 	if (Alignment == ETeamAlignment::DifferentTeams)
 	{
 		return true;
+	}
+	// Objects on the same team can only damage each other if specified.
+	else if (Alignment == ETeamAlignment::SameTeam)
+	{
+		return bAllowDamageToTeam;
 	}
 	// Objects without a team can damage anyone.
 	else if (InstigatorTeam == INDEX_NONE)
