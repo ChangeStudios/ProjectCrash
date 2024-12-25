@@ -110,8 +110,9 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 			const bool bCanDamageTeam = DynamicTags.HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_CanDamageTeam);
 
 			// NOTE: We disallow self and team damage by default because we very rarely want to damage ourself or our
-			// teammates. So when we do, we want to be very explicit and deliberate about it.
-			// TODO: Allow self damage by default, so we don't get confused when we just want to apply damage to everyone?
+			// teammates. So when we do, we want to be very explicit and deliberate about it. In other words, players
+			// should never damage themselves, but designers have the option to override this if desired.
+			// TODO: I think this makes sense, but it's really unintuitive. Should we allow self-damage by default just to prevent potential confusion?
 			DamageInteractionAllowedMultiplier = TeamSubsystem->CanCauseDamage(EffectCauser, TargetActor, bCanDamageSelf, bCanDamageTeam) ? 1.0f : 0.0f;
 		}
 	}
