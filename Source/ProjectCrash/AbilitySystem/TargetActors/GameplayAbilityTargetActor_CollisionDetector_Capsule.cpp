@@ -25,26 +25,12 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Initialize the collision capsule's shape.
+	DetectorAsCapsule->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
+
 #if ENABLE_DRAW_DEBUG
 	AHUD::OnShowDebugInfo.AddStatic(&AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo);
 #endif // ENABLE_DRAW_DEBUG
-}
-
-void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, FName InCollisionProfile, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
-{
-	check(DetectorAsCapsule);
-
-	// Update this target actor's data.
-	CapsuleRadius = InCapsuleRadius;
-	CapsuleHalfHeight = InCapsuleHalfHeight;
-	CollisionProfile = InCollisionProfile;
-	bRepeatTargets = bInRepeatTargets;
-	bResetTargetsOnStart = bInResetTargetsOnStart;
-	Filter = InFilter;
-	IgnoredTargetTags = IgnoreTargetsWithTags;
-	ShouldProduceTargetDataOnServer = bInShouldProduceTargetDataOnServer;
-
-	DetectorAsCapsule->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 }
 
 void AGameplayAbilityTargetActor_CollisionDetector_Capsule::DrawCollisionDebug(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

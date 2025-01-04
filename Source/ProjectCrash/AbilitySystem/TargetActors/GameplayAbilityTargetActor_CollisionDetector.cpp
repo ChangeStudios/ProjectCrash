@@ -15,11 +15,15 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
+
+	/** Generate target data directly on the server after receiving confirmation from the client. Don't trust the data
+	 * that the client produces. */
 	ShouldProduceTargetDataOnServer = true;
 
 	CollisionDetector = nullptr;
 
 	CollisionProfile = FName("CapsuleHitDetection");
+	bAttachToCharacter = false;
 	bRepeatTargets = false;
 	bResetTargetsOnStart = true;
 
@@ -40,7 +44,16 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	checkf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
 
 	// Use the desired collision profile. This lets us configure what we want to detect (e.g. pawn meshes or capsules).
-	CollisionDetector->SetCollisionProfileName(CollisionProfile);
+	CollisionDetector->SetCollisionProfileName(CollisionProfile.Name);
+
+	// Attach this target actor to the owning character if desired.
+	if (bAttachToCharacter)
+	{
+		if (AActor* Avatar = Ability->GetAvatarActorFromActorInfo())
+		{
+			AttachToActor(Avatar, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		}
+	}
 
 	// Reset the hit targets each time targeting restarts, if desired.
 	if (bResetTargetsOnStart)

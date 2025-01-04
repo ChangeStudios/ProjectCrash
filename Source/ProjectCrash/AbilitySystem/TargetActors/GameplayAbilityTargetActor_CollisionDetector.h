@@ -10,9 +10,6 @@
 /**
  * A collision shape that detects collision while active. This should be subclassed with custom shapes.
  *
- * Subclasses should implement a "Configure" class to initialize this actor's data, and to reconfigure the data between
- * uses. See GameplayAbilityTargetActor_CollisionDetector_Capsule for reference.
- *
  * Some notes on debugging:
  *		* Enable the "Debug" parameter when instantiating this class to draw a debug trace when a collision is detected.
  *		* Toggle the "ShowDebug AbilitySystem" command to draw the target actor itself.
@@ -66,26 +63,30 @@ protected:
 
 
 
-	// Parameters. Should be initialized by a "Configure" function.
+	// Parameters.
 
 protected:
 
 	/** The collision profile to use for the detection capsule. */
-	UPROPERTY(BlueprintReadOnly)
-	FName CollisionProfile;
+	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))
+	FCollisionProfileName CollisionProfile;
+
+	/** Whether to attach this target actor to the owning ability's avatar when activated. */
+	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))
+	bool bAttachToCharacter;
+
+	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
+	UPROPERTY(BlueprintReadOnly, AdvancedDisplay, Meta = (ExposeOnSpawn = "true"))
+	FGameplayTagContainer IgnoredTargetTags;
 
 	/** Whether the same targets can be detected multiple times. If false, the Targets array must be explicitly cleared
 	 * before a target can be detected again, after being sent the first time. */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, AdvancedDisplay, Meta = (ExposeOnSpawn = "true"))
 	bool bRepeatTargets;
 
 	/** If true, target data will be automatically reset each time targeting starts. */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, AdvancedDisplay, Meta = (ExposeOnSpawn = "true"))
 	bool bResetTargetsOnStart;
-
-	/** Tags that targets are not allowed to have. If a hit target has any of these tags, it will be thrown out. */
-	UPROPERTY(BlueprintReadOnly)
-	FGameplayTagContainer IgnoredTargetTags;
 
 
 
