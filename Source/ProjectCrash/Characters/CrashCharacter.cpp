@@ -1,6 +1,5 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "Characters/CrashCharacter.h"
 
 #include "CrashGameplayTags.h"
@@ -11,14 +10,13 @@
 #include "Camera/CrashCameraComponent.h"
 #include "Camera/CrashCameraModeBase.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Equipment/EquipmentComponent.h"
 #include "GameFramework/CrashLogging.h"
 #include "Net/UnrealNetwork.h"
 
 ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer
-		// Do not create the default mesh component. We create our own for first- and third-person.
-		.DoNotCreateDefaultSubobject(MeshComponentName)
 		// Use this project's default character movement component.
 		.SetDefaultSubobjectClass<UCrashCharacterMovementComponent>(CharacterMovementComponentName))
 {
@@ -46,23 +44,30 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	// First-person mesh.
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonCharacterMesh"));
 	check(FirstPersonMesh);
+	FirstPersonMesh->AlwaysLoadOnClient = true;
+	FirstPersonMesh->AlwaysLoadOnServer = true;
+	FirstPersonMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose; // Skipping ticks prevents us from triggering anim events on the server.
 	FirstPersonMesh->bReceivesDecals = false;
 	FirstPersonMesh->CastShadow = false;
+	FirstPersonMesh->bAffectDynamicIndirectLighting = false;
+	FirstPersonMesh->PrimaryComponentTick.TickGroup = TG_PrePhysics;
 	FirstPersonMesh->SetVisibility(false, true);
 	FirstPersonMesh->SetupAttachment(CameraComponent);
 	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	FirstPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -166.5f)); // - (Character eye height (~76.5) + capsule half-height (90.0))
 	FirstPersonMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName); // Disable collision on first-person mesh.
+	FirstPersonMesh->SetCanEverAffectNavigation(false);
 
 
 	// Third-person mesh.
-	ThirdPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonCharacterMesh"));
+	USkeletalMeshComponent* ThirdPersonMesh = GetThirdPersonMesh();
 	check(ThirdPersonMesh);
 	ThirdPersonMesh->bReceivesDecals = false;
 	ThirdPersonMesh->SetVisibility(true, true);
 	ThirdPersonMesh->SetupAttachment(CapsuleComp);
 	ThirdPersonMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	ThirdPersonMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -92.15f)); // Unreal leaves ~2.15cm of space between the collision capsule and the ground.
+	ThirdPersonMesh->SetGenerateOverlapEvents(true); // The third-person mesh is used for hit detection with overlaps with ability and projectile hitboxes.
 	ThirdPersonMesh->SetCollisionProfileName(FName("CrashPawnMesh"));
 
 
@@ -84,12 +89,45 @@ ACrashCharacter::ACrashCharacter(const FObjectInitializer& ObjectInitializer)
 	HealthComponent->DeathFinishedDelegate.AddDynamic(this, &ThisClass::OnDeathFinished);
 }
 
+void ACrashCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	if (IsValid(this))
+	{
+		if (FirstPersonMesh)
+		{
+			// Force animation tick after movement component updates.
+			UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+			if (FirstPersonMesh->PrimaryComponentTick.bCanEverTick && MovementComp)
+			{
+				FirstPersonMesh->PrimaryComponentTick.AddPrerequisite(MovementComp, MovementComp->PrimaryComponentTick);
+			}
+		}
+	}
+}
+
 void ACrashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// Enable first-person depth rendering. It would be preferable to do this in construction, but we can't.
 	FirstPersonMesh->SetScalarParameterValueOnMaterials(FName("FirstPerson"), 1.0f);
+}
+
+void ACrashCharacter::TurnOff()
+{
+	if (GetNetMode() != NM_DedicatedServer && FirstPersonMesh != nullptr)
+	{
+		FirstPersonMesh->bPauseAnims = true;
+		if (FirstPersonMesh->IsSimulatingPhysics())
+		{
+			FirstPersonMesh->bBlendPhysics = true;
+			FirstPersonMesh->KinematicBonesUpdateType = EKinematicBonesUpdateToPhysics::SkipAllBones;
+		}
+	}
+
+	Super::TurnOff();
 }
 
 void ACrashCharacter::FellOutOfWorld(const UDamageType& dmgType)
@@ -190,7 +228,7 @@ void ACrashCharacter::OnStartCameraModeBlendIn(UCrashCameraModeBase* PreviousCam
 	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() != CrashGameplayTags::TAG_Effects_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(false, true);
-		ThirdPersonMesh->SetVisibility(true, true);
+		GetThirdPersonMesh()->SetVisibility(true, true);
 	}
 }
 
@@ -200,7 +238,7 @@ void ACrashCharacter::OnFinishCameraModeBlendIn(UCrashCameraModeBase* PreviousCa
 	if (NewCameraMode && (NewCameraMode->GetCameraTypeTag() == CrashGameplayTags::TAG_Effects_CameraType_FirstPerson))
 	{
 		FirstPersonMesh->SetVisibility(true, true);
-		ThirdPersonMesh->SetVisibility(false, true);
+		GetThirdPersonMesh()->SetVisibility(false, true);
 	}
 }
 

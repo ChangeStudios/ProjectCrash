@@ -7,7 +7,8 @@
 #include "EquipmentComponent.h"
 #include "EquipmentInstance.h"
 
-UAnimNotify_PlayEquipmentAnimation::UAnimNotify_PlayEquipmentAnimation()
+UAnimNotify_PlayEquipmentAnimation::UAnimNotify_PlayEquipmentAnimation() :
+	EquipmentPerspective(EEquipmentPerspective::FirstPerson)
 {
 #if WITH_EDITORONLY_DATA
 	// Notify's default color in the editor.
@@ -44,7 +45,7 @@ void UAnimNotify_PlayEquipmentAnimation::Notify(USkeletalMeshComponent* MeshComp
 				// Send the equipment animation to every active equipment actor.
 				for (AEquipmentActor* EquipmentActor : CurrentEquipment->GetSpawnedActors())
 				{
-					EquipmentActor->ProcessEquipmentAnimation(AnimationTag);
+					EquipmentActor->ProcessEquipmentAnimation(AnimationTag, EquipmentPerspective);
 				}
 			}
 		}

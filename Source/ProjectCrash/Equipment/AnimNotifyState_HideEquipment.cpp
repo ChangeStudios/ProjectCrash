@@ -6,17 +6,17 @@
 #include "EquipmentActor.h"
 #include "EquipmentComponent.h"
 #include "EquipmentInstance.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CrashLogging.h"
 
 UAnimNotifyState_HideEquipment::UAnimNotifyState_HideEquipment()
 {
 #if WITH_EDITORONLY_DATA
-	// Notify's default color in the editor.
-	NotifyColor = FColor(75, 225, 75);
-#endif
-
 	// We won't have valid equipment in the editor, so there's no point in firing this.
 	bShouldFireInEditor = false;
+
+	NotifyColor = FColor(75, 225, 75);
+#endif
 }
 
 void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
@@ -41,6 +41,7 @@ void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshCom
 	}
 
 	// Iterate through each equipment actor for the current equipment and hide it.
+	TArray<USceneComponent*> AttachChildren = MeshComp->GetAttachChildren();
 	if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
 	{
 		for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
@@ -49,13 +50,17 @@ void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshCom
 			{
 				if (USceneComponent* Root = EquipmentActor->GetRootComponent())
 				{
-					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
-					 * equipment or vice versa. */
-					if (MeshComp->GetAttachChildren().Contains(Root))
+					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide
+					 * first-person equipment or vice versa. */
+					if (AttachChildren.Contains(Root))
 					{
-						/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
-						 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
-						Root->SetHiddenInGame(true, true);
+						// Filter to equipment attached to specific bones/sockets.
+						if (AttachedToSocket.IsNone() || (Root->GetAttachSocketName() == AttachedToSocket))
+						{
+							/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
+							 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
+							Root->SetHiddenInGame(true, true);
+						}
 					}
 				}
 			}

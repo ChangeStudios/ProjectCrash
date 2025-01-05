@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemGlobals.h"
+#include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "GameFramework/Teams/TeamSubsystem.h"
 #include "CrashGameplayAbilityTypes.generated.h"
 
 class ACrashPlayerState;
@@ -72,11 +75,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "ActorInfo")
 	TWeakObjectPtr<USkeletalMeshComponent> FirstPersonSkeletalMeshComponent;
 
-	/** Animation instance of the avatar actor's first-person mesh, if the avatar is of type CrashCharacter. Often
-	 * null. */
-	UPROPERTY(BlueprintReadOnly, Category = "ActorInfo")
-	TWeakObjectPtr<UAnimInstance> FirstPersonAnimInstance;
-
 // Accessors.
 public:
 
@@ -93,4 +91,88 @@ public:
 	/** Returns the affected animation instance from the FirstPersonSkeletalMeshComponent. Null for avatars that are not
 	 * of type CrashCharacter. */
 	UAnimInstance* GetFirstPersonAnimInstance() const;
+};
+
+
+
+/** Which targets to filter out depending on their team alignment to self. */
+UENUM(BlueprintType)
+namespace ETargetDataFilterTeam
+{
+	enum Type : int
+	{
+		TDFT_Any 			UMETA(DisplayName = "Allow any team"),
+		// Filters out any targets with the same team as self. Does not filter self out.
+		TDFT_NoTeammates 	UMETA(DisplayName = "Filter teammates out"),
+		// Filters out any targets with a different team from self, a neutral team, or no team.
+		TDFT_NoEnemies		UMETA(DisplayName = "Filter enemies out")
+	};
+}
+
+/**
+ * A target data filter that can filter targets depending on their team alignment. Also automatically filters out any
+ * actors without an ability system component.
+ */
+USTRUCT(BlueprintType)
+struct FCrashTargetDataFilter : public FGameplayTargetDataFilter
+{
+	GENERATED_BODY()
+
+	/** Returns true if the actor has an associated ability system component and passes both filters. */
+	virtual bool FilterPassesForActor(const AActor* ActorToBeFiltered) const override
+	{
+		// Self filter.
+		if (!Super::FilterPassesForActor(ActorToBeFiltered))
+		{
+			return (bReverseFilter ^ false);
+		}
+
+		// Team filter.
+		if (IsValid(ActorToBeFiltered) && IsValid(SelfActor))
+		{
+			UTeamSubsystem* TeamSubsystem = ActorToBeFiltered->GetWorld()->GetSubsystem<UTeamSubsystem>();
+			if (ensure(TeamSubsystem))
+			{
+				ETeamAlignment Alignment = TeamSubsystem->CompareTeams(ActorToBeFiltered, SelfActor);
+
+				switch (TeamFilter)
+				{
+				// Filter out enemies and neutral agents.
+				case ETargetDataFilterTeam::Type::TDFT_NoEnemies:
+					if (Alignment == ETeamAlignment::DifferentTeams ||
+						Alignment == ETeamAlignment::InvalidArgument)
+					{
+						return (bReverseFilter ^ false);
+					}
+					break;
+				// Filter out teammates.
+				case ETargetDataFilterTeam::Type::TDFT_NoTeammates:
+					if (Alignment == ETeamAlignment::SameTeam)
+					{
+						// Don't filter self out; the self filter will handle that.
+						if (ActorToBeFiltered != SelfActor)
+						{
+							return (bReverseFilter ^ false);
+						}
+					}
+					break;
+				case ETargetDataFilterTeam::Type::TDFT_Any:
+				default:
+					break;
+				}
+			}
+		}
+
+		// All targets must have an ability system component.
+		if (UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered) == nullptr)
+		{
+			return (bReverseFilter ^ false);
+		}
+
+		return (bReverseFilter ^ true);
+	}
+
+	/** Filter based on the team alignment of the target, relative to Self actor. Self must be set. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	TEnumAsByte<ETargetDataFilterTeam::Type> TeamFilter = ETargetDataFilterTeam::TDFT_Any;
 };

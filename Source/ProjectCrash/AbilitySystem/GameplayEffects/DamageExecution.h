@@ -43,4 +43,10 @@ protected:
 
 	/** The base damage dealt by this execution, defined by the gameplay effect performing this execution. */
 	FGameplayEffectAttributeCaptureDefinition BaseDamageDef;
+
+	/** Outgoing damage multiplier applied to this execution, defined by the instigating player's attribute. */
+	FGameplayEffectAttributeCaptureDefinition DamageBoostDef;
+
+	/** Incoming damage multiplier applied to this execution, defined by the target player's attribute. */
+	FGameplayEffectAttributeCaptureDefinition DamageResDef;
 };

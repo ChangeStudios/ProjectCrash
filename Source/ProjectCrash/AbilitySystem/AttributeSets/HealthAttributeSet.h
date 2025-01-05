@@ -68,6 +68,9 @@ public:
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Health);
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, MaxHealth);
 
+	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, DamageBoost);
+	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, DamageResistance);
+
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Healing);
 
@@ -91,6 +94,17 @@ private:
 
 		// Caches MaxHealth before it is updated to determine whether attribute-change delegates should be broadcast.
 		float MaxHealthBeforeAttributeChange;
+
+// Attribute modifiers.
+private:
+
+	/** Multiplier applied to outgoing damage. */
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData DamageBoost;
+
+	/** Multiplier applied to incoming damage. Note that lower values result in lower damage, not vice versa. */
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData DamageResistance;
 
 /* Meta attributes. These attributes are not "stateful"; they are mapped directly to attribute values and then
  * immediately reset after being processed. */

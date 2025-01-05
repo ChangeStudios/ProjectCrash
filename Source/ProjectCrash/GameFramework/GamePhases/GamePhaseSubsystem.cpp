@@ -34,10 +34,9 @@ void UGamePhaseSubsystem::StartPhase(TSubclassOf<UGamePhaseAbility> PhaseAbility
 			FGamePhaseEntry& Entry = ActivePhases.FindOrAdd(SpecHandle);
 			Entry.PhaseEndedCallback = PhaseEndedCallback;
 		}
-		// Phase failed to start.
+		// Phase failed to start. This may happen before the ASC has been initialized and can be ignored.
 		else
 		{
-			UE_LOG(LogGamePhase, Error, TEXT("Failed to start phase [%s]. Phase ability: [%s]."), *PhaseAbility->GetDefaultObject<UGamePhaseAbility>()->GetGamePhaseTag().ToString(), *GetNameSafe(PhaseAbility));
 			PhaseEndedCallback.ExecuteIfBound(nullptr);
 		}
 	}

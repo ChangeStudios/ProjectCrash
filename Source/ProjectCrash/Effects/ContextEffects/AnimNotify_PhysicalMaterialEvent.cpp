@@ -12,12 +12,11 @@ UAnimNotify_PhysicalMaterialEvent::UAnimNotify_PhysicalMaterialEvent() :
 	bAttached(true),
 	bPerspectiveBased(true)
 {
-	// Set this notify's default color in the editor.
 #if WITH_EDITORONLY_DATA
+	bShouldFireInEditor = true;
+
 	NotifyColor = FColor(0, 255, 128, 255);
 #endif
-
-	bShouldFireInEditor = true;
 
 	// Initialize the fallback physical material if it's already loaded.
 	DefaultPhysicalMaterial = DefaultPhysicalMaterialPath.Get();
@@ -51,25 +50,10 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 
 	if (MeshComp)
 	{
-		// If any montage is playing, don't trigger this notify, unless it came from one of those montages.
-		UAnimInstance* AnimInstance = MeshComp->GetAnimInstance();
-		if (MeshComp->GetAnimInstance()->Montage_IsPlaying(nullptr))
+		// Ignore physical material events if we're playing a full-body animation.
+		if (!ShouldAnimationTriggerNotify(MeshComp->GetAnimInstance(), Animation))
 		{
-			// Check if this notify is from an active montage.
-			bool bFound = false;
-			for (const FAnimMontageInstance* Montage : AnimInstance->MontageInstances)
-			{
-				if (Montage->Montage == Animation)
-				{
-					bFound = true;
-				}
-			}
-
-			// If this notify is not from an active montage, throw it out.
-			if (!bFound)
-			{
-				return;
-			}
+			return;
 		}
 
 		// Make sure this notify's mesh component and its owning actor are valid.
@@ -129,4 +113,12 @@ void UAnimNotify_PhysicalMaterialEvent::Notify(USkeletalMeshComponent* MeshComp,
 			);
 		}
 	}
+}
+
+bool UAnimNotify_PhysicalMaterialEvent::ShouldAnimationTriggerNotify(UAnimInstance* AnimInstance, UAnimSequenceBase* Animation)
+{
+	/* Physical material events are ignored if there is a full-body montage playing. For example, if the player is
+	 * dashing forwards while on the ground, we wouldn't want to trigger their footsteps. But if the player is doing
+	 * something with their arms, or firing a weapon, we still want to play their footsteps. */
+	return (AnimInstance->GetSlotMontageGlobalWeight(FName("FullBody")) == 0.0f);
 }

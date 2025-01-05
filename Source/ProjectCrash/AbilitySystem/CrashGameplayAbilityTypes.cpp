@@ -26,13 +26,7 @@ void FCrashGameplayAbilityActorInfo::InitFromActor(AActor *InOwnerActor, AActor 
 		// Cache the first-person mesh.
 		SkeletalMeshComponent = AvatarAsCrashChar->GetThirdPersonMesh();
 		FirstPersonSkeletalMeshComponent = AvatarAsCrashChar->GetFirstPersonMesh();
-
-		// Cache the first-person animation instance.
-		FirstPersonAnimInstance = GetFirstPersonAnimInstance();
 	}
-
-	// Always initialize AnimInstance, since the Super doesn't.
-	AnimInstance = GetAnimInstance();
 
 	// Cache the typed player controller and player state.
 	if (PlayerController.IsValid())
@@ -56,7 +50,6 @@ void FCrashGameplayAbilityActorInfo::ClearActorInfo()
 
 	// Clear all cached data.
 	AnimInstance = nullptr;
-	FirstPersonAnimInstance = nullptr;
 	FirstPersonSkeletalMeshComponent = nullptr;
 	CrashCharacter = nullptr;
 	CrashPlayerState = nullptr;

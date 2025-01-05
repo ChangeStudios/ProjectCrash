@@ -4,6 +4,7 @@
 #include "AbilitySystem/TargetActors/GameplayAbilityTargetActor_CollisionDetector_Capsule.h"
 
 #include "DisplayDebugHelpers.h"
+#include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/HUD.h"
@@ -24,30 +25,24 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::BeginPlay()
 {
 	Super::BeginPlay();
 
-#if WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
-	AHUD::OnShowDebugInfo.AddStatic(&AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo);
-#endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
-}
-
-void AGameplayAbilityTargetActor_CollisionDetector_Capsule::Configure(float InCapsuleRadius, float InCapsuleHalfHeight, bool bInIgnoreSelf, bool bInRepeatTargets, bool bInResetTargetsOnStart, FGameplayTargetDataFilterHandle InFilter, bool bInFilterForGASActors, FGameplayTagContainer IgnoreTargetsWithTags, bool bInShouldProduceTargetDataOnServer)
-{
-	check(DetectorAsCapsule);
-
-	// Update this target actor's data.
-	CapsuleRadius = InCapsuleRadius;
-	CapsuleHalfHeight = InCapsuleHalfHeight;
-	bIgnoreSelf = bInIgnoreSelf;
-	bRepeatTargets = bInRepeatTargets;
-	bResetTargetsOnStart = bInResetTargetsOnStart;
-	Filter = InFilter;
-	bFilterForGASActors = bInFilterForGASActors;
-	IgnoredTargetTags = IgnoreTargetsWithTags;
-	ShouldProduceTargetDataOnServer = bInShouldProduceTargetDataOnServer;
-
+	// Initialize the collision capsule's shape.
 	DetectorAsCapsule->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
+
+#if ENABLE_DRAW_DEBUG
+	AHUD::OnShowDebugInfo.AddStatic(&AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo);
+#endif // ENABLE_DRAW_DEBUG
 }
 
-#if WITH_EDITOR
+void AGameplayAbilityTargetActor_CollisionDetector_Capsule::DrawCollisionDebug(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DrawDebugCapsule(GetWorld(), GetActorLocation(), CapsuleHalfHeight, CapsuleRadius, GetActorRotation().Quaternion(), FColor::Green, true, -1, 0);
+	if (bFromSweep)
+	{
+		DrawDebugLine(GetWorld(), SweepResult.TraceStart, SweepResult.ImpactPoint, FColor::Green, true, -1, 0);
+		DrawDebugPoint(GetWorld(), SweepResult.ImpactPoint, 16.0f, FColor::Red, true, -1, 0);
+	}
+}
+
 void AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos)
 {
 	// Draw debug info for this actor if GAS debugging is enabled.
@@ -63,4 +58,3 @@ void AGameplayAbilityTargetActor_CollisionDetector_Capsule::OnShowDebugInfo(AHUD
 		}
 	}
 }
-#endif // WITH_EDITOR

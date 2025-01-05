@@ -15,6 +15,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMoveCompLandedSignature, const FHitResult& 
 /**
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
+ *
+ * TODO: This is causing latency issues.
  */
 UCLASS(BlueprintType, ClassGroup = "Movement", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCharacterMovementComponent : public UCharacterMovementComponent

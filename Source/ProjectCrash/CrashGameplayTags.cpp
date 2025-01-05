@@ -30,8 +30,9 @@ namespace CrashGameplayTags
 
 
 	// Gameplay events
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_MeleeSurfaceImpact, "GameplayEvent.Ability.MeleeSurfaceImpact", "When this event is received during a melee ability, a surface impact cue will be played if no targets have been hit yet.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_PerformTargeting, "GameplayEvent.Ability.PerformTargeting", "When this event is received during an ability that uses instant targeting, it will perform its targeting.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_StartTargeting, "GameplayEvent.Ability.StartTargeting", "Triggers an ability's targeting, usually via a target actor. Used for abilities with duration-based targeting, such as melee abilities that only hit during a certain duration in their animation. The ability's identifier should be passed in the event's TargetTags to prevent accidentally triggering other abilities that use this event.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Ability_EndTargeting, "GameplayEvent.Ability.EndTargeting", "Stops an ability's targeting, preventing it from detecting any additional hits. Used for abilities with duration-based targeting, such as melee abilities that only hit during a certain duration in their animation. The ability's identifier should be passed in the event's TargetTags to prevent accidentally affecting other abilities that use this event.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Death, "GameplayEvent.Player.Death", "Triggered when an actor dies via running out of health. Can be used to trigger a \"Death\" gameplay ability.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEvent_Player_Reset, "GameplayEvent.Player.Reset", "Performs an instant server reset on a target player.");
@@ -67,6 +68,10 @@ namespace CrashGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Damage, "Message.Damage", "Verbal message communicating damage dealt.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Healing, "Message.Healing", "Verbal message communicating healing dealt.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Started, "Message.GameplayEffectWidget.Started", "Message used to initialize a new gameplay effect widget.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Updated, "Message.GameplayEffectWidget.Updated", "Message used to update an existing gameplay effect widget (e.g. when a stack is added).");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_GameplayEffectWidget_Ended, "Message.GameplayEffectWidget.Ended", "Message used to remove a gameplay effect widget when the effect has ended.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Death, "Message.Player.Death", "Verbal message communicating a death.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Player_Reset, "Message.Player.Reset", "Reset message indicating a player has been directly reset.");

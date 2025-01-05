@@ -14,7 +14,7 @@ class PROJECTCRASH_API UTeamDisplayAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
-public:w
+public:
 
 	/** The user-facing name of this team (usually just the color, e.g. "Blue"). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, DisplayName = "User-Facing Team Name")

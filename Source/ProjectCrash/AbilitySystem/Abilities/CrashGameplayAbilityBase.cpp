@@ -6,12 +6,14 @@
 #include "AbilitySystemLog.h"
 #include "CrashGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "AbilitySystem/AbilitySystemUtilitiesLibrary.h"
 #include "AbilitySystem/CrashAbilitySystemGlobals.h"
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "Characters/CrashCharacter.h"
 #include "Characters/PawnCameraManager.h"
-#include "GameFramework/Character.h"
+#include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
@@ -37,9 +39,13 @@
 	}																																						\
 }
 
-/** When knockback is applied to an actor and forcing upward velocity is requested, the vertical knockback force
- * applied will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (desired total)). */
-#define MIN_UPWARD_KNOCKBACK_PCT 0.5
+namespace Crash
+{
+	static int32 CooldownsDisabled = 0;
+	static FAutoConsoleVariableRef CVarCooldownsDisabled(TEXT("Crash.CooldownsDisabled"),
+		CooldownsDisabled,
+		TEXT("Disables cooldowns and costs for gameplay abilities. (Cooldowns will still appear in HUD)"));
+}
 
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -301,6 +307,30 @@ bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
 	return false;
 }
 
+bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	// Disable cooldowns in editor and debug builds if desired.
+	if (Crash::CooldownsDisabled != 0)
+	{
+		return true;
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+
+// #if WITH_EDITOR
+// 	// Disable cooldowns in the editor if desired.
+// 	if (GIsEditor)
+// 	{
+// 		if (Crash::CooldownsDisabled != 0)
+// 		{
+// 			return true;
+// 		}
+// 	}
+// #endif // WITH_EDITOR
+
+	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
+}
+
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
@@ -350,63 +380,14 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 	K2_OnNewAvatarSet();
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, bool bForceUpwardsVelocity)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target)
 {
-	if (!ensure(Target))
-	{
-		return;
-	}
-
-	// Calculate direction.
-	const FQuat DirectionRot = UKismetMathLibrary::FindLookAtRotation(Source, Target->GetActorLocation()).Quaternion();
-
-	/* Calculate horizontal and vertical force separately. Otherwise, we won't launch the target as far if we aren't at
-	 * exactly the same height. */
-	const FVector Direction2D = DirectionRot.GetAxisX().GetSafeNormal2D();
-	const float DirectionZ = DirectionRot.GetAxisX().Z * Force;
-	FVector ForceVector = (Force * Direction2D);
-	ForceVector.Z = DirectionZ;
-
-	/* If forcing upward velocity is requested, min-clamp the vertical force that will be applied to always knock the
-	 * target upwards. */
-	if (bForceUpwardsVelocity)
-	{
-		const float MinUpwardsVelocity = (Force * MIN_UPWARD_KNOCKBACK_PCT);
-		ForceVector.Z = FMath::Max(ForceVector.Z, MinUpwardsVelocity);
-	}
-
-	// Apply knockback.
-	AddKnockbackToTargetInDirection(ForceVector, Target);
+	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(Force, Source, Target, GetOwningActorFromActorInfo());
 }
 
 void UCrashGameplayAbilityBase::AddKnockbackToTargetInDirection(FVector Force, AActor* Target)
 {
-	// Convert force from kilogram km/s to newton-seconds for AddImpulse, so designers don't have to use absurd numbers.
-	Force = Force * 1000.0f;
-
-	// If the target actor is a character, add the impulse to their movement component.
-	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
-	{
-		if (UCharacterMovementComponent* TargetMovementComp = TargetChar->GetCharacterMovement())
-		{
-			TargetMovementComp->AddImpulse(Force);
-		}
-	}
-	// If the target actor has a primitive root with physics enabled, add the impulse to their root.
-	else if (UPrimitiveComponent* RootScene = Cast<UPrimitiveComponent>(Target->GetRootComponent()))
-	{
-		if (RootScene->IsAnySimulatingPhysics())
-		{
-			RootScene->AddImpulse(Force);
-		}
-	}
-
-	/* If the target has an ASC, track the current source of the target's knockback. This is cleared when the target
-	 * lands on the ground. */
-	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Target))
-	{
-		CrashASC->SetCurrentKnockbackSource(GetOwningActorFromActorInfo());
-	}
+	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(Force, Target, GetOwningActorFromActorInfo());
 }
 
 void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)
@@ -466,13 +447,16 @@ FCrashGameplayAbilityActorInfo UCrashGameplayAbilityBase::K2_GetCrashActorInfo()
 
 UCrashAbilitySystemComponent* UCrashGameplayAbilityBase::GetCrashAbilitySystemComponentFromActorInfo() const
 {
-	// Retrieve the typed ASC cached by our custom actor info.
 	return (CurrentActorInfo ? GetCrashActorInfo()->GetCrashAbilitySystemComponent() : nullptr);
+}
+
+ACrashCharacter* UCrashGameplayAbilityBase::GetCrashCharacterFromActorInfo() const
+{
+	return (CurrentActorInfo ? Cast<ACrashCharacter>(CurrentActorInfo->AvatarActor.Get()) : nullptr);
 }
 
 ACrashPlayerController* UCrashGameplayAbilityBase::GetCrashPlayerControllerFromActorInfo() const
 {
-	// Retrieve the actor info's typed PC.
 	return GetCrashActorInfo()->GetCrashPlayerController();
 }
 
@@ -511,6 +495,11 @@ ACrashPlayerState* UCrashGameplayAbilityBase::GetCrashPlayerStateFromActorInfo()
 {
 	// Retrieve the actor info's typed PS.
 	return GetCrashActorInfo()->GetCrashPlayerState();
+}
+
+FGameplayTargetDataFilterHandle UCrashGameplayAbilityBase::MakeCrashFilter(FCrashTargetDataFilter Filter)
+{
+	return UAbilitySystemUtilitiesLibrary::MakeCrashFilterHandle(Filter, GetAvatarActorFromActorInfo());
 }
 
 #if WITH_EDITOR

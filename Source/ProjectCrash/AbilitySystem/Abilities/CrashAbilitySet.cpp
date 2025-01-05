@@ -83,7 +83,6 @@ void FCrashAbilitySet_GrantedHandles::RemoveFromAbilitySystem(UCrashAbilitySyste
 	AddedAttributeSets.Reset();
 }
 
-#if WITH_EDITOR
 void FCrashAbilitySet_GrantedHandles::GetAbilityDebugInfo(UAbilitySystemComponent* ASC, TArray<FString>& DebugInfo) const
 {
 	for (const FGameplayAbilitySpecHandle& Handle : GrantedAbilitySpecHandles)
@@ -125,7 +124,6 @@ void FCrashAbilitySet_GrantedHandles::GetAttributeDebugInfo(TArray<FString>& Deb
 		}
 	}
 }
-#endif
 
 
 

@@ -6,6 +6,7 @@
 #include "AbilitySystemLog.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "GameFramework/Teams/TeamSubsystem.h"
 #include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
 
 UHealingExecution::UHealingExecution()
@@ -68,11 +69,15 @@ void UHealingExecution::Execute_Implementation(const FGameplayEffectCustomExecut
 	}
 
 
-	// Apply rules for team/opponent healing and self-healing.
+	// Apply rules for team/opponent healing.
 	float HealingInteractionAllowedMultiplier = 0.0f;
-	if (ensureMsgf(TargetActor, TEXT("Healing calculation cannot find a target actor for healing from [%s]."), *GetPathNameSafe(Spec.Def)))
+	if (TargetActor)
 	{
-		// TODO: HealingInteractionAllowedMultiplier = TeamSubsystem->CanCauseHealing(EffectCauser, HitActor) ? 1.0f : 0.0f;
+		UTeamSubsystem* TeamSubsystem = TargetActor->GetWorld()->GetSubsystem<UTeamSubsystem>();
+		if (ensure(TeamSubsystem))
+		{
+			HealingInteractionAllowedMultiplier = TeamSubsystem->CanCauseHealing(EffectCauser, TargetActor) ? 1.0f : 0.0f;
+		}
 	}
 
 

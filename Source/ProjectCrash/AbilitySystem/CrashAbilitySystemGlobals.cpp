@@ -26,3 +26,29 @@ UCrashAbilitySystemComponent* UCrashAbilitySystemGlobals::GetCrashAbilitySystemC
 	// Return nullptr, even if an ASC was found, if it's not the correct type.
 	return CrashASC ? CrashASC : nullptr;
 }
+
+void UCrashAbilitySystemGlobals::InitGameplayCueParameters(FGameplayCueParameters& CueParameters, const FGameplayEffectContextHandle& EffectContext)
+{
+	if (EffectContext.IsValid())
+	{
+		CueParameters.EffectContext = EffectContext;
+
+		if (const FHitResult* HitResult = EffectContext.GetHitResult())
+		{
+			CueParameters.Location = (HitResult->bBlockingHit ? HitResult->ImpactPoint : HitResult->TraceEnd);
+			CueParameters.Normal = HitResult->ImpactNormal;
+			CueParameters.PhysicalMaterial = HitResult->PhysMaterial;
+
+			if (HitResult->Component.IsValid())
+			{
+				CueParameters.TargetAttachComponent = HitResult->Component.Get();
+			}
+			else if (IsValid(HitResult->GetActor()))
+			{
+				CueParameters.TargetAttachComponent = HitResult->GetActor()->GetRootComponent();
+			}
+		}
+
+		// NOTE: We might have to initialize the cue's instigator, effect causer, etc. too.
+	}
+}

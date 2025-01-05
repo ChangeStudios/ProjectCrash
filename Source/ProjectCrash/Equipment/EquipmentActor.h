@@ -112,7 +112,7 @@ public:
 	 * Default implementation searches for a matching tag in EquipmentAnimations and plays the animation on any
 	 * skeletal meshes on this actor.
 	 */
-	virtual void ProcessEquipmentAnimation(FGameplayTag AnimationTag);
+	virtual void ProcessEquipmentAnimation(FGameplayTag AnimationTag, EEquipmentPerspective Perspective);
 
 protected:
 

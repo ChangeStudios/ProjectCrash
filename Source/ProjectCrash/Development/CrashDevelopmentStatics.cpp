@@ -1,9 +1,21 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "Development/CrashDevelopmentStatics.h"
 
+#include "CrashDeveloperSettings.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+
+bool UCrashDevelopmentStatics::ShouldSkipDirectlyToGameplay()
+{
+#if WITH_EDITOR
+	if (GIsEditor)
+	{
+		return GetDefault<UCrashDeveloperSettings>()->bSkipToGameplay;
+	}
+#endif // WITH_EDITOR
+
+	return false;
+}
 
 UWorld* UCrashDevelopmentStatics::FindPlayInEditorAuthorityWorld()
 {
