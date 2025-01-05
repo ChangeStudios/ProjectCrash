@@ -36,5 +36,9 @@ public:
 	 *							if the ASC was not a CrashAbilitySystemComponent.
 	 */
 	static UCrashAbilitySystemComponent* GetCrashAbilitySystemComponentFromActor(const AActor* Actor, bool LookForComponent = true);
-	
+
+	/** When initializing gameplay cue parameters with an effect context, try to fill the parameters in using the
+	 * effect's hit result first. If the effect doesn't have a hit result, just initialize the params with a copy of the
+	 * effect context itself. */
+	virtual void InitGameplayCueParameters(FGameplayCueParameters& CueParameters, const FGameplayEffectContextHandle& EffectContext) override;
 };

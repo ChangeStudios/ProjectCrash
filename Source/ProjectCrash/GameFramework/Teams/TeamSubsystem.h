@@ -193,12 +193,12 @@ public:
 
 	/**
 	 * Returns whether a given instigator can damage a given target. Objects of different teams can always damage
-	 * each other, while objects of the same team cannot. Objects with a team can damage objects without a team if
-	 * that object has an ASC.
+	 * each other, while objects of the same team cannot unless specified. Objects without a team can damage and be
+	 * damaged by any team, as long as they have an ASC.
 	 *
 	 * If the instigator and target are the same, or have the same outer player state, bAllowDamageToSelf is returned.
 	 */
-	bool CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf = false) const;
+	bool CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf = false, bool bAllowDamageToTeam = false) const;
 
 	/**
 	 * Returns whether a given instigator can heal a given target. Objects of the same team can always heal each other,

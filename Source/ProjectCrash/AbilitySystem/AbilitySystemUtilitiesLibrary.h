@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AbilitySystemUtilitiesLibrary.generated.h"
 
+struct FCrashTargetDataFilter;
+
 /**
  * Collection of utilities for scripting gameplay abilities.
  */
@@ -13,6 +15,8 @@ UCLASS(Meta = (BlueprintThreadSafe, ScriptName = "AbilitySystemUtilitiesLibrary"
 class UAbilitySystemUtilitiesLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
+	// Gameplay.
 
 public:
 
@@ -47,4 +51,25 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability Statics|Knockback")
 	static void ApplyKnockbackToTargetInDirection(FVector Velocity, AActor* Target, AActor* Instigator);
+
+
+
+	// Effects.
+
+public:
+
+	/** Retrieves the first hit result from the target data and overrides its Normal value. This is useful for
+	 * setting the direction of effect contexts. */
+	UFUNCTION(BlueprintPure, Category = "Ability|TargetData")
+	static FHitResult GetTargetDataHitResultWithCustomDirection(const FGameplayAbilityTargetDataHandle& TargetData, FVector NewDirection);
+
+
+
+	// Target data.
+
+public:
+
+	/** Create a handle for filtering target data. */
+	UFUNCTION(BlueprintPure, Category = "Filter")
+	static FGameplayTargetDataFilterHandle MakeCrashFilterHandle(FCrashTargetDataFilter Filter, AActor* FilterActor);
 };

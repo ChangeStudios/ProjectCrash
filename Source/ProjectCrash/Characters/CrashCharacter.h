@@ -45,8 +45,14 @@ public:
 
 public:
 
+	/** Sets up ticking order. */
+	virtual void PostInitializeComponents() override;
+
 	/** Enables first-person depth rendering for the first-person character mesh. */
 	virtual void BeginPlay() override;
+
+	/** Stops the first-person mesh's physics when this pawn is frozen. */
+	virtual void TurnOff() override;
 
 	/** Kills this character when they fall out of the world. */
 	virtual void FellOutOfWorld(const class UDamageType& dmgType) override;
@@ -87,17 +93,13 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetFirstPersonMesh() const { return FirstPersonMesh; }
 
 	/** Getter for the third-person mesh component. */
-	FORCEINLINE USkeletalMeshComponent* GetThirdPersonMesh() const { return ThirdPersonMesh; }
+	FORCEINLINE USkeletalMeshComponent* GetThirdPersonMesh() const { return GetMesh(); }
 
 private:
 
 	/** Mesh component only visible in first-person. Determined by current camera mode. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
-
-	/** Mesh component only visible in third-person. Determined by current camera mode. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<USkeletalMeshComponent> ThirdPersonMesh;
 
 
 

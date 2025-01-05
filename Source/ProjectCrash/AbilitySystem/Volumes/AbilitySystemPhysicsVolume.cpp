@@ -19,9 +19,9 @@ void AAbilitySystemPhysicsVolume::BeginPlay()
 {
 	Super::BeginPlay();
 
-#if WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
+#if ENABLE_DRAW_DEBUG
 	AHUD::OnShowDebugInfo.AddStatic(&AAbilitySystemPhysicsVolume::OnShowDebugInfo);
-#endif // WITH_GAMEPLAY_DEBUGGER && WITH_EDITOR
+#endif
 }
 
 void AAbilitySystemPhysicsVolume::ActorEnteredVolume(AActor* Other)
@@ -160,7 +160,6 @@ void AAbilitySystemPhysicsVolume::ActorLeavingVolume(AActor* Other)
 	}
 }
 
-#if WITH_EDITOR
 void AAbilitySystemPhysicsVolume::OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, const FDebugDisplayInfo& DisplayInfo, float& YL, float& YPos)
 {
 	// Draw debug info for this actor if GAS debugging is enabled.
@@ -177,4 +176,3 @@ void AAbilitySystemPhysicsVolume::OnShowDebugInfo(AHUD* HUD, UCanvas* Canvas, co
 		}
 	}
 }
-#endif // WITH_EDITOR

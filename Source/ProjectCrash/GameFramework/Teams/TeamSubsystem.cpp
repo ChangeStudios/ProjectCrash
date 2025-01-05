@@ -337,7 +337,7 @@ ETeamAlignment UTeamSubsystem::CompareTeams(const UObject* A, const UObject* B) 
 	return CompareTeams(A, B, OutTeamA, OutTeamB);
 }
 
-bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf) const
+bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Target, bool bAllowDamageToSelf, bool bAllowDamageToTeam) const
 {
 	// If the instigator can damage itself, check if it's trying to. Otherwise, we'll end up returning false.
 	if (bAllowDamageToSelf)
@@ -358,8 +358,18 @@ bool UTeamSubsystem::CanCauseDamage(const UObject* Instigator, const UObject* Ta
 	{
 		return true;
 	}
-	// If an object has a team, it can damage objects without a team if that object has an ASC.
-	else if ((Alignment == ETeamAlignment::InvalidArgument) && (InstigatorTeam != INDEX_NONE))
+	// Objects on the same team can only damage each other if specified.
+	else if (Alignment == ETeamAlignment::SameTeam)
+	{
+		return bAllowDamageToTeam;
+	}
+	// Objects without a team can damage anyone.
+	else if (InstigatorTeam == INDEX_NONE)
+	{
+		return true;
+	}
+	// Objects without a team can be damaged by anyone if they have an ASC.
+	else if (TargetTeam == INDEX_NONE)
 	{
 		return UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Cast<const AActor>(Target)) != nullptr;
 	}

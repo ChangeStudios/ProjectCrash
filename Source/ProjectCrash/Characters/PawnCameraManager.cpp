@@ -11,6 +11,7 @@
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "PawnExtensionComponent.h"
 #include "Components/GameFrameworkComponentDelegates.h"
+#include "Development/CrashDeveloperSettings.h"
 
 #if WITH_EDITOR
 #include "Misc/UObjectToken.h"
@@ -186,6 +187,20 @@ TSubclassOf<UCrashCameraModeBase> UPawnCameraManager::DetermineCameraMode() cons
 	{
 		return nullptr;
 	}
+
+#if WITH_EDITOR
+	// If in PIE, override the camera mode using developer settings.
+	if (GetWorld()->IsPlayInEditor())
+	{
+		if (const UCrashDeveloperSettings* DeveloperSettings = GetDefault<UCrashDeveloperSettings>())
+		{
+			if (IsValid(DeveloperSettings->CameraModeOverride))
+			{
+				return DeveloperSettings->CameraModeOverride;
+			}
+		}
+	}
+#endif // WITH_EDITOR
 
 	// Use the pawn's default camera mode.
 	if (UPawnExtensionComponent* PawnExtComp = UPawnExtensionComponent::FindPawnExtensionComponent(Pawn))

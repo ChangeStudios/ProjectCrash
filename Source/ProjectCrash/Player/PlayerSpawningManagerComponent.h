@@ -8,6 +8,7 @@
 #include "PlayerSpawningManagerComponent.generated.h"
 
 class ACrashPlayerStart;
+class APlayerStart;
 
 /**
  * Controls how players are spawned and respawned. Should be subclassed to define game mode-specific spawning rules.

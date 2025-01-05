@@ -18,7 +18,6 @@ UAbilityTask_PlayDualMontageAndWait* UAbilityTask_PlayDualMontageAndWait::Create
 	FName ThirdPersonStartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale,
 	float FirstPersonStartTimeSeconds, float ThirdPersonStartTimeSeconds, bool bAllowInterruptAfterBlendOut)
 {
-	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(FirstPersonRate);
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(ThirdPersonRate);
 
 	// Create the ability task.
@@ -49,8 +48,7 @@ void UAbilityTask_PlayDualMontageAndWait::Activate()
 
 	bool bPlayedThirdPersonMontage = false;
 
-
-	if (UCrashAbilitySystemComponent* CrashASC = AbilitySystemComponent.Get() ? Cast<UCrashAbilitySystemComponent>(AbilitySystemComponent.Get()) : nullptr)
+	if (UCrashAbilitySystemComponent* CrashASC = AbilitySystemComponent.IsValid() ? Cast<UCrashAbilitySystemComponent>(AbilitySystemComponent.Get()) : nullptr)
 	{
 		// Retrieve the first-person and third-person animation instances.
 		const FCrashGameplayAbilityActorInfo* CrashActorInfo = CastChecked<UCrashGameplayAbilityBase>(Ability)->GetCrashActorInfo();

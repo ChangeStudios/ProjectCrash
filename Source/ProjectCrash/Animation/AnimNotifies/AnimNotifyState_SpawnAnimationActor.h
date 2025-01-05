@@ -45,7 +45,7 @@ public:
 protected:
 
 	/** Static or skeletal mesh asset to spawn. Must be a skeletal mesh to use ActorAnimation. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (AllowedClasses = "SkeletalMesh StaticMesh"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (AllowedClasses = "/Script/Engine.SkeletalMesh /Script/Engine.StaticMesh"))
 	TObjectPtr<UStreamableRenderAsset> MeshToSpawn;
 
 	/** Optional socket at which to attach the animation actor. */

@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilitySystemUtilitiesLibrary.h"
 
 #include "CrashAbilitySystemGlobals.h"
+#include "CrashGameplayAbilityTypes.h"
 #include "Components/CrashAbilitySystemComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/Character.h"
@@ -97,4 +98,33 @@ void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(FVector V
 	{
 		CrashASC->SetCurrentKnockbackSource(Instigator);
 	}
+}
+
+FHitResult UAbilitySystemUtilitiesLibrary::GetTargetDataHitResultWithCustomDirection(const FGameplayAbilityTargetDataHandle& TargetData, FVector NewDirection)
+{
+	if (TargetData.Data.IsValidIndex(0))
+	{
+		FGameplayAbilityTargetData* Data = TargetData.Data[0].Get();
+		if (Data)
+		{
+			if (const FHitResult* HitResultPtr = Data->GetHitResult())
+			{
+				// Copy the target data's hit result.
+				FHitResult HitResult = FHitResult(*HitResultPtr);
+				HitResult.Normal = NewDirection;
+				return HitResult;
+			}
+		}
+	}
+
+	return FHitResult();
+}
+
+FGameplayTargetDataFilterHandle UAbilitySystemUtilitiesLibrary::MakeCrashFilterHandle(FCrashTargetDataFilter Filter, AActor* FilterActor)
+{
+	FGameplayTargetDataFilterHandle FilterHandle;
+	FCrashTargetDataFilter* NewFilter = new FCrashTargetDataFilter(Filter);
+	NewFilter->InitializeFilterContext(FilterActor);
+	FilterHandle.Filter = TSharedPtr<FCrashTargetDataFilter>(NewFilter);
+	return FilterHandle;
 }

@@ -20,10 +20,14 @@ UHealthAttributeSet::UHealthAttributeSet() :
 	bOutOfHealth(false),
 	HealthBeforeAttributeChange(0.0f),
 	MaxHealth(100.0f),
-	MaxHealthBeforeAttributeChange(0.0f)
+	MaxHealthBeforeAttributeChange(0.0f),
+	DamageBoost(1.0f),
+	DamageResistance(1.0f)
 {
 	InitHealth(100.0f);
 	InitMaxHealth(100.0f);
+	InitDamageBoost(1.0f);
+	InitDamageResistance(1.0f);
 }
 
 bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
@@ -243,4 +247,6 @@ void UHealthAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, DamageBoost, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, DamageResistance, COND_None, REPNOTIFY_Always);
 }

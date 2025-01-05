@@ -5,6 +5,7 @@
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "CrashDeveloperSettings.generated.h"
 
+class UCrashCameraModeBase;
 class UCrashGameModeData;
 class UPawnData;
 
@@ -67,6 +68,10 @@ public:
 	 * this data will be used for all players instead. */
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode", Meta = (AllowedTypes = "PawnData"))
 	FPrimaryAssetId PawnDataOverride;
+
+	/** The default camera mode is determined by the pawn data used. If set, this camera mode will be used instead. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Game Mode")
+	TSubclassOf<UCrashCameraModeBase> CameraModeOverride;
 
 	/** Whether to skip straight to the gameplay phase in PIE. Enabling this skips the challenger selection, "waiting
 	 * for players," and countdown phases. */

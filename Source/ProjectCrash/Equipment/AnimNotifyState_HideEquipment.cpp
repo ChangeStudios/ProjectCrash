@@ -12,12 +12,11 @@
 UAnimNotifyState_HideEquipment::UAnimNotifyState_HideEquipment()
 {
 #if WITH_EDITORONLY_DATA
-	// Notify's default color in the editor.
-	NotifyColor = FColor(75, 225, 75);
-#endif
-
 	// We won't have valid equipment in the editor, so there's no point in firing this.
 	bShouldFireInEditor = false;
+
+	NotifyColor = FColor(75, 225, 75);
+#endif
 }
 
 void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)

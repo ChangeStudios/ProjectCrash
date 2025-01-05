@@ -15,15 +15,17 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
+
+	/** Generate target data directly on the server after receiving confirmation from the client. Don't trust the data
+	 * that the client produces. */
 	ShouldProduceTargetDataOnServer = true;
 
 	CollisionDetector = nullptr;
 
 	CollisionProfile = FName("CapsuleHitDetection");
-	bIgnoreSelf = true;
+	bAttachToCharacter = false;
 	bRepeatTargets = false;
 	bResetTargetsOnStart = true;
-	bFilterForGASActors = true;
 
 	Targets = TArray<AActor*>();
 }
@@ -42,7 +44,16 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	checkf(IsValid(CollisionDetector), TEXT("%s: CollisionDetector component has not been created. Subclasses of the AGameplayAbilityTargetActor_CollisionDetector class must create a CollisionDetector component to function properly."), *GetClass()->GetName());
 
 	// Use the desired collision profile. This lets us configure what we want to detect (e.g. pawn meshes or capsules).
-	CollisionDetector->SetCollisionProfileName(CollisionProfile);
+	CollisionDetector->SetCollisionProfileName(CollisionProfile.Name);
+
+	// Attach this target actor to the owning character if desired.
+	if (bAttachToCharacter)
+	{
+		if (AActor* Avatar = Ability->GetAvatarActorFromActorInfo())
+		{
+			AttachToActor(Avatar, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		}
+	}
 
 	// Reset the hit targets each time targeting restarts, if desired.
 	if (bResetTargetsOnStart)
@@ -104,26 +115,10 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 {
 	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
-		// Perform avatar filtering.
-		if (bIgnoreSelf && OtherActor == SourceActor)
-		{
-			return;
-		}
-
 		// Perform target data filtering.
 		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
 			return;
-		}
-
-		// Perform GAS filtering.
-		if (bFilterForGASActors)
-		{
-			const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor);
-			if (!ASC || ASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
-			{
-				return;
-			}
 		}
 
 		// Check if the actor has already been detected as a target.
@@ -135,25 +130,39 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 		// Cache the target so it doesn't repeat.
 		Targets.Add(OtherActor);
 
-		// Generate a hit result for our target data, so it can be used for FX triggers.
+		/* Generate a hit result for the target data so it can be used for FX triggers. bBlockingHit must be true to
+		 * trigger certain cues. */
 		FHitResult TargetHit;
-		const FVector TraceStart = GetActorLocation();
-		const FVector TraceEnd = OtherActor->GetActorLocation();
+		const FVector OwningActorLoc = GetActorLocation();
+		const FVector TargetActorLoc = OtherActor->GetActorLocation();
 		const float SweepRadius = 50.0f;
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(OwningAbility->GetAvatarActorFromActorInfo());
-		GetWorld()->SweepSingleByChannel(TargetHit, TraceStart, TraceEnd, FQuat::Identity, ECC_GameTraceChannel1 /** AbilityTarget */, FCollisionShape::MakeSphere(SweepRadius), CollisionParams);
+		GetWorld()->SweepSingleByChannel(TargetHit, OwningActorLoc, TargetActorLoc, FQuat::Identity, ECC_GameTraceChannel1 /** AbilityTarget */, FCollisionShape::MakeSphere(SweepRadius), CollisionParams);
 
-		// Make sure our actor data is always set even if the trace fails.
+		/* If the trace fails, generate an artificial hit result to ensure we at least have an approximation of the
+		 * necessary data. */
 		if (!TargetHit.bBlockingHit || (TargetHit.GetActor() != OtherActor))
 		{
 			TargetHit.bBlockingHit = true;
 			TargetHit.HitObjectHandle = FActorInstanceHandle(OtherActor);
 			TargetHit.Component = OtherComp;
-			TargetHit.ImpactPoint = OtherActor->GetActorLocation();
+			TargetHit.Location = TargetActorLoc;
+			TargetHit.Normal = FVector(OwningActorLoc - TargetActorLoc).GetSafeNormal();
+			TargetHit.ImpactPoint = TargetActorLoc;
+			TargetHit.ImpactNormal = TargetHit.Normal;
+			TargetHit.Distance = FVector::Dist(OwningActorLoc, TargetActorLoc);
 		}
 
 		// Generate and send the generated target data.
 		TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, TargetHit));
+
+#if ENABLE_DRAW_DEBUG
+		// Draw debug info on collision detection.
+		if (bDebug)
+		{
+			DrawCollisionDebug(OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		}
+#endif // ENABLE_DRAW_DEBUG
 	}
 }

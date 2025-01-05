@@ -517,12 +517,9 @@ void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag Gam
 
 float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
-	check(Montage);
-	
 	float Duration = -1.0f;
 
 	// Get the first-person mesh, if the avatar is a CrashCharacter.
-	UAnimInstance* AnimInstance = nullptr;
 	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
 
 	// First-person montages cannot be played without a CrashCharacter avatar. No other actors have a first-person mesh.
@@ -532,8 +529,9 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 	}
 
 	// Retrieve the first-person mesh animation instance.
-	USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
-	AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
+	// USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
+	// UAnimInstance* AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
 
 	if (AnimInstance && Montage)
 	{
@@ -640,6 +638,21 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 {
 	// Cast to typed actor info.
 	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
+}
+
+FGameplayEffectContextHandle UCrashAbilitySystemComponent::MakeEffectContextWithHitResult(const FHitResult& HitResult) const
+{
+	FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
+
+	// By default use the owner and avatar as the instigator and causer
+	if (ensureMsgf(AbilityActorInfo.IsValid(), TEXT("Unable to make effect context because AbilityActorInfo is not valid.")))
+	{
+		Context.AddInstigator(AbilityActorInfo->OwnerActor.Get(), AbilityActorInfo->AvatarActor.Get());
+	}
+
+	Context.AddHitResult(HitResult);
+
+	return Context;
 }
 
 void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)

@@ -5,6 +5,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "CoreMinimal.h"
 #include "UIExtensionSystem.h"
+#include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "CrashGameplayAbilityBase.generated.h"
 
 class ACrashCharacter;
@@ -331,9 +332,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability")
 	const FGameplayTagContainer& GetAbilityTags() const { return AbilityTags; }
 
-	/** Returns this ability's CDO. */
-	UE_DEPRECATED(0.2.3, TEXT("Why are are we using the CDO?"))
-	FORCEINLINE const UCrashGameplayAbilityBase* GetAbilityCDO() const { return GetClass()->GetDefaultObject<UCrashGameplayAbilityBase>(); }
+	/** Creates a target data filter that filters out any actors without an ASC, using this ability's avatar as the
+	 * filter's Self parameter. */
+	UFUNCTION(BlueprintPure, Category = "Filter")
+	FGameplayTargetDataFilterHandle MakeCrashFilter(FCrashTargetDataFilter Filter);
 
 
 

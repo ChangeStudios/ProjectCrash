@@ -66,6 +66,7 @@ void UAbilityTask_WaitTargetDataWithReusableActor::Activate()
 	// Initialize the target data actor to generate and send the targeting data.
 	ConfigureTargetActor();
 	RegisterServerTargetDataCallbacks();
+	AbilitySystemComponent->SpawnedTargetActors.Add(TargetActor);
 
 	/* Start targeting BEFORE setting up targeting confirmation. Instant targeting won't have anything to instantly
 	 * confirm otherwise. */

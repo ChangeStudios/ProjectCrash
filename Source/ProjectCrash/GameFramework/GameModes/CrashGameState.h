@@ -7,8 +7,9 @@
 #include "ModularGameState.h"
 #include "CrashGameState.generated.h"
 
-struct FCrashVerbMessage;
 struct FCrashAbilityMessage;
+struct FCrashGameplayEffectMessage;
+struct FCrashVerbMessage;
 class ACrashPlayerState;
 class UCrashAbilitySystemComponent;
 class UCrashGameModeData;
@@ -117,6 +118,9 @@ public:
 	/** Reliably broadcasts a verbal message to all clients. */
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Verb, Reliable)")
 	void MulticastReliableMessageToClients(const FCrashVerbMessage Message);
+	
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Messaging", DisplayName = "Broadcast Message to Clients (Gameplay Effect, Reliable)")
+	void MulticastReliableMessageToClients_GameplayEffect(FGameplayTag Channel, const FCrashGameplayEffectMessage Message);
 
 
 

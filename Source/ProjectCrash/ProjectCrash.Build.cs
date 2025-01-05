@@ -52,12 +52,18 @@ public class ProjectCrash : ModuleRules
 			"SlateCore",
 			"UIExtension",
 			"UMG",
-			"UnrealEd"
 		});
 
         DynamicallyLoadedModuleNames.AddRange(new string[] 
 		{
 		});
+
+        // We use the editor module to check the expected number of PIE clients to wait for before starting the game.
+        // @see ACrashGameState::GetNumExpectedPlayers.
+		if (Target.Type == TargetType.Editor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
 
         // Generate compile errors if using DrawDebug functions in test/shipping builds.
         PublicDefinitions.Add("SHIPPING_DRAW_DEBUG_ERROR=1");

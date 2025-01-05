@@ -11,9 +11,13 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "Player/CrashPlayerState.h"
-#include "Editor/UnrealEd/Classes/Settings/LevelEditorPlaySettings.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
+#include "GameFramework/Messages/CrashGameplayEffectMessage.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
+
+#if WITH_EDITOR
+#include "Editor/UnrealEd/Classes/Settings/LevelEditorPlaySettings.h"
+#endif
 
 const FName ACrashGameState::NAME_ActorFeatureName("CrashGameState");
 
@@ -188,8 +192,18 @@ void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCr
 	}
 }
 
+void ACrashGameState::MulticastReliableMessageToClients_GameplayEffect_Implementation(FGameplayTag Channel, const FCrashGameplayEffectMessage Message)
+{
+	// Locally broadcast the received message if this is a client.
+	if (GetNetMode() == NM_Client)
+	{
+		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Channel, Message);
+	}
+}
+
 int32 ACrashGameState::GetNumExpectedPlayers() const
 {
+#if WITH_EDITOR
 	// During PIE, use the "Number of Players" setting from the multiplayer options.
 	if (GetWorld()->IsPlayInEditor())
 	{
@@ -198,6 +212,7 @@ int32 ACrashGameState::GetNumExpectedPlayers() const
 		PlayInSettings->GetPlayNumberOfClients(PlayNumberOfClients);
 		return PlayNumberOfClients;
 	}
+#endif
 
 	// TODO: Read session settings for the number of players in the session.
 
