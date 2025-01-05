@@ -143,6 +143,22 @@
 		{
 			"Name": "SVGImporter",
 			"Enabled": true
+		},
+		{
+			"Name": "AudioGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "AudioGameplayVolume",
+			"Enabled": true
+		},
+		{
+			"Name": "SoundUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "Spatialization",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
