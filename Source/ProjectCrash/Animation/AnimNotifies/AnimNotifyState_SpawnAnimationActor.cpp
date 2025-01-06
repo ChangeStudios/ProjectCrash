@@ -98,7 +98,17 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyEnd(USkeletalMeshComponent* Mes
 	{
 		if (IsValid(SpawnedActor))
 		{
-			SpawnedActor->Destroy();
+			/* We let the actor stick around for a second before destroying it, but we hide its meshes. This is so other
+			 * cosmetic components (i.e. particle systems) can finish before the actor is destroyed. Particle systems
+			 * that were spawned by an animation are killed when the animating mesh is destroyed. */
+			SpawnedActor->SetLifeSpan(1.0f);
+			SpawnedActor->ForEachComponent(false, [](UActorComponent* InComponent)
+			{
+				if (UMeshComponent* CompAsMesh = Cast<UMeshComponent>(InComponent))
+				{
+					CompAsMesh->SetHiddenInGame(true, false);
+				}
+			});
 		}
 	}
 
