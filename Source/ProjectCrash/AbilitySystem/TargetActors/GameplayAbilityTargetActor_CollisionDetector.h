@@ -84,10 +84,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, AdvancedDisplay, Meta = (ExposeOnSpawn = "true"))
 	bool bRepeatTargets;
 
-	/** If true, target data will be automatically reset each time targeting starts. */
-	UPROPERTY(BlueprintReadOnly, AdvancedDisplay, Meta = (ExposeOnSpawn = "true"))
-	bool bResetTargetsOnStart;
-
 
 
 	// Internals.
