@@ -11,6 +11,7 @@
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "Blueprint/UserWidget.h"
 #include "Characters/CrashCharacter.h"
 #include "Characters/PawnCameraManager.h"
 #include "Development/CrashDeveloperSettings.h"
@@ -20,8 +21,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
-#include "UI/HUD/AbilityWidgetBase.h"
-#include "UI/HUD/AbilityWidgetBase_Dep.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -109,6 +108,76 @@ bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHan
 	}
 
 	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+}
+
+bool UCrashGameplayAbilityBase::CheckCanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	// Explicitly disabled.
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_Disabled))
+	{
+		return false;
+	}
+
+	/* Activation group. We only check this when this ability is inactive, because we don't want an ability to think
+	 * it's blocking itself. */
+	if (!IsActive())
+	{
+		if (GetCrashAbilitySystemComponentFromActorInfo() && GetCrashAbilitySystemComponentFromActorInfo()->IsActivationGroupBlocked(GetActivationGroup()))
+		{
+			return false;
+		}
+	}
+
+	// Valid avatar.
+	AActor* const AvatarActor = ActorInfo ? ActorInfo->AvatarActor.Get() : nullptr;
+	if (AvatarActor == nullptr || !ShouldActivateAbility(AvatarActor->GetLocalRole()))
+	{
+		return false;
+	}
+
+	// Make into a reference for simplicity.
+	static FGameplayTagContainer DummyContainer;
+	DummyContainer.Reset();
+	FGameplayTagContainer& OutTags = OptionalRelevantTags ? *OptionalRelevantTags : DummyContainer;
+
+	// Valid ASC.
+	UAbilitySystemComponent* const AbilitySystemComponent = ActorInfo->AbilitySystemComponent.Get();
+	if (!AbilitySystemComponent)
+	{
+		return false;
+	}
+
+	// Valid spec.
+	FGameplayAbilitySpec* Spec = AbilitySystemComponent->FindAbilitySpecFromHandle(Handle);
+	if (!Spec)
+	{
+		return false;
+	}
+
+	// Input is inhibited (e.g. UI is pulled up).
+	if (AbilitySystemComponent->GetUserAbilityActivationInhibited())
+	{
+		return false;
+	}
+
+	// Tag requirements.
+	if (!DoesAbilitySatisfyTagRequirements(*AbilitySystemComponent, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+
+	// (Input ID check would be performed here, but this project doesn't use it)
+
+	// Blueprint implementation.
+	if (bHasBlueprintCanUse)
+	{
+		if (K2_CanActivateAbility(*ActorInfo, Handle, OutTags) == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

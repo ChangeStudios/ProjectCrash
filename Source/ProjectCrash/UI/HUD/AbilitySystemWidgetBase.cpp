@@ -56,5 +56,6 @@ void UAbilitySystemWidgetBase::OnPlayerStateChanged(const APlayerState* NewPlaye
 		return;
 	}
 
+	OnAbilitySystemBound();
 	K2_OnAbilitySystemBound();
 }

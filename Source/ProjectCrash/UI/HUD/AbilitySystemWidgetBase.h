@@ -35,7 +35,10 @@ protected:
 
 	/** Called when this widget is successfully bound to its owning player's ASC. Earliest point at which BoundASC is
 	 * readable. */
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability System Bound")
+	virtual void OnAbilitySystemBound() {};
+
+	/** Blueprint version of OnAbilitySystemBound. */
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "On Ability System Bound", Meta = (ToolTip = "Called when this widget is successfully bound to its owning player's ASC. Earliest point at which BoundASC is readable."))
 	void K2_OnAbilitySystemBound();
 
 	/** The owning player's ability system component. Only valid after OnAbilitySystemBound. */
