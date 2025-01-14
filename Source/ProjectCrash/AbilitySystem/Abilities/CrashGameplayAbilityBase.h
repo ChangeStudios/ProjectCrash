@@ -172,6 +172,9 @@ public:
 	 * "bDisableCooldowns" option is enabled in developer settings. */
 	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const override;
 
+	/** Ignores costs if the "bDisableCooldowns" option is enabled in developer settings. */
+	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+
 protected:
 
 	/** Tags that can put this ability on a cooldown, in addition to any defined in the cooldown GE class. */

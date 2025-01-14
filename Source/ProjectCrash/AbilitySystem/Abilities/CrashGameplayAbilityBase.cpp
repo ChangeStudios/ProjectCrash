@@ -317,18 +317,20 @@ bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle H
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
-// #if WITH_EDITOR
-// 	// Disable cooldowns in the editor if desired.
-// 	if (GIsEditor)
-// 	{
-// 		if (Crash::CooldownsDisabled != 0)
-// 		{
-// 			return true;
-// 		}
-// 	}
-// #endif // WITH_EDITOR
-
 	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
+}
+
+bool UCrashGameplayAbilityBase::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	// Disable costs in editor and debug builds if desired.
+	if (Crash::CooldownsDisabled != 0)
+	{
+		return true;
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+
+	return Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
