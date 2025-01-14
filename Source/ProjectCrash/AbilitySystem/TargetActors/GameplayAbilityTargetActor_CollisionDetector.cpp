@@ -113,8 +113,6 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 {
 	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Self filter: %s"), *GetNameSafe(Filter.Filter->SelfActor));
-		
 		// Perform target data filtering.
 		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
