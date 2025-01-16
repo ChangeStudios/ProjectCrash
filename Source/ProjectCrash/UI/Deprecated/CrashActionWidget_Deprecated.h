@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonActionWidget.h"
-#include "CrashActionWidget.generated.h"
+#include "CrashActionWidget_Deprecated.generated.h"
 
 class UCommonTextBlock;
 class UEnhancedInputLocalPlayerSubsystem;
@@ -51,7 +51,7 @@ public:
  * TODO: Figure out why the icon isn't appearing when the game starts, and only works after changing the input method once.
  */
 UCLASS(BlueprintType, Blueprintable)
-class PROJECTCRASH_API UCrashActionWidget : public UCommonActionWidget
+class PROJECTCRASH_API UCrashActionWidget_Deprecated : public UCommonActionWidget
 {
 	GENERATED_BODY()
 

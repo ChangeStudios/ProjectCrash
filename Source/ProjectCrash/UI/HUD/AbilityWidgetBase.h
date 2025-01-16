@@ -106,7 +106,7 @@ private:
 
 	UPROPERTY()
 	FGameplayAbilitySpecHandle BoundSpecHandle;
-	
+
 	UPROPERTY()
 	UCrashGameplayAbilityBase* BoundAbility;
 

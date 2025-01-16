@@ -1,7 +1,7 @@
 // Copyright Samuel Reitich. All rights reserved.
 
 
-#include "UI/Deprecated/CrashActionWidget.h"
+#include "UI/Deprecated/CrashActionWidget_Deprecated.h"
 
 #include "CommonInputBaseTypes.h"
 #include "CommonInputSubsystem.h"
@@ -30,7 +30,7 @@ FKeyOverrideRow* FKeyOverrideRow::GetRowFromKey(FKey InKey, UDataTable* InDataTa
 	return nullptr;
 }
 
-FSlateBrush UCrashActionWidget::GetIcon() const
+FSlateBrush UCrashActionWidget_Deprecated::GetIcon() const
 {
 	// Search for an input brush for any of the keys bound to the associated input action.
 	if (AssociatedInputAction)
@@ -75,7 +75,7 @@ FSlateBrush UCrashActionWidget::GetIcon() const
 	return Super::GetIcon();
 }
 
-UEnhancedInputLocalPlayerSubsystem* UCrashActionWidget::GetEnhancedInputSubsystem() const
+UEnhancedInputLocalPlayerSubsystem* UCrashActionWidget_Deprecated::GetEnhancedInputSubsystem() const
 {
 	// Retrieve this widget's bound widget's local player, if it has one. Otherwise, use this widget's owner.
 	const UWidget* BoundWidget = DisplayedBindingHandle.GetBoundWidget();
