@@ -25,7 +25,7 @@ FSlateBrush UCrashActionWidget::GetIcon() const
 				{
 					return SlateBrush;
 				}
-				// For mouse buttons, use a placeholder brush. This makes sure the rim is still drawn, so we can use it as a background for our key text.
+				// For mouse buttons, use a placeholder brush. This makes sure the rim is still drawn, so we can use it as a background for our key text, which will be set here and retrieved with GetKeyText.
 				else if (CommonInputSubsystem->GetCurrentInputType() == ECommonInputType::MouseAndKeyboard)
 				{
 					SlateBrush.DrawAs = ESlateBrushDrawType::Image;
