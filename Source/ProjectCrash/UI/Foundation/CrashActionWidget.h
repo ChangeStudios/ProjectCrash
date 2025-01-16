@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h"
 #include "CrashActionWidget.generated.h"
 
+class UCommonTextBlock;
 class UEnhancedInputLocalPlayerSubsystem;
 
 /**
@@ -22,9 +23,22 @@ public:
 
 	virtual FSlateBrush GetIcon() const override;
 
-	FText GetKeyText();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CommonActionWidget")
+	TObjectPtr<UCommonTextBlock> KeyDisplayNameWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CommonActionWidget")
+	FSlateBrush KeyNameBackground;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CommonActionWidget")
+	FSlateBrush DesignTimeKeyBrush;
+
+protected:
+
+	virtual void UpdateActionWidget() override;
 
 private:
+
+	FText GetKeyDisplayName();
 
 	UEnhancedInputLocalPlayerSubsystem* GetEnhancedInputSubsystem() const;
 };
