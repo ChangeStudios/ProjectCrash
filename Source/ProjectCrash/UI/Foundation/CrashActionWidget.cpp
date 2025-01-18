@@ -14,6 +14,8 @@
 FSlateBrush UCrashActionWidget::GetIcon() const
 {
 #if WITH_EDITORONLY_DATA
+	/* In the editor, use a design-time brush to preview what that brush will look like in this widget. If a design-time
+	 * key is set, hide this widget to preview what it would look like with that key in a dynamic icon instead. */
 	if (IsDesignTime())
 	{
 		if (DesignTimeKey.IsValid())
@@ -29,18 +31,20 @@ FSlateBrush UCrashActionWidget::GetIcon() const
 	}
 #endif
 
-	// Get the associated input action from the set input tag if we haven't yet. 
 	if (EnhancedInputAction)
 	{
 		if (const UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem = GetEnhancedInputSubsystem())
 		{
+			// Get the keys bound to this widget's associated input action. 
 			TArray<FKey> BoundKeys = EnhancedInputSubsystem->QueryKeysMappedToAction(EnhancedInputAction);
-			FSlateBrush SlateBrush;
-
 			const UCommonInputSubsystem* CommonInputSubsystem = GetInputSubsystem();
+
 			if (!BoundKeys.IsEmpty() && CommonInputSubsystem)
 			{
-				// For specified glyphs (mouse buttons, gamepad buttons, etc.), use the predefined brush.
+				FSlateBrush SlateBrush;
+
+				/* Use the defined brush of the first bound key that has one. This is set in "Controller Data" classes,
+				 * and usually used for gamepad and mouse keys. */
 				for (FKey Key : BoundKeys)
 				{
 					if (UCommonInputPlatformSettings::Get()->TryGetInputBrush(SlateBrush, Key, CommonInputSubsystem->GetCurrentInputType(), CommonInputSubsystem->GetCurrentGamepadName()))
@@ -49,8 +53,8 @@ FSlateBrush UCrashActionWidget::GetIcon() const
 					}
 				}
 
-				/* For keys without a defined brush (e.g. keyboard keys), use a global key background. The widget should
-				 * define a text block to display the key's name on top of this, set in UpdateActionWidget. */
+				/* If a key doesn't have a defined brush (e.g. any keyboard keys), hide this widget. We'll use the
+				 * dynamic key icon widgets instead, in UpdateDynamicKeyIcon. */
 				SlateBrush.DrawAs = ESlateBrushDrawType::NoDrawType;
 				return SlateBrush;
 			}
@@ -63,78 +67,71 @@ FSlateBrush UCrashActionWidget::GetIcon() const
 void UCrashActionWidget::UpdateActionWidget()
 {
 	Super::UpdateActionWidget();
-
-	UpdateKeyName();
+	UpdateDynamicKeyIcon();
 }
 
-void UCrashActionWidget::UpdateKeyName()
+void UCrashActionWidget::UpdateDynamicKeyIcon()
 {
-	if (KeyDisplayNameWidget)
+	const FText KeyDisplayName = GetKeyDisplayName(); 
+	const bool bUsingDynamicKeyIcon = !KeyDisplayName.IsEmpty();
+	const ESlateVisibility DynamicKeyIconVisibility = (bUsingDynamicKeyIcon ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+
+	if (DynamicKeyIconDisplayName)
 	{
-		FText KeyName = GetKeyDisplayName();
-		bool bUsingKeyName = !KeyName.IsEmpty();
-
-		// Update the key's displayed name
-		KeyDisplayNameWidget->SetText(KeyName);
-
-#if WITH_EDITORONLY_DATA
-		if (IsDesignTime() && DesignTimeKey.IsValid())
-		{
-			KeyDisplayNameWidget->SetText(DesignTimeKey.GetDisplayName(false));
-		}
-#endif
-
-		// // When using the key name background, sync the background's size to the key's name.
-		// if (!KeyDisplayNameWidget->GetText().IsEmpty())
-		// {
-		// 	// Desired size takes a tick to update after we change the text
-		// 	GetWorld()->GetTimerManager().SetTimerForNextTick([this]
-		// 	{
-		// 		Icon.SetImageSize(GetParent()->GetDesiredSize());
-		// 	});
-		// }
-
-		if (KeyBackgroundWidget)
-		{
-			ESlateVisibility BackgroundVisibility = bUsingKeyName ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed;
-			KeyBackgroundWidget->SetVisibility(BackgroundVisibility);
-		}
+		// Update the key's displayed name. If we're using a predefined brush, clear it instead.
+		DynamicKeyIconDisplayName->SetVisibility(DynamicKeyIconVisibility);
+		DynamicKeyIconDisplayName->SetText(bUsingDynamicKeyIcon ? GetKeyDisplayName() : FText::GetEmpty());
 	}
+
+	// Toggle dynamic key icon background visibility if we're using it.
+	if (DynamicKeyIconBackground)
+	{
+		DynamicKeyIconBackground->SetVisibility(DynamicKeyIconVisibility);
+	}
+
+	// Hide this widget if we're using a dynamic key icon instead.
+	SetVisibility(bUsingDynamicKeyIcon ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
 }
 
-FText UCrashActionWidget::GetKeyDisplayName()
+FText UCrashActionWidget::GetKeyDisplayName() const
 {
 #if WITH_EDITORONLY_DATA
+	// In the editor, use a design-time key to preview what that key will look like in this widget.
 	if (IsDesignTime())
 	{
 		if (DesignTimeKey.IsValid())
 		{
 			return DesignTimeKey.GetDisplayName(false);
 		}
+		else
+		{
+			return FText::GetEmpty();
+		}
 	}
 #endif
 
+	// NOTE: This is double work. We do this same thing in GetIcon, but we can't cache anything because it's const.
 	if (EnhancedInputAction)
 	{
 		if (const UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem = GetEnhancedInputSubsystem())
 		{
 			TArray<FKey> BoundKeys = EnhancedInputSubsystem->QueryKeysMappedToAction(EnhancedInputAction);
-
 			const UCommonInputSubsystem* CommonInputSubsystem = GetInputSubsystem();
+
 			if (!BoundKeys.IsEmpty() && CommonInputSubsystem)
 			{
 				FSlateBrush SlateBrush;
 
-				// For specified glyphs (mouse buttons, gamepad buttons, etc.), use the predefined brush instead of key text.
+				// Don't use the key's name if the key has a predefined brush.
 				for (FKey Key : BoundKeys)
 				{
 					if (UCommonInputPlatformSettings::Get()->TryGetInputBrush(SlateBrush, Key, CommonInputSubsystem->GetCurrentInputType(), CommonInputSubsystem->GetCurrentGamepadName()))
 					{
-						return FText();
+						return FText::GetEmpty();
 					}
 				}
 
-				// For anything without a defined brush, use the key's name.
+				// If there are no bound keys with a defined brush, use the first key's short display name.
 				for (FKey Key : BoundKeys)
 				{
 					return Key.GetDisplayName(false);
@@ -143,7 +140,7 @@ FText UCrashActionWidget::GetKeyDisplayName()
 		}
 	}
 
-	return FText();
+	return FText::GetEmpty();
 }
 
 UEnhancedInputLocalPlayerSubsystem* UCrashActionWidget::GetEnhancedInputSubsystem() const
