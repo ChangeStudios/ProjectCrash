@@ -1,6 +1,5 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "UI/HUD/AbilityWidgetBase.h"
 
 #include "AbilitySystemLog.h"
@@ -8,12 +7,6 @@
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "GameFramework/PlayerState.h"
-
-#if WITH_EDITOR
-#include "Misc/DataValidation.h"
-#endif
-
-#define LOCTEXT_NAMESPACE "AbilityWidgetBase"
 
 bool UAbilityWidgetBase::Initialize()
 {
@@ -57,29 +50,27 @@ void UAbilityWidgetBase::OnAbilitySystemBound()
 {
 	Super::OnAbilitySystemBound();
 
-	for (FGameplayAbilitySpec& AbilitySpec : BoundASC->GetActivatableAbilities())
+	if (FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromClass(AbilityClass.Get()))
 	{
 		// Use instanced abilities' primary instance.
-		UGameplayAbility* Ability = AbilitySpec.GetPrimaryInstance();
+		UGameplayAbility* AbilityInstance = AbilitySpec->GetPrimaryInstance();
 
-		// Fall back to using the CDO.
-		if (!IsValid(Ability))
+		// Fall back to using the CDO for non-instanced abilities.
+		if (!IsValid(AbilityInstance))
 		{
-			Ability = AbilitySpec.Ability;
+			AbilityInstance = AbilitySpec->Ability;
 		}
 
-		if (UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability))
+		// Cache the bound ability instance and its spec.
+		if (UCrashGameplayAbilityBase* CrashAbilityInstance = Cast<UCrashGameplayAbilityBase>(AbilityInstance))
 		{
-			if (CrashAbility->AbilityTags.HasTag(AbilityIdentifierTag))
-			{
-				BoundAbility = CrashAbility;
-				BoundSpecHandle = AbilitySpec.Handle;
-				return;
-			}
+			BoundAbility = CrashAbilityInstance;
+			BoundSpecHandle = AbilitySpec->Handle;
+			return;
 		}
 	}
 
-	ABILITY_LOG(Error, TEXT("Owning player (%s) of ability widget does not have an ability with a matching identifying tag: (%s)."), *GetNameSafe(GetOwningPlayer()), *AbilityIdentifierTag.ToString());
+	ABILITY_LOG(Error, TEXT("Owning player (%s) of ability widget (%s) does not have an ability of class (%s). Ability widgets should only be created by the ability to which they should be bound."), *GetNameSafe(GetOwningPlayer()), *GetNameSafe(GetClass()), *GetNameSafe(AbilityClass.Get()));
 }
 
 void UAbilityWidgetBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -88,22 +79,19 @@ void UAbilityWidgetBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 
 	if (bWantsDisabledEvents)
 	{
-		if (BoundASC.IsValid() && BoundAbility)
+		if (BoundASC.IsValid() && BoundAbility.IsValid())
 		{
-			if (BoundAbility->AbilityTags.HasTag(AbilityIdentifierTag))
+			if (bIsAbilityEnabled != BoundAbility->CheckCanActivateAbility(BoundSpecHandle, BoundASC->AbilityActorInfo.Get()))
 			{
-				if (bIsAbilityEnabled != BoundAbility->CheckCanActivateAbility(BoundSpecHandle, BoundASC->AbilityActorInfo.Get()))
-				{
-					bIsAbilityEnabled = !bIsAbilityEnabled;
+				bIsAbilityEnabled = !bIsAbilityEnabled;
 
-					if (bIsAbilityEnabled)
-					{
-						K2_OnAbilityEnabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
-					}
-					else
-					{
-						K2_OnAbilityDisabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
-					}
+				if (bIsAbilityEnabled)
+				{
+					K2_OnAbilityEnabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
+				}
+				else
+				{
+					K2_OnAbilityDisabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
 				}
 			}
 		}
@@ -134,64 +122,28 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	// const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
-	// UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
-	// if (!IsValid(Ability))
-	// {
-	// 	Ability = AbilitySpec->Ability;
-	// }
-	// UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
-
-	// Forward ability messages to their corresponding events, filtering for messages related to the specified ability.
+	// Forward ability messages to their corresponding events, filtering for messages related to the bound ability.
 	if (Message.AbilitySpecHandle == BoundSpecHandle)
 	{
 		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
-			K2_OnAbilityActivated_Success(BoundAbility);
+			K2_OnAbilityActivated_Success(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Ended))
 		{
-			K2_OnAbilityEnded(BoundAbility);
+			K2_OnAbilityEnded(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started))
 		{
-			K2_OnAbilityCooldownStarted(BoundAbility, Message.Magnitude);
+			K2_OnAbilityCooldownStarted(BoundAbility.Get(), Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended))
 		{
-			K2_OnAbilityCooldownEnded(BoundAbility);
+			K2_OnAbilityCooldownEnded(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_CostChanged))
 		{
-			K2_OnAbilityCostChanged(BoundAbility, Message.Magnitude);
+			K2_OnAbilityCostChanged(BoundAbility.Get(), Message.Magnitude);
 		}
 	}
 }
-
-#if WITH_EDITOR
-EDataValidationResult UAbilityWidgetBase::IsDataValid(FDataValidationContext& Context) const
-{
-	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(Context), EDataValidationResult::Valid);
-
-	const UFunction* DisabledFunction = GetClass()->FindFunctionByName(FName("K2_OnAbilityDisabled"));
-	const UFunction* EnabledFunction = GetClass()->FindFunctionByName(FName("K2_OnAbilityEnabled"));
-	const bool bIsUsingDisabledFunctions = (DisabledFunction && DisabledFunction->Script.Num()) || (EnabledFunction && EnabledFunction->Script.Num());
-
-	// We're using "Ability Disabled" events, but not triggering them.
-	if (bIsUsingDisabledFunctions && !bWantsDisabledEvents)
-	{
-		Result = EDataValidationResult::Invalid;
-		Context.AddError(FText::Format(LOCTEXT("UsingDisabledEvents", "Widget class {0} is using OnAbilityDisabled and/ OnAbilityEnabled, but WantsDisabledEvents is set to false. These events will never trigger!"), FText::FromString(GetNameSafe(this))));
-	}
-	// We're triggering "Ability Disabled" events, but not using them.
-	else if (!bIsUsingDisabledFunctions && bWantsDisabledEvents)
-	{
-		Result = EDataValidationResult::Invalid;
-		Context.AddError(FText::Format(LOCTEXT("NotUsingDisabledEvents", "Widget class {0} set WantsDisabledEvents to true, but is not using OnAbilityDisabled and/ OnAbilityEnabled. Set WantsDisabledEvents to avoid unnecessary performance loss."), FText::FromString(GetNameSafe(this))));
-	}
-
-	return Result;
-}
-#endif // WITH_EDITOR
-
-#undef LOCTEXT_NAMESPACE
