@@ -22,6 +22,11 @@ class UImage;
  *
  * It's recommended to create a binding to the enhanced input action variable, so subclasses (e.g. the widgets for
  * different abilities) can set which action to use.
+ *
+ * NOTE: This class is a bit of a mess, and could definitely be more intuitive to use. Epic really doesn't expect you
+ * to subclass this with so much custom logic, like dynamically creating new icons using key names. We could probably
+ * rewrite this from scratch instead of subclassing from UCommonActionWidget, but we only use this widget in one place
+ * (beneath ability widgets), so it's not a priority.
  */
 UCLASS(BlueprintType, Blueprintable)
 class PROJECTCRASH_API UCrashActionWidget : public UCommonActionWidget
