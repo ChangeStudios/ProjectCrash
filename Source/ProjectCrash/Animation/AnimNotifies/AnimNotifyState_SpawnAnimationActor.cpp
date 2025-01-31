@@ -4,7 +4,9 @@
 #include "Animation/AnimNotifies/AnimNotifyState_SpawnAnimationActor.h"
 
 #include "Animation/SkeletalMeshActor.h"
+#include "Components/MeshComponent.h"
 #include "Engine/StaticMeshActor.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 UAnimNotifyState_SpawnAnimationActor::UAnimNotifyState_SpawnAnimationActor() :
 	bFirstPerson(false),
@@ -113,6 +115,26 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyEnd(USkeletalMeshComponent* Mes
 	}
 
 	SpawnedActors.Empty();
+}
+
+void UAnimNotifyState_SpawnAnimationActor::ApplyMaterialOverrides(UMeshComponent* MeshComp)
+{
+	if (bOverrideMaterials && IsValid(MeshComp))
+	{
+		const int32 NumOverrideMaterials = FMath::Min(OverrideMaterials.Num(), MeshComp->GetNumMaterials());
+		for (int32 OverrideIndex = 0; OverrideIndex < NumOverrideMaterials; ++OverrideIndex)
+		{
+			if (UMaterialInterface* OverrideMat = OverrideMaterials[OverrideIndex])
+			{
+				MeshComp->SetMaterial(OverrideIndex, OverrideMat);
+			}
+		}
+
+		if (OverlayMaterial)
+		{
+			MeshComp->SetOverlayMaterial(OverlayMaterial);
+		}
+	}
 }
 
 #if WITH_EDITOR
