@@ -84,6 +84,7 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 		SpawnedActor->FinishSpawning(SpawnTransform);
 		SpawnedActor->SetActorEnableCollision(false);
 		SpawnedActor->AttachToComponent(MeshComp, FAttachmentTransformRules::KeepRelativeTransform, AttachSocket);
+		ApplyMaterialOverrides(SpawnedMeshComp);
 		SpawnedMeshComp->SetScalarParameterValueOnMaterials(FName("FirstPerson"), bFirstPerson ? 1.0f : 0.0f);
 		SpawnedMeshComp->bUseAttachParentBound = bFirstPerson;
 
