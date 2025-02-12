@@ -119,6 +119,18 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 			return;
 		}
 
+		// Check if the actor has any tags that cause us to ignore them.
+		if (IgnoredTargetTags.Num())
+		{
+			if (UAbilitySystemComponent* OtherASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor))
+			{
+				if (OtherASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
+				{
+					return;
+				}
+			}
+		}
+
 		// Check if the actor has already been detected as a target.
 		if (!bRepeatTargets && Targets.Contains(OtherActor))
 		{
