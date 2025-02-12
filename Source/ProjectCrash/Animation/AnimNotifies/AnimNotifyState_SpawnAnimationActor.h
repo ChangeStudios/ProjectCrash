@@ -68,7 +68,7 @@ protected:
 
 	/** The materials to use for each of the spawned mesh's material indices. Overrides the mesh's default materials.
 	 * Indices without a valid material will be skipped, and revert to the mesh's default material. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (EditCondition = "bOverrideMaterials", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (EditCondition = "bOverrideMaterials", EditConditionHides, ScriptName = "MaterialOverrides"))
 	TArray<TObjectPtr<UMaterialInterface>> OverrideMaterials;
 
 	/** The overlay material to apply to the mesh. */
