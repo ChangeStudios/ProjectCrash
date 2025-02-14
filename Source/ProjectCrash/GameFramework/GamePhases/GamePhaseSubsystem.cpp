@@ -6,9 +6,33 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStateBase.h"
 #include "GamePhaseAbility.h"
+#include "GamePhaseCheats.h"
+#include "GameFramework/CheatManager.h"
 
 UGamePhaseSubsystem::UGamePhaseSubsystem()
 {
+}
+
+void UGamePhaseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	// Add Game Phase Cheats to the given cheat manager.
+	auto AddGamePhaseCheats = [](UCheatManager* CheatManager)
+	{
+		CheatManager->AddCheatManagerExtension(NewObject<UGamePhaseCheats>(CheatManager));
+	};
+
+	// Add Game Phase Cheats to the cheat manager when it's created.
+	CheatManagerRegistrationHandle = UCheatManager::RegisterForOnCheatManagerCreated(FOnCheatManagerCreated::FDelegate::CreateLambda(AddGamePhaseCheats));
+}
+
+void UGamePhaseSubsystem::Deinitialize()
+{
+	// Stop listening for the cheat manager to be created.
+	UCheatManager::UnregisterFromOnCheatManagerCreated(CheatManagerRegistrationHandle);
+
+	Super::Deinitialize();
 }
 
 bool UGamePhaseSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const

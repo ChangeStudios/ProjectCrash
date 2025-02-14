@@ -56,6 +56,12 @@ public:
 	/** Default constructor. */
 	UGamePhaseSubsystem();
 
+	/** Registers Game Phase Cheats with the cheat manager. */
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	/** Unregisters CheatManagerRegistrationHandle from the cheat manager. */
+	virtual void Deinitialize() override;
+
 protected:
 
 	/** Restricts this subsystem to game and PIE worlds. */
@@ -104,6 +110,11 @@ protected:
 
 
 	// Internals.
+
+private:
+
+	/** Delegate fired to create Game Phase Cheats when the cheat manager is created. */
+	FDelegateHandle CheatManagerRegistrationHandle;
 
 // Phase tracking.
 private:

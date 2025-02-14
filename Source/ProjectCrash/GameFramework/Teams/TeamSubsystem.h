@@ -259,6 +259,6 @@ private:
 	UPROPERTY()
 	TMap<int32, FTeamTrackingInfo> TeamMap;
 
-	/** Delegate fired to create Team Cheats when the cheat managed is created. */
+	/** Delegate fired to create Team Cheats when the cheat manager is created. */
 	FDelegateHandle CheatManagerRegistrationHandle;
 };
