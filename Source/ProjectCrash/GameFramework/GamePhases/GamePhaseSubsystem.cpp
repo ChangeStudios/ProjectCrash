@@ -6,33 +6,33 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStateBase.h"
 #include "GamePhaseAbility.h"
-#include "GamePhaseCheats.h"
 #include "GameFramework/CheatManager.h"
 
 UGamePhaseSubsystem::UGamePhaseSubsystem()
 {
 }
 
-void UGamePhaseSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UGamePhaseSubsystem::StartMatch()
 {
-	Super::Initialize(Collection);
+	const UWorld* World = GetWorld();
+	UCrashAbilitySystemComponent* GameStateASC = World->GetGameState()->FindComponentByClass<UCrashAbilitySystemComponent>();
 
-	// Add Game Phase Cheats to the given cheat manager.
-	auto AddGamePhaseCheats = [](UCheatManager* CheatManager)
+	TArray<FGameplayAbilitySpec*> ActivePhaseSpecs;
+	for (const auto& KVP : ActivePhases)
 	{
-		CheatManager->AddCheatManagerExtension(NewObject<UGamePhaseCheats>(CheatManager));
-	};
 
-	// Add Game Phase Cheats to the cheat manager when it's created.
-	CheatManagerRegistrationHandle = UCheatManager::RegisterForOnCheatManagerCreated(FOnCheatManagerCreated::FDelegate::CreateLambda(AddGamePhaseCheats));
-}
+		const FGameplayAbilitySpecHandle ActivePhaseHandle = KVP.Key;
+		if (FGameplayAbilitySpec* Spec = GameStateASC->FindAbilitySpecFromHandle(ActivePhaseHandle))
+		{
+			ActivePhaseSpecs.Add(Spec);
+		}
+	}
 
-void UGamePhaseSubsystem::Deinitialize()
-{
-	// Stop listening for the cheat manager to be created.
-	UCheatManager::UnregisterFromOnCheatManagerCreated(CheatManagerRegistrationHandle);
-
-	Super::Deinitialize();
+	for (const FGameplayAbilitySpec* ActivePhaseSpec : ActivePhaseSpecs)
+	{
+		UGamePhaseAbility* ActivePhaseAbility = CastChecked<UGamePhaseAbility>(ActivePhaseSpec->GetPrimaryInstance());
+		ActivePhaseAbility->OnMatchStarted();
+	}
 }
 
 bool UGamePhaseSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const

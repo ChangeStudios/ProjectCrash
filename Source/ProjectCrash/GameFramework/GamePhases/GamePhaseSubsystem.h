@@ -56,11 +56,9 @@ public:
 	/** Default constructor. */
 	UGamePhaseSubsystem();
 
-	/** Registers Game Phase Cheats with the cheat manager. */
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-
-	/** Unregisters CheatManagerRegistrationHandle from the cheat manager. */
-	virtual void Deinitialize() override;
+	/** Calls "StartMatch" on each active phase. Used to manually control game phase flow for playtesting. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void StartMatch();
 
 protected:
 
@@ -110,11 +108,6 @@ protected:
 
 
 	// Internals.
-
-private:
-
-	/** Delegate fired to create Game Phase Cheats when the cheat manager is created. */
-	FDelegateHandle CheatManagerRegistrationHandle;
 
 // Phase tracking.
 private:
