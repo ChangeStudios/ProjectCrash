@@ -413,7 +413,7 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 		{
 			if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
 			{
-				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetOwningActorFromActorInfo(), KVP.Value, -1));
+				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetCrashPlayerStateFromActorInfo(), KVP.Value, -1));
 			}
 		}
 	}
