@@ -16,6 +16,7 @@
 #include "Characters/PawnCameraManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -406,14 +407,21 @@ void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* A
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	// Register and initialize this ability's widgets.
-	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
+	/* Register and initialize this ability's widgets for the owning player. We use the given actor info's player state
+	 * because this ability's actor info may not be replicated to clients yet. */
+	APlayerState* PS = Cast<APlayerState>(ActorInfo->OwnerActor);
+	AController* Controller = PS ? PS->GetOwningController() : nullptr;
+	if (Controller && Controller->IsLocalController())
 	{
-		for (auto KVP : AbilityWidgets)
+		if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
 		{
-			if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
+			for (auto KVP : AbilityWidgets)
 			{
-				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetCrashPlayerStateFromActorInfo(), KVP.Value, -1));
+				if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
+				{
+					// TODO: Check if this is getting called before this ability's actor info is set. GetCrashPlayerStateFromActorInfo will cause crashes if it is. 
+					AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetCrashPlayerStateFromActorInfo(), KVP.Value, -1));
+				}
 			}
 		}
 	}
