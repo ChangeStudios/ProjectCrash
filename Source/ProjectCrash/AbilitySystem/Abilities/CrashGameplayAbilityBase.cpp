@@ -11,17 +11,17 @@
 #include "AbilitySystem/CrashGameplayAbilityTypes.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
+#include "Blueprint/UserWidget.h"
 #include "Characters/CrashCharacter.h"
 #include "Characters/PawnCameraManager.h"
 #include "Development/CrashDeveloperSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/CrashPlayerController.h"
 #include "Player/CrashPlayerState.h"
-#include "UI/HUD/AbilityWidgetBase.h"
-#include "UI/HUD/AbilityWidgetBase_Dep.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -109,6 +109,76 @@ bool UCrashGameplayAbilityBase::CanActivateAbility(const FGameplayAbilitySpecHan
 	}
 
 	return Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+}
+
+bool UCrashGameplayAbilityBase::CheckCanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	// Explicitly disabled.
+	if (AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_Disabled))
+	{
+		return false;
+	}
+
+	/* Activation group. We only check this when this ability is inactive, because we don't want an ability to think
+	 * it's blocking itself. */
+	if (!IsActive())
+	{
+		if (GetCrashAbilitySystemComponentFromActorInfo() && GetCrashAbilitySystemComponentFromActorInfo()->IsActivationGroupBlocked(GetActivationGroup()))
+		{
+			return false;
+		}
+	}
+
+	// Valid avatar.
+	AActor* const AvatarActor = ActorInfo ? ActorInfo->AvatarActor.Get() : nullptr;
+	if (AvatarActor == nullptr || !ShouldActivateAbility(AvatarActor->GetLocalRole()))
+	{
+		return false;
+	}
+
+	// Make into a reference for simplicity.
+	static FGameplayTagContainer DummyContainer;
+	DummyContainer.Reset();
+	FGameplayTagContainer& OutTags = OptionalRelevantTags ? *OptionalRelevantTags : DummyContainer;
+
+	// Valid ASC.
+	UAbilitySystemComponent* const AbilitySystemComponent = ActorInfo->AbilitySystemComponent.Get();
+	if (!AbilitySystemComponent)
+	{
+		return false;
+	}
+
+	// Valid spec.
+	FGameplayAbilitySpec* Spec = AbilitySystemComponent->FindAbilitySpecFromHandle(Handle);
+	if (!Spec)
+	{
+		return false;
+	}
+
+	// Input is inhibited (e.g. UI is pulled up).
+	if (AbilitySystemComponent->GetUserAbilityActivationInhibited())
+	{
+		return false;
+	}
+
+	// Tag requirements.
+	if (!DoesAbilitySatisfyTagRequirements(*AbilitySystemComponent, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+
+	// (Input ID check would be performed here, but this project doesn't use it)
+
+	// Blueprint implementation.
+	if (bHasBlueprintCanUse)
+	{
+		if (K2_CanActivateAbility(*ActorInfo, Handle, OutTags) == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void UCrashGameplayAbilityBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -317,32 +387,41 @@ bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle H
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
-// #if WITH_EDITOR
-// 	// Disable cooldowns in the editor if desired.
-// 	if (GIsEditor)
-// 	{
-// 		if (Crash::CooldownsDisabled != 0)
-// 		{
-// 			return true;
-// 		}
-// 	}
-// #endif // WITH_EDITOR
-
 	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
+}
+
+bool UCrashGameplayAbilityBase::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	// Disable costs in editor and debug builds if desired.
+	if (Crash::CooldownsDisabled != 0)
+	{
+		return true;
+	}
+#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+
+	return Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	// Register and initialize this ability's widgets.
-	if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
+	/* Register and initialize this ability's widgets for the owning player. We use the given actor info's player state
+	 * because this ability's actor info may not be replicated to clients yet. */
+	APlayerState* PS = Cast<APlayerState>(ActorInfo->OwnerActor);
+	AController* Controller = PS ? PS->GetOwningController() : nullptr;
+	if (Controller && Controller->IsLocalController())
 	{
-		for (auto KVP : AbilityWidgets)
+		if (UUIExtensionSubsystem* ExtensionSubsystem = GetWorld()->GetSubsystem<UUIExtensionSubsystem>())
 		{
-			if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
+			for (auto KVP : AbilityWidgets)
 			{
-				AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetOwningActorFromActorInfo(), KVP.Value, -1));
+				if (ensure(KVP.Key.IsValid() && IsValid(KVP.Value)))
+				{
+					// TODO: Check if this is getting called before this ability's actor info is set. GetCrashPlayerStateFromActorInfo will cause crashes if it is. 
+					AbilityWidgetHandles.Add(ExtensionSubsystem->RegisterExtensionAsWidgetForContext(KVP.Key, GetCrashPlayerStateFromActorInfo(), KVP.Value, -1));
+				}
 			}
 		}
 	}

@@ -146,6 +146,9 @@ void ACrashPlayerController::BeginSpectatingState()
 	}
 
 	Super::BeginSpectatingState();
+
+	// We may have leftover ignore flags set from abilities or death.
+	ResetIgnoreInputFlags();
 }
 
 void ACrashPlayerController::EndSpectatingState()

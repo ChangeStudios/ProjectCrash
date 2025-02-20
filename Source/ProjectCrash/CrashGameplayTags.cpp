@@ -57,8 +57,6 @@ namespace CrashGameplayTags
 	// Messages.
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Added, "Message.Ability.Added", "A gameplay ability was granted to an ASC.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Removed, "Message.Ability.Removed", "A gameplay ability was removed from an ASC.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Disabled, "Message.Ability.Disabled", "A gameplay ability was disabled, and cannot be activated.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Enabled, "Message.Ability.Enabled", "A gameplay ability was re-enabled after being disabled.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Success, "Message.Ability.Activated.Success", "A gameplay ability was successfully activated.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Activated_Failed, "Message.Ability.Activated.Failed", "A gameplay ability tried to activate but failed.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Message_Ability_Ended, "Message.Ability.Ended", "A gameplay ability ended.");
@@ -87,7 +85,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_AbilityInputBlocked, "State.AbilityInputBlocked", "Ability activation via input is disabled on any ASC with this tag.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dead, "State.Dead", "The player is currently dead, likely without a pawn. This is removed when the player's ASC is re-initialized with a new health component.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Dying, "State.Dying", "The actor is currently in the process of dying. This is removed when the actor's death is finished.");
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_ImmuneToDamage, "State.ImmuneToDamage", "The actor is currently immune to all incoming damage. Can be overridden by effects with the SelfDestruct tag.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_State_Invulnerable, "State.Invulnerable", "The actor is currently immune to all incoming damage and effects. Projectiles will still hit this actor, but not affect it.");
 
 
 	// UI

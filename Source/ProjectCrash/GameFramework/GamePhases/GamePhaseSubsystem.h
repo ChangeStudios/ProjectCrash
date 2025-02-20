@@ -56,6 +56,10 @@ public:
 	/** Default constructor. */
 	UGamePhaseSubsystem();
 
+	/** Calls "StartMatch" on each active phase. Used to manually control game phase flow for playtesting. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	void StartMatch();
+
 protected:
 
 	/** Restricts this subsystem to game and PIE worlds. */

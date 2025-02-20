@@ -239,9 +239,4 @@ public:
 	/** Multicast for locally broadcasting a gameplay ability message. */
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastReliableAbilityMessageToClients(const struct FCrashAbilityMessage Message);
-
-private:
-
-	/** Notifies all exclusive abilities, except the given ignored ability, that they are now disabled or enabled. */
-	void NotifyAbilityExclusiveAbilitiesDisabled(bool bDisabled, const UGameplayAbility* AbilityToIgnore);
 };

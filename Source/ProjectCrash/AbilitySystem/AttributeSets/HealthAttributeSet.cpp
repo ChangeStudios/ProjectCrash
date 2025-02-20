@@ -42,7 +42,7 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 	{
 		// The self-destruction state overrides any damage invulnerabilities.
 		const bool bIsDamageFromSelfDestruct = Data.EffectSpec.GetDynamicAssetTags().HasTagExact(CrashGameplayTags::TAG_GameplayEffects_Damage_SelfDestruct);
-		if (Data.Target.HasMatchingGameplayTag(CrashGameplayTags::TAG_State_ImmuneToDamage) && !bIsDamageFromSelfDestruct)
+		if (Data.Target.HasMatchingGameplayTag(CrashGameplayTags::TAG_State_Invulnerable) && !bIsDamageFromSelfDestruct)
 		{
 			// Throw out any damage executions on targets that are immune to damage.
 			Data.EvaluatedData.Magnitude = 0.0f;
@@ -77,6 +77,10 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	{
 		/* Send a standardized verb message that other systems can observe. This is used for triggering things like
 		 * hit-markers. */
+		/* NOTE: If we want to add a system for shields in the future, we would add a check here to see if the owner is
+		 * shielded, and then subtract from the shield's health instead, or throw out the damage entirely if the shield
+		 * doesn't have health. Then, we'd still send this message to get a hitmarker, but add context to specify that a
+		 * shield was hit, so we can use a different sound and hitmarker animation. */
 		if (UGameplayMessageSubsystem::HasInstance(GetWorld()))
 		{
 			FCrashVerbMessage DamageMessage;

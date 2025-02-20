@@ -7,7 +7,7 @@
 #include "GameplayAbilitySpec.h"
 #include "AbilitySlotWidget.generated.h"
 
-class UCrashActionWidget;
+class UCrashActionWidget_Deprecated;
 class UCrashAbilitySystemComponent;
 class UGameplayAbility;
 class UImage;
@@ -52,5 +52,5 @@ protected:
 
 	/** The icon of the key bound to the input action to which this ability is bound. */
 	UPROPERTY(BlueprintReadWrite, Meta = (BindWidget))
-	TObjectPtr<UCrashActionWidget> InputActionWidget;
+	TObjectPtr<UCrashActionWidget_Deprecated> InputActionWidget;
 };

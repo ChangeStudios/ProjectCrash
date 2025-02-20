@@ -1,8 +1,8 @@
 // Copyright Samuel Reitich. All rights reserved.
 
-
 #include "UI/HUD/AbilityWidgetBase.h"
 
+#include "AbilitySystemLog.h"
 #include "CrashGameplayTags.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "GameFramework/Messages/CrashAbilityMessage.h"
@@ -21,6 +21,12 @@ bool UAbilityWidgetBase::Initialize()
 		{
 			OnAbilityMessageReceived(TAG_Message_Ability, Message);
 		}, EGameplayMessageMatch::PartialMatch);
+
+		/* "Ability Disabled" events are triggered by checking the ability's state each tick. If we're not using these
+		 * events, don't bother checking for them to avoid unnecessary performance hits. */
+		const UFunction* DisabledFunction = GetClass()->FindFunctionByName(FName("K2_OnAbilityDisabled"));
+		const UFunction* EnabledFunction = GetClass()->FindFunctionByName(FName("K2_OnAbilityEnabled"));
+		bWantsDisabledEvents = (DisabledFunction && DisabledFunction->Script.Num()) || (EnabledFunction && EnabledFunction->Script.Num());
 	}
 
 	return Super::Initialize();
@@ -40,6 +46,58 @@ void UAbilityWidgetBase::RemoveFromParent()
 	Super::RemoveFromParent();
 }
 
+void UAbilityWidgetBase::OnAbilitySystemBound()
+{
+	Super::OnAbilitySystemBound();
+
+	if (FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromClass(AbilityClass.Get()))
+	{
+		// Use instanced abilities' primary instance.
+		UGameplayAbility* AbilityInstance = AbilitySpec->GetPrimaryInstance();
+
+		// Fall back to using the CDO for non-instanced abilities.
+		if (!IsValid(AbilityInstance))
+		{
+			AbilityInstance = AbilitySpec->Ability;
+		}
+
+		// Cache the bound ability instance and its spec.
+		if (UCrashGameplayAbilityBase* CrashAbilityInstance = Cast<UCrashGameplayAbilityBase>(AbilityInstance))
+		{
+			BoundAbility = CrashAbilityInstance;
+			BoundSpecHandle = AbilitySpec->Handle;
+			return;
+		}
+	}
+
+	ABILITY_LOG(Error, TEXT("Owning player (%s) of ability widget (%s) does not have an ability of class (%s). Ability widgets should only be created by the ability to which they should be bound."), *GetNameSafe(GetOwningPlayer()), *GetNameSafe(GetClass()), *GetNameSafe(AbilityClass.Get()));
+}
+
+void UAbilityWidgetBase::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (bWantsDisabledEvents)
+	{
+		if (BoundASC.IsValid() && BoundAbility.IsValid())
+		{
+			if (bIsAbilityEnabled != BoundAbility->CheckCanActivateAbility(BoundSpecHandle, BoundASC->AbilityActorInfo.Get()))
+			{
+				bIsAbilityEnabled = !bIsAbilityEnabled;
+
+				if (bIsAbilityEnabled)
+				{
+					K2_OnAbilityEnabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
+				}
+				else
+				{
+					K2_OnAbilityDisabled(Cast<UCrashGameplayAbilityBase>(BoundAbility));
+				}
+			}
+		}
+	}
+}
+
 void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FCrashAbilityMessage& Message)
 {
 	// We only care about OUR abilities.
@@ -49,7 +107,13 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
+	// TODO: This is failing when starting levels.
 	if (!ensure(BoundASC.IsValid()))
+	{
+		return;
+	}
+
+	if (!BoundSpecHandle.IsValid())
 	{
 		return;
 	}
@@ -59,44 +123,28 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	const FGameplayAbilitySpec* AbilitySpec = BoundASC->FindAbilitySpecFromHandle(Message.AbilitySpecHandle);
-	UGameplayAbility* Ability = AbilitySpec->GetPrimaryInstance();
-	if (!IsValid(Ability))
+	// Forward ability messages to their corresponding events, filtering for messages related to the bound ability.
+	if (Message.AbilitySpecHandle == BoundSpecHandle)
 	{
-		Ability = AbilitySpec->Ability;
-	}
-	UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(Ability);
-
-	// Forward ability messages to their corresponding events, filtering for messages related to the specified ability.
-	if (CrashAbility->AbilityTags.HasTag(AbilityIdentifierTag))
-	{
-		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Disabled))
+		if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
 		{
-			K2_OnAbilityDisabled(CrashAbility);
-		}
-		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Enabled))
-		{
-			K2_OnAbilityEnabled(CrashAbility);
-		}
-		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Activated_Success))
-		{
-			K2_OnAbilityActivated_Success(CrashAbility);
+			K2_OnAbilityActivated_Success(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Ended))
 		{
-			K2_OnAbilityEnded(CrashAbility);
+			K2_OnAbilityEnded(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Started))
 		{
-			K2_OnAbilityCooldownStarted(CrashAbility, Message.Magnitude);
+			K2_OnAbilityCooldownStarted(BoundAbility.Get(), Message.Magnitude);
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_Cooldown_Ended))
 		{
-			K2_OnAbilityCooldownEnded(CrashAbility);
+			K2_OnAbilityCooldownEnded(BoundAbility.Get());
 		}
 		else if (Message.MessageType.MatchesTag(CrashGameplayTags::TAG_Message_Ability_CostChanged))
 		{
-			K2_OnAbilityCostChanged(CrashAbility, Message.Magnitude);
+			K2_OnAbilityCostChanged(BoundAbility.Get(), Message.Magnitude);
 		}
 	}
 }

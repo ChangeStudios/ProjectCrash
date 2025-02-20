@@ -139,6 +139,10 @@ public:
 	/** Checks this ability is disabled or if its activation group is currently blocked. */
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
+	/** Checks if this ability can be activated, ignoring any cooldown or cost restrictions. Used for UI, which handles
+	 * cooldown/cost restrictions separately. Unfortunately, this is a complete rewrite of CanActivateAbility. */
+	virtual bool CheckCanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const;
+
 protected:
 
 	/** Applies gameplay effects applied by this ability and updates its activation group on the owning ASC. */
@@ -171,6 +175,9 @@ public:
 	/** Returns false if a cooldown is blocking the activation of this ability. Ignores cooldowns if the
 	 * "bDisableCooldowns" option is enabled in developer settings. */
 	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const override;
+
+	/** Ignores costs if the "bDisableCooldowns" option is enabled in developer settings. */
+	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
 protected:
 

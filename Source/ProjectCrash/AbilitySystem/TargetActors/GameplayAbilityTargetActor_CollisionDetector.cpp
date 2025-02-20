@@ -113,12 +113,22 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 {
 	if (ShouldProduceTargetData() && ensure(OwningAbility))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Self filter: %s"), *GetNameSafe(Filter.Filter->SelfActor));
-		
 		// Perform target data filtering.
 		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
 			return;
+		}
+
+		// Check if the actor has any tags that cause us to ignore them.
+		if (IgnoredTargetTags.Num())
+		{
+			if (UAbilitySystemComponent* OtherASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor))
+			{
+				if (OtherASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
+				{
+					return;
+				}
+			}
 		}
 
 		// Check if the actor has already been detected as a target.

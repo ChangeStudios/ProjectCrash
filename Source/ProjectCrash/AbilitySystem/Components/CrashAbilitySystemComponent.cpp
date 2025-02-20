@@ -311,10 +311,6 @@ void UCrashAbilitySystemComponent::HandleAbilityActivatedForActivationGroup(UCra
 		/* If the activated ability is exclusive, cancel the active replaceable exclusive ability (if there is one) and
 		 * cache the new exclusive ability. */
 		case EAbilityActivationGroup::Exclusive_Blocking:
-		{
-			// Also notify other exclusive abilities that they can't be activated, if a blocking ability was activated.
-			NotifyAbilityExclusiveAbilitiesDisabled(true, ActivatedAbility);
-		}
 		case EAbilityActivationGroup::Exclusive_Replaceable:
 		{
 			if (CurrentExclusiveAbility)
@@ -347,7 +343,6 @@ void UCrashAbilitySystemComponent::HandleAbilityEndedForActivationGroup(UCrashGa
 	if (CurrentExclusiveAbility == EndedAbility)
 	{
 		CurrentExclusiveAbility = nullptr;
-		NotifyAbilityExclusiveAbilitiesDisabled(false, EndedAbility);
 	}
 }
 
@@ -453,9 +448,6 @@ void UCrashAbilitySystemComponent::DisableAbilitiesByTag(const FGameplayTagConta
 		{
 			// Disable the ability.
 			AbilitySpec.Ability->AbilityTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
-
-			// Broadcast a message informing other systems that this ability is now disabled.
-			BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Disabled, AbilitySpec.Handle, AbilitySpec.Level);
 		}
 	}
 }
@@ -479,10 +471,7 @@ void UCrashAbilitySystemComponent::EnableAbilitiesByTag(const FGameplayTagContai
 			if (AbilitySpec.Ability->AbilityTags.HasTagExact(CrashGameplayTags::TAG_Ability_Behavior_Disabled))
 			{
 				// Enable the ability.
-				AbilitySpec.Ability->AbilityTags.AddTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
-
-				// Broadcast a message informing other systems that this ability is now enabled.
-				BroadcastAbilityMessage(CrashGameplayTags::TAG_Message_Ability_Enabled, AbilitySpec.Handle, AbilitySpec.Level);
+				AbilitySpec.Ability->AbilityTags.RemoveTag(CrashGameplayTags::TAG_Ability_Behavior_Disabled);
 			}
 		}
 	}
@@ -687,26 +676,5 @@ void UCrashAbilitySystemComponent::MulticastReliableAbilityMessageToClients_Impl
 	if (GetNetMode() == NM_Client)
 	{
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.MessageType, Message);
-	}
-}
-
-void UCrashAbilitySystemComponent::NotifyAbilityExclusiveAbilitiesDisabled(bool bDisabled, const UGameplayAbility* AbilityToIgnore)
-{
-	ABILITYLIST_SCOPE_LOCK();
-
-	/* Notify all exclusive abilities that they are now enabled/disabled. */
-	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
-	{
-		if (const UCrashGameplayAbilityBase* CrashAbility = Cast<UCrashGameplayAbilityBase>(AbilitySpec.Ability))
-		{
-			if (CrashAbility->GetActivationGroup() == EAbilityActivationGroup::Exclusive_Replaceable ||
-				CrashAbility->GetActivationGroup() == EAbilityActivationGroup::Exclusive_Blocking)
-			{
-				if (CrashAbility->GetClass() != AbilityToIgnore->GetClass())
-				{
-					BroadcastAbilityMessage((bDisabled ? CrashGameplayTags::TAG_Message_Ability_Disabled : CrashGameplayTags::TAG_Message_Ability_Enabled), AbilitySpec.Handle, true);
-				}
-			}
-		}
 	}
 }
