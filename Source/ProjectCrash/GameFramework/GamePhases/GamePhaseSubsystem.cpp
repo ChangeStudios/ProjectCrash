@@ -6,9 +6,33 @@
 #include "GameFramework/CrashLogging.h"
 #include "GameFramework/GameStateBase.h"
 #include "GamePhaseAbility.h"
+#include "GameFramework/CheatManager.h"
 
 UGamePhaseSubsystem::UGamePhaseSubsystem()
 {
+}
+
+void UGamePhaseSubsystem::StartMatch()
+{
+	const UWorld* World = GetWorld();
+	UCrashAbilitySystemComponent* GameStateASC = World->GetGameState()->FindComponentByClass<UCrashAbilitySystemComponent>();
+
+	TArray<FGameplayAbilitySpec*> ActivePhaseSpecs;
+	for (const auto& KVP : ActivePhases)
+	{
+
+		const FGameplayAbilitySpecHandle ActivePhaseHandle = KVP.Key;
+		if (FGameplayAbilitySpec* Spec = GameStateASC->FindAbilitySpecFromHandle(ActivePhaseHandle))
+		{
+			ActivePhaseSpecs.Add(Spec);
+		}
+	}
+
+	for (const FGameplayAbilitySpec* ActivePhaseSpec : ActivePhaseSpecs)
+	{
+		UGamePhaseAbility* ActivePhaseAbility = CastChecked<UGamePhaseAbility>(ActivePhaseSpec->GetPrimaryInstance());
+		ActivePhaseAbility->OnMatchStarted();
+	}
 }
 
 bool UGamePhaseSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const

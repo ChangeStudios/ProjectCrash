@@ -6,7 +6,7 @@
 #include "AbilitySystem/Abilities/CrashGameplayAbilityBase.h"
 #include "AbilitySystem/Components/CrashAbilitySystemComponent.h"
 #include "Components/Image.h"
-#include "UI/Deprecated/CrashActionWidget.h"
+#include "UI/Deprecated/CrashActionWidget_Deprecated.h"
 
 void UAbilitySlotWidget::BindSlotToAbility(UGameplayAbility* Ability, const UInputAction* InputAction, UCrashAbilitySystemComponent* OwningASC)
 {

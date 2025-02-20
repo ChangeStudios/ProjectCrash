@@ -12,7 +12,6 @@
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "Player/CrashPlayerState.h"
 #include "GameFramework/GameplayMessageSubsystem.h"
-#include "GameFramework/Messages/CrashGameplayEffectMessage.h"
 #include "GameFramework/Messages/CrashVerbMessage.h"
 
 #if WITH_EDITOR
@@ -189,15 +188,6 @@ void ACrashGameState::MulticastReliableMessageToClients_Implementation(const FCr
 	if (GetNetMode() == NM_Client)
 	{
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
-	}
-}
-
-void ACrashGameState::MulticastReliableMessageToClients_GameplayEffect_Implementation(FGameplayTag Channel, const FCrashGameplayEffectMessage Message)
-{
-	// Locally broadcast the received message if this is a client.
-	if (GetNetMode() == NM_Client)
-	{
-		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Channel, Message);
 	}
 }
 

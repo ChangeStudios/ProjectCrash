@@ -25,7 +25,6 @@ AGameplayAbilityTargetActor_CollisionDetector::AGameplayAbilityTargetActor_Colli
 	CollisionProfile = FName("CapsuleHitDetection");
 	bAttachToCharacter = false;
 	bRepeatTargets = false;
-	bResetTargetsOnStart = true;
 
 	Targets = TArray<AActor*>();
 }
@@ -34,7 +33,8 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 {
 	Super::StartTargeting(Ability);
 
-	SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
+	SourceActor = Ability->GetAvatarActorFromActorInfo();
+	Filter.Filter->SelfActor = SourceActor;
 	StartLocation.SourceActor = SourceActor;
 	StartLocation.SourceAbility = Ability;
 	StartLocation.LiteralTransform = IsValid(CollisionDetector) ? CollisionDetector->GetComponentTransform() : FTransform();
@@ -49,17 +49,13 @@ void AGameplayAbilityTargetActor_CollisionDetector::StartTargeting(UGameplayAbil
 	// Attach this target actor to the owning character if desired.
 	if (bAttachToCharacter)
 	{
-		if (AActor* Avatar = Ability->GetAvatarActorFromActorInfo())
+		if (IsValid(SourceActor))
 		{
-			AttachToActor(Avatar, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			AttachToActor(SourceActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		}
 	}
 
-	// Reset the hit targets each time targeting restarts, if desired.
-	if (bResetTargetsOnStart)
-	{
-		Targets.Empty();
-	}
+	Targets.Empty();
 
 	// Bind a callback to when another actor overlaps this collision component.
 	if (!CollisionDetector->OnComponentBeginOverlap.IsAlreadyBound(this, &ThisClass::OnCollisionBegin))
@@ -107,6 +103,8 @@ void AGameplayAbilityTargetActor_CollisionDetector::CancelTargeting()
 
 	CanceledDelegate.Broadcast(FGameplayAbilityTargetDataHandle());
 
+	Targets.Empty();
+
 	// Clean up targeting actor.
 	StopTargeting();
 }
@@ -119,6 +117,18 @@ void AGameplayAbilityTargetActor_CollisionDetector::OnCollisionBegin(UPrimitiveC
 		if (Filter.Filter.IsValid() && !Filter.FilterPassesForActor(OtherActor))
 		{
 			return;
+		}
+
+		// Check if the actor has any tags that cause us to ignore them.
+		if (IgnoredTargetTags.Num())
+		{
+			if (UAbilitySystemComponent* OtherASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OtherActor))
+			{
+				if (OtherASC->HasAnyMatchingGameplayTags(IgnoredTargetTags))
+				{
+					return;
+				}
+			}
 		}
 
 		// Check if the actor has already been detected as a target.

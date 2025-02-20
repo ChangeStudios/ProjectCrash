@@ -32,7 +32,11 @@ public:
 	/** Finds the optimal world for running server cheats in PIE. */
 	static UWorld* FindPlayInEditorAuthorityWorld();
 
-	/** Attempts to find a class with a given name. */
+	/**
+	 * Attempts to find a class with a given name.
+	 *
+	 * For blueprint classes, the name should be formatted as "[Name].[Name]_C".
+	 */
 	static UClass* FindClassByName(const FString& SearchToken, UClass* DesiredBaseClass);
 
 	/** Templated version of FindClassByName, returning the found class as a subclass of the desired class. */

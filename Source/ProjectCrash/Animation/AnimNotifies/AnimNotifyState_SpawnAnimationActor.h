@@ -6,6 +6,8 @@
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "AnimNotifyState_SpawnAnimationActor.generated.h"
 
+class UMaterialInterface;
+
 /**
  * Spawns an actor attached to this animation. The actor is destroyed when the notify ends.
  *
@@ -60,6 +62,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "First-Person?")
 	bool bFirstPerson;
 
+	/** Whether to override the spawned mesh's materials. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Enable Material Overrides")
+	uint32 bOverrideMaterials : 1;
+
+	/** The materials to use for each of the spawned mesh's material indices. Overrides the mesh's default materials.
+	 * Indices without a valid material will be skipped, and revert to the mesh's default material. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (EditCondition = "bOverrideMaterials", EditConditionHides, ScriptName = "MaterialOverrides"))
+	TArray<TObjectPtr<UMaterialInterface>> OverrideMaterials;
+
+	/** The overlay material to apply to the mesh. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (EditCondition = "bOverrideMaterials", EditConditionHides))
+	TObjectPtr<UMaterialInterface> OverlayMaterial;
+
 	/** Optional animation to play on the animation actor when spawned, if it's a skeletal mesh. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Actor Animation to Play", Meta = (EditConditionHides = "true"))
 	TObjectPtr<UAnimationAsset> ActorAnimation;
@@ -79,6 +94,9 @@ private:
 	 * client. */
 	UPROPERTY()
 	TArray<AActor*> SpawnedActors;
+
+	/** Applies optional material overrides to the given mesh component. */
+	void ApplyMaterialOverrides(UMeshComponent* MeshComp);
 
 
 

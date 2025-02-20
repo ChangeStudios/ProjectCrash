@@ -6,6 +6,8 @@
 #include "AbilitySystemGlobals.h"
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "Abilities/GameplayAbilityTypes.h"
+#include "AbilitySystemComponent.h"
+#include "CrashGameplayTags.h"
 #include "GameFramework/Teams/TeamSubsystem.h"
 #include "CrashGameplayAbilityTypes.generated.h"
 
@@ -164,15 +166,28 @@ struct FCrashTargetDataFilter : public FGameplayTargetDataFilter
 		}
 
 		// All targets must have an ability system component.
-		if (UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered) == nullptr)
+		UAbilitySystemComponent* ActorASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ActorToBeFiltered);
+		if (ActorASC == nullptr)
 		{
 			return (bReverseFilter ^ false);
+		}
+		// Invulnerability filter.
+		else if (ActorASC->HasMatchingGameplayTag(CrashGameplayTags::TAG_State_Invulnerable))
+		{
+			if (bIgnoreInvulnerableTargets)
+			{
+				return (bReverseFilter ^ false);
+			}
 		}
 
 		return (bReverseFilter ^ true);
 	}
 
 	/** Filter based on the team alignment of the target, relative to Self actor. Self must be set. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Filter)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true), Category = Filter)
 	TEnumAsByte<ETargetDataFilterTeam::Type> TeamFilter = ETargetDataFilterTeam::TDFT_Any;
+
+	/** If true, targets with the "Invulnerable" status effect will be filtered out. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true), Category = Filter)
+	bool bIgnoreInvulnerableTargets = true;
 };

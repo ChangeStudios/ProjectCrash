@@ -85,7 +85,8 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 	const float MaxMovementSpeed = GetCrashCharacterMovementComponent()->GetMaxSpeed();
 
 	// Calculate the forward/backward movement spring.
-	float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.X * MoveSwayForwardBackwardSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
+	const float ClampedSpeedX = FMath::Clamp(LocalVelocity2D.X, -MaxMovementSpeed, MaxMovementSpeed);
+	const float SpringTargetForwardBackward = UKismetMathLibrary::NormalizeToRange((ClampedSpeedX * MoveSwayForwardBackwardSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
 	CurrentSpringMoveForwardBackward = UpdateFloatSpringInterp
 	(
@@ -96,7 +97,8 @@ void UFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 	);
 
 	// Calculate the right/left movement spring.
-	float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((LocalVelocity2D.Y * MoveSwayRightLeftSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
+	const float ClampedSpeedY = FMath::Clamp(LocalVelocity2D.Y, -MaxMovementSpeed, MaxMovementSpeed);
+	const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((ClampedSpeedY * MoveSwayRightLeftSpringModelData.InterpSpeed), 0.0f, MaxMovementSpeed);
 
 	CurrentSpringMoveRightLeft = UpdateFloatSpringInterp
 	(

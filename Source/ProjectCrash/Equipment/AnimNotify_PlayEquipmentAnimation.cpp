@@ -45,7 +45,10 @@ void UAnimNotify_PlayEquipmentAnimation::Notify(USkeletalMeshComponent* MeshComp
 				// Send the equipment animation to every active equipment actor.
 				for (AEquipmentActor* EquipmentActor : CurrentEquipment->GetSpawnedActors())
 				{
-					EquipmentActor->ProcessEquipmentAnimation(AnimationTag, EquipmentPerspective);
+					if (IsValid(EquipmentActor))
+					{
+						EquipmentActor->ProcessEquipmentAnimation(AnimationTag, EquipmentPerspective);
+					}
 				}
 			}
 		}
