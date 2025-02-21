@@ -56,6 +56,16 @@ protected:
 
 
 
+	// Manual phase controls.
+
+public:
+
+	/** Called when the subsystem's "StartMatch" function is called. */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnMatchStarted();
+
+
+
 	// Validation.
 
 public:
