@@ -107,8 +107,7 @@ void UAbilityWidgetBase::OnAbilityMessageReceived(FGameplayTag Channel, const FC
 		return;
 	}
 
-	// TODO: This is failing when starting levels.
-	if (!ensure(BoundASC.IsValid()))
+	if (!BoundASC.IsValid())
 	{
 		return;
 	}
