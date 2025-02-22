@@ -33,7 +33,8 @@ public class ProjectCrash : ModuleRules
 			"ModularGameplay",
 			"ModularGameplayActors",
 			"Niagara",
-			"PhysicsCore"
+			"PhysicsCore",
+			"SteamCorePro",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

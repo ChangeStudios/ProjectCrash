@@ -73,7 +73,7 @@
 		},
 		{
 			"Name": "OnlineSubsystemSteam",
-			"Enabled": true
+			"Enabled": false
 		},
 		{
 			"Name": "SkeletalMeshModelingTools",
@@ -81,7 +81,7 @@
 		},
 		{
 			"Name": "SteamSockets",
-			"Enabled": true
+			"Enabled": false
 		},
 		{
 			"Name": "Volumetrics",
@@ -159,6 +159,11 @@
 		{
 			"Name": "Spatialization",
 			"Enabled": true
+		},
+		{
+			"Name": "SteamCorePro",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/459e1c72939b4ead8b5132187808a3e7"
 		}
 	],
 	"TargetPlatforms": [
