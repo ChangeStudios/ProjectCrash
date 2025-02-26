@@ -32,4 +32,79 @@ void UAnimNotifyState_SpawnAnimActor::NotifyBegin(USkeletalMeshComponent* MeshCo
 
 		return;
 	}
+
+	// Spawn a static mesh actor if the mesh to spawn is a static mesh.
+	if (MeshToSpawn->IsA(UStaticMesh::StaticClass()))
+	{
+		if (AStaticMeshActor* SpawnedActorStatic = World->SpawnActorDeferred<AStaticMeshActor>(AStaticMeshActor::StaticClass(), SpawnTransform, MeshComp->GetOwner()))
+		{
+			SpawnedActorStatic->GetStaticMeshComponent()->SetStaticMesh(Cast<UStaticMesh>(MeshToSpawn));
+			ApplyMaterialOverrides(SpawnedActorStatic->GetStaticMeshComponent());
+			SpawnedActor = SpawnedActorStatic;
+		}
+	}
+	// Spawn a skeletal mesh actor if the mesh to spawn is a skeletal mesh.
+	else
+	{
+		if (ASkeletalMeshActor* SpawnedActorSkeletal = World->SpawnActorDeferred<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), SpawnTransforms, MeshComp->GetOwner()))
+		{
+			SpawnedActorSkeletal->GetSkeletalMeshComponent()->SetSkeletalMesh(Cast<USkeletalMesh>(MeshToSpawn));
+			ApplyMaterialOverrides(SpawnedActorSkeletal->GetSkeletalMeshComponent());
+			SpawnedActor = SpawnedActorSkeletal;
+
+			if (SpawnedActorSkeletal)
+			{
+				SpawnedActorSkeletal->GetSkeletalMeshComponent()->PlayAnimation(ActorAnimation, ActorAnimationLoops);
+			}
+		}
+	}
+
+	// Set up the spawned actor.
+	if (ensure(SpawnedActor))
+	{
+		SpawnedActor->SetActorEnableCollision(false);
+		SpawnedActor->AttachToComponent(MeshComp, FAttachmentTransformRule::KeepRelativeTransform, AttachSocket);
+		SpawnedActorStatic->FinishSpawning(SpawnTransform);
+	}
+}
+
+void UAnimNotifyState_SpawnAnimActor::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+{
+	Super::NotifyEnd(MeshComp, Animation, EventReference);
+
+	// Destroy the animation actor, if one was spawned.
+	if (IsValid(SpawnedActor))
+	{
+		/* We let the actor stick around for a second before destroying it, but we hide its mesh. This is to let any 
+		 * other timed events (e.g. a particle effect spawned by the spawned actor's animation) finish before the actor 
+		 * is destroyed. */
+		SpawnedActor->SetLifeSpan(1.0f);
+		SpawnedActor->ForEachComponent(false, [](UActorComponent* InComponent)
+		{
+			if (UMeshComponent* CompAsMesh = Cast<UMeshComponent>(InComponent))
+			{
+				CompAsMesh->SetHiddenInGame(true, false);
+			}
+		});
+	}
+}
+
+void UAnimNotifyState_SpawnAnimActor::ApplyMaterialOverrides(UMeshComponent* MeshComp)
+{
+	if (bOverrideMaterials && IsValid(MeshComp))
+	{
+		const int32 NumOverrideMaterials = FMath::Min(OverrideMaterials.Num(), MeshComp->GetNumMaterials());
+		for (int32 OverrideIndex = 0; OverrideIndex < NumOverrideMaterials; ++OverrideIndex)
+		{
+			if (UMaterialInterface* OverrideMat = OverrideMaterials[OverrideIndex])
+			{
+				MeshComp->SetMaterial(OverrideIndex, OverrideMat);
+			}
+		}
+
+		if (OverlayMaterial)
+		{
+			MeshComp->SetOverlayMaterial(OverlayMaterial);
+		}
+	}
 }

@@ -24,6 +24,9 @@ public:
 	// Spawns the actor defined by this notify.
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 
+	// Destroys the animation actor when the notify ends.
+	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+
 
 
 	// Editor parameters.
@@ -62,4 +65,17 @@ protected:
 	// Whether the actor animation should loop.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Loop Actor Animation?", Meta = (EditConditionHides = "true"))
 	bool ActorAnimationLoops;
+
+
+
+	// Internals.
+
+private:
+
+	// The actor spawned by this notify, that will be destroyed when the notify ends.
+	UPROPERTY()
+	AActor* SpawnedActor;
+
+	// Applies optional material overrides to the given mesh component.
+	void ApplyMaterialOverrides(UMeshComponent* MeshComp);
 };
