@@ -44,6 +44,8 @@ void UMyFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float 
 	UpdateVelocityData();
 
 	UpdateAimData(DeltaSeconds);
+
+	UpdateMovementSwayData();
 }
 
 void UMyFirstPersonCharacterAnimInstance::UpdateVelocityData()
@@ -127,7 +129,7 @@ void UMyFirstPersonCharacterAnimInstance::UpdateFallingOffsetData()
 {
 }
 
-float UMyFirstPersonCharacterAnimInstance::UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FFloatSpringModelData& SpringData)
+float UMyFirstPersonCharacterAnimInstance::UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FMyFloatSpringModelData& SpringData)
 {
 	const float DeltaSeconds = GetDeltaSeconds();
 

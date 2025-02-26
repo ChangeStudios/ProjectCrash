@@ -19,7 +19,7 @@ class UMaterialInterface;
  * animation actors easier, as we can preview the exact skin-specific actors being spawned in-editor, instead of
  * having to guess the animation actors' appearance when editing skin data assets.
  */
-UCLASS(Const, HideCategories = Object, CollapseCategories, DisplayName = "Spawn Animation Actor", Meta = (ToolTip = "Spawns an actor attached to this animation. The actor is destroyed when the notify ends."))
+UCLASS(Const, HideCategories = Object, CollapseCategories, DisplayName = "Trail with Perspective", Meta = (ToolTip = "Spawns an actor attached to this animation. The actor is destroyed when the notify ends."))
 class PROJECTCRASH_API UAnimNotifyState_SpawnAnimationActor : public UAnimNotifyState
 {
 	GENERATED_BODY()

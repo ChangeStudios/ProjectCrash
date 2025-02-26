@@ -11,7 +11,7 @@
  * Defines the behavior of a spring model. Used for performing calculations for sway animations.
  */
 USTRUCT(BlueprintType)
-struct FFloatSpringModelData
+struct FMyFloatSpringModelData
 {
 	GENERATED_BODY()
 
@@ -112,11 +112,11 @@ protected:
 
 	// The spring model used to drive forward/backward movement sway for this animation instance.
 	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Movement Sway", DisplayName = "Forward/Backward Sway Spring Model")
-	FFloatSpringModelData MoveSwayForwardBackwardSpringModelData;
+	FMyFloatSpringModelData MoveSwayForwardBackwardSpringModelData;
 
 	// The spring model used to drive right/left movement sway for this animation instance.
 	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Movement Sway", DisplayName = "Right/Left Sway Spring Model")
-	FFloatSpringModelData MoveSwayRightLeftSpringModelData;
+	FMyFloatSpringModelData MoveSwayRightLeftSpringModelData;
 
 protected:
 
@@ -192,5 +192,5 @@ protected:
 	 * @param SpringData			Data used to define the behavior of the spring model.
 	 * @return						The resulting spring interpolation value.
 	 */
-	float UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FFloatSpringModelData& SpringData);
+	float UpdateFloatSpringInterp(float SpringCurrent, float SpringTarget, FFloatSpringState& SpringState, FMyFloatSpringModelData& SpringData);
 };
