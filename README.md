@@ -6,7 +6,7 @@ Several external documents have been written to detail some of the more complex 
 
 * [Gameplay Abilities System (GAS)](https://docs.google.com/document/d/1BSkc9kgwZd3VlKbZSo5VpNGknWj3YKsn9xwcWroMYqA/edit?usp=sharing)
 * [Input System](https://docs.google.com/document/d/1FKrdgqlygmAeED8yWPM5JkIU46k4OLQpI_tIjP9rxyo/edit?usp=sharing)
-* [Modular Game Mode (WIP)](https://docs.google.com/document/d/1Eq1ebPx65DhRCjIHeh0O1kCMEx1oCepu6Uy32sMJgCI/edit?usp=sharing)
+* [Modular Game Mode Framework (WIP)](https://docs.google.com/document/d/1Eq1ebPx65DhRCjIHeh0O1kCMEx1oCepu6Uy32sMJgCI/edit?usp=sharing)
 
 A technical demo showcasing some of these features is available [here](https://www.youtube.com/watch?v=vdXE34esnME).
 
