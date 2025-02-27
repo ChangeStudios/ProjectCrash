@@ -3,6 +3,9 @@
 
 #include "Animation/AnimNotifies/AnimNotifyState_SpawnAnimActor.h"
 
+#include "Animation/SkeletalMeshActor.h"
+#include "Engine/StaticMeshActor.h"
+
 
 UAnimNotifyState_SpawnAnimActor::UAnimNotifyState_SpawnAnimActor()
 {
@@ -46,7 +49,7 @@ void UAnimNotifyState_SpawnAnimActor::NotifyBegin(USkeletalMeshComponent* MeshCo
 	// Spawn a skeletal mesh actor if the mesh to spawn is a skeletal mesh.
 	else
 	{
-		if (ASkeletalMeshActor* SpawnedActorSkeletal = World->SpawnActorDeferred<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), SpawnTransforms, MeshComp->GetOwner()))
+		if (ASkeletalMeshActor* SpawnedActorSkeletal = World->SpawnActorDeferred<ASkeletalMeshActor>(ASkeletalMeshActor::StaticClass(), SpawnTransform, MeshComp->GetOwner()))
 		{
 			SpawnedActorSkeletal->GetSkeletalMeshComponent()->SetSkeletalMesh(Cast<USkeletalMesh>(MeshToSpawn));
 			ApplyMaterialOverrides(SpawnedActorSkeletal->GetSkeletalMeshComponent());
@@ -63,8 +66,8 @@ void UAnimNotifyState_SpawnAnimActor::NotifyBegin(USkeletalMeshComponent* MeshCo
 	if (ensure(SpawnedActor))
 	{
 		SpawnedActor->SetActorEnableCollision(false);
-		SpawnedActor->AttachToComponent(MeshComp, FAttachmentTransformRule::KeepRelativeTransform, AttachSocket);
-		SpawnedActorStatic->FinishSpawning(SpawnTransform);
+		SpawnedActor->AttachToComponent(MeshComp, FAttachmentTransformRules::KeepRelativeTransform, AttachSocket);
+		SpawnedActor->FinishSpawning(SpawnTransform);
 	}
 }
 
@@ -108,3 +111,25 @@ void UAnimNotifyState_SpawnAnimActor::ApplyMaterialOverrides(UMeshComponent* Mes
 		}
 	}
 }
+
+#if WITH_EDITOR
+bool UAnimNotifyState_SpawnAnimActor::CanEditChange(const FProperty* InProperty) const
+{
+	bool bIsEditable = Super::CanEditChange(InProperty);
+
+	if (bIsEditable && InProperty)
+	{
+		const FName PropertyName = InProperty->GetFName();
+
+		/* Animation properties can't be edited unless this notify spawns a skeletal mesh (static meshes can't play
+		 * animations). */
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(UAnimNotifyState_SpawnAnimActor, ActorAnimation) ||
+			PropertyName == GET_MEMBER_NAME_CHECKED(UAnimNotifyState_SpawnAnimActor, ActorAnimationLoops))
+		{
+			bIsEditable = IsValid(MeshToSpawn) && MeshToSpawn->IsA(USkeletalMesh::StaticClass());
+		}
+	}
+
+	return bIsEditable;
+}
+#endif // WITH_EDITOR

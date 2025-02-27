@@ -78,4 +78,15 @@ private:
 
 	// Applies optional material overrides to the given mesh component.
 	void ApplyMaterialOverrides(UMeshComponent* MeshComp);
+
+
+
+#if WITH_EDITOR
+
+public:
+
+	// Hides animation properties if the selected mesh is not a skeletal mesh.
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+
+#endif // WITH_EDITOR
 };
