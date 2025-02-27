@@ -21,6 +21,9 @@ public:
 	// Default constructor.
 	UAnimNotifyState_SpawnAnimActor();
 
+	// Uses the spawned mesh as this notify's name.
+	virtual FString GetNotifyName_Implementation() const override;
+
 	// Spawns the actor defined by this notify.
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 

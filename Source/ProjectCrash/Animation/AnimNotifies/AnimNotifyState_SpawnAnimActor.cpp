@@ -14,6 +14,18 @@ UAnimNotifyState_SpawnAnimActor::UAnimNotifyState_SpawnAnimActor()
 #endif
 }
 
+FString UAnimNotifyState_SpawnAnimActor::GetNotifyName_Implementation() const
+{
+	if (MeshToSpawn)
+	{
+		return ("Spawn " + GetNameSafe(MeshToSpawn));
+	}
+	else
+	{
+		return "Spawn Animation Actor (Unset)";
+	}
+}
+
 void UAnimNotifyState_SpawnAnimActor::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
