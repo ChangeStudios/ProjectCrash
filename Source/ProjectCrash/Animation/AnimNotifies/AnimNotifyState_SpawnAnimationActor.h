@@ -92,6 +92,7 @@ private:
 	/** The actors spawned by this notify, that will be destroyed when the notify ends. This is an array instead of a
 	 * single actor because this notify may play on a replicated montage, which will spawn a local actor for each
 	 * client. */
+	// TODO: This has been fixed; change to pointer.
 	UPROPERTY()
 	TArray<AActor*> SpawnedActors;
 
