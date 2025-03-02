@@ -46,6 +46,8 @@ void UMyFirstPersonCharacterAnimInstance::NativeThreadSafeUpdateAnimation(float 
 	UpdateAimData(DeltaSeconds);
 
 	UpdateMovementSwayData();
+
+	UpdateAimSwayData();
 }
 
 void UMyFirstPersonCharacterAnimInstance::UpdateVelocityData()
@@ -77,18 +79,13 @@ void UMyFirstPersonCharacterAnimInstance::UpdateAimData(float DeltaSeconds)
 	// Use a normalized delta to account for winding (e.g. 359.0 -> 1.0 should be 2.0, not -358.0).
 	const FRotator RotationDelta = UKismetMathLibrary::NormalizedDeltaRotator(AimRotation, PreviousAimRotation);
 
-	const float MaxAimSpeed = 720.0f;
-	// Halved because characters' pitch has half the range of their yaw: (-90 -> 90) vs. (0 -> 360).
-	const float MaxAimSpeedUpDown = (MaxAimSpeed / 2.0f);
+	const float InverseDeltaSeconds = ((DeltaSeconds > 0.0f) ? (1.0f / DeltaSeconds) : 0.0f); // Avoid dividing by 0.
 
 	/* Aim speed in degrees/second:
 	 *		Degrees/1 Second = (Degrees/1 Frame) * (Frames/1 Second)
 	 */
-	AimSpeedRightLeft = FMath::Clamp((RotationDelta.Yaw * SafeInvertDeltaSeconds(DeltaSeconds)), -MaxAimSpeed, MaxAimSpeed);
-	AimSpeedUpDown = FMath::Clamp((RotationDelta.Pitch * SafeInvertDeltaSeconds(DeltaSeconds)), -MaxAimSpeedUpDown, MaxAimSpeedUpDown);
-
-	CurrentSpringAimRightLeft = UKismetMathLibrary::NormalizeToRange(AimSpeedRightLeft, 0.0f, MaxAimSpeed);
-	CurrentSpringAimUpDown = UKismetMathLibrary::NormalizeToRange(AimSpeedUpDown, 0.0f, MaxAimSpeedUpDown);
+	AimSpeedRightLeft = RotationDelta.Yaw * InverseDeltaSeconds;
+	AimSpeedUpDown = RotationDelta.Pitch * InverseDeltaSeconds;
 }
 
 void UMyFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
@@ -123,6 +120,32 @@ void UMyFirstPersonCharacterAnimInstance::UpdateMovementSwayData()
 
 void UMyFirstPersonCharacterAnimInstance::UpdateAimSwayData()
 {
+	const float MaxAimSpeed = 720.0f;
+	const float MaxAimSpeedUpDown = (MaxAimSpeed / 2.0f); // Halved because characters' pitch has half the range of their yaw: (-90 -> 90) vs. (0 -> 360).
+
+	// Calculate the right/left aim sway spring.
+	const float ClampedSpeedRightLeft = FMath::Clamp(AimSpeedRightLeft, -MaxAimSpeed, MaxAimSpeed);
+	const float SpringTargetRightLeft = UKismetMathLibrary::NormalizeToRange((ClampedSpeedRightLeft * AimSwayRightLeftSpringModelData.InterpSpeed), 0.0f, MaxAimSpeed);
+
+	CurrentSpringAimRightLeft = UpdateFloatSpringInterp
+	(
+		CurrentSpringAimRightLeft,
+		SpringTargetRightLeft,
+		SpringStateAimRightLeft,
+		AimSwayRightLeftSpringModelData
+	);
+
+	// Calculate the up/down aim sway spring.
+	const float ClampedSpeedUpDown = FMath::Clamp(AimSpeedUpDown, -MaxAimSpeedUpDown, MaxAimSpeedUpDown);
+	const float SpringTargetUpDown = UKismetMathLibrary::NormalizeToRange((ClampedSpeedUpDown * AimSwayUpDownSpringModelData.InterpSpeed), 0.0f, MaxAimSpeedUpDown);
+
+	CurrentSpringAimUpDown = UpdateFloatSpringInterp
+	(
+		CurrentSpringAimUpDown,
+		SpringTargetUpDown,
+		SpringStateAimUpDown,
+		AimSwayUpDownSpringModelData
+	);
 }
 
 void UMyFirstPersonCharacterAnimInstance::UpdateFallingOffsetData()

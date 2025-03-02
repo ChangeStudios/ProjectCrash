@@ -64,6 +64,7 @@ protected:
 	// Updates movement sway data using a spring model.
 	void UpdateMovementSwayData();
 
+	// Updates aim sway data using a spring model.
 	void UpdateAimSwayData();
 
 	void UpdateFallingOffsetData();
@@ -140,22 +141,35 @@ private:
 
 	// Aim sway.
 
+// Spring models.
 protected:
 
-	/** The current spring value for the right/left aim sway spring. */
+	// The spring model used to drive right/left aim sway for this animation instance.
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Aim Sway", DisplayName = "Right/Left Sway Spring Model")
+	FMyFloatSpringModelData AimSwayRightLeftSpringModelData;
+
+	// The spring model used to drive up/down aim sway for this animation instance.
+	UPROPERTY(EditDefaultsOnly, Category = "Spring Models|Aim Sway", DisplayName = "Up/Down Sway Spring Model")
+	FMyFloatSpringModelData AimSwayUpDownSpringModelData;
+
+// Current spring values.
+protected:
+
+	// The current spring value for the right/left aim sway spring.
 	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway", DisplayName = "Current Aim Sway Value (Right/Left)")
 	float CurrentSpringAimRightLeft;
 
-	/** The current spring value for the up/down aim sway spring. */
+	// The current spring value for the up/down aim sway spring.
 	UPROPERTY(BlueprintReadOnly, Category = "Sway Data|Aim Sway", DisplayName = "Current Aim Sway Value (Up/Down)")
 	float CurrentSpringAimUpDown;
 
+// Internal spring states.
 private:
 
-	/** Spring state for the right/left aim sway's spring calculations. */
+	// Spring state for the right/left aim sway's spring calculations.
 	FFloatSpringState SpringStateAimRightLeft;
 
-	/** Spring state for the up/down aim sway's spring calculations. */
+	// Spring state for the up/down aim sway's spring calculations.
 	FFloatSpringState SpringStateAimUpDown;
 
 
