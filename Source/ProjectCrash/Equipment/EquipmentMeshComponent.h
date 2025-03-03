@@ -38,20 +38,30 @@ public:
 	 * necessary. */
 	virtual void BeginPlay() override;
 
-	/** The perspective with which this mesh is used. */
+	/** Performs validation to ensure this component is used properly. */
+	virtual void OnRegister() override;
+
+	/** The perspective with which this mesh is used (i.e. which character mesh this component is attached to). */
 	EEquipmentPerspective GetEquipmentPerspective() const { return Perspective; }
+
+	/** The set of equipment to which this mesh belongs. */
+	FGameplayTag GetEquipmentSetTag() const { return EquipmentSetTag; }
+
+	/** The specific equipment which this mesh represents. */
+	FGameplayTag GetEquipmentTag() const { return EquipmentTag; }
 
 protected:
 
-	/** The perspective with which this mesh is used (i.e. which character mesh this component is attached to). */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
-	EEquipmentPerspective Perspective = EEquipmentPerspective::ThirdPerson;
-
 	/** The set of equipment to which this mesh belongs (e.g. Equipment.Knight.SwordAndShield). */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment", Meta = (Categories = "Equipment"))
-	FGameplayTag EquipmentSet;
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Equipment Set", Meta = (Categories = "Equipment"))
+	FGameplayTag EquipmentSetTag;
 
 	/** The specific equipment which this mesh represents (e.g. Equipment.Knight.SwordAndShield.Sword). */
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment", Meta = (Categories = "Equipment"))
-	FGameplayTag Equipment;
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment", DisplayName = "Equipment", Meta = (Categories = "Equipment"))
+	FGameplayTag EquipmentTag;
+
+private:
+
+	/** The perspective with which this mesh is used (i.e. which character mesh this component is attached to). */
+	EEquipmentPerspective Perspective = EEquipmentPerspective::ThirdPerson;
 };
