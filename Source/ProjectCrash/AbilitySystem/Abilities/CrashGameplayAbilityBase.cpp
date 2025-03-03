@@ -39,14 +39,6 @@
 	}																																						\
 }
 
-namespace Crash
-{
-	static int32 CooldownsDisabled = 0;
-	static FAutoConsoleVariableRef CVarCooldownsDisabled(TEXT("Crash.CooldownsDisabled"),
-		CooldownsDisabled,
-		TEXT("Disables cooldowns and costs for gameplay abilities. (Cooldowns will still appear in HUD)"));
-}
-
 UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -56,6 +48,8 @@ UCrashGameplayAbilityBase::UCrashGameplayAbilityBase(const FObjectInitializer& O
 	
 	ActivationMethod = EAbilityActivationMethod::OnInputTriggered;
 	ActivationGroup = EAbilityActivationGroup::Independent;
+
+	CooldownDuration = 0.0f;
 }
 
 void UCrashGameplayAbilityBase::TryActivatePassiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
@@ -375,32 +369,6 @@ bool UCrashGameplayAbilityBase::ShouldSetCooldownDuration() const
 	}
 
 	return false;
-}
-
-bool UCrashGameplayAbilityBase::CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
-{
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	// Disable cooldowns in editor and debug builds if desired.
-	if (Crash::CooldownsDisabled != 0)
-	{
-		return true;
-	}
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-
-	return Super::CheckCooldown(Handle, ActorInfo, OptionalRelevantTags);
-}
-
-bool UCrashGameplayAbilityBase::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
-{
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	// Disable costs in editor and debug builds if desired.
-	if (Crash::CooldownsDisabled != 0)
-	{
-		return true;
-	}
-#endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-
-	return Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
 }
 
 void UCrashGameplayAbilityBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
