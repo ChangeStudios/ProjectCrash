@@ -46,17 +46,4 @@ protected:
 	 * using this notify in both the first- and third-person character animations. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", DisplayName = "Perspective to Play In")
 	EEquipmentPerspective EquipmentPerspective;
-
-
-
-#if WITH_EDITOR
-
-	// Data validation.
-
-public:
-
-	/** This notify requires a valid animation and equipment tag. */
-	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
-
-#endif // WITH_EDITOR
 };
