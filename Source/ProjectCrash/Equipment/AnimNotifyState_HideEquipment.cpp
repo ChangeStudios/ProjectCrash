@@ -12,7 +12,7 @@
 UAnimNotifyState_HideEquipment::UAnimNotifyState_HideEquipment()
 {
 #if WITH_EDITORONLY_DATA
-	// We won't have valid equipment in the editor, so there's no point in firing this.
+	// Equipment won't be visible in the animation editor.
 	bShouldFireInEditor = false;
 
 	NotifyColor = FColor(75, 225, 75);
@@ -23,47 +23,30 @@ void UAnimNotifyState_HideEquipment::NotifyBegin(USkeletalMeshComponent* MeshCom
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
-	// Make sure mesh and owning actor (the pawn with equipment) are valid.
+	// Make sure mesh and owner (the actor with equipment) are valid.
 	if (!IsValid(MeshComp) || !(IsValid(MeshComp->GetOwner())))
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to begin a \"Hide Equipment\" notify state in animation [%s], but it does not have a valid owning actor."), *GetNameSafe(Animation));
 		return;
 	}
 
-	// Retrieve the equipment component from the mesh's owning actor, which should be a pawn.
-	APawn* OwnerAsPawn = Cast<APawn>(MeshComp->GetOwner());
-	UEquipmentComponent* EquipmentComp = (OwnerAsPawn ? UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn) : nullptr);
-
-	if (!IsValid(EquipmentComp))
+	TArray<USceneComponent*> Children;
+	MeshComp->GetChildrenComponents(true, Children);
+	for (USceneComponent* ChildComponent : Children)
 	{
-		EQUIPMENT_LOG(Warning, TEXT("Attempted to begin a \"Hide Equipment\" notify state in animation [%s], but its owning actor [%s] does not have an equipment component."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
-		return;
-	}
-
-	// Iterate through each equipment actor for the current equipment and hide it.
-	TArray<USceneComponent*> AttachChildren = MeshComp->GetAttachChildren();
-	if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
-	{
-		for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
+		if (UEquipmentMeshComponent* EquipmentComponent = Cast<UEquipmentMeshComponent>(ChildComponent))
 		{
-			if (IsValid(EquipmentActor))
+			// Filter for specific equipment if desired.
+			if (FilterEquipment.Num() && !FilterEquipment.HasTagExact(EquipmentComponent->GetEquipmentTag()))
 			{
-				if (USceneComponent* Root = EquipmentActor->GetRootComponent())
-				{
-					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide
-					 * first-person equipment or vice versa. */
-					if (AttachChildren.Contains(Root))
-					{
-						// Filter to equipment attached to specific bones/sockets.
-						if (AttachedToSocket.IsNone() || (Root->GetAttachSocketName() == AttachedToSocket))
-						{
-							/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
-							 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
-							Root->SetHiddenInGame(true, true);
-						}
-					}
-				}
+				continue;
 			}
+
+			// TODO: Filter for ASC's current equipment.
+
+			/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
+			 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
+			EquipmentComponent->SetHiddenInGame(true, true);
 		}
 	}
 }
@@ -72,42 +55,28 @@ void UAnimNotifyState_HideEquipment::NotifyEnd(USkeletalMeshComponent* MeshComp,
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 	
-	// Make sure mesh and owning actor (the pawn with equipment) are valid.
+	// Make sure mesh and owner (the actor with equipment) are valid.
 	if (!IsValid(MeshComp) || !(IsValid(MeshComp->GetOwner())))
 	{
 		EQUIPMENT_LOG(Warning, TEXT("Attempted to end a \"Hide Equipment\" notify state in animation [%s], but it does not have a valid owning actor."), *GetNameSafe(Animation));
 		return;
 	}
 
-	// Retrieve the equipment component from the mesh's owning actor, which should be a pawn.
-	APawn* OwnerAsPawn = Cast<APawn>(MeshComp->GetOwner());
-	UEquipmentComponent* EquipmentComp = (OwnerAsPawn ? UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn) : nullptr);
-
-	if (!IsValid(EquipmentComp))
+	// We repeat this process instead of caching what we've hidden in case our current equipment changes.
+	TArray<USceneComponent*> Children;
+	MeshComp->GetChildrenComponents(true, Children);
+	for (USceneComponent* ChildComponent : Children)
 	{
-		EQUIPMENT_LOG(Warning, TEXT("Attempted to end a \"Hide Equipment\" notify state in animation [%s], but its owning actor [%s] does not have an equipment component."), *GetNameSafe(Animation), *GetNameSafe(MeshComp->GetOwner()));
-		return;
-	}
-
-	// Iterate through each equipment actor for the current equipment and unhide it.
-	if (const UEquipmentInstance* EquipmentInstance = EquipmentComp->GetEquipment())
-	{
-		for (const AEquipmentActor* EquipmentActor : EquipmentInstance->GetSpawnedActors())
+		if (UEquipmentMeshComponent* EquipmentComponent = Cast<UEquipmentMeshComponent>(ChildComponent))
 		{
-			if (IsValid(EquipmentActor))
+			if (FilterEquipment.Num() && !FilterEquipment.HasTagExact(EquipmentComponent->GetEquipmentTag()))
 			{
-				if (USceneComponent* Root = EquipmentActor->GetRootComponent())
-				{
-					/* Only hide equipment attached to the owning mesh, so third-person animations don't hide first-person 
-					 * equipment or vice versa. */
-					if (MeshComp->GetAttachChildren().Contains(Root))
-					{
-						/* Use HiddenInGame instead of Visibility to maintain perspectives. Equipment actors' perspective-based
-						 * visibility (e.g. hiding first-person actors when in third-person) is managed by Visibility. */
-						Root->SetHiddenInGame(false, true);
-					}
-				}
+				continue;
 			}
+
+			// TODO: Filter for ASC's current equipment.
+
+			EquipmentComponent->SetHiddenInGame(false, true);
 		}
 	}
 }

@@ -11,6 +11,23 @@
 
 UCrashDeveloperSettings::UCrashDeveloperSettings()
 {
+#if WITH_EDITOR
+	if (IConsoleVariable* CooldownsCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("AbilitySystem.IgnoreCooldowns")))
+	{
+		CooldownsCVar->OnChangedDelegate().AddWeakLambda(this, [this](IConsoleVariable* CVar)
+		{
+			bDisableCooldowns = CVar->GetBool();
+		});
+	}
+
+	if (IConsoleVariable* CostsCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("AbilitySystem.IgnoreCosts")))
+	{
+		CostsCVar->OnChangedDelegate().AddWeakLambda(this, [this](IConsoleVariable* CVar)
+		{
+			bDisableCosts = CVar->GetBool();
+		});
+	}
+#endif // WITH_EDITOR
 }
 
 FName UCrashDeveloperSettings::GetCategoryName() const
@@ -77,10 +94,16 @@ void UCrashDeveloperSettings::ApplySettings()
 		CVar->Set(bLogGameplayMessages);
 	}
 
-	// Whether cooldowns and costs should be disabled.
-	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("Crash.CooldownsDisabled")))
+	// Whether cooldowns should be disabled.
+	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("AbilitySystem.IgnoreCooldowns")))
 	{
-		CVar->Set(bDisableCooldowns);
+		CVar->SetWithCurrentPriority(bDisableCooldowns);
+	}
+
+	// Whether costs should be disabled.
+	if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("AbilitySystem.IgnoreCosts")))
+	{
+		CVar->SetWithCurrentPriority(bDisableCosts);
 	}
 }
 #endif // WITH_EDITOR

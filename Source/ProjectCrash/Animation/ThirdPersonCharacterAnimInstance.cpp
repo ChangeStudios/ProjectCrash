@@ -16,7 +16,7 @@
  * velocity with which the character landed is less than this, the alpha of the recovery animation will be scaled down
  * against this value. E.g. landing with a vertical velocity of (MAX_FALLING_SPEED / 2) will only apply the recovery
  * animation with an alpha of 0.5. */
-#define MAX_FALLING_SPEED 5000.0f
+#define MAX_FALLING_SPEED 2400.0f
 
 
 

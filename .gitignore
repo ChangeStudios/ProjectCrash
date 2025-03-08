@@ -77,3 +77,9 @@ Plugins/GameFeatures/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+ProjectCrash.sln.DotSettings.user
+
+# Local files for blog
+Source/ProjectCrash/Animation/MyFirstPersonCharacterAnimInstance.cpp
+Source/ProjectCrash/Animation/MyFirstPersonCharacterAnimInstance.h
+Content/Characters/Animation/ABP_FirstPersonCharacterBase.uasset
