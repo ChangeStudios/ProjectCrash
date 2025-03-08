@@ -12,7 +12,7 @@
 UAnimNotifyState_HideEquipment::UAnimNotifyState_HideEquipment()
 {
 #if WITH_EDITORONLY_DATA
-	// Equipment won't exist in the animation editor, so there's no point in firing this.
+	// Equipment won't be visible in the animation editor.
 	bShouldFireInEditor = false;
 
 	NotifyColor = FColor(75, 225, 75);

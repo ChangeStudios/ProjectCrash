@@ -18,8 +18,10 @@ UAnimNotify_PlayEquipmentAnimation::UAnimNotify_PlayEquipmentAnimation() :
 	EquipmentPerspective(EEquipmentPerspective::FirstPerson)
 {
 #if WITH_EDITORONLY_DATA
-	// Notify's default color in the editor.
-	NotifyColor = FColor(255, 25, 150);
+	// Equipment won't be visible in the animation editor.
+	bShouldFireInEditor = false;
+
+	NotifyColor = FColor(75, 225, 75);
 #endif
 }
 
@@ -35,22 +37,26 @@ FString UAnimNotify_PlayEquipmentAnimation::GetNotifyName_Implementation() const
 
 void UAnimNotify_PlayEquipmentAnimation::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	if (!IsValid(EquipmentAnimation) || !Equipment.IsValid())
+	Super::Notify(MeshComp, Animation, EventReference);
+
+	if (!IsValid(EquipmentAnimation) || !Equipment.IsValid() || !IsValid(MeshComp))
 	{
 		return;
 	}
 
-	const AActor* Owner = MeshComp->GetOwner();
-	TArray<UEquipmentMeshComponent*> EquipmentComponents;
-	Owner->GetComponents<UEquipmentMeshComponent>(EquipmentComponents);
-
-	// Play the specified animation on each equipment mesh in the owning actor with a matching tag and perspective.
-	for (UEquipmentMeshComponent* EquipmentComponent : EquipmentComponents)
+	if (const AActor* Owner = MeshComp->GetOwner())
 	{
-		if (EquipmentComponent->GetEquipmentTag() == Equipment &&
-			EquipmentComponent->GetEquipmentPerspective() == EquipmentPerspective)
+		TArray<UEquipmentMeshComponent*> EquipmentComponents;
+		Owner->GetComponents<UEquipmentMeshComponent>(EquipmentComponents);
+
+		// Play the specified animation on each equipment mesh in the owning actor with a matching tag and perspective.
+		for (UEquipmentMeshComponent* EquipmentComponent : EquipmentComponents)
 		{
-			EquipmentComponent->PlayAnimation(EquipmentAnimation, EquipmentAnimation->bLoop);
+			if (EquipmentComponent->GetEquipmentTag() == Equipment &&
+				EquipmentComponent->GetEquipmentPerspective() == EquipmentPerspective)
+			{
+				EquipmentComponent->PlayAnimation(EquipmentAnimation, EquipmentAnimation->bLoop);
+			}
 		}
 	}
 }
