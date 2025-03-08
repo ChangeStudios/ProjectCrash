@@ -3,10 +3,6 @@
 
 #include "Equipment/AnimNotify_PlayEquipmentAnimation.h"
 
-#include "EquipmentActor.h"
-#include "EquipmentComponent.h"
-#include "EquipmentInstance.h"
-
 UAnimNotify_PlayEquipmentAnimation::UAnimNotify_PlayEquipmentAnimation() :
 	EquipmentAnimation(nullptr),
 	EquipmentPerspective(EEquipmentPerspective::FirstPerson)

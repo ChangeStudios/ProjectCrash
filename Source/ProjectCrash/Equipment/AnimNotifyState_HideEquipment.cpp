@@ -3,9 +3,7 @@
 
 #include "Equipment/AnimNotifyState_HideEquipment.h"
 
-#include "EquipmentActor.h"
-#include "EquipmentComponent.h"
-#include "EquipmentInstance.h"
+#include "EquipmentMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CrashLogging.h"
 

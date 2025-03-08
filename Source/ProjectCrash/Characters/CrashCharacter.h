@@ -11,7 +11,6 @@
 
 class UCrashCameraComponent;
 class UCrashAbilitySystemComponent;
-class UEquipmentComponent;
 class UHealthComponent;
 class UPawnExtensionComponent;
 

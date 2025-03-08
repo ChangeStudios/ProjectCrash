@@ -13,8 +13,6 @@
 #include "GameFramework/GameModes/CrashGameMode.h"
 #include "GameFramework/GameModes/CrashGameModeData.h"
 #include "GameFramework/GameModes/GameModeManagerComponent.h"
-#include "Inventory/InventoryComponent.h"
-#include "Inventory/InventoryItemDefinition.h"
 #include "Net/UnrealNetwork.h"
 
 ACrashPlayerState::ACrashPlayerState(const FObjectInitializer& ObjectInitializer)

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "EquipmentActor.h"
+#include "Equipment/EquipmentMeshComponent.h"
 #include "GameplayTagContainer.h"
 #include "AnimNotify_PlayEquipmentAnimation.generated.h"
 
