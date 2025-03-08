@@ -3,19 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EquipmentMeshComponent.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "EquipmentActor.generated.h"
-
-/**
- * The perspective of an equipment actor. Separate equipment actors are spawned for first- and third-person.
- */
-UENUM()
-enum class EEquipmentPerspective : uint8
-{
-	FirstPerson,
-	ThirdPerson
-};
 
 
 

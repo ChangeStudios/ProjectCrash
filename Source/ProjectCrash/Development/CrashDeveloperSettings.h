@@ -83,6 +83,11 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 	bool bDisableCooldowns = false;
 
+	/** Disable all ability costs. Note that cooldowns will still appear in HUD, but won't restrict the activation of
+	 * abilities. */
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	bool bDisableCosts = false;
+
 	/** If true, all messages broadcast via the gameplay message subsystem will be logged. */
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay Messages")
 	bool bLogGameplayMessages = false;

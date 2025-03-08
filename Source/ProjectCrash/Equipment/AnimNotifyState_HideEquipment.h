@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "AnimNotifyState_HideEquipment.generated.h"
 
 /**
- * Locally hides this character's equipment actors while active. Note that this only affects equipment attached to the
+ * Locally hides this character's equipment meshes while active. Note that this only affects equipment attached to the
  * mesh on which this notify plays.
  */
 UCLASS(Const, HideCategories = Object, CollapseCategories, DisplayName = "Hide Equipment")
@@ -33,11 +34,11 @@ public:
 
 
 
-	// User-exposed parameters.
+	// Notify parameters.
 
 public:
 
-	/** Hide any equipment attached to this bone/socket. If unset, all equipment will be hidden. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify")
-	FName AttachedToSocket;
+	/** Hide specific equipment. If unset, all current equipment will be hidden. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimNotify", Meta = (Categories = "Equipment"))
+	FGameplayTagContainer FilterEquipment;
 };

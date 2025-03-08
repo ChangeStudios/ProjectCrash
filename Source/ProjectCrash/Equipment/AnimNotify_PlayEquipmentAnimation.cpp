@@ -8,48 +8,48 @@
 #include "EquipmentInstance.h"
 
 UAnimNotify_PlayEquipmentAnimation::UAnimNotify_PlayEquipmentAnimation() :
+	EquipmentAnimation(nullptr),
 	EquipmentPerspective(EEquipmentPerspective::FirstPerson)
 {
 #if WITH_EDITORONLY_DATA
-	// Notify's default color in the editor.
-	NotifyColor = FColor(255, 25, 150);
+	// Equipment won't be visible in the animation editor.
+	bShouldFireInEditor = false;
+
+	NotifyColor = FColor(75, 225, 75);
 #endif
 }
 
 FString UAnimNotify_PlayEquipmentAnimation::GetNotifyName_Implementation() const
 {
-	if (AnimationTag.IsValid())
+	if (IsValid(EquipmentAnimation))
 	{
-		return ("Play " + AnimationTag.ToString());
+		return ("Play " + EquipmentAnimation->GetName());
 	}
 
-	return Super::GetNotifyName_Implementation();
+	return "(Unset) Play Equipment Animation";
 }
 
 void UAnimNotify_PlayEquipmentAnimation::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	if (!AnimationTag.IsValid())
+	Super::Notify(MeshComp, Animation, EventReference);
+
+	if (!IsValid(EquipmentAnimation) || !Equipment.IsValid() || !IsValid(MeshComp))
 	{
 		return;
 	}
 
-	// Find this animation's owning pawn's equipment component, if it has one.
-	const AActor* Owner = MeshComp->GetOwner();
-
-	if (const APawn* OwnerAsPawn = (Owner ? Cast<APawn>(Owner) : nullptr))
+	if (const AActor* Owner = MeshComp->GetOwner())
 	{
-		if (const UEquipmentComponent* EquipmentComp = UEquipmentComponent::FindEquipmentComponent(OwnerAsPawn))
+		TArray<UEquipmentMeshComponent*> EquipmentComponents;
+		Owner->GetComponents<UEquipmentMeshComponent>(EquipmentComponents);
+
+		// Play the specified animation on each equipment mesh in the owning actor with a matching tag and perspective.
+		for (UEquipmentMeshComponent* EquipmentComponent : EquipmentComponents)
 		{
-			if (const UEquipmentInstance* CurrentEquipment = EquipmentComp->GetEquipment())
+			if (EquipmentComponent->GetEquipmentTag() == Equipment &&
+				EquipmentComponent->GetEquipmentPerspective() == EquipmentPerspective)
 			{
-				// Send the equipment animation to every active equipment actor.
-				for (AEquipmentActor* EquipmentActor : CurrentEquipment->GetSpawnedActors())
-				{
-					if (IsValid(EquipmentActor))
-					{
-						EquipmentActor->ProcessEquipmentAnimation(AnimationTag, EquipmentPerspective);
-					}
-				}
+				EquipmentComponent->PlayAnimation(EquipmentAnimation, EquipmentAnimation->bLoop);
 			}
 		}
 	}
