@@ -211,22 +211,20 @@ void AGameplayAbilityTargetActor_ContinuousTrace::OverrideHitLocation(FHitResult
 				ClosestBackupBoneDist = Dist;
 			}
 		}
+
+		/*
+		 * If we're looking close enough at a certain bone, we'll override our hit's location to spawn VFX at that
+		 * bone.
+		 *
+		 * If we're not looking close enough to any bones (e.g. we hit someone behind us), fall back to whichever
+		 * bone is closest to our trace's origin (i.e. our camera).
+		 */
+		FVector TargetBoneLocation = ClosestBoneDot > MIN_DOT_FOR_LOC_OVERRIDE ? ClosestBoneLoc : ClosestBackupBoneLoc;
 	
 		/* If we use the bone's raw location, we'll spawn VFX inside the character, so we offset the location a
 		 * little bit towards the trace origin. */
-		const FVector Offset = (HitResult.Normal * -15.0f);
-	
-		/* If we're looking close enough at a certain bone, we'll override our hit's location to spawn VFX at that
-		 * bone. */
-		if (ClosestBoneDot > MIN_DOT_FOR_LOC_OVERRIDE)
-		{
-			HitResult.ImpactPoint = (ClosestBoneLoc + Offset);
-		}
-		/* If we're not looking close enough to any bones (e.g. we hit someone behind us), fall back to whichever
-		 * bone is closest to our trace's origin (i.e. our camera). */
-		else
-		{
-			HitResult.ImpactPoint = (ClosestBackupBoneLoc + Offset);
-		}
+		const FVector Offset = ((TargetBoneLocation - HitResult.TraceStart).GetSafeNormal() * -15.0f);
+
+		HitResult.ImpactPoint = (TargetBoneLocation + Offset);
 	}
 }
