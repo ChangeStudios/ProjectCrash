@@ -58,8 +58,12 @@ public:
 
 public:
 
-	/** Retrieves the first hit result from the target data and overrides its Normal value. This is useful for
-	 * setting the direction of effect contexts. */
+	/**
+	 * Retrieves the first hit result from the target data and overrides its Normal value.
+	 *
+	 * This is used when we want to set a custom direction for target data (i.e. when we want to apply knockback in a
+	 * direction other than the target data's), but still want to use the target data's hit result (e.g. for VFX).
+	 */
 	UFUNCTION(BlueprintPure, Category = "Ability|TargetData")
 	static FHitResult GetTargetDataHitResultWithCustomDirection(const FGameplayAbilityTargetDataHandle& TargetData, FVector NewDirection);
 

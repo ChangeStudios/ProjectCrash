@@ -6,6 +6,8 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemLog.h"
 #include "CrashGameplayTags.h"
+#include "KnockbackGameplayEffectComponent.h"
+#include "AbilitySystem/AbilitySystemUtilitiesLibrary.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "AbilitySystem/GameplayEffects/CrashGameplayEffectContext.h"
 #include "GameFramework/Teams/TeamSubsystem.h"
@@ -155,6 +157,16 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	if (DamageToApply > 0.0f)
 	{
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UHealthAttributeSet::GetDamageAttribute(), EGameplayModOp::Additive, DamageToApply));
+
+		// Apply knockback if the damage GE has a knockback component.
+		if (const UKnockbackGameplayEffectComponent* KnockbackComp = Spec.Def->FindComponent<UKnockbackGameplayEffectComponent>())
+		{
+			if (const FHitResult* HitResult = Spec.GetContext().GetHitResult())
+			{
+				const FVector KnockbackForce = KnockbackComp->GetKnockbackForce(HitResult->Normal);
+				UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(KnockbackForce, TargetASC->GetAvatarActor(), CrashContext->GetInstigator());
+			}
+		}
 	}
 
 #endif // WITH_SERVER_CODE
