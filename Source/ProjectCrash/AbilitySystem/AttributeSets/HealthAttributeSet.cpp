@@ -90,6 +90,7 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 			DamageMessage.Target = GetOwningActor();
 			DamageMessage.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
 			DamageMessage.Magnitude = Data.EvaluatedData.Magnitude;
+			Data.EffectSpec.GetAllAssetTags(DamageMessage.ContextTags);
 
 			// Broadcast the message on the server.
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());

@@ -24,6 +24,7 @@ namespace CrashGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_CanDamageTeam, "GameplayEffects.Damage.CanDamageTeam", "The damage caused by this gameplay effect can affect the source actor's team. Does not enable damage on the source actor themselves.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_FellOutOfWorld, "GameplayEffects.Damage.FellOutOfWorld", "Damage caused by falling out of the world. Overrides damage invulnerabilities.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_Damage_SelfDestruct, "GameplayEffects.Damage.SelfDestruct", "Self-destruct damage. Overrides damage invulnerabilities.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_NoUltimateCharge, "GameplayEffects.NoUltimateCharge", "Damage and healing effects with this tag do not grant the instigator ultimate charge.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromDamage, "GameplayEffects.UltimateCharge.FromDamage", "Ultimate charge granted by dealing damage.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_UltimateCharge_FromHealing, "GameplayEffects.UltimateCharge.FromHealing", "Ultimate charge granted by applying healing.");

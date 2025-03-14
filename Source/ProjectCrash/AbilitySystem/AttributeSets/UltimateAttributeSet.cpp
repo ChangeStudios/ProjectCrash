@@ -119,7 +119,7 @@ bool UUltimateAttributeSet::ShouldHealingGrantUltimateCharge(AActor* Instigator,
 		}
 	}
 
-	// Players can only gain ultimate charge from healing players on other teams.
+	// Players can only gain ultimate charge from healing other players on their team.
 	if (UTeamSubsystem* TeamSubsystem = GetWorld()->GetSubsystem<UTeamSubsystem>())
 	{
 		if (!TeamSubsystem->CanCauseHealing(Instigator, Target, false))
@@ -139,6 +139,12 @@ void UUltimateAttributeSet::GrantUltimateChargeFromEffect(FGameplayTag Channel, 
 {
 	AActor* InstigatorAsActor = Cast<AActor>(Message.Instigator);
 	AActor* TargetAsActor = Cast<AActor>(Message.Target);
+
+	// Don't grant ultimate charge if the effect has the "NoUltimateCharge" tag.
+	if (Message.ContextTags.HasTagExact(CrashGameplayTags::TAG_GameplayEffects_NoUltimateCharge))
+	{
+		return;
+	}
 
 	// Check if we should grant ultimate charge for this event.
 	if (Channel.MatchesTag(CrashGameplayTags::TAG_Message_Damage) && !ShouldDamageGrantUltimateCharge(InstigatorAsActor, TargetAsActor))
