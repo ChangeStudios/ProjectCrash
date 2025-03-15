@@ -629,19 +629,12 @@ const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbil
 	return static_cast<const FCrashGameplayAbilityActorInfo*>(AbilityActorInfo.Get());
 }
 
-FGameplayEffectContextHandle UCrashAbilitySystemComponent::MakeEffectContextWithHitResult(const FHitResult& HitResult) const
+FGameplayEffectSpecHandle UCrashAbilitySystemComponent::MakeOutgoingSpecWithHitResult(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level, const FHitResult& HitResult) const
 {
-	FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
+	FGameplayEffectContextHandle EffectContext = MakeEffectContext();
+	EffectContext.AddHitResult(HitResult);
 
-	// By default use the owner and avatar as the instigator and causer
-	if (ensureMsgf(AbilityActorInfo.IsValid(), TEXT("Unable to make effect context because AbilityActorInfo is not valid.")))
-	{
-		Context.AddInstigator(AbilityActorInfo->OwnerActor.Get(), AbilityActorInfo->AvatarActor.Get());
-	}
-
-	Context.AddHitResult(HitResult);
-
-	return Context;
+	return MakeOutgoingSpec(GameplayEffectClass, Level, EffectContext);
 }
 
 void UCrashAbilitySystemComponent::BroadcastAbilityMessage(const FGameplayTag MessageType, const FGameplayAbilitySpecHandle& Ability, const float Magnitude, bool bReplicateMessage)

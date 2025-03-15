@@ -5,9 +5,14 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemLog.h"
 #include "Abilities/GameplayAbility.h"
+#include "Characters/CrashCharacter.h"
 
 // Number of traces to perform per second.
 #define TRACE_RATE 30.0f
+
+/* The minimum dot product to a bone required to override our trace hit location with that bone's position. Otherwise,
+ * we'll fall back to the location of the closest bone to the trace's origin. */
+#define MIN_DOT_FOR_LOC_OVERRIDE 0.5
 
 AGameplayAbilityTargetActor_ContinuousTrace::AGameplayAbilityTargetActor_ContinuousTrace(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -118,6 +123,9 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 				// Some cues won't automatically trigger unless the hit is blocking.
 				Hit.bBlockingHit = true;
 
+				// Set the hit result's location for VFX.
+				OverrideHitLocation(Hit);
+
 				// Successful hit.
 				FilteredHitResults.Add(Hit);
 			}
@@ -125,5 +133,98 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 			// Send all of this frame's hits together.
 			TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResults(OwningAbility, FilteredHitResults));
 		}
+	}
+}
+
+void AGameplayAbilityTargetActor_ContinuousTrace::OverrideHitLocation(FHitResult& HitResult)
+{
+	AActor* HitActor = HitResult.GetActor();
+	ACrashCharacter* CrashCharacter = IsValid(HitActor) ? Cast<ACrashCharacter>(HitActor) : nullptr;
+	USkeletalMeshComponent* TargetMesh = IsValid(CrashCharacter) ? CrashCharacter->GetThirdPersonMesh() : nullptr;
+	if (!IsValid(TargetMesh))
+	{
+		return;
+	}
+
+	/* If we're aiming at the actor we hit, spawn FX where we were aiming. We don't use thin traces for hit detection
+	 * (we're usually using big cones or spheres, since our melee attacks are pretty generous), so the raw hit result
+	 * from the target data won't usually be visually accurate. */
+	FHitResult HitForMesh;
+	FCollisionShape SphereShape;
+	SphereShape.SetSphere(10.0f);
+	if (TargetMesh->SweepComponent(HitForMesh, HitResult.TraceStart, HitResult.TraceEnd, FQuat::Identity, SphereShape, false))
+	{
+		// Nudge the location back a little bit so it doesn't clip into the character mesh.
+		const FVector Offset = (HitResult.Normal * -15.0f);
+
+		HitResult.ImpactPoint = (HitForMesh.ImpactPoint + Offset);
+		HitResult.ImpactNormal = HitForMesh.ImpactNormal;
+
+		return;
+	}
+
+
+	// If weren't aiming right at the target, spawn VFX at the closest bone to where we're aiming.
+
+	// Bones that we can spawn VFX at.
+	TArray<FName> ValidHitBones = {
+		"head",
+		"spine_02",
+		"lowerarm_l",
+		"lowerarm_r",
+		"pelvis",
+		"calf_r",
+		"calf_l"
+	};
+
+	const FGameplayAbilityActorInfo* ActorInfo = (OwningAbility ? OwningAbility->GetCurrentActorInfo() : nullptr);
+	if (APlayerController* PC = ActorInfo ? ActorInfo->PlayerController.Get() : nullptr)
+	{
+		FVector ViewLoc;
+		FRotator ViewRot;
+		PC->GetPlayerViewPoint(ViewLoc, ViewRot);
+	
+		FVector ClosestBoneLoc = FVector();
+		float ClosestBoneDot = MIN_DOT_FOR_LOC_OVERRIDE; // We want the bone whose dot product with our LOS is closest to 1.0.
+	
+		FVector ClosestBackupBoneLoc = FVector();
+		float ClosestBackupBoneDist = UE_BIG_NUMBER; // We want the bone closest to our trace origin (our camera).
+	
+		for (FName BoneName : ValidHitBones)
+		{
+			// Update preferred location.
+			const FVector BoneLoc = TargetMesh->GetBoneLocation(BoneName);
+			const FVector ViewNormal = (BoneLoc - HitResult.TraceStart).GetSafeNormal();
+			const float BoneDot = ViewRot.Vector().Dot(ViewNormal);
+	
+			if (BoneDot > ClosestBoneDot)
+			{
+				ClosestBoneLoc = BoneLoc;
+				ClosestBoneDot = BoneDot;
+			}
+	
+			// Update backup location.
+			const float Dist = FVector::Dist(BoneLoc, HitResult.TraceStart);
+			if (Dist < ClosestBackupBoneDist)
+			{
+				ClosestBackupBoneLoc = BoneLoc;
+				ClosestBackupBoneDist = Dist;
+			}
+		}
+
+		/*
+		 * If we're looking close enough at a certain bone, we'll override our hit's location to spawn VFX at that
+		 * bone.
+		 *
+		 * If we're not looking close enough to any bones (e.g. we hit someone behind us), fall back to whichever
+		 * bone is closest to our trace's origin (i.e. our camera).
+		 */
+		FVector TargetBoneLocation = ClosestBoneDot > MIN_DOT_FOR_LOC_OVERRIDE ? ClosestBoneLoc : ClosestBackupBoneLoc;
+	
+		/* If we use the bone's raw location, we'll spawn VFX inside the character, so we offset the location a
+		 * little bit towards the trace origin. */
+		const FVector Offset = ((TargetBoneLocation - HitResult.TraceStart).GetSafeNormal() * -15.0f);
+
+		HitResult.ImpactPoint = (TargetBoneLocation + Offset);
 	}
 }

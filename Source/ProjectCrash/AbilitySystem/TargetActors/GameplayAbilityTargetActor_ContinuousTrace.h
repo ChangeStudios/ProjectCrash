@@ -61,6 +61,10 @@ protected:
 	/** Performs the actual trace. Overridden in subclasses for custom trace shapes. */
 	virtual TArray<FHitResult> PerformTrace(AActor* InSourceActor) PURE_VIRTUAL(AGameplayAbilityTargetActor_ContinuousTrace, return TArray<FHitResult>(); );
 
+	/** Updates the given hit result's location, which is used to determine the location of VFX. By default, if the hit
+	 * actor is a CrashCharacter, sets the location to the location of the closest bone to the original trace vector. */
+	virtual void OverrideHitLocation(FHitResult& HitResult);
+
 private:
 
 	// Targets that have been hit. used to avoid repeating targets within a single activation.

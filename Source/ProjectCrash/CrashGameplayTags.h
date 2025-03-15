@@ -40,6 +40,8 @@ namespace CrashGameplayTags
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_FellOutOfWorld);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_Damage_SelfDestruct);
 
+	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_NoUltimateCharge);
+
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_UltimateCharge_FromDamage);
 	PROJECTCRASH_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_GameplayEffects_UltimateCharge_FromHealing);
 
