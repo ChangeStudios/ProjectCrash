@@ -6,7 +6,6 @@
 #include "AbilitySystemLog.h"
 #include "CrashAbilitySystemComponent.h"
 #include "CrashGameplayTags.h"
-#include "CrashStatics.h"
 #include "AbilitySystem/AttributeSets/HealthAttributeSet.h"
 #include "GameFramework/CrashAssetManager.h"
 #include "GameFramework/CrashLogging.h"
@@ -17,6 +16,7 @@
 #include "GameFramework/Data/GlobalGameData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Utilities/CrashStatics.h"
 
 UHealthComponent::UHealthComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

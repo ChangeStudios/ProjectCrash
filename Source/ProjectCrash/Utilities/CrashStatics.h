@@ -6,7 +6,7 @@
 #include "CrashStatics.generated.h"
 
 /**
- * Generic static utilities for this project.
+ * Generic static utilities.
  */
 UCLASS()
 class PROJECTCRASH_API UCrashStatics : public UBlueprintFunctionLibrary
