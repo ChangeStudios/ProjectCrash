@@ -40,7 +40,7 @@ public:
 	 * @param OutActors					Returned array of actors, unsorted.
 	 * @return							True if there was at least one successful overlap. False otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Collision", Meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore"), Meta = (Keywords = "overlap, collision, radius, sphere, circle, cylinder", AdvancedDisplay = "bLimitClimbing, MaxClimb, DrawDebugType, DrawTime"))
+	UFUNCTION(BlueprintCallable, Category = "Collision", Meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore"), Meta = (Midpoint = "0.5", Keywords = "overlap, collision, radius, sphere, circle, cylinder, trace", AdvancedDisplay = "bLimitClimbing, MaxClimb, DrawDebugType, DrawTime"))
 	static bool RadialGroundDetection(const UObject* WorldContextObject, const FVector Position, const float Radius, const float Height, const float Midpoint, const TArray<TEnumAsByte<EObjectTypeQuery>>& ObjectTypes, const TArray<AActor*>& ActorsToIgnore, const bool bLimitClimbing, const float MaxClimb, EDrawDebugTrace::Type DrawDebugType, float DrawTime, TArray<AActor*>& OutActors);
 
 	/** Sweeps a sphere, trying to find ANY path along the trace that doesn't get blocked. Returns true if there exists
