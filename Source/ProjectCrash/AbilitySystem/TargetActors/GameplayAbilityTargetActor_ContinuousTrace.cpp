@@ -130,8 +130,11 @@ void AGameplayAbilityTargetActor_ContinuousTrace::Tick(float DeltaSeconds)
 				FilteredHitResults.Add(Hit);
 			}
 
-			// Send all of this frame's hits together.
-			TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResults(OwningAbility, FilteredHitResults));
+			// Send all of this frame's hits together, if we still have any after filtering.
+			if (FilteredHitResults.Num() > 0)
+			{
+				TargetDataReadyDelegate.Broadcast(StartLocation.MakeTargetDataHandleFromHitResults(OwningAbility, FilteredHitResults));
+			}
 		}
 	}
 }
