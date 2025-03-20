@@ -46,4 +46,7 @@ public:
 	/** Sweeps a sphere, trying to find ANY path along the trace that doesn't get blocked. Returns true if there exists
 	 * any horizontal path from the starting sphere to the ending sphere that is not blocked. */
 	bool SphereSweepForAnyPath(const UObject* WorldContextObject, float SphereRadius, float Subdivisions, const FVector Start, const FVector End, ECollisionChannel TraceChannel, FCollisionQueryParams& CollisionQueryParams);
+
+	UFUNCTION(BlueprintCallable, Category = "Collision", Meta = (WorldContext = "WorldContextObject", AutoCreateRefTerm = "ActorsToIgnore", DisplayName = "Multi Cone Trace By Channel", AdvancedDisplay = "TraceColor, TraceHitColor, DrawTime", Keywords = "sweep"))
+	static bool ConeTraceMulti(const UObject* WorldContextObject, const FVector Start, const FRotator Direction, float ConeHeight, float ConeHalfAngle, ETraceTypeQuery TraceChannel, bool bTraceComplex, const TArray<AActor*>& ActorsToIgnore, EDrawDebugTrace::Type DrawDebugType, TArray<FHitResult>& OutHits, FLinearColor TraceColor = FLinearColor(0.0f, 1.0f, 1.0f), FLinearColor TraceHitColor = FLinearColor::Green, float DrawTime = 5.0f);
 };
