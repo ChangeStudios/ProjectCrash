@@ -151,7 +151,25 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 	DamageToApply = FMath::Max(DamageToApply * DistanceFalloffMultiplier * DamageInteractionAllowedMultiplier, 0.0f);
 
 	// Round the damage value down to the nearest whole number. We only use whole numbers for health in this project.
-	DamageToApply = FMath::Floor(DamageToApply);
+	bool bShouldFloor = true;
+
+	/* If damage is being applied over time, we're allowed to apply it in fractions. We assume that all damage-over-time
+	 * totals to a round number. */
+	const UGameplayEffect* GE = Spec.Def;
+	if (ensure(GE))
+	{
+		if (GE->DurationPolicy != EGameplayEffectDurationType::Instant &&
+			GE->Period.Value > 0.0f)
+		{
+			bShouldFloor = false;
+		}
+	}
+
+	if (bShouldFloor)
+	{
+		DamageToApply = FMath::Floor(DamageToApply);
+	}
+
 
 	// Apply the damage by adding it to the target's "Damage" attribute.
 	if (DamageToApply > 0.0f)
