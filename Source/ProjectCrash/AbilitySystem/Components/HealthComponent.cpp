@@ -70,7 +70,7 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 
 	// Initialize the attributes to the attribute set's default values.
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), HealthSet->GetMaxHealth());
-	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetMaxHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetHealth() > 0.0f ? HealthSet->GetHealth() : HealthSet->GetMaxHealth());
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), 0.0f);
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), 0.0f);
 
