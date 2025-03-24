@@ -19,11 +19,13 @@ UDamageExecution::UDamageExecution()
 	BaseDamageDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 	DamageBoostDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageBoostAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 	DamageResDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetDamageResistanceAttribute(), EGameplayEffectAttributeCaptureSource::Target, true);
+	HealthDef = FGameplayEffectAttributeCaptureDefinition(UHealthAttributeSet::GetHealthAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
 
 	// Capture the attributes needed to perform this execution.
 	RelevantAttributesToCapture.Add(BaseDamageDef);
 	RelevantAttributesToCapture.Add(DamageBoostDef);
 	RelevantAttributesToCapture.Add(DamageResDef);
+	RelevantAttributesToCapture.Add(HealthDef);
 }
 
 void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
@@ -49,10 +51,18 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 
 
 	// Retrieve the captured damage values.
-	float DamageToApply = 0.0f, OutgoingDamageMultiplier = 0.0f, IncomingDamageMultiplier = 0.0f;
+	float DamageToApply = 0.0f, OutgoingDamageMultiplier = 0.0f, IncomingDamageMultiplier = 0.0f, TargetHealth = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(BaseDamageDef, EvaluateParameters, DamageToApply);
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageBoostDef, EvaluateParameters, OutgoingDamageMultiplier);
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageResDef, EvaluateParameters, IncomingDamageMultiplier);
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthDef, EvaluateParameters, TargetHealth);
+
+
+	// Don't apply damage if the target has no health.
+	if (!(TargetHealth > 0.0f))
+	{
+		return;
+	}
 
 
 	// Retrieve information about the source and target.

@@ -49,4 +49,7 @@ protected:
 
 	/** Incoming damage multiplier applied to this execution, defined by the target player's attribute. */
 	FGameplayEffectAttributeCaptureDefinition DamageResDef;
+
+	/** The target's current health. Damage is not applied if the target has no health. */
+	FGameplayEffectAttributeCaptureDefinition HealthDef;
 };
