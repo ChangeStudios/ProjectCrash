@@ -55,6 +55,7 @@ void UAnimNotifyState_SpawnAnimationActor::NotifyBegin(USkeletalMeshComponent* M
 	{
 		if (AStaticMeshActor* SpawnedActorStatic = World->SpawnActorDeferred<AStaticMeshActor>(AStaticMeshActor::StaticClass(), SpawnTransform, MeshComp->GetOwner()))
 		{
+			SpawnedActorStatic->SetMobility(EComponentMobility::Type::Movable);
 			SpawnedActorStatic->GetStaticMeshComponent()->SetStaticMesh(Cast<UStaticMesh>(MeshToSpawn));
 			SpawnedActor = SpawnedActorStatic;
 			SpawnedMeshComp = SpawnedActorStatic->GetStaticMeshComponent();
