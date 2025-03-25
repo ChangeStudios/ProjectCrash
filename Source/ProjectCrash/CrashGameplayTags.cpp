@@ -17,6 +17,7 @@ namespace CrashGameplayTags
 
 	// Gameplay effects
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Damage, "GameplayEffects.SetByCaller.Damage", "Used to dynamically set the magnitude of damage applied by gameplay effects.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_Healing, "GameplayEffects.SetByCaller.Healing", "Used to dynamically set the magnitude of healing applied by gameplay effects.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_UltimateCharge, "GameplayEffects.SetByCaller.UltimateCharge", "Used to dynamically set the ultimate charge granted by gameplay effects.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_GameplayEffects_SetByCaller_CooldownDuration, "GameplayEffects.SetByCaller.CooldownDuration", "Used to use a single reusable gameplay effect for ability cooldowns by dynamically setting its duration.");
 
