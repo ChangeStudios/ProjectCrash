@@ -66,6 +66,7 @@ protected:
 public:
 
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Health);
+	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Overhealth);
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, MaxHealth);
 
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, DamageBoost);
@@ -73,6 +74,7 @@ public:
 
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, Healing);
+	ATTRIBUTE_ACCESSORS(UHealthAttributeSet, OverhealthDecay);
 
 // Attribute properties.
 private:
@@ -87,6 +89,14 @@ private:
 
 		// Caches Health before it is updated to determine whether attribute-change delegates should be broadcast.
 		float HealthBeforeAttributeChange;
+
+	/** Temporary health that can be granted on top of base health. Overhealth is always removed before Health when
+	 * taking damage. Overhealth cannot be healed. */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Overhealth, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData Overhealth;
+
+		// Caches Overhealth before it is updated to determine whether attribute-change delegates should be broadcast.
+		float OverhealthBeforeAttributeChange;
 
 	/** Maximum value that the Health attribute can have at any time. Usually the same as Health's default value. */
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
@@ -118,6 +128,11 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (HideFromModifiers, AllowPrivateAccess = true))
 	FGameplayAttributeData Healing;
 
+	/** Meta damage used to decay overhealth over time. This mapped directly to -Overhealth. Should only be used for
+	 * passive effects. Should never be used to add overhealth or to remove it instantly. */
+	UPROPERTY(BlueprintReadOnly, Category="Ability|Attribute|Health", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData OverhealthDecay;
+
 
 
 	// Attribute delegates. Most variables in these delegates will not be valid on clients.
@@ -126,6 +141,9 @@ public:
 
 	/** Delegate broadcast when the Health attribute changes. */
 	mutable FAttributeChangedSignature HealthAttributeChangedDelegate;
+
+	/** Delegate broadcast when the Overhealth attribute changes. */
+	mutable FAttributeChangedSignature OverhealthAttributeChangedDelegate;
 
 	/** Delegate broadcast when the MaxHealth attribute changes. */
 	mutable FAttributeChangedSignature MaxHealthAttributeChangedDelegate;
@@ -142,6 +160,10 @@ protected:
 	/** OnRep for Health. */
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldValue);
+
+	/** OnRep for Overhealth. */
+	UFUNCTION()
+	void OnRep_Overhealth(const FGameplayAttributeData& OldValue);
 
 	/** OnRep for MaxHealth. */
 	UFUNCTION()

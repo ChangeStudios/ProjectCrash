@@ -19,12 +19,15 @@ UHealthAttributeSet::UHealthAttributeSet() :
 	Health(100.0f),
 	bOutOfHealth(false),
 	HealthBeforeAttributeChange(0.0f),
+	Overhealth(0.0f),
+	OverhealthBeforeAttributeChange(0.0f),
 	MaxHealth(100.0f),
 	MaxHealthBeforeAttributeChange(0.0f),
 	DamageBoost(1.0f),
 	DamageResistance(1.0f)
 {
 	InitHealth(100.0f);
+	InitOverhealth(0.0f);
 	InitMaxHealth(100.0f);
 	InitDamageBoost(1.0f);
 	InitDamageResistance(1.0f);
@@ -57,6 +60,7 @@ bool UHealthAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackDat
 
 	// Cache current attribute values before changes are applied.
 	HealthBeforeAttributeChange = GetHealth();
+	OverhealthBeforeAttributeChange = GetOverhealth();
 	MaxHealthBeforeAttributeChange = GetMaxHealth();
 
 	return true;
@@ -67,12 +71,13 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	Super::PostGameplayEffectExecute(Data);
 
 	const float MinimumHealth = 0.0f;
+	const float MinimumOverhealth = 0.0f;
 
 	// Retrieve parameters used in attribute-change delegate broadcasts.
 	const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 	AActor* Instigator = EffectContext.GetOriginalInstigator();
 
-	// Map Damage to -Health and clamp. Reset the meta Damage attribute after it has been applied.
+	// Map Damage to -Overhealth, then -Health, and clamp. Reset the meta Damage attribute after it has been applied.
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
 		/* Send a standardized verb message that other systems can observe. This is used for triggering things like
@@ -104,7 +109,19 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		}
 
 		// Update health.
-		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
+		const float DamageToOverhealth = FMath::Min(GetOverhealth(), GetDamage());
+		const float RemainingDamage = FMath::Max((GetDamage() - DamageToOverhealth), 0.0f);
+
+		if (GetOverhealth() > 0.0f)
+		{
+			SetOverhealth(GetOverhealth() - DamageToOverhealth);
+		}
+
+		if (RemainingDamage > 0.0f)
+		{
+			SetHealth(FMath::Clamp(GetHealth() - RemainingDamage, MinimumHealth, GetMaxHealth()));
+		}
+
 		SetDamage(0.0f);
 	}
 	// Map Healing to +Health and clamp. Reset the meta Healing attribute after it has been applied.
@@ -113,8 +130,13 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		SetHealth(FMath::Clamp(GetHealth() + GetHealing(), MinimumHealth, GetMaxHealth()));
 		SetHealing(0.0f);
 	}
-	/* Clamp Health if MaxHealth is changed, in case MaxHealth falls below the current value of Health. MaxHealth can
-	 * be modified with executions, but it is easier and more preferable to modify it directly. */
+	// Map OverhealthDecay to -Overhealth and clamp. Reset the meta OverhealthDecay attribute after it has been applied.
+	else if (Data.EvaluatedData.Attribute == GetOverhealthDecayAttribute())
+	{
+		SetOverhealth(FMath::Max(GetOverhealth() - GetOverhealthDecay(), MinimumOverhealth));
+		SetOverhealthDecay(0.0f);
+	}
+	/* Clamp Health if MaxHealth is changed, in case MaxHealth falls below the current value of Health. */
 	else if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), MinimumHealth, GetMaxHealth()));
@@ -124,19 +146,18 @@ void UHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		{
 			MaxHealthAttributeChangedDelegate.Broadcast(Instigator, Data.EffectSpec, MaxHealthBeforeAttributeChange, GetMaxHealth());
 		}
-
-		ABILITY_LOG(Warning, TEXT("Attribute MaxHealth was modified from an execution. This attribute can be modified directly, without executions. Modification was still processed."));
-	}
-	// No other attributes should be modified with executions.
-	else
-	{
-		ABILITY_LOG(Warning, TEXT("Attempted to modify attribute [%s] with an execution. This attribute cannot be directly modified with executions."), *Data.EvaluatedData.Attribute.GetName())
 	}
 
 	// Broadcast Health's value change.
 	if (GetHealth() != HealthBeforeAttributeChange)
 	{
 		HealthAttributeChangedDelegate.Broadcast(Instigator, Data.EffectSpec, HealthBeforeAttributeChange, GetHealth());
+	}
+
+	// Broadcast Overhealth's value change.
+	if (GetOverhealth() != OverhealthBeforeAttributeChange)
+	{
+		OverhealthAttributeChangedDelegate.Broadcast(Instigator, Data.EffectSpec, OverhealthBeforeAttributeChange, GetOverhealth());
 	}
 
 	// Broadcast that the target is out of health on the server. 
@@ -191,6 +212,11 @@ void UHealthAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
 	}
+	// Prevent Overhealth from dropping below 0.
+	else if (Attribute == GetOverhealthAttribute())
+	{
+		NewValue = FMath::Max(NewValue, 0.0f);
+	}
 	// Clamp MaxHealth to be at least 1.0.
 	else if (Attribute == GetMaxHealthAttribute())
 	{
@@ -205,6 +231,11 @@ void UHealthAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, fl
 	else if (Attribute == GetHealingAttribute())
 	{
 		NewValue = FMath::Min(NewValue, (GetMaxHealth() - GetHealth()));
+	}
+	// Never decay more Overhealth than can be removed (i.e. remaining overhealth).
+	else if (Attribute == GetOverhealthDecayAttribute())
+	{
+		NewValue = FMath::Min(NewValue, GetOverhealth());
 	}
 }
 
@@ -232,11 +263,25 @@ void UHealthAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 	bOutOfHealth = (CurrentHealth <= 0.0f);
 }
 
+void UHealthAttributeSet::OnRep_Overhealth(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthAttributeSet, Overhealth, OldValue);
+
+	const float CurrentOverhealth = GetOverhealth();
+	const float OldOverhealth = OldValue.GetCurrentValue();
+
+	// Broadcast the attribute value change to clients.
+	if (CurrentOverhealth != OldOverhealth)
+	{
+		OverhealthAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldOverhealth, CurrentOverhealth);
+	}
+}
+
 void UHealthAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHealthAttributeSet, MaxHealth, OldValue);
 
-	const float CurrentHealth = GetHealth();
+	const float CurrentHealth = GetMaxHealth();
 	const float OldHealth = OldValue.GetCurrentValue();
 
 	// Broadcast the attribute value change to clients.
@@ -251,6 +296,7 @@ void UHealthAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, Overhealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, DamageBoost, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHealthAttributeSet, DamageResistance, COND_None, REPNOTIFY_Always);
