@@ -65,17 +65,21 @@ void UHealthComponent::InitializeWithAbilitySystem(UCrashAbilitySystemComponent*
 
 	// Register to listen for health attribute events.
 	HealthSet->HealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
+	HealthSet->OverhealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnOverhealthChanged);
 	HealthSet->MaxHealthAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnMaxHealthChanged);
 	HealthSet->OutOfHealthAttributeDelegate.AddUObject(this, &ThisClass::OnOutOfHealth);
 
 	// Initialize the attributes to the attribute set's default values.
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetMaxHealthAttribute(), HealthSet->GetMaxHealth());
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealthAttribute(), HealthSet->GetHealth() > 0.0f ? HealthSet->GetHealth() : HealthSet->GetMaxHealth());
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetOverhealthAttribute(), HealthSet->GetOverhealth());
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetDamageAttribute(), 0.0f);
 	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetHealingAttribute(), 0.0f);
+	AbilitySystemComponent->SetNumericAttributeBase(UHealthAttributeSet::GetOverhealthDecayAttribute(), 0.0f);
 
 	// Broadcast the attributes' initialization.
 	HealthChangedDelegate.Broadcast(this, nullptr, HealthSet->GetHealth(), HealthSet->GetHealth());
+	OverhealthChangedDelegate.Broadcast(this, nullptr, HealthSet->GetOverhealth(), HealthSet->GetOverhealth());
 	MaxHealthChangedDelegate.Broadcast( this, nullptr, HealthSet->GetMaxHealth(), HealthSet->GetMaxHealth());
 }
 
@@ -85,6 +89,7 @@ void UHealthComponent::UninitializeFromAbilitySystem()
 	if (HealthSet)
 	{
 		HealthSet->HealthAttributeChangedDelegate.RemoveAll(this);
+		HealthSet->OverhealthAttributeChangedDelegate.RemoveAll(this);
 		HealthSet->MaxHealthAttributeChangedDelegate.RemoveAll(this);
 		HealthSet->OutOfHealthAttributeDelegate.RemoveAll(this);
 	}
@@ -107,9 +112,26 @@ float UHealthComponent::GetHealth() const
 	return (HealthSet ? HealthSet->GetHealth() : 0.0f);
 }
 
+float UHealthComponent::GetOverhealth() const
+{
+	return (HealthSet ? HealthSet->GetOverhealth() : 0.0f);
+}
+
 float UHealthComponent::GetMaxHealth() const
 {
 	return (HealthSet ? HealthSet->GetMaxHealth() : 0.0f);
+}
+
+float UHealthComponent::GetEffectiveMaxHealth() const
+{
+	if (HealthSet)
+	{
+		const float CombinedHealth = (HealthSet->GetHealth() + HealthSet->GetOverhealth());
+		const float MaxHealth = HealthSet->GetMaxHealth();
+		return ((CombinedHealth > MaxHealth) ? CombinedHealth : MaxHealth);
+	}
+
+	return 0.0f;
 }
 
 float UHealthComponent::GetHealthNormalized() const
@@ -117,9 +139,22 @@ float UHealthComponent::GetHealthNormalized() const
 	if (HealthSet)
 	{
 		const float Health = HealthSet->GetHealth();
+		const float Overhealth = HealthSet->GetOverhealth();
+		const float CombinedHealth = Health + Overhealth;
 		const float MaxHealth = HealthSet->GetMaxHealth();
 
-		return ((MaxHealth > 0.0f) ? (Health / MaxHealth) : 0.0f);
+		/* If we have any overhealth, but (Health + Overhealth) is less than MaxHealth, our normalized health is our
+		 * combined health (Health + Overhealth) divided by MaxHealth. But if (Health + Overhealth) is greater than
+		 * MaxHealth, our normalized health is 1.0, as our effective MaxHealth becomes (Health + Overhealth). */
+		if (Overhealth > 0.0f)
+		{
+			return ((CombinedHealth < MaxHealth) ? (CombinedHealth / MaxHealth) : 1.0f);
+		}
+		else
+		{
+			return (Health / MaxHealth);
+		}
+
 	}
 
 	return 0.0f;
@@ -128,6 +163,11 @@ float UHealthComponent::GetHealthNormalized() const
 void UHealthComponent::OnHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
 {
 	HealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
+}
+
+void UHealthComponent::OnOverhealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+{
+	OverhealthChangedDelegate.Broadcast(this, EffectInstigator, OldValue, NewValue);
 }
 
 void UHealthComponent::OnMaxHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)

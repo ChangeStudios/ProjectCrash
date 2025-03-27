@@ -77,15 +77,25 @@ protected:
 
 public:
 
-	// Returns the current value of the Health attribute.
+	/** Returns the current value of the Health attribute. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetHealth() const;
 
-	// Returns the current value of the MaxHealth attribute.
+	/** Returns the current value of the Overhealth attribute. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
+	float GetOverhealth() const;
+
+	/** Returns the actual current value of the MaxHealth attribute. */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetMaxHealth() const;
 
-	// Returns the current value of the Health attribute normalized from 0 to MaxHealth.
+	/** Returns the effective value of the MaxHealth attribute, which takes into account overhealth overflowing maximum
+	 * health. */
+	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
+	float GetEffectiveMaxHealth() const;
+
+	/** Returns the current value of the Health attribute normalized from 0 to MaxHealth (plus any overhealth that
+	 * overflows MaxHealth). */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Attribute|Health")
 	float GetHealthNormalized() const;
 
@@ -99,6 +109,10 @@ protected:
 	/** Broadcasts HealthChangedDelegate when the Health attribute changes. */
 	UFUNCTION()
 	void OnHealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+
+	/** Broadcasts OverhealthChangedDelegate when the Overhealth attribute changes. */
+	UFUNCTION()
+	void OnOverhealthChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 	/** Broadcasts MaxHealthChangedDelegate when the MaxHealth attribute changes. */
 	UFUNCTION()
@@ -114,6 +128,10 @@ public:
 	/** Broadcast when the Health attribute changes. */
 	UPROPERTY(BlueprintAssignable)
 	FHealth_AttributeChangedSignature HealthChangedDelegate;
+
+	/** Broadcast when the Overhealth attribute changes. */
+	UPROPERTY(BlueprintAssignable)
+	FHealth_AttributeChangedSignature OverhealthChangedDelegate;
 
 	/** Broadcast when the MaxHealth attribute changes. */
 	UPROPERTY(BlueprintAssignable)
