@@ -68,25 +68,6 @@ public:
 public:
 
 	/**
-	 * Return the actor whose hit normal is closest to given direction vector.
-	 *
-	 * @param Aim				Direction vector to compare hits to. The hit with the normal closest to this will be
-	 *							returned.
-	 * @param Origin			The origin of the aim direction (usually the aiming player's view location). Used to
-	 *							calculate each hit's normal. The result's given normal/impact normal may not be
-	 *							accurate, depending on the shape that was used to generate it.
-	 * @param bCheckLineOfSight If true, hit actors must have LOS. Helps ensure that something closer was not being
-	 *							aimed at.
-	 * @param IgnoreActor		Actor to ignore when checking LOS (the source actor, e.g. instigating player character).
-	 * @param MinimumDot		The dot product between hits and the aim vector must be greater than this. Helps ensure
-	 *							the target was actually being aimed at.
-	 * @param Hits				Array of hits to check.
-	 * @param FilterHandle		Optional target data filter.
-	 */
-	UFUNCTION(BlueprintPure, Category = "Collision", Meta = (bCheckLineOfSight = "true", MinimumDot = "0.5", AdvancedDisplay = "MinimumDot", Keywords = "find normal align"))
-	AActor* GetHitClosestToAim(FVector Aim, FVector Origin, bool bCheckLineOfSight, AActor* IgnoreActor, float MinimumDot, TArray<FHitResult>& Hits, FGameplayTargetDataFilterHandle FilterHandle);
-
-	/**
 	 * Creates an instance of FCollisionQueryParams using a given context object. The params' "Self" will be the context
 	 * object if it's an actor; otherwise, it will be the first actor in the object's owner chain.
 	 *
