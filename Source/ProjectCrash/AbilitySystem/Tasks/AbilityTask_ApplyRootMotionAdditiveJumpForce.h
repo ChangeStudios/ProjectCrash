@@ -22,16 +22,24 @@ class PROJECTCRASH_API UAbilityTask_ApplyRootMotionAdditiveJumpForce : public UA
 	static UAbilityTask_ApplyRootMotionAdditiveJumpForce* ApplyRootMotionAdditiveJumpForce(
 		UGameplayAbility* OwningAbility,
 		FName TaskInstanceName,
+		UPARAM(DisplayName = "Rotation")
 		FRotator InRotation,
+		UPARAM(DisplayName = "Distance")
 		float InDistance,
+		UPARAM(DisplayName = "Height")
 		float InHeight,
+		UPARAM(DisplayName = "Duration")
 		float InDuration,
+		UPARAM(DisplayName = "Minimum Landed Trigger Time")
 		float InMinimumLandedTriggerTime,
+		UPARAM(DisplayName = "Finish On Landed")
 		bool bInFinishOnLanded,
 		ERootMotionFinishVelocityMode VelocityOnFinishMode,
 		FVector SetVelocityOnFinish,
 		float ClampVelocityOnFinish,
+		UPARAM(DisplayName = "Path Offset Curve")
 		UCurveVector* InPathOffsetCurve,
+		UPARAM(DisplayName = "Time Mapping Curve")
 		UCurveFloat* InTimeMappingCurve);
 
 protected:
