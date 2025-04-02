@@ -34,6 +34,8 @@ UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
 	CurrentExclusiveAbility = nullptr;
 	CurrentKnockbackSource = nullptr;
+
+	bPendingFirstPersonMontageRep = false;
 }
 
 void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -47,10 +49,15 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
-	LocalFirstPersonMontageInfo = FGameplayAbilityLocalAnimMontage();
+	LocalFirstPersonAnimMontageInfo = FGameplayAbilityLocalAnimMontage();
 	if (IsOwnerActorAuthoritative())
 	{
-		SetRepAnimMontageInfo()
+		SetRepFirstPersonAnimMontageInfo(FGameplayAbilityRepAnimMontage());
+	}
+
+	if (bPendingFirstPersonMontageRep)
+	{
+		OnRep_ReplicatedFirstPersonAnimMontage();
 	}
 
 	// Notify this ASC and its abilities if a valid new avatar was set.
@@ -520,6 +527,27 @@ void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag Gam
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters, EGameplayCueExecutionOptions::IgnoreSuppression);
 }
 
+void UCrashAbilitySystemComponent::CurrentMontageJumpToSection(FName SectionName)
+{
+	// Jump to the given section in the active third-person montage.
+	Super::CurrentMontageJumpToSection(SectionName);
+
+	// Jump to the given section in the active first-person montage.
+	UAnimInstance* AnimInstance_FPP = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+	if ((SectionName != NAME_None) && AnimInstance_FPP && LocalFirstPersonAnimMontageInfo.AnimMontage)
+	{
+		AnimInstance_FPP->Montage_JumpToSection(SectionName, LocalFirstPersonAnimMontageInfo.AnimMontage);
+
+		// NOTE: Replays do not currently support first-person animations.
+
+		if (!IsOwnerActorAuthoritative())
+		{
+			UAnimSequenceBase* Animation = LocalFirstPersonAnimMontageInfo.AnimMontage->IsDynamicMontage() ? LocalFirstPersonAnimMontageInfo.AnimMontage->GetFirstAnimReference() : LocalFirstPersonAnimMontageInfo.AnimMontage;
+			ServerCurrentFirstPersonMontageJumpToSectionName(Animation, SectionName);
+		}
+	}
+}
+
 float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
 	float Duration = -1.0f;
@@ -544,8 +572,6 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 
 		if (Duration > 0.f)
 		{
-			UAnimSequenceBase* Animation = Montage->IsDynamicMontage() ? Montage->GetFirstAnimReference() : Montage;
-
 			if (Montage->HasRootMotion() && AnimInstance->GetOwningActor())
 			{
 				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayMontage_FirstPerson [%s], Role: [%s]")
@@ -554,9 +580,9 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 					);
 			}
 
-			LocalFirstPersonMontageInfo.AnimMontage = Montage;
-			LocalFirstPersonMontageInfo.AnimatingAbility = InAnimatingAbility;
-			LocalFirstPersonMontageInfo.PlayInstanceId = (LocalFirstPersonMontageInfo.PlayInstanceId < UINT8_MAX ? LocalFirstPersonMontageInfo.PlayInstanceId + 1 : 0);
+			LocalFirstPersonAnimMontageInfo.AnimMontage = Montage;
+			LocalFirstPersonAnimMontageInfo.AnimatingAbility = InAnimatingAbility;
+			LocalFirstPersonAnimMontageInfo.PlayInstanceId = (LocalFirstPersonAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalFirstPersonAnimMontageInfo.PlayInstanceId + 1 : 0);
 
 			if (InAnimatingAbility)
 			{
@@ -571,7 +597,7 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 				AnimInstance->Montage_JumpToSection(StartSectionName, Montage);
 			}
 
-			// NOTE: We currently don't support replays. Our game doesn't have replays, so I'm not messing with it.
+			// NOTE: Replays do not currently support first-person animations.
 
 			// Replicate to non-owners.
 			if (IsOwnerActorAuthoritative())
@@ -620,6 +646,15 @@ void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimM
 		}
 	}
 }
+
+// void UCrashAbilitySystemComponent::ServerCurrentFirstPersonMontageJumpToSectionName_Implementation(UAnimSequenceBase* ClientAnimation, FName SectionName)
+// {
+// 	
+// }
+//
+// bool UCrashAbilitySystemComponent::ServerCurrentFirstPersonMontageJumpToSectionName_Validate(UAnimSequenceBase* ClientAnimation, FName SectionName)
+// {
+// }
 
 const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbilityActorInfo() const
 {

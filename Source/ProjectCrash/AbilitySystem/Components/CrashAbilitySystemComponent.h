@@ -215,6 +215,13 @@ public:
 
 public:
 
+	/** */
+	virtual void CurrentMontageJumpToSection(FName SectionName) override;
+
+	// virtual void CurrentMontageSetNextSectionName(FName FromSectionName, FName ToSectionName) override;
+	//
+	// virtual void CurrentMontageSetPlayRate(float InPlayRate) override;
+
 	/**
 	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a CrashCharacter. Use
 	 * PlayMontage to play a montage on the avatar's third-person mesh.
@@ -240,9 +247,39 @@ protected:
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
 
 	/** Data structure for first-person montages that were instigated locally (everything if server, predictive if
-	 * client. replicated if simulated proxy). */
+	 * client, replicated if simulated proxy). */
 	UPROPERTY()
-	FGameplayAbilityLocalAnimMontage LocalFirstPersonMontageInfo;
+	FGameplayAbilityLocalAnimMontage LocalFirstPersonAnimMontageInfo;
+
+	// void SetRepFirstPersonAnimMontageInfo(const FGameplayAbilityRepAnimMontage& NewRepAnimMontageInfo);
+	// FGameplayAbilityRepAnimMontage& GetRepFirstPersonAnimMontageInfo_Mutable();
+	// const FGameplayAbilityRepAnimMontage& GetRepFirstPersonAnimMontageInfo() const;
+	//
+	// UFUNCTION()
+	// void OnRep_ReplicatedFirstPersonAnimMontage();
+
+	UPROPERTY()
+	bool bPendingFirstPersonMontageRep;
+	
+	// /** RPC function called from CurrentMontageJumpToSection, replicates to other clients. */
+	// UFUNCTION(Reliable, Server, WithValidation)
+	// void ServerCurrentFirstPersonMontageJumpToSectionName(UAnimSequenceBase* ClientAnimation, FName SectionName);
+
+	// /** RPC function called from CurrentMontageSetNextSectionName, replicates to other clients. */
+	// UFUNCTION(Reliable, Server, WithValidation)
+	// void ServerCurrentFirstPersonMontageSetNextSectionName(UAnimSequenceBase* ClientAnimation, float ClientPosition, FName SectionName, FName NextSectionName);
+	//
+	// /** RPC function called from CurrentMontageSetPlayRate, replicates to other clients. */
+	// UFUNCTION(Reliable, Server, WithValidation)
+	// void ServerCurrentFirstPersonMontageSetPlayRate(UAnimSequenceBase* ClientAnimation, float InPlayRate);
+
+private:
+
+	/** Data structure for replicating first-person montage info to simulated clients. Ideally, we'd have a structure
+	 * that holds both our first- and third-person so we can replicate them atomically, since one should never change
+	 * without the other, but I don't want to refactor such a large amount of engine code. */
+	UPROPERTY(ReplicatedUsing=OnRep_ReplicatedFirstPersonAnimMontage)
+	FGameplayAbilityRepAnimMontage RepFirstPersonAnimMontageInfo;
 
 
 
