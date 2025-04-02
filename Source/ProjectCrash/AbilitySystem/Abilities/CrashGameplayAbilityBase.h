@@ -268,6 +268,26 @@ protected:
 
 
 
+	// Animation.
+
+public:
+
+	/** Returns the currently playing first-person montage for this ability, if any. */
+	UFUNCTION(BlueprintCallable, Category = Animation)
+	UAnimMontage* GetCurrentFirstPersonMontage() const;
+
+	/** Call to set/get the current first-person montage from a montage task. Set to allow hooking up montage events to
+	 * ability events. */
+	virtual void SetCurrentFirstPersonMontage(class UAnimMontage* InCurrentMontage);
+
+protected:
+
+	/** Active first-person montage being played by this ability. */
+	UPROPERTY()
+	TObjectPtr<class UAnimMontage> CurrentFirstPersonMontage;
+
+
+
 	// Gameplay effects.
 
 protected:
