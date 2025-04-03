@@ -28,7 +28,9 @@ class PROJECTCRASH_API UCrashAbilitySystemComponent : public UAbilitySystemCompo
 {
 	GENERATED_BODY()
 
-	// Construction.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Construction.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -37,7 +39,9 @@ public:
 
 
 
-	// Initialization.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Initialization.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -60,7 +64,9 @@ protected:
 
 
 
-	// Input processing.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Input processing.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -100,7 +106,9 @@ protected:
 
 
 
-	// Ability activation groups.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Ability activation groups.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -138,7 +146,9 @@ public:
 
 
 
-	// Gameplay.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Gameplay.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -156,7 +166,9 @@ public:
 
 
 
-	// Knockback processing.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Knockback processing.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -174,7 +186,9 @@ protected:
 
 
 
-	// Gameplay cues.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Gameplay cues.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
@@ -192,17 +206,38 @@ public:
 
 
 
-	// Animation.
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Animation.
+	//
+	//	Currently, first-person montages are only played locally (but still predicatively). They are NOT replicated to
+	//	clients, and animations triggered on local-only abilities are not replicated to the server.
+	//
+	//	This is because GAS natively supports third-person montages, and adding full support for first-person montages
+	//	would require massive modifications to its inner systems. Performing separate bookkeeping for first-person
+	//	montages is also difficult, because it would require two separate RPCs for each update, which could bottleneck
+	//	our network.
+	//
+	//  Currently, we have no need to replicate first-person animations.
+	//
+	//  TODO: Networks tests for viability of separate bookkeeping.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
+
+	/** Jumps the current first- and third-person montages to the given section. First-person is not replicated. */
+	virtual void CurrentMontageJumpToSection(FName SectionName) override;
+
+	/** Sets the current first- and third-person montages to the next section name. First-person is not replicated. */
+	virtual void CurrentMontageSetNextSectionName(FName FromSectionName, FName ToSectionName) override;
+
+	/** Sets the current first- and third-person montages' play rates. First-person is not replicated. */
+	virtual void CurrentMontageSetPlayRate(float InPlayRate) override;
 
 	/**
 	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a CrashCharacter. Use
 	 * PlayMontage to play a montage on the avatar's third-person mesh.
 	 *
-	 * This does not affect the ability system's animation data, such as LocalAnimMontageInfo. The ability system's
-	 * animation data is only affected by third-person animations, since first-person animations are rarely relevant to
-	 * anyone besides the local client.
+	 * First-person montages are only currently only played on local clients, and are NOT replicated.
 	 *
 	 * @param AnimatingAbility		The ability responsible for playing this animation.
 	 * @param ActivationInfo		Activation info used to activate AnimatingAbility.
@@ -217,12 +252,18 @@ public:
 
 protected:
 
-	/** Called when a prediction key that played a first-person montage is rejected. */
+	/** Stops playing a predicted first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
 
+	/** Data about the first-person montage playing locally. */
+	UPROPERTY()
+	FGameplayAbilityLocalAnimMontage LocalFirstPersonAnimMontageInfo;
 
 
-	// Utils.
+
+	// ----------------------------------------------------------------------------------------------------------------
+	//	Utils.
+	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 

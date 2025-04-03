@@ -20,6 +20,16 @@
 #include "GameFramework/GameModes/CrashGameState.h"
 #include "Kismet/GameplayStatics.h"
 
+/** Helper for functions that require an ability of type UCrashGameplayAbilityBase. */
+#define ENSURE_ABILITY_IS_CRASH_OR_RETURN(AbilityPtr, FunctionName, ReturnValue)																					\
+{																																									\
+	if (!ensure(AbilityPtr != nullptr && AbilityPtr->IsA(UCrashGameplayAbilityBase::StaticClass())))																															\
+	{																																								\
+		ABILITY_LOG(Error, TEXT("%s " #AbilityPtr " in function %s " #FunctionName " must be of type UCrashGameplayAbilityBase, but is not."), *GetPathName());		\
+		return ReturnValue;																																			\
+	}																																								\
+}
+
 UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
 	CurrentExclusiveAbility = nullptr;
@@ -36,6 +46,8 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 	const bool bHasValidNewAvatar = (Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor));
 
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+
+	LocalFirstPersonAnimMontageInfo = FGameplayAbilityLocalAnimMontage();
 
 	// Notify this ASC and its abilities if a valid new avatar was set.
 	if (bHasValidNewAvatar)
@@ -504,7 +516,7 @@ void UCrashAbilitySystemComponent::RemoveGameplayCueLocal(const FGameplayTag Gam
 	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(GetOwner(), GameplayCueTag, EGameplayCueEvent::Type::Removed, GameplayCueParameters, EGameplayCueExecutionOptions::IgnoreSuppression);
 }
 
-float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
+float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
 {
 	float Duration = -1.0f;
 
@@ -512,25 +524,22 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
 
 	// First-person montages cannot be played without a CrashCharacter avatar. No other actors have a first-person mesh.
-	if (!CrashCharacter)
+	if (!ensure(CrashCharacter))
 	{
+		ABILITY_LOG(Error, TEXT("Attempted to play first-person montage [%s] on avatar [%s], which is not of type CrashCharacter. Only CrashCharacter actors can play first-person animations."), *GetNameSafe(Montage), *GetNameSafe(GetAvatarActor()));
 		return Duration;
 	}
 
 	// Retrieve the first-person mesh animation instance.
-	// USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
-	// UAnimInstance* AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
 	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
 
 	if (AnimInstance && Montage)
 	{
-		// Play the montage locally. This is predicted on the owning client.
+		// Play the montage locally. This is predicted on the owning client and will not be replicated.
 		Duration = AnimInstance->Montage_Play(Montage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
 
 		if (Duration > 0.f)
 		{
-			UAnimSequenceBase* Animation = Montage->IsDynamicMontage() ? Montage->GetFirstAnimReference() : Montage;
-
 			if (Montage->HasRootMotion() && AnimInstance->GetOwningActor())
 			{
 				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayMontage_FirstPerson [%s], Role: [%s]")
@@ -539,45 +548,26 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 					);
 			}
 
+			LocalFirstPersonAnimMontageInfo.AnimMontage = Montage;
+			LocalFirstPersonAnimMontageInfo.AnimatingAbility = AnimatingAbility;
+			LocalFirstPersonAnimMontageInfo.PlayInstanceId = (LocalFirstPersonAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalFirstPersonAnimMontageInfo.PlayInstanceId + 1 : 0);
+
 			// Start the montage at the given section, if desired.
 			if (StartSectionName != NAME_None)
 			{
 				AnimInstance->Montage_JumpToSection(StartSectionName, Montage);
 			}
 
-			/* Replicate for non-owners and for replay recordings. The data we set from GetRepAnimMontageInfo_Mutable()
-			 * is used both by the server to replicate to clients and by clients to record replays. We need to set this
-			 * data for recording clients because there exists network configurations where an ability's montage data
-			 * will not replicate to some clients (e.g. if the client is an autonomous proxy). */
-			if (ShouldRecordMontageReplication())
-			{
-				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = GetRepAnimMontageInfo_Mutable();
-
-				// Static parameters. These are set when the montage is played and are never changed after.
-				MutableRepAnimMontageInfo.Animation = Animation;
-				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
-
-				MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-				if (MutableRepAnimMontageInfo.Animation && StartSectionName != NAME_None)
-				{
-					// Add one so INDEX_NONE can be used in the OnRep.
-					MutableRepAnimMontageInfo.SectionIdToPlay = Montage->GetSectionIndex(StartSectionName) + 1;
-				}
-
-				// Update replicated data that changed during the montage's lifetime.
-				AnimMontage_UpdateReplicatedData();
-			}
-
-			// Replicate to non-owners.
 			if (IsOwnerActorAuthoritative())
 			{
-				// Force net update on the avatar actor.
 				if (AbilityActorInfo->AvatarActor != nullptr)
 				{
 					AbilityActorInfo->AvatarActor->ForceNetUpdate();
 				}
 			}
-			// Listen for potential prediction rejection.
+			/* Listen for potential prediction rejection. Even though this animation isn't replicated, we still need the
+			 * server's permission to do it, to prevent cases where a local ability on the server triggers a
+			 * first-person animation, but that ability's activation ends up getting rejected. */ 
 			else
 			{
 				FPredictionKey PredictionKey = GetPredictionKeyForNewAction();
@@ -593,26 +583,44 @@ float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* In
 	return Duration;
 }
 
+void UCrashAbilitySystemComponent::CurrentMontageJumpToSection(FName SectionName)
+{
+	Super::CurrentMontageJumpToSection(SectionName);
+
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+	if ((SectionName != NAME_None) && AnimInstance && LocalFirstPersonAnimMontageInfo.AnimMontage)
+	{
+		AnimInstance->Montage_JumpToSection(SectionName, LocalFirstPersonAnimMontageInfo.AnimMontage);
+	}
+}
+
+void UCrashAbilitySystemComponent::CurrentMontageSetNextSectionName(FName FromSectionName, FName ToSectionName)
+{
+	Super::CurrentMontageSetNextSectionName(FromSectionName, ToSectionName);
+
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+	if (LocalFirstPersonAnimMontageInfo.AnimMontage && AnimInstance)
+	{
+		AnimInstance->Montage_SetNextSection(FromSectionName, ToSectionName, LocalFirstPersonAnimMontageInfo.AnimMontage);
+	}
+}
+
+void UCrashAbilitySystemComponent::CurrentMontageSetPlayRate(float InPlayRate)
+{
+	Super::CurrentMontageSetPlayRate(InPlayRate);
+
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+	if (LocalFirstPersonAnimMontageInfo.AnimMontage && AnimInstance)
+	{
+		AnimInstance->Montage_SetPlayRate(LocalFirstPersonAnimMontageInfo.AnimMontage, InPlayRate);
+	}
+}
+
 void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage)
 {
 	static const float MONTAGE_PREDICTION_REJECT_FADETIME = 0.25f;
 
-	// Get the first-person mesh, if the avatar is a CrashCharacter.
-	UAnimInstance* AnimInstance = nullptr;
-	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
-
-	/* First-person montages cannot be played without a CrashCharacter avatar. This should never happen, since we were
-	 * able to play the montage. */
-	if (!CrashCharacter)
-	{
-		ABILITY_LOG(Error, TEXT("Attempted to reject predicted first-person montage [%s] without a valid CrashCharacter avatar. Avatar may have been lost."), *GetNameSafe(PredictiveMontage));
-		return;
-	}
-
-	// Retrieve the first-person mesh animation instance.
-	USkeletalMeshComponent* FirstPersonMesh = CrashCharacter->GetFirstPersonMesh();
-	AnimInstance = FirstPersonMesh ? FirstPersonMesh->GetAnimInstance() : nullptr;
-
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
 	if (AnimInstance && PredictiveMontage)
 	{
 		// If this montage is still playing, stop it.
@@ -622,6 +630,135 @@ void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimM
 		}
 	}
 }
+
+// void UCrashAbilitySystemComponent::CurrentMontageJumpToSection(FName SectionName)
+// {
+// 	// Jump to the given section in the active third-person montage.
+// 	Super::CurrentMontageJumpToSection(SectionName);
+//
+// 	// Jump to the given section in the active first-person montage.
+// 	UAnimInstance* AnimInstance_FPP = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+// 	if ((SectionName != NAME_None) && AnimInstance_FPP && LocalFirstPersonAnimMontageInfo.AnimMontage)
+// 	{
+// 		AnimInstance_FPP->Montage_JumpToSection(SectionName, LocalFirstPersonAnimMontageInfo.AnimMontage);
+//
+// 		// NOTE: Replays do not currently support first-person animations.
+//
+// 		if (!IsOwnerActorAuthoritative())
+// 		{
+// 			UAnimSequenceBase* Animation = LocalFirstPersonAnimMontageInfo.AnimMontage->IsDynamicMontage() ? LocalFirstPersonAnimMontageInfo.AnimMontage->GetFirstAnimReference() : LocalFirstPersonAnimMontageInfo.AnimMontage;
+// 			ServerCurrentFirstPersonMontageJumpToSectionName(Animation, SectionName);
+// 		}
+// 	}
+// }
+//
+// float UCrashAbilitySystemComponent::PlayMontage_FirstPerson(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
+// {
+// 	float Duration = -1.0f;
+//
+// 	// Get the first-person mesh, if the avatar is a CrashCharacter.
+// 	ACrashCharacter* CrashCharacter = GetAvatarActor() ? Cast<ACrashCharacter>(GetAvatarActor()) : nullptr;
+//
+// 	// First-person montages cannot be played without a CrashCharacter avatar. No other actors have a first-person mesh.
+// 	if (!ensure(CrashCharacter))
+// 	{
+// 		ABILITY_LOG(Error, TEXT("Attempted to play first-person montage [%s] on avatar [%s], which is not of type CrashCharacter. Only CrashCharacter actors can play first-person animations."), *GetNameSafe(Montage), *GetNameSafe(GetAvatarActor()));
+// 		return Duration;
+// 	}
+//
+// 	// Retrieve the first-person mesh animation instance.
+// 	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+//
+// 	if (AnimInstance && Montage)
+// 	{
+// 		// Play the montage locally. This is predicted on the owning client.
+// 		Duration = AnimInstance->Montage_Play(Montage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
+//
+// 		if (Duration > 0.f)
+// 		{
+// 			if (Montage->HasRootMotion() && AnimInstance->GetOwningActor())
+// 			{
+// 				UE_LOG(LogRootMotion, Log, TEXT("UCrashAbilitySystemComponent::PlayMontage_FirstPerson [%s], Role: [%s]")
+// 					, *GetNameSafe(Montage)
+// 					, *UEnum::GetValueAsString(TEXT("Engine.ENetRole"), AnimInstance->GetOwningActor()->GetLocalRole())
+// 					);
+// 			}
+//
+// 			LocalFirstPersonAnimMontageInfo.AnimMontage = Montage;
+// 			LocalFirstPersonAnimMontageInfo.AnimatingAbility = InAnimatingAbility;
+// 			LocalFirstPersonAnimMontageInfo.PlayInstanceId = (LocalFirstPersonAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalFirstPersonAnimMontageInfo.PlayInstanceId + 1 : 0);
+//
+// 			if (InAnimatingAbility)
+// 			{
+// 				ENSURE_ABILITY_IS_CRASH_OR_RETURN(InAnimatingAbility, PlayMontage_FirstPerson, Duration)
+//
+// 				Cast<UCrashGameplayAbilityBase>(InAnimatingAbility)->SetCurrentFirstPersonMontage(Montage);
+// 			}
+// 			
+// 			// Start the montage at the given section, if desired.
+// 			if (StartSectionName != NAME_None)
+// 			{
+// 				AnimInstance->Montage_JumpToSection(StartSectionName, Montage);
+// 			}
+//
+// 			// NOTE: Replays do not currently support first-person animations.
+//
+// 			// Replicate to non-owners.
+// 			if (IsOwnerActorAuthoritative())
+// 			{
+// 				// Force net update on the avatar actor.
+// 				if (AbilityActorInfo->AvatarActor != nullptr)
+// 				{
+// 					AbilityActorInfo->AvatarActor->ForceNetUpdate();
+// 				}
+// 			}
+// 			// Listen for potential prediction rejection.
+// 			else
+// 			{
+// 				FPredictionKey PredictionKey = GetPredictionKeyForNewAction();
+// 				if (PredictionKey.IsValidKey())
+// 				{
+// 					// If this prediction key is rejected, we need to stop the predicted montage.
+// 					PredictionKey.NewRejectedDelegate().BindUObject(this, &UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected, Montage);
+// 				}
+// 			}
+// 		}
+// 	}
+//
+// 	return Duration;
+// }
+//
+// void UCrashAbilitySystemComponent::OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage)
+// {
+// 	static const float MONTAGE_PREDICTION_REJECT_FADETIME = 0.25f;
+//
+// 	/* First-person montages cannot be played without a CrashCharacter avatar. This should never happen, since we were
+// 	 * able to play the montage. */
+// 	if (!ensure(GetAvatarActor() && GetAvatarActor()->IsA(ACrashCharacter::StaticClass())))
+// 	{
+// 		ABILITY_LOG(Error, TEXT("Attempted to reject predicted first-person montage [%s] without a valid CrashCharacter avatar. Avatar may have been lost."), *GetNameSafe(PredictiveMontage));
+// 		return;
+// 	}
+//
+// 	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? GetCrashAbilityActorInfo()->GetFirstPersonAnimInstance() : nullptr;
+// 	if (AnimInstance && PredictiveMontage)
+// 	{
+// 		// If this montage is still playing, stop it.
+// 		if (AnimInstance->Montage_IsPlaying(PredictiveMontage))
+// 		{
+// 			AnimInstance->Montage_Stop(MONTAGE_PREDICTION_REJECT_FADETIME, PredictiveMontage);
+// 		}
+// 	}
+// }
+//
+// void UCrashAbilitySystemComponent::ServerCurrentFirstPersonMontageJumpToSectionName_Implementation(UAnimSequenceBase* ClientAnimation, FName SectionName)
+// {
+// 	
+// }
+//
+// bool UCrashAbilitySystemComponent::ServerCurrentFirstPersonMontageJumpToSectionName_Validate(UAnimSequenceBase* ClientAnimation, FName SectionName)
+// {
+// }
 
 const FCrashGameplayAbilityActorInfo* UCrashAbilitySystemComponent::GetCrashAbilityActorInfo() const
 {

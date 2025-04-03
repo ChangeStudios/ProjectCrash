@@ -73,7 +73,12 @@ public:
 
 public:
 
-	/** Create a handle for filtering target data. */
+	/**
+	 * Create a handle for filtering target data.
+	 *
+	 * @param Filter		The filter to create.
+	 * @param FilterActor	The source actor of the filter. When a filter refers to "self," it refers to this actor.
+	 */
 	UFUNCTION(BlueprintPure, Category = "Filter")
 	static FGameplayTargetDataFilterHandle MakeCrashFilterHandle(FCrashTargetDataFilter Filter, AActor* FilterActor);
 };
