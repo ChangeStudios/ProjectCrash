@@ -209,26 +209,35 @@ public:
 	// ----------------------------------------------------------------------------------------------------------------
 	//	Animation.
 	//
-	//	We do separate bookkeeping for predicting first-person animations and batch them with the third-person
-	//	animations.
+	//	Currently, first-person montages are only played locally (but still predicatively). They are NOT replicated to
+	//	clients, and animations triggered on local-only abilities are not replicated to the server.
+	//
+	//	This is because GAS natively supports third-person montages, and adding full support for first-person montages
+	//	would require massive modifications to its inner systems. Performing separate bookkeeping for first-person
+	//	montages is also difficult, because it would require two separate RPCs for each update, which could bottleneck
+	//	our network.
+	//
+	//  Currently, we have no need to replicate first-person animations.
+	//
+	//  TODO: Networks tests for viability of separate bookkeeping.
 	// ----------------------------------------------------------------------------------------------------------------
 
 public:
 
-	/** */
+	/** Jumps the current first- and third-person montages to the given section. First-person is not replicated. */
 	virtual void CurrentMontageJumpToSection(FName SectionName) override;
 
-	// virtual void CurrentMontageSetNextSectionName(FName FromSectionName, FName ToSectionName) override;
-	//
-	// virtual void CurrentMontageSetPlayRate(float InPlayRate) override;
+	/** Sets the current first- and third-person montages to the next section name. First-person is not replicated. */
+	virtual void CurrentMontageSetNextSectionName(FName FromSectionName, FName ToSectionName) override;
+
+	/** Sets the current first- and third-person montages' play rates. First-person is not replicated. */
+	virtual void CurrentMontageSetPlayRate(float InPlayRate) override;
 
 	/**
 	 * Plays the given montage on this ASC's avatar's first-person mesh, if the avatar is a CrashCharacter. Use
 	 * PlayMontage to play a montage on the avatar's third-person mesh.
 	 *
-	 * This does not affect the ability system's animation data, such as LocalAnimMontageInfo. The ability system's
-	 * animation data is only affected by third-person animations, since first-person animations are rarely relevant to
-	 * anyone besides the local client.
+	 * First-person montages are only currently only played on local clients, and are NOT replicated.
 	 *
 	 * @param AnimatingAbility		The ability responsible for playing this animation.
 	 * @param ActivationInfo		Activation info used to activate AnimatingAbility.
@@ -243,43 +252,12 @@ public:
 
 protected:
 
-	/** Called when a prediction key that played a first-person montage is rejected. */
+	/** Stops playing a predicted first-person montage is rejected. */
 	void OnFirstPersonPredictiveMontageRejected(UAnimMontage* PredictiveMontage);
 
-	/** Data structure for first-person montages that were instigated locally (everything if server, predictive if
-	 * client, replicated if simulated proxy). */
+	/** Data about the first-person montage playing locally. */
 	UPROPERTY()
 	FGameplayAbilityLocalAnimMontage LocalFirstPersonAnimMontageInfo;
-
-	// void SetRepFirstPersonAnimMontageInfo(const FGameplayAbilityRepAnimMontage& NewRepAnimMontageInfo);
-	// FGameplayAbilityRepAnimMontage& GetRepFirstPersonAnimMontageInfo_Mutable();
-	// const FGameplayAbilityRepAnimMontage& GetRepFirstPersonAnimMontageInfo() const;
-	//
-	// UFUNCTION()
-	// void OnRep_ReplicatedFirstPersonAnimMontage();
-
-	UPROPERTY()
-	bool bPendingFirstPersonMontageRep;
-	
-	// /** RPC function called from CurrentMontageJumpToSection, replicates to other clients. */
-	// UFUNCTION(Reliable, Server, WithValidation)
-	// void ServerCurrentFirstPersonMontageJumpToSectionName(UAnimSequenceBase* ClientAnimation, FName SectionName);
-
-	// /** RPC function called from CurrentMontageSetNextSectionName, replicates to other clients. */
-	// UFUNCTION(Reliable, Server, WithValidation)
-	// void ServerCurrentFirstPersonMontageSetNextSectionName(UAnimSequenceBase* ClientAnimation, float ClientPosition, FName SectionName, FName NextSectionName);
-	//
-	// /** RPC function called from CurrentMontageSetPlayRate, replicates to other clients. */
-	// UFUNCTION(Reliable, Server, WithValidation)
-	// void ServerCurrentFirstPersonMontageSetPlayRate(UAnimSequenceBase* ClientAnimation, float InPlayRate);
-
-private:
-
-	/** Data structure for replicating first-person montage info to simulated clients. Ideally, we'd have a structure
-	 * that holds both our first- and third-person so we can replicate them atomically, since one should never change
-	 * without the other, but I don't want to refactor such a large amount of engine code. */
-	UPROPERTY(ReplicatedUsing=OnRep_ReplicatedFirstPersonAnimMontage)
-	FGameplayAbilityRepAnimMontage RepFirstPersonAnimMontageInfo;
 
 
 

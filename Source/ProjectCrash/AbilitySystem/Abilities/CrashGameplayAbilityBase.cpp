@@ -462,17 +462,6 @@ void UCrashGameplayAbilityBase::ClearCameraMode()
 	ActiveCameraMode = nullptr;
 }
 
-UAnimMontage* UCrashGameplayAbilityBase::GetCurrentFirstPersonMontage() const
-{
-	return CurrentFirstPersonMontage;
-}
-
-void UCrashGameplayAbilityBase::SetCurrentFirstPersonMontage(class UAnimMontage* InCurrentMontage)
-{
-	ENSURE_ABILITY_IS_INSTANTIATED_OR_RETURN(SetCurrentFirstPersonMontage, );
-	CurrentFirstPersonMontage = InCurrentMontage;
-}
-
 FGameplayEffectContextHandle UCrashGameplayAbilityBase::MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const
 {
 	/* Create an effect context of type CrashEffectContext. Our AbilitySystemGlobals class defines the correct effect
