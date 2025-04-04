@@ -267,6 +267,20 @@ protected:
 
 public:
 
+	/** Whether an ability with any of the given tags is currently active on this ASC. */
+	bool IsAbilityActive(const FGameplayTagContainer& WithAny);
+
+	/** Whether an ability of the given class is currently active on this ASC. */
+	bool IsAbilityActive(TSubclassOf<UCrashGameplayAbilityBase> AbilityClass);
+
+	/** Whether an ability with any of the given tags is currently active on this ASC. */
+	UFUNCTION(BlueprintCallable, Category = Ability, DisplayName = "Is Ability Active (With Tag)")
+	bool IsAbilityActiveByTag(const FGameplayTagContainer& WithAny) { return IsAbilityActive(WithAny); }
+
+	/** Whether an ability of the given class is currently active on this ASC. */
+	UFUNCTION(BlueprintCallable, Category = Ability, DisplayName = "Is Ability Active (By Class)")
+	bool IsAbilityActiveByClass(TSubclassOf<UCrashGameplayAbilityBase> AbilityClass) { return IsAbilityActive(AbilityClass); }
+
 	/** Retrieves the typed version of this ASC's actor info. */
 	const FCrashGameplayAbilityActorInfo* GetCrashAbilityActorInfo() const;
 
