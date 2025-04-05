@@ -15,6 +15,26 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityGrantedSignature, const FGam
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityRemovedSignature, const FGameplayAbilitySpec&, RemovedAbilitySpec);
 
 /**
+ * Tracks the instigator and gameplay effect responsible for the most recent knockback applied to an ASC's avatar.
+ * Cleared when the avatar lands or dies.
+ */
+USTRUCT()
+struct FKnockbackSourceData
+{
+	GENERATED_BODY()
+
+	/** The actor responsible for most recent knockback applied to this ASC's avatar. */
+	UPROPERTY()
+	TObjectPtr<AActor> KnockbackInstigator;
+
+	/** The gameplay effect definition that applied the most recent knockback to this ASC's avatar. */
+	UPROPERTY()
+	TObjectPtr<const UGameplayEffect> SourceKnockbackEffect;
+};
+
+
+
+/**
  * The ability system component used for this project.
  *
  * This project's GAS implementation (like any implementation of GAS) is complex, and may be difficult to understand
@@ -172,17 +192,24 @@ public:
 
 public:
 
-	/** Sets the source for the knockback currently applied to this ASC's avatar. */
-	void SetCurrentKnockbackSource(AActor* Source);
+	/** Sets the instigator and source for the most recent knockback applied to this ASC's avatar. */
+	void SetCurrentKnockbackSource(AActor* Instigator, const UGameplayEffect* KnockbackGE);
 
-	/** Getter for the source of the knockback currently applied to this ASC's avatar. */
-	AActor* GetCurrentKnockbackSource() const { return CurrentKnockbackSource ? CurrentKnockbackSource : nullptr; }
+	/** Resets current knockback source data. Called when this ASC's avatar lands or dies. */
+	void ClearKnockbackSource();
+
+	/** Getter for the instigator of the most recent knockback applied to this ASC's avatar. */
+	AActor* GetCurrentKnockbackInstigator() const { return CurrentKnockbackSourceData.KnockbackInstigator; }
+
+	/** Getter for the source effect of the most recent knockback applied to this ASC's avatar. */
+	const UGameplayEffect* GetCurrentSourceKnockbackEffect() const { return CurrentKnockbackSourceData.SourceKnockbackEffect; }
 
 protected:
 
-	/** The last actor responsible for knockback applied to this ASC's avatar. Cleared when the avatar lands. */
+	/** Data tracking the instigator and gameplay effect responsible for the most recent knockback applied to this ASC's
+	 * avatar. Cleared when the avatar lands or dies. */
 	UPROPERTY()
-	TObjectPtr<AActor> CurrentKnockbackSource;
+	FKnockbackSourceData CurrentKnockbackSourceData;
 
 
 

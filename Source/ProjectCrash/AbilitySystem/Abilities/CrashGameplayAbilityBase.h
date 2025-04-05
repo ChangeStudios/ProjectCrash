@@ -241,17 +241,23 @@ protected:
 	 * Applies knockback to the target actor in the direction of the source to the target.
 	 *
 	 * @param VelocityMagnitude		Scalar applied to knockback direction, in cm/s.
+	 * @param SourceEffect			Optional gameplay effect responsible for this knockback. This GE is not actually
+	 *								applied, but can be used to prevent this knockback from granting ultimate charge
+	 *								using a "NoUltimateCharge" effect tag.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
-	void AddKnockbackToTargetFromLocation(float VelocityMagnitude, FVector Source, AActor* Target);
+	void AddKnockbackToTargetFromLocation(float VelocityMagnitude, FVector Source, AActor* Target, TSubclassOf<UGameplayEffect> SourceEffect);
 
 	/**
 	 * Applies directional knockback to the target actor.
 	 *
 	 * @param Velocity				Direction and magnitude of knockback, in cm/s.
+	 * @param SourceEffect			Optional gameplay effect responsible for this knockback. This GE is not actually
+	 *								applied, but can be used to prevent this knockback from granting ultimate charge
+	 *								using a "NoUltimateCharge" effect tag.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Knockback")
-	void AddKnockbackToTargetInDirection(FVector Velocity, AActor* Target);
+	void AddKnockbackToTargetInDirection(FVector Velocity, AActor* Target, TSubclassOf<UGameplayEffect> SourceEffect);
 
 	/** Sets the ability's avatar's camera mode, overriding it temporarily. Requires that the avatar is a pawn with a
 	 * PawnCameraManager component. */

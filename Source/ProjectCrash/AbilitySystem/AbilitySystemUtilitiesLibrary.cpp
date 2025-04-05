@@ -50,7 +50,7 @@ bool UAbilitySystemUtilitiesLibrary::HasLineOfSight(const UObject* WorldContextO
 	return !OutHitResult.bBlockingHit;
 }
 
-void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator)
+void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, AActor* Instigator, const UGameplayEffect* SourceEffect)
 {
 	if (!ensure(Target))
 	{
@@ -62,10 +62,10 @@ void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(float Fo
 	const FVector ForceVector = Force * DirectionRot.Vector();
 
 	// Apply knockback.
-	ApplyKnockbackToTargetInDirection(ForceVector, Target, Instigator);
+	ApplyKnockbackToTargetInDirection(ForceVector, Target, Instigator, SourceEffect);
 }
 
-void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(FVector Velocity, AActor* Target, AActor* Instigator)
+void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(FVector Velocity, AActor* Target, AActor* Instigator, const UGameplayEffect* SourceEffect)
 {
 	// If the target actor is a character, launch them via their movement component.
 	if (ACharacter* TargetChar = Cast<ACharacter>(Target))
@@ -96,7 +96,7 @@ void UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(FVector V
 	 * lands on the ground. */
 	if (UCrashAbilitySystemComponent* CrashASC = UCrashAbilitySystemGlobals::GetCrashAbilitySystemComponentFromActor(Target))
 	{
-		CrashASC->SetCurrentKnockbackSource(Instigator);
+		CrashASC->SetCurrentKnockbackSource(Instigator, SourceEffect);
 	}
 }
 

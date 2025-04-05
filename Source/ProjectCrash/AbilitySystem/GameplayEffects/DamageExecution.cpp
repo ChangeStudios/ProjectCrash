@@ -192,7 +192,7 @@ void UDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecuti
 			if (const FHitResult* HitResult = Spec.GetContext().GetHitResult())
 			{
 				const FVector KnockbackForce = KnockbackComp->GetKnockbackForce(HitResult->Normal);
-				UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(KnockbackForce, TargetASC->GetAvatarActor(), CrashContext->GetInstigator());
+				UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(KnockbackForce, TargetASC->GetAvatarActor(), CrashContext->GetInstigator(), Spec.Def);
 			}
 		}
 	}

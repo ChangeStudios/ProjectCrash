@@ -33,7 +33,7 @@
 UCrashAbilitySystemComponent::UCrashAbilitySystemComponent()
 {
 	CurrentExclusiveAbility = nullptr;
-	CurrentKnockbackSource = nullptr;
+	CurrentKnockbackSourceData = FKnockbackSourceData(nullptr, nullptr);
 }
 
 void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -97,14 +97,14 @@ void UCrashAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AA
 void UCrashAbilitySystemComponent::OnNewAvatarSet()
 {
 	// Clear any leftover knockback source from the last avatar.
-	CurrentKnockbackSource = nullptr;
+	ClearKnockbackSource();
 
 	// If the new avatar has a movement component, clear their knockback source whenever they land on the ground.
 	if (UCrashCharacterMovementComponent* CrashCharMovementComp = UCrashCharacterMovementComponent::FindCrashMovementComponent(GetAvatarActor()))
 	{
 		CrashCharMovementComp->LandedDelegate.AddWeakLambda(this, [this](FHitResult Hit)
 		{
-			CurrentKnockbackSource = nullptr;
+			ClearKnockbackSource();
 		});
 	}
 }
@@ -489,12 +489,19 @@ void UCrashAbilitySystemComponent::EnableAbilitiesByTag(const FGameplayTagContai
 	}
 }
 
-void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(AActor* Source)
+void UCrashAbilitySystemComponent::SetCurrentKnockbackSource(AActor* Instigator, const UGameplayEffect* KnockbackGE)
 {
-	if (ensure(IsValid(Source)))
+	if (ensure(IsValid(Instigator)))
 	{
-		CurrentKnockbackSource = Source;
+		CurrentKnockbackSourceData.KnockbackInstigator = Instigator;
+		CurrentKnockbackSourceData.SourceKnockbackEffect = KnockbackGE;
 	}
+}
+
+void UCrashAbilitySystemComponent::ClearKnockbackSource()
+{
+	CurrentKnockbackSourceData.KnockbackInstigator = nullptr;
+	CurrentKnockbackSourceData.SourceKnockbackEffect = nullptr;
 }
 
 void UCrashAbilitySystemComponent::ExecuteGameplayCueLocal(const FGameplayTag GameplayCueTag, const FGameplayCueParameters& GameplayCueParameters)

@@ -38,9 +38,11 @@ public:
 	 * @param VelocityMagnitude		Scalar applied to knockback direction, in cm/s.
 	 * @param Instigator			The actor responsible for applying this knockback. If it was applied by an ability,
 	 *								this should be the ASC's owner.
+	 * @param SourceEffect			Optional gameplay effect responsible for applying this knockback. Only needed when
+	 *								applying knockback from a damage effect.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability Statics|Knockback")
-	static void ApplyKnockbackToTargetFromLocation(float VelocityMagnitude, FVector Source, AActor* Target, AActor* Instigator);
+	static void ApplyKnockbackToTargetFromLocation(float VelocityMagnitude, FVector Source, AActor* Target, AActor* Instigator, const UGameplayEffect* SourceEffect);
 
 	/**
 	 * Applies directional knockback to the target actor.
@@ -48,9 +50,11 @@ public:
 	 * @param Velocity				Direction and magnitude of knockback, in cm/s.
 	 * @param Instigator			The actor responsible for applying this knockback. If it was applied by an ability,
 	 *								this should be the ASC's owner.
+	 * @param SourceEffect			Optional gameplay effect responsible for applying this knockback. Only needed when
+	 *								applying knockback from a damage effect.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability Statics|Knockback")
-	static void ApplyKnockbackToTargetInDirection(FVector Velocity, AActor* Target, AActor* Instigator);
+	static void ApplyKnockbackToTargetInDirection(FVector Velocity, AActor* Target, AActor* Instigator, const UGameplayEffect* SourceEffect);
 
 
 

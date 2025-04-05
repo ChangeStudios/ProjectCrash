@@ -360,10 +360,23 @@ void UHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
 		// Create an effect spec for the damage.
 		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
 
+		bool bShouldGrantUltimateCharge = true;
+
 		// If the actor fell out of the world, add the last person to deal knockback to them as an instigator.
-		if (bFellOutOfWorld && AbilitySystemComponent->GetCurrentKnockbackSource())
+		if (bFellOutOfWorld && AbilitySystemComponent->GetCurrentKnockbackInstigator())
 		{
-			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackSource(), AbilitySystemComponent->GetCurrentKnockbackSource() /* The world is technically the effect causer, but this needs to be valid for the damage execution. */);
+			EffectContext.AddInstigator(AbilitySystemComponent->GetCurrentKnockbackInstigator(), AbilitySystemComponent->GetCurrentKnockbackInstigator() /* The world is technically the effect causer, but this needs to be valid for the damage execution. */);
+
+			/* If the GE that applied the knockback shouldn't grant ultimate charge, don't let this damage grant
+			 * ultimate charge either. E.g. if an ultimate ability dealt the knockback that knocked this player off the
+			 * map, don't grant the ultimate ability's user ultimate charge. */
+			if (const UGameplayEffect* KnockbackSourceGE = AbilitySystemComponent->GetCurrentSourceKnockbackEffect())
+			{
+				if (KnockbackSourceGE->GetAssetTags().HasTagExact(CrashGameplayTags::TAG_GameplayEffects_NoUltimateCharge))
+				{
+					bShouldGrantUltimateCharge = false;
+				}
+			}
 		}
 
 		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageGE, 1.0f, EffectContext);
@@ -380,6 +393,11 @@ void UHealthComponent::DamageSelfDestruct(bool bFellOutOfWorld)
 		if (bFellOutOfWorld)
 		{
 			Spec->AddDynamicAssetTag(CrashGameplayTags::TAG_GameplayEffects_Damage_FellOutOfWorld);
+		}
+
+		if (!bShouldGrantUltimateCharge)
+		{
+			Spec->AddDynamicAssetTag(CrashGameplayTags::TAG_GameplayEffects_NoUltimateCharge);
 		}
 
 		// Set damage magnitude.

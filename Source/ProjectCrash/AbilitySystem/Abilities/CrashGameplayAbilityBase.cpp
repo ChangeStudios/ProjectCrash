@@ -427,14 +427,14 @@ void UCrashGameplayAbilityBase::OnNewAvatarSet()
 	K2_OnNewAvatarSet();
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetFromLocation(float Force, FVector Source, AActor* Target, TSubclassOf<UGameplayEffect> SourceEffect)
 {
-	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(Force, Source, Target, GetOwningActorFromActorInfo());
+	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetFromLocation(Force, Source, Target, GetOwningActorFromActorInfo(), IsValid(SourceEffect) ? SourceEffect.GetDefaultObject() : nullptr);
 }
 
-void UCrashGameplayAbilityBase::AddKnockbackToTargetInDirection(FVector Force, AActor* Target)
+void UCrashGameplayAbilityBase::AddKnockbackToTargetInDirection(FVector Force, AActor* Target, TSubclassOf<UGameplayEffect> SourceEffect)
 {
-	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(Force, Target, GetOwningActorFromActorInfo());
+	UAbilitySystemUtilitiesLibrary::ApplyKnockbackToTargetInDirection(Force, Target, GetOwningActorFromActorInfo(), IsValid(SourceEffect) ? SourceEffect.GetDefaultObject() : nullptr);
 }
 
 void UCrashGameplayAbilityBase::SetCameraMode(TSubclassOf<UCrashCameraModeBase> CameraMode)
