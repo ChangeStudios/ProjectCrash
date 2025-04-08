@@ -183,9 +183,6 @@ public:
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FExtendExtensionPointDynamicDelegate, EUIExtensionAction, Action, const FUIExtensionRequest&, ExtensionRequest);
 
-// This typedef needs to be up here (don't ask why. im losing my mind.)
-typedef TArray<TSharedPtr<FUIExtensionPoint>> FExtensionPointList;
-
 /**
  * 
  */
@@ -245,7 +242,8 @@ protected:
 	FUIExtensionRequest CreateExtensionRequest(const TSharedPtr<FUIExtension>& Extension);
 
 private:
-	
+
+	typedef TArray<TSharedPtr<FUIExtensionPoint>> FExtensionPointList;
 	TMap<FGameplayTag, FExtensionPointList> ExtensionPointMap;
 
 	typedef TArray<TSharedPtr<FUIExtension>> FExtensionList;
