@@ -39,7 +39,7 @@ private:
 	void ResetExtensionPoint();
 	void RegisterExtensionPoint();
 	void RegisterExtensionPointForPlayerState(UCommonLocalPlayer* LocalPlayer, APlayerState* PlayerState);
-	UUserWidget* OnAddOrRemoveExtension(EUIExtensionAction Action, const FUIExtensionRequest& Request);
+	void OnAddOrRemoveExtension(EUIExtensionAction Action, const FUIExtensionRequest& Request);
 
 protected:
 	/** The tag that defines this extension point */

@@ -34,12 +34,10 @@ UENUM(BlueprintType)
 enum class EUIExtensionAction : uint8
 {
 	Added,
-	Removed,
-	Retrieve
+	Removed
 };
 
-/** Returns the registered widget the given action is Added or Retrieve, if the widget is successfully registered. */
-DECLARE_DELEGATE_RetVal_TwoParams(UUserWidget*, FExtendExtensionPointDelegate, EUIExtensionAction Action, const FUIExtensionRequest& Request);
+DECLARE_DELEGATE_TwoParams(FExtendExtensionPointDelegate, EUIExtensionAction Action, const FUIExtensionRequest& Request);
 
 /*
  *
@@ -185,6 +183,9 @@ public:
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FExtendExtensionPointDynamicDelegate, EUIExtensionAction, Action, const FUIExtensionRequest&, ExtensionRequest);
 
+// This typedef needs to be up here (don't ask why. im losing my mind.)
+typedef TArray<TSharedPtr<FUIExtensionPoint>> FExtensionPointList;
+
 /**
  * 
  */
@@ -207,9 +208,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UI Extension")
 	void UnregisterExtensionPoint(const FUIExtensionPointHandle& ExtensionPointHandle);
 
-	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "UI Extension")
-	UUserWidget* RetrieveExtensionWidget(const FUIExtensionHandle& ExtensionHandle);
-
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 
 protected:
@@ -217,7 +215,7 @@ protected:
 	virtual void Deinitialize() override;
 
 	void NotifyExtensionPointOfExtensions(TSharedPtr<FUIExtensionPoint>& ExtensionPoint);
-	UUserWidget* NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension);
+	void NotifyExtensionPointsOfExtension(EUIExtensionAction Action, TSharedPtr<FUIExtension>& Extension);
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category="UI Extension", meta = (DisplayName = "Register Extension Point"))
 	FUIExtensionPointHandle K2_RegisterExtensionPoint(FGameplayTag ExtensionPointTag, EUIExtensionPointMatch ExtensionPointTagMatchType, const TArray<UClass*>& AllowedDataClasses, FExtendExtensionPointDynamicDelegate ExtensionCallback);
@@ -247,7 +245,7 @@ protected:
 	FUIExtensionRequest CreateExtensionRequest(const TSharedPtr<FUIExtension>& Extension);
 
 private:
-	typedef TArray<TSharedPtr<FUIExtensionPoint>> FExtensionPointList;
+	
 	TMap<FGameplayTag, FExtensionPointList> ExtensionPointMap;
 
 	typedef TArray<TSharedPtr<FUIExtension>> FExtensionList;
