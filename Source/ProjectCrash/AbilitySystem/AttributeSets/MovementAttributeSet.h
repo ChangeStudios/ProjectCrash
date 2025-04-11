@@ -49,6 +49,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, JumpVelocity);
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, JumpCount);
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, GravityScale);
+	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, AirControl);
 
 // Attribute properties.
 private:
@@ -69,6 +70,10 @@ private:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_GravityScale, Category = "Ability|Attribute|Movement", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData GravityScale;
 
+	/** The amount of lateral movement control characters have while airborne. */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_AirControl, Category = "Ability|Attribute|Movement", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData AirControl;
+
 
 
 	// Attribute delegates. Most variables in these delegates will not be valid on clients.
@@ -86,6 +91,9 @@ public:
 
 	/** Delegate broadcast when the GravityScale attribute changes. */
 	mutable FAttributeChangedSignature GravityScaleAttributeChangedDelegate;
+
+	/** Delegate broadcast when the AirControl attribute changes. */
+	mutable FAttributeChangedSignature AirControlAttributeChangedDelegate;
 
 
 
@@ -108,4 +116,8 @@ protected:
 	/** OnRep for GravityScale. */
 	UFUNCTION()
 	void OnRep_GravityScale(const FGameplayAttributeData& OldValue);
+
+	/** OnRep for AirControl. */
+	UFUNCTION()
+	void OnRep_AirControl(const FGameplayAttributeData& OldValue);
 };

@@ -15,12 +15,6 @@
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	/**
-	 * MaxWalkSpeed, JumpZVelocity, JumpCount, and GravityScale are controlled by attributes.
-	 *
-	 * @see UMovementAttributeSet
-	 */
-
 	MaxAcceleration = 16384.0f;
 	bUseSeparateBrakingFriction = false;
 
@@ -30,7 +24,7 @@ UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObject
 	BrakingDecelerationWalking = 8192.0f;
 	PerchRadiusThreshold = 25.0f;
 
-	AirControl = 0.1f;
+	// AirControl = 0.1f;
 	AirControlBoostVelocityThreshold = 0.0f;
 	FallingLateralFriction = 0.6;
 }
@@ -67,12 +61,14 @@ void UCrashCharacterMovementComponent::InitializeWithAbilitySystem(UCrashAbility
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpVelocityChanged);
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpCountChanged);
 	MovementSet->GravityScaleAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnGravityScaleChanged);
+	MovementSet->AirControlAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnAirControlChanged);
 
 	// Initialize movement properties.
 	MaxWalkSpeed = MovementSet->GetMaxWalkSpeed();
 	JumpZVelocity = MovementSet->GetJumpVelocity();
 	CharacterOwner->JumpMaxCount = MovementSet->GetJumpCount();
 	GravityScale = MovementSet->GetGravityScale();
+	AirControl = MovementSet->GetAirControl();
 }
 
 void UCrashCharacterMovementComponent::UninitializeFromAbilitySystem()
@@ -83,6 +79,8 @@ void UCrashCharacterMovementComponent::UninitializeFromAbilitySystem()
 		MovementSet->MaxWalkSpeedAttributeChangedDelegate.RemoveAll(this);
 		MovementSet->JumpVelocityAttributeChangedDelegate.RemoveAll(this);
 		MovementSet->JumpVelocityAttributeChangedDelegate.RemoveAll(this);
+		MovementSet->GravityScaleAttributeChangedDelegate.RemoveAll(this);
+		MovementSet->AirControlAttributeChangedDelegate.RemoveAll(this);
 	}
 
 	// Clear cached variables.
@@ -138,6 +136,15 @@ void UCrashCharacterMovementComponent::OnGravityScaleChanged(AActor* EffectInsti
 	if (MovementSet)
 	{
 		GravityScale = MovementSet->GetGravityScale();
+	}
+}
+
+void UCrashCharacterMovementComponent::OnAirControlChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+{
+	// Copy the change into this component.
+	if (MovementSet)
+	{
+		AirControl = MovementSet->GetAirControl();
 	}
 }
 

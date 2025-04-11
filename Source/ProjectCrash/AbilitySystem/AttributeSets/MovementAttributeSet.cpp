@@ -9,12 +9,14 @@ UMovementAttributeSet::UMovementAttributeSet() :
 	MaxWalkSpeed(600.0f),
 	JumpVelocity(1000.0f),
 	JumpCount(2.0f),
-	GravityScale(1.5f)
+	GravityScale(1.5f),
+	AirControl(0.1f)
 {
 	InitMaxWalkSpeed(600.0f);
 	InitJumpVelocity(1000.0f);
 	InitJumpCount(2.0f);
 	InitGravityScale(1.5f);
+	InitAirControl(0.1f);
 }
 
 void UMovementAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
@@ -51,28 +53,48 @@ void UMovementAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, 
 	// Clamp GravityScale to safe values.
 	else if (Attribute == GetGravityScaleAttribute())
 	{
-		NewValue = FMath::Clamp(FMath::Floor(NewValue), 0.0f, 3.0f);
+		NewValue = FMath::Clamp(NewValue, 0.0f, 3.0f);
+	}
+	// Clamp AirControl to applicable values.
+	else if (Attribute == GetAirControlAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, 1.0f);
 	}
 }
 
 void UMovementAttributeSet::OnRep_MaxWalkSpeed(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, MaxWalkSpeed, OldValue);
+
+	MaxWalkSpeedAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldValue.GetCurrentValue(), GetMaxWalkSpeed());
 }
 
 void UMovementAttributeSet::OnRep_JumpVelocity(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, JumpVelocity, OldValue);
+
+	JumpVelocityAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldValue.GetCurrentValue(), GetJumpVelocity());
 }
 
 void UMovementAttributeSet::OnRep_JumpCount(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, JumpCount, OldValue);
+
+	JumpCountAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldValue.GetCurrentValue(), GetJumpCount());
 }
 
 void UMovementAttributeSet::OnRep_GravityScale(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, GravityScale, OldValue);
+
+	GravityScaleAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldValue.GetCurrentValue(), GetGravityScale());
+}
+
+void UMovementAttributeSet::OnRep_AirControl(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UMovementAttributeSet, AirControl, OldValue);
+
+	AirControlAttributeChangedDelegate.Broadcast(nullptr, FGameplayEffectSpec(), OldValue.GetCurrentValue(), GetAirControl());
 }
 
 void UMovementAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -83,4 +105,5 @@ void UMovementAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(UMovementAttributeSet, JumpVelocity, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UMovementAttributeSet, JumpCount, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UMovementAttributeSet, GravityScale, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UMovementAttributeSet, AirControl, COND_None, REPNOTIFY_Always);
 }

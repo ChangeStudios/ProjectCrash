@@ -22,6 +22,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMoveCompLandedSignature, const FHitResult& 
  *  - JumpZVelocity
  *  - JumpCount (from ACharacter)
  *  - GravityScale
+ *  - AirControl
  */
 UCLASS(BlueprintType, ClassGroup = "Movement", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCharacterMovementComponent : public UCharacterMovementComponent
@@ -92,6 +93,10 @@ protected:
 	/** Updates this movement component's GravityScale property. */
 	UFUNCTION()
 	void OnGravityScaleChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+
+	/** Updates this movement component's AirControl property. */
+	UFUNCTION()
+	void OnAirControlChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 
 
