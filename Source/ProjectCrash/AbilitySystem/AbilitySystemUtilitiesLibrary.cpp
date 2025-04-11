@@ -14,7 +14,7 @@
 
 /** When knockback is applied to a grounded character, a small upward force will be added so they don't slide on the
  * ground. The upward force will be min-clamped to (MIN_UPWARD_KNOCKBACK_PCT * (2D knockback force length)). */
-#define MIN_UPWARD_KNOCKBACK_PCT 0.2125
+#define MIN_UPWARD_KNOCKBACK_PCT 0.325
 
 bool UAbilitySystemUtilitiesLibrary::HasLineOfSight(const UObject* WorldContextObject, AActor* SourceActor, AActor* TargetActor, ETraceTypeQuery TraceChannel, bool bIgnorePawns)
 {
