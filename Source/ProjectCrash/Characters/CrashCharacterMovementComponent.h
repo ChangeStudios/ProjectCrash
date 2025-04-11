@@ -16,7 +16,12 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FMoveCompLandedSignature, const FHitResult& 
  * Default character movement component for this project. Integrates with its owner's MovementAttributeSet, if one
  * exists.
  *
- * TODO: This is causing latency issues.
+ * The following values are controlled by attributes (thus, the values set in archetypes are ignored if the owning
+ * character has a movement attribute set):
+ *  - MaxWalkSpeed
+ *  - JumpZVelocity
+ *  - JumpCount (from ACharacter)
+ *  - GravityScale
  */
 UCLASS(BlueprintType, ClassGroup = "Movement", Meta = (BlueprintSpawnableComponent))
 class PROJECTCRASH_API UCrashCharacterMovementComponent : public UCharacterMovementComponent
@@ -83,6 +88,10 @@ protected:
 	/** Updates this component's owning character's JumpCount property. */
 	UFUNCTION()
 	void OnJumpCountChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
+
+	/** Updates this movement component's GravityScale property. */
+	UFUNCTION()
+	void OnGravityScaleChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue);
 
 
 

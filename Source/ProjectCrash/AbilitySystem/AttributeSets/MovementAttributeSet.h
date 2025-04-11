@@ -48,6 +48,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, MaxWalkSpeed);
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, JumpVelocity);
 	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, JumpCount);
+	ATTRIBUTE_ACCESSORS(UMovementAttributeSet, GravityScale);
 
 // Attribute properties.
 private:
@@ -64,6 +65,10 @@ private:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_JumpCount, Category = "Ability|Attribute|Movement", Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData JumpCount;
 
+	/** Scalar applied to the global gravity constant to determine gravity magnitude used for this character. */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_GravityScale, Category = "Ability|Attribute|Movement", Meta = (AllowPrivateAccess = true))
+	FGameplayAttributeData GravityScale;
+
 
 
 	// Attribute delegates. Most variables in these delegates will not be valid on clients.
@@ -78,6 +83,9 @@ public:
 
 	/** Delegate broadcast when the JumpCount attribute changes. */
 	mutable FAttributeChangedSignature JumpCountAttributeChangedDelegate;
+
+	/** Delegate broadcast when the GravityScale attribute changes. */
+	mutable FAttributeChangedSignature GravityScaleAttributeChangedDelegate;
 
 
 
@@ -96,4 +104,8 @@ protected:
 	/** OnRep for JumpCount. */
 	UFUNCTION()
 	void OnRep_JumpCount(const FGameplayAttributeData& OldValue);
+
+	/** OnRep for GravityScale. */
+	UFUNCTION()
+	void OnRep_GravityScale(const FGameplayAttributeData& OldValue);
 };

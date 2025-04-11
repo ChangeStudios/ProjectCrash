@@ -15,19 +15,22 @@
 UCrashCharacterMovementComponent::UCrashCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	GravityScale = 1.5;
+	/**
+	 * MaxWalkSpeed, JumpZVelocity, JumpCount, and GravityScale are controlled by attributes.
+	 *
+	 * @see UMovementAttributeSet
+	 */
+
 	MaxAcceleration = 16384.0f;
 	bUseSeparateBrakingFriction = false;
 
 	SetWalkableFloorAngle(35.01f);
-	MaxWalkSpeed = 600.0f;
 	MaxWalkSpeedCrouched = 300.0f;
-	MinAnalogWalkSpeed = 50.0f;
+	MinAnalogWalkSpeed = 150.0f;
 	BrakingDecelerationWalking = 8192.0f;
 	PerchRadiusThreshold = 25.0f;
 
-	JumpZVelocity = 1000.0f;
-	AirControl = 0.5f;
+	AirControl = 0.1f;
 	AirControlBoostVelocityThreshold = 0.0f;
 	FallingLateralFriction = 0.6;
 }
@@ -63,11 +66,13 @@ void UCrashCharacterMovementComponent::InitializeWithAbilitySystem(UCrashAbility
 	MovementSet->MaxWalkSpeedAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnMaxWalkSpeedChanged);
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpVelocityChanged);
 	MovementSet->JumpVelocityAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnJumpCountChanged);
+	MovementSet->GravityScaleAttributeChangedDelegate.AddDynamic(this, &ThisClass::OnGravityScaleChanged);
 
 	// Initialize movement properties.
 	MaxWalkSpeed = MovementSet->GetMaxWalkSpeed();
 	JumpZVelocity = MovementSet->GetJumpVelocity();
 	CharacterOwner->JumpMaxCount = MovementSet->GetJumpCount();
+	GravityScale = MovementSet->GetGravityScale();
 }
 
 void UCrashCharacterMovementComponent::UninitializeFromAbilitySystem()
@@ -124,6 +129,15 @@ void UCrashCharacterMovementComponent::OnJumpCountChanged(AActor* EffectInstigat
 	if (CharacterOwner)
 	{
 		CharacterOwner->JumpMaxCount = MovementSet->GetJumpCount();
+	}
+}
+
+void UCrashCharacterMovementComponent::OnGravityScaleChanged(AActor* EffectInstigator, const FGameplayEffectSpec& EffectSpec, float OldValue, float NewValue)
+{
+	// Copy the change into this component.
+	if (MovementSet)
+	{
+		GravityScale = MovementSet->GetGravityScale();
 	}
 }
 
